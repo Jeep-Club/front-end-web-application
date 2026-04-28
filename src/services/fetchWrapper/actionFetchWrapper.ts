@@ -3,7 +3,6 @@ import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWr
 import { HttpStatus } from "@/utils/http/status";
 import logoutAction from "@/actions/logout";
 import fetchRefreshToken from "@/utils/auth/refresh";
-import { ca } from "zod/locales";
 import { login } from "@/utils/auth/login";
 
 interface ActionFetchWapperProps<T> extends FetchWrapperProps<T> {
@@ -19,19 +18,24 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
     const { url, ...fetchProps } = props;
 
     const apiURL = process.env.API_URL;
-    const access = process.env.ACCESS
+    const access = process.env.ACCESS;
 
     if (!apiURL || !access) {
         throw new Error("API_URL or ACCESS");
     }
 
     try {
+        const authCookies = await getAuthCookies.SERVER();
+        fetchProps.headers = {
+            ...fetchProps.headers,
+            'Authorization': authCookies?.AuthAccessToken || ''
+        }
+
         const response = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
-
-
-
+        
+        
+        
         if (response.status === HttpStatus.TOKEN_EXPIRED) {
-            const authCookies = await getAuthCookies.SERVER();
             if (!authCookies) {
                 logoutAction();
                 throw new Error('No auth cookies found');

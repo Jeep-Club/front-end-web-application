@@ -29,7 +29,6 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
 
 
         const rawData = await response.clone().json().catch(async () => { return await response.text().catch(() => null) });
-
         const data = schema.safeParse(rawData);
 
 

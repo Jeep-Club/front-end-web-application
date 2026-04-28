@@ -15,6 +15,9 @@ import { z } from "zod";
  */
 export default async function logoutAction(){
     try{
+        // Limpa todos os cookies da sessao
+        await logout();
+        
         // Faz chamada na api para realizar logout no usuario
         await actionFetchWrapper({
             url: `api/logout`,
@@ -22,8 +25,6 @@ export default async function logoutAction(){
             schema: z.object() // obrigatorio possuir schema porem logout nao possui nenhum no momento
         })
 
-        // Limpa todos os cookies da sessao
-        await logout();
     }
     catch(error : unknown){
         throw new Error('Erro ao realizar logout', {cause: error})

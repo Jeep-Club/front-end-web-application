@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST(request: NextRequest) {
-    const accessRequest = request.headers.get("Access");
+    // const accessRequest = request.headers.get("Access");
 
-    if (accessRequest !== process.env.ACCESS) {
-        return NextResponse.json({ message: 'Invalid Access' }, { status: 403 });
-    }
+    // if (accessRequest !== process.env.ACCESS) {
+    //     return NextResponse.json({ message: 'Invalid Access' }, { status: 403 });
+    // }
 
     const { cpf, password }: LoginRequest = await request.json();
 
