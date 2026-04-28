@@ -2,17 +2,35 @@
 
 import { createContext, useContext, useState } from 'react';
 
+interface RegisterStep1Data {
+    cnh: string;
+    fullName: string;
+    memberSince: string;
+    state: string;
+    city: string;
+    birthDate: string;
+    nickname?: string;
+    cpf: string;
+    phone: string;
+    email: string;
+    name: string;
+}
+//Janaina Venancio
+
+// Mantidos para uso futuro quando o back mapear
+// interface RegisterStep2Data { ... }
+// interface RegisterFormData extends RegisterStep1Data, RegisterStep2Data {}
+
 interface RegisterContextType {
     step1Data: RegisterStep1Data;
-    step2Data: RegisterStep2Data;
     setStep1Data: (data: RegisterStep1Data) => void;
-    setStep2Data: (data: RegisterStep2Data) => void;
 }
 
 const RegisterContext = createContext<RegisterContextType | null>(null);
 
 export function RegisterProvider({ children }: { children: React.ReactNode }) {
     const [step1Data, setStep1Data] = useState<RegisterStep1Data>({
+        name: '',
         cnh: '',
         fullName: '',
         memberSince: '',
@@ -22,22 +40,11 @@ export function RegisterProvider({ children }: { children: React.ReactNode }) {
         nickname: '',
         cpf: '',
         phone: '',
-    });
-
-    const [step2Data, setStep2Data] = useState<RegisterStep2Data>({
-        bloodType: 'O+',
-        hasAllergy: false,
-        allergyDescription: '',
-        hasChronicDisease: false,
-        chronicDiseaseDescription: '',
-        takesMedication: false,
-        medicationDescription: '',
-        emergencyContact: '',
-        hasHealthPlan: false,
+        email: '',
     });
 
     return (
-        <RegisterContext.Provider value={{ step1Data, step2Data, setStep1Data, setStep2Data }}>
+        <RegisterContext.Provider value={{ step1Data, setStep1Data }}>
             {children}
         </RegisterContext.Provider>
     );

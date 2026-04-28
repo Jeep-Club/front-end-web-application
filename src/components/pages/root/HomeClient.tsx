@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@/components/common/logo";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import * as Scroll from 'react-scroll';
@@ -57,9 +58,8 @@ export default function HomeClient() {
               Sou membro
             </button>
 
-            <div className="w-10 h-10 md:w-12 md:h-12 overflow-hidden border border-white/20 rounded-full relative">
-              <Image src="/favicon.ico" alt="logo" fill className="object-cover" />
-            </div>
+            <Logo />
+            
           </div>
         </div>
 
