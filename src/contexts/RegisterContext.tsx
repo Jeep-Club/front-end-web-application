@@ -13,14 +13,27 @@ const RegisterContext = createContext<RegisterContextType | null>(null);
 
 export function RegisterProvider({ children }: { children: React.ReactNode }) {
     const [step1Data, setStep1Data] = useState<RegisterStep1Data>({
-        name: '',
+        cnh: '',
+        fullName: '',
+        memberSince: '',
+        state: '',
+        city: '',
+        birthDate: '',
+        nickname: '',
         cpf: '',
-        email: '',
+        phone: '',
     });
 
     const [step2Data, setStep2Data] = useState<RegisterStep2Data>({
-        password: '',
-        confirmPassword: '',
+        bloodType: 'O+',
+        hasAllergy: false,
+        allergyDescription: '',
+        hasChronicDisease: false,
+        chronicDiseaseDescription: '',
+        takesMedication: false,
+        medicationDescription: '',
+        emergencyContact: '',
+        hasHealthPlan: false,
     });
 
     return (
