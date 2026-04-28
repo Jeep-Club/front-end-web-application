@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-
 
 export interface RegisterData {
+    name: string;
+    email: string;
     cnh: string;
     fullName: string;
     memberSince: string;
@@ -14,37 +14,30 @@ export interface RegisterData {
     phone: string;
 }
 
-// 2. Estado e Ações
 interface RegisterState {
     formData: RegisterData;
     setFormData: (data: Partial<RegisterData>) => void;
     reset: () => void;
 }
 
-export const useRegisterStore = create<RegisterState>()(
-    persist(
-        (set) => ({
-            formData: {
-                cnh: '', 
-                fullName: '', 
-                memberSince: '', 
-                state: '',
-                city: '', 
-                birthDate: '', 
-                cpf: '', 
-                phone: '', 
-                nickname: ''
-            },
+const initialState: RegisterData = {
+    name: '',
+    email: '',
+    cnh: '',
+    fullName: '',
+    memberSince: '',
+    state: '',
+    city: '',
+    birthDate: '',
+    nickname: '',
+    cpf: '',
+    phone: '',
+};
 
-            
-            setFormData: (data) => set((state) => ({ 
-                formData: { ...state.formData, ...data } 
-            })),
-
-            reset: () => set({ 
-                formData: { cnh: '', fullName: '', memberSince: '', state: '', city: '', birthDate: '', cpf: '', phone: '', nickname: '' } 
-            }),
-        }),
-        { name: 'jeep-club-registration' } // Salva no LocalStorage
-    )
-);
+export const useRegisterStore = create<RegisterState>()((set) => ({
+    formData: initialState,
+    setFormData: (data) => set((state) => ({
+        formData: { ...state.formData, ...data }
+    })),
+    reset: () => set({ formData: initialState }),
+}));
