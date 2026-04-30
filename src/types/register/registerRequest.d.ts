@@ -1,4 +1,4 @@
-interface RegisterStep1Data {
+export interface RegisterFormData {
     cnh: string;
     fullName: string;
     memberSince: string;
@@ -10,7 +10,10 @@ interface RegisterStep1Data {
     phone: string;
 }
 
-interface RegisterStep2Data {
+/* ======================================================
+  MÓDULO FUTURO 
+======================================================
+export interface RegisterStep2Data {
     bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
     hasAllergy: boolean;
     allergyDescription?: string;
@@ -21,5 +24,4 @@ interface RegisterStep2Data {
     emergencyContact: string;
     hasHealthPlan: boolean;
 }
-
-interface RegisterFormData extends RegisterStep1Data, RegisterStep2Data {}
+*/
