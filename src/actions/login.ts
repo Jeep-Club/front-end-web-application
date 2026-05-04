@@ -1,7 +1,8 @@
 'use server';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { loginResponseSchema } from "@/schemas/login/loginResponse";
+import { loginResponseSchema } from "@/schemas/auth/login/loginResponse";
 import { login } from '@/utils/auth/login';
+import { HttpAPIRoutes } from '@/utils/http/api';
 
 export default async function loginAction({ cpf, password }: LoginRequest) {
 
@@ -10,7 +11,7 @@ export default async function loginAction({ cpf, password }: LoginRequest) {
     }
     try {
         const response = await actionFetchWrapper<LoginResponse>({
-            url: 'api/mock/login',
+            url: HttpAPIRoutes.LOGIN,
             method: 'POST',
             body: JSON.stringify({ cpf, password }),
             schema: loginResponseSchema

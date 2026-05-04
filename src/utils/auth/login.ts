@@ -6,7 +6,7 @@ export async function login(
     accessExpiration: string
 ) {
     const cookieStore = await cookies();
-    cookieStore.set('AuthAccessToken', accessToken, { path: '/', expires: new Date(accessExpiration) });
+    cookieStore.set('AuthAccessToken', accessToken, { path: '/'});
     cookieStore.set('AuthRefreshToken', refreshToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
     cookieStore.set('AccessTokenExpiration', accessExpiration, { path: '/' });
 }
