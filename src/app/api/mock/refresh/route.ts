@@ -10,12 +10,12 @@ export async function POST(request: NextRequest) {
 
     const { AuthAccessToken, AuthRefreshToken }: RefreshTokenRequest = await request.json();
 
-    if (AuthAccessToken === 'auth-access-token-123456789' && AuthRefreshToken === 'auth-refresh-token-123456789') {
+    if (AuthAccessToken && AuthRefreshToken ) {
         return NextResponse.json(
             {
                 AuthAccessToken: 'auth-access-token-12345678910',
                 AuthRefreshToken: 'auth-refresh-token-123456789',
-                AccessTokenExpiration: '2033-04-19T00:47:34-03:00'
+                AccessTokenExpiration: new Date(new Date().getTime() + 720 * 24 * 60 * 60 * 1000 +(Math.random() * 100000000000)).toISOString()
             }
             ,
             {
