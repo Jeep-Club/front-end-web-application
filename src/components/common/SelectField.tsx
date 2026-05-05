@@ -28,9 +28,12 @@ export default function SelectField<T extends string>({
 }: SelectFieldProps<T>) {
     return (
         <div className="flex flex-col gap-1 w-full">
-            <label htmlFor={id} className="text-sm font-medium text-gray-700">
+            <label
+                htmlFor={id}
+                className="text-[var(--fs-sm)] font-medium text-[var(--text-primary)]"
+            >
                 {label}
-                {required && <span className="text-red-500 ml-1">*</span>}
+                {required && <span className="text-[var(--danger)] ml-1">*</span>}
             </label>
             <select
                 id={id}
@@ -39,14 +42,17 @@ export default function SelectField<T extends string>({
                 onChange={(e) => onChange(e.target.value as T)}
                 disabled={disabled}
                 required={required}
-                className={`
-                    w-full px-3 py-2 border rounded-md text-sm
-                    bg-white text-gray-900
+                className="
+                    w-full px-3 py-2 border rounded-[var(--r-md)] text-[var(--fs-sm)]
+                    bg-[var(--background)] text-[var(--text-primary)]
+                    border-[var(--input-border)]
                     transition-colors duration-200
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                    disabled:bg-gray-100 disabled:cursor-not-allowed
-                    ${error ? 'border-red-500' : 'border-gray-300'}
-                `}
+                    focus:outline-none focus:ring-2 focus:ring-[var(--input-border-focus)] focus:border-[var(--input-border-focus)]
+                    disabled:bg-[var(--input-disabled)] disabled:cursor-not-allowed
+                "
+                style={{
+                    borderColor: error ? 'var(--danger)' : undefined,
+                }}
             >
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -55,7 +61,7 @@ export default function SelectField<T extends string>({
                 ))}
             </select>
             {error && (
-                <span className="text-xs text-red-500">{error}</span>
+                <span className="text-[var(--fs-xs)] text-[var(--danger)]">{error}</span>
             )}
         </div>
     );

@@ -27,7 +27,7 @@ export default function ConditionalField({
 }: ConditionalFieldProps) {
     return (
         <div className="flex flex-col gap-2 w-full">
-            {/* Toggle (sim/não) */}
+            {/* Toggle */}
             <div className="flex items-center gap-3">
                 <button
                     type="button"
@@ -51,7 +51,7 @@ export default function ConditionalField({
                 <span className="text-sm font-medium text-gray-700">{toggleLabel}</span>
             </div>
 
-            {/* Campo de descrição, aparece somente quando toggleValue = true */}
+            {/* Campo de descrição */}
             {toggleValue && (
                 <div className="flex flex-col gap-1 w-full">
                     <label htmlFor={id} className="text-sm font-medium text-gray-700">
