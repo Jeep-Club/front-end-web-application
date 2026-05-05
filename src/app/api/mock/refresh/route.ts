@@ -8,14 +8,14 @@ export async function POST(request: NextRequest) {
     //     return NextResponse.json({ message: 'Invalid Access' }, { status: 403 });
     // }
 
-    const { cpf, password }: LoginRequest = await request.json();
+    const { AuthAccessToken, AuthRefreshToken }: RefreshTokenRequest = await request.json();
 
-    if (cpf === '123.456.789-00' && password === 'password') {
+    if (AuthAccessToken && AuthRefreshToken ) {
         return NextResponse.json(
             {
-                AuthAccessToken: 'auth-access-token-123456789',
+                AuthAccessToken: 'auth-access-token-12345678910',
                 AuthRefreshToken: 'auth-refresh-token-123456789',
-                AccessTokenExpiration: '2029-04-19T00:47:34-03:00'
+                AccessTokenExpiration: new Date(new Date().getTime() + 720 * 24 * 60 * 60 * 1000 +(Math.random() * 100000000000)).toISOString()
             }
             ,
             {
@@ -32,5 +32,9 @@ export async function GET(request: NextRequest) {
     if (!params) {
         return NextResponse.json({ message: 'No token provided' }, { status: 401 });
     }
-    return NextResponse.json({ message: 'Good Token' }, { status: 200 });
+    if(params === 'auth-access-token-12345678910') {
+        return NextResponse.json({ message: 'Need Refresh Token' }, { status: 403 });
+    }
+
+    return NextResponse.json({ message: 'good refresh' }, { status: 200 });
 }
