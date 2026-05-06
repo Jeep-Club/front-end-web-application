@@ -75,9 +75,15 @@ export default function Step1Form() {
         setError(null);
 
         try {
-            await registerAction(formData);
+            const result = await registerAction(formData);
+
+            if (result?.success === false) {
+                setError(result.error);
+                return;
+            }
+
             reset();
-        } catch (err) {
+        } catch {
             setError('Erro ao realizar cadastro. Tente novamente.');
         } finally {
             setIsLoading(false);
@@ -159,6 +165,13 @@ export default function Step1Form() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <InputField
+                                id="rg"
+                                label="RG"
+                                value={formData.rg}
+                                onChange={(v) => setFormData({ rg: v })}
+                                required
+                            />
+                            <InputField
                                 id="cnh"
                                 label="CNH"
                                 value={formData.cnh}
@@ -219,6 +232,15 @@ export default function Step1Form() {
                             value={formData.email}
                             onChange={(v) => setFormData({ email: v })}
                             placeholder="seu@email.com"
+                            required
+                        />
+
+                        <InputField
+                            id="password"
+                            label="Senha"
+                            type="password"
+                            value={formData.password}
+                            onChange={(v) => setFormData({ password: v })}
                             required
                         />
 

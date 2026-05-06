@@ -15,5 +15,5 @@ export function proxy(request: NextRequest){
     }
 
 
-    NextResponse.next();
+    return NextResponse.next();
 }

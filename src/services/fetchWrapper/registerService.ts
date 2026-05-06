@@ -1,15 +1,23 @@
 import { RegisterData } from '@/stores/useRegisterStore';
 
 export async function registerService(data: RegisterData) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        throw new Error('NEXT_PUBLIC_API_URL nao configurada');
+    }
+
     const payload = {
-        name: data.name,
-        birthDate: data.birthDate,
+        name: data.fullName,
+        birthData: data.birthDate,
         email: data.email,
         cpf: data.cpf,
+        rg: data.rg,
+        password: data.password,
         phoneNumber: data.phone,
     };
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+    const response = await fetch(`${apiUrl}/auth/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -17,10 +25,20 @@ export async function registerService(data: RegisterData) {
         body: JSON.stringify(payload),
     });
 
+    const responseText = await response.text();
+    const responseData = responseText ? tryParseJson(responseText) : null;
+
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Erro ao realizar cadastro');
+        throw new Error(responseData?.message || responseData?.error || responseText || 'Erro ao realizar cadastro');
     }
 
-    return response.json();
+    return responseData;
+}
+
+function tryParseJson(text: string) {
+    try {
+        return JSON.parse(text);
+    } catch {
+        return null;
+    }
 }

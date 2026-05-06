@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
 export interface RegisterData {
-    name: string;
     email: string;
     cnh: string;
     fullName: string;
@@ -11,6 +10,8 @@ export interface RegisterData {
     birthDate: string;
     nickname?: string;
     cpf: string;
+    rg: string;
+    password: string;
     phone: string;
 }
 
@@ -21,7 +22,6 @@ interface RegisterState {
 }
 
 const initialState: RegisterData = {
-    name: '',
     email: '',
     cnh: '',
     fullName: '',
@@ -31,6 +31,8 @@ const initialState: RegisterData = {
     birthDate: '',
     nickname: '',
     cpf: '',
+    rg: '',
+    password: '',
     phone: '',
 };
 
