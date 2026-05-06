@@ -30,7 +30,7 @@ export default function InputField({
                 className="text-[var(--fs-sm)] font-medium text-[var(--text-primary)]"
             >
                 {label}
-                {required && <span className="text-[var(--danger)] ml-1">*</span>}
+                {required && <span className="text-red-500 ml-1">*</span>}
             </label>
             <input
                 id={id}
@@ -51,11 +51,11 @@ export default function InputField({
                     disabled:bg-[var(--input-disabled)] disabled:cursor-not-allowed
                 "
                 style={{
-                    borderColor: error ? 'var(--danger)' : undefined,
+                   borderColor: error ? '#ef4444' : undefined,
                 }}
             />
             {error && (
-                <span className="text-[var(--fs-xs)] text-[var(--danger)]">{error}</span>
+                <span className="text-[var(--fs-xs)] text-red-500">{error}</span>
             )}
         </div>
     );

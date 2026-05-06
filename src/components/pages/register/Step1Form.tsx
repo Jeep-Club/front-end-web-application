@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
 import InputField from '@/components/common/InputField';
 import SelectField from '@/components/common/SelectField';
 import { useRegisterStore } from '@/stores/useRegisterStore';
@@ -56,44 +57,70 @@ function maskPhone(value: string) {
         .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
 }
 
+type FormValues = {
+    fullName: string;
+    nickname: string;
+    cpf: string;
+    rg: string;
+    cnh: string;
+    birthDate: string;
+    memberSince: string;
+    phone: string;
+    state: string;
+    city: string;
+    email: string;
+    password: string;
+    lgpd: boolean;
+};
+
 export default function Step1Form() {
     const router = useRouter();
-    const { formData, setFormData, reset } = useRegisterStore();
-    const [lgpdAccepted, setLgpdAccepted] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const { reset } = useRegisterStore();
+    const [serverError, setServerError] = useState<string | null>(null);
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
+    const {
+        control,
+        handleSubmit,
+        watch,
+        formState: { errors, isSubmitting },
+    } = useForm<FormValues>({
+        defaultValues: {
+            fullName: '',
+            nickname: '',
+            cpf: '',
+            rg: '',
+            cnh: '',
+            birthDate: '',
+            memberSince: '',
+            phone: '',
+            state: '',
+            city: '',
+            email: '',
+            password: '',
+            lgpd: false,
+        },
+    });
 
-        if (!lgpdAccepted) {
-            setError('Você precisa aceitar os termos da LGPD para continuar.');
-            return;
-        }
+    const lgpdAccepted = watch('lgpd');
 
-        setIsLoading(true);
-        setError(null);
-
+    const onSubmit = async (data: FormValues) => {
+        setServerError(null);
         try {
-            const result = await registerAction(formData);
-
+            const { lgpd, ...payload } = data;
+            const result = await registerAction(payload);
             if (result?.success === false) {
-                setError(result.error);
+                setServerError(result.error);
                 return;
             }
-
             reset();
         } catch {
-            setError('Erro ao realizar cadastro. Tente novamente.');
-        } finally {
-            setIsLoading(false);
+            setServerError('Erro ao realizar cadastro. Tente novamente.');
         }
-    }
+    };
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row">
 
-            {/* ── Header mobile ── */}
             <div className="lg:hidden flex items-center justify-between px-5 py-4 bg-[var(--blue-300)]">
                 <Logo />
                 <div className="text-right">
@@ -131,149 +158,257 @@ export default function Step1Form() {
                         Preencha os dados abaixo para iniciar sua jornada conosco.
                     </p>
 
-                    {/* Barra de progresso */}
                     <div className="w-full h-1.5 bg-[var(--gray-200)] rounded-full mb-7 overflow-hidden">
                         <div className="h-full w-1/2 bg-[var(--blue-300)] rounded-full transition-all duration-500" />
                     </div>
 
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
-                        <InputField
-                            id="fullName"
-                            label="Nome Completo"
-                            value={formData.fullName}
-                            onChange={(v) => setFormData({ fullName: v })}
-                            required
+                        <Controller
+                            name="fullName"
+                            control={control}
+                            rules={{ required: 'Nome completo é obrigatório' }}
+                            render={({ field }) => (
+                                <InputField
+                                    id="fullName"
+                                    label="Nome Completo"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    required
+                                    error={errors.fullName?.message}
+                                />
+                            )}
                         />
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                id="nickname"
-                                label="Apelido"
-                                value={formData.nickname ?? ''}
-                                onChange={(v) => setFormData({ nickname: v })}
+                        <div className="color-black grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Controller
+                                name="nickname"
+                                control={control}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="nickname"
+                                        label="Apelido"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                )}
                             />
-                            <InputField
-                                id="cpf"
-                                label="CPF"
-                                value={formData.cpf}
-                                onChange={(v) => setFormData({ cpf: maskCPF(v) })}
-                                placeholder="000.000.000-00"
-                                required
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                id="rg"
-                                label="RG"
-                                value={formData.rg}
-                                onChange={(v) => setFormData({ rg: v })}
-                                required
-                            />
-                            <InputField
-                                id="cnh"
-                                label="CNH"
-                                value={formData.cnh}
-                                onChange={(v) => setFormData({ cnh: v })}
-                                placeholder="Número da CNH"
-                            />
-                            <InputField
-                                id="birthDate"
-                                label="Data de Nascimento"
-                                type="date"
-                                value={formData.birthDate}
-                                onChange={(v) => setFormData({ birthDate: v })}
-                                required
+                            <Controller
+                                name="cpf"
+                                control={control}
+                                rules={{ required: 'CPF é obrigatório' }}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="cpf"
+                                        label="CPF"
+                                        placeholder="000.000.000-00"
+                                        value={field.value}
+                                        onChange={(v) => field.onChange(maskCPF(v))}
+                                        required
+                                        error={errors.cpf?.message}
+                                    />
+                                )}
                             />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                id="phone"
-                                label="Telefone"
-                                type="tel"
-                                value={formData.phone}
-                                onChange={(v) => setFormData({ phone: maskPhone(v) })}
-                                placeholder="(00) 00000-0000"
-                                required
+                            <Controller
+                                name="rg"
+                                control={control}
+                                rules={{ required: 'RG é obrigatório' }}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="rg"
+                                        label="RG"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        required
+                                        error={errors.rg?.message}
+                                    />
+                                )}
                             />
-                            <InputField
-                                id="memberSince"
-                                label="Membro Desde"
-                                type="date"
-                                value={formData.memberSince}
-                                onChange={(v) => setFormData({ memberSince: v })}
+                            <Controller
+                                name="cnh"
+                                control={control}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="cnh"
+                                        label="CNH"
+                                        placeholder="Número da CNH"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                )}
                             />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <SelectField
-                                id="state"
-                                label="Estado"
-                                value={formData.state}
-                                onChange={(v) => setFormData({ state: v })}
-                                options={ESTADOS}
-                                required
+                            <Controller
+                                name="birthDate"
+                                control={control}
+                                rules={{ required: 'Data de nascimento é obrigatória' }}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="birthDate"
+                                        label="Data de Nascimento"
+                                        type="date"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        required
+                                        error={errors.birthDate?.message}
+                                    />
+                                )}
                             />
-                            <InputField
-                                id="city"
-                                label="Cidade"
-                                value={formData.city}
-                                onChange={(v) => setFormData({ city: v })}
-                                required
+                            <Controller
+                                name="memberSince"
+                                control={control}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="memberSince"
+                                        label="Membro Desde"
+                                        type="date"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                )}
                             />
                         </div>
 
-                        <InputField
-                            id="email"
-                            label="E-mail"
-                            type="email"
-                            value={formData.email}
-                            onChange={(v) => setFormData({ email: v })}
-                            placeholder="seu@email.com"
-                            required
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Controller
+                                name="phone"
+                                control={control}
+                                rules={{ required: 'Telefone é obrigatório' }}
+                                render={({ field }) => (
+                                    <InputField
+                                        id="phone"
+                                        label="Telefone"
+                                        type="tel"
+                                        placeholder="(00) 00000-0000"
+                                        value={field.value}
+                                        onChange={(v) => field.onChange(maskPhone(v))}
+                                        required
+                                        error={errors.phone?.message}
+                                    />
+                                )}
+                            />
+                            <Controller
+                                name="state"
+                                control={control}
+                                rules={{ required: 'Estado é obrigatório' }}
+                                render={({ field }) => (
+                                    <SelectField
+                                        id="state"
+                                        label="Estado"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        options={ESTADOS}
+                                        required
+                                        error={errors.state?.message}
+                                    />
+                                )}
+                            />
+                        </div>
+
+                        <Controller
+                            name="city"
+                            control={control}
+                            rules={{ required: 'Cidade é obrigatória' }}
+                            render={({ field }) => (
+                                <InputField
+                                    id="city"
+                                    label="Cidade"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    required
+                                    error={errors.city?.message}
+                                />
+                            )}
                         />
 
-                        <InputField
-                            id="password"
-                            label="Senha"
-                            type="password"
-                            value={formData.password}
-                            onChange={(v) => setFormData({ password: v })}
-                            required
+                        <Controller
+                            name="email"
+                            control={control}
+                            rules={{
+                                pattern: {
+                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                    message: 'E-mail inválido',
+                                },
+                            }}
+                            render={({ field }) => (
+                                <InputField
+                                    id="email"
+                                    label="E-mail"
+                                    type="email"
+                                    placeholder="seu@email.com"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    error={errors.email?.message}
+                                />
+                            )}
                         />
 
-                        {/* LGPD */}
-                        <div className="flex items-start gap-3 mt-1">
-                            <input
-                                id="lgpd"
-                                type="checkbox"
-                                checked={lgpdAccepted}
-                                onChange={(e) => setLgpdAccepted(e.target.checked)}
-                                className="mt-0.5 w-4 h-4 accent-[var(--blue-300)] cursor-pointer flex-shrink-0"
-                            />
-                            <label htmlFor="lgpd" className="text-[var(--fs-xs)] text-[var(--text-secundary)] cursor-pointer leading-relaxed">
-                                Declaro que autorizo a coleta de dados conforme as diretrizes da LGPD.
-                            </label>
-                        </div>
+                        <Controller
+                            name="password"
+                            control={control}
+                            rules={{
+                                required: 'Senha é obrigatória',
+                                minLength: { value: 6, message: 'Mínimo de 6 caracteres' },
+                            }}
+                            render={({ field }) => (
+                                <InputField
+                                    id="password"
+                                    label="Senha"
+                                    type="password"
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    required
+                                    error={errors.password?.message}
+                                />
+                            )}
+                        />
 
-                        {/* Erro */}
-                        {error && (
-                            <p className="text-[var(--fs-xs)] text-[var(--danger)] bg-[var(--red-100)]/10 border border-[var(--danger)] rounded-[var(--r-md)] px-3 py-2">
-                                {error}
+                        <Controller
+                            name="lgpd"
+                            control={control}
+                            rules={{ required: 'Você precisa aceitar os termos da LGPD para continuar.' }}
+                            render={({ field }) => (
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-start gap-3 mt-1">
+                                        <input
+                                            id="lgpd"
+                                            type="checkbox"
+                                            checked={field.value}
+                                            onChange={(e) => field.onChange(e.target.checked)}
+                                            className="mt-0.5 w-4 h-4 accent-[var(--blue-300)] cursor-pointer flex-shrink-0"
+                                        />
+                                        <label htmlFor="lgpd" className="text-[var(--fs-xs)] text-[var(--text-secundary)] cursor-pointer leading-relaxed">
+                                            Declaro que autorizo a coleta de dados conforme as diretrizes da LGPD.
+                                        </label>
+                                    </div>
+                                    {errors.lgpd && (
+                                       <span className="text-[var(--fs-xs)] text-red-500">{errors.lgpd.message}</span>
+                                    )}
+                                </div>
+                            )}
+                        />
+
+        
+                        {serverError && (
+                            <p className="text-xs text-red-500 bg-red-500/10 border border-red-500 rounded-[var(--r-md)] px-3 py-2">
+                                {serverError}
                             </p>
                         )}
 
-                        {/* Botão submit */}
+                  
                         <button
                             type="submit"
-                            disabled={isLoading || !lgpdAccepted}
+                            disabled={isSubmitting || !lgpdAccepted}
                             className="w-full bg-[var(--button-active)] hover:bg-[var(--button-hover)] disabled:bg-[var(--button-disabled)] disabled:cursor-not-allowed
                                 text-[var(--button-text)] font-bold text-[var(--fs-sm)] uppercase tracking-widest py-4 rounded-[var(--r-md)]
                                 transition-colors duration-200 mt-1 flex items-center justify-center gap-2"
                         >
-                            {isLoading ? (
+                            {isSubmitting ? (
                                 <>
                                     <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -290,7 +425,7 @@ export default function Step1Form() {
                             Já possui conta?{' '}
                             <button
                                 type="button"
-                                onClick={() => router.push('/login')}
+                                onClick={() => router.push('/dashboard')}
                                 className="text-[var(--blue-300)] font-semibold hover:underline"
                             >
                                 Entrar
