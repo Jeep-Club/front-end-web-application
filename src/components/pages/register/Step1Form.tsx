@@ -8,6 +8,7 @@ import { useRegisterStore } from '@/stores/useRegisterStore';
 import { registerAction } from '@/actions/registerAction';
 import { useState } from 'react';
 import { Logo } from '@/components/common/logo';
+import { validateCPF } from '@/utils/validateCPF';
 
 const ESTADOS = [
     { label: 'Selecione', value: '' },
@@ -121,6 +122,7 @@ export default function Step1Form() {
     return (
         <div className="min-h-screen flex flex-col lg:flex-row">
 
+            {/* ── Header mobile ── */}
             <div className="lg:hidden flex items-center justify-between px-5 py-4 bg-[var(--blue-300)]">
                 <Logo />
                 <div className="text-right">
@@ -164,6 +166,7 @@ export default function Step1Form() {
 
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
+                        {/* Nome completo */}
                         <Controller
                             name="fullName"
                             control={control}
@@ -180,7 +183,8 @@ export default function Step1Form() {
                             )}
                         />
 
-                        <div className="color-black grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Apelido + CPF */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Controller
                                 name="nickname"
                                 control={control}
@@ -196,7 +200,10 @@ export default function Step1Form() {
                             <Controller
                                 name="cpf"
                                 control={control}
-                                rules={{ required: 'CPF é obrigatório' }}
+                                rules={{
+                                    required: 'CPF é obrigatório',
+                                    validate: (v) => validateCPF(v) || 'CPF inválido',
+                                }}
                                 render={({ field }) => (
                                     <InputField
                                         id="cpf"
@@ -211,6 +218,7 @@ export default function Step1Form() {
                             />
                         </div>
 
+                        {/* RG + CNH */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Controller
                                 name="rg"
@@ -242,6 +250,7 @@ export default function Step1Form() {
                             />
                         </div>
 
+                        {/* Data de nascimento + Membro desde */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Controller
                                 name="birthDate"
@@ -274,6 +283,7 @@ export default function Step1Form() {
                             />
                         </div>
 
+                        {/* Telefone + Estado */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Controller
                                 name="phone"
@@ -310,6 +320,7 @@ export default function Step1Form() {
                             />
                         </div>
 
+                        {/* Cidade */}
                         <Controller
                             name="city"
                             control={control}
@@ -326,10 +337,12 @@ export default function Step1Form() {
                             )}
                         />
 
+                        {/* Email */}
                         <Controller
                             name="email"
                             control={control}
                             rules={{
+                                required: 'E-mail é obrigatório',
                                 pattern: {
                                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                                     message: 'E-mail inválido',
@@ -343,17 +356,24 @@ export default function Step1Form() {
                                     placeholder="seu@email.com"
                                     value={field.value}
                                     onChange={field.onChange}
+                                    required
                                     error={errors.email?.message}
                                 />
                             )}
                         />
 
+                        {/* Senha */}
                         <Controller
                             name="password"
                             control={control}
                             rules={{
                                 required: 'Senha é obrigatória',
-                                minLength: { value: 6, message: 'Mínimo de 6 caracteres' },
+                                minLength: { value: 8, message: 'Mínimo de 8 caracteres' },
+                                validate: {
+                                    hasUppercase: (v) => /[A-Z]/.test(v) || 'Precisa ter pelo menos 1 letra maiúscula',
+                                    hasLowercase: (v) => /[a-z]/.test(v) || 'Precisa ter pelo menos 1 letra minúscula',
+                                    hasNumber: (v) => /[0-9]/.test(v) || 'Precisa ter pelo menos 1 número',
+                                },
                             }}
                             render={({ field }) => (
                                 <InputField
@@ -368,6 +388,7 @@ export default function Step1Form() {
                             )}
                         />
 
+                        {/* LGPD */}
                         <Controller
                             name="lgpd"
                             control={control}
@@ -387,20 +408,20 @@ export default function Step1Form() {
                                         </label>
                                     </div>
                                     {errors.lgpd && (
-                                       <span className="text-[var(--fs-xs)] text-red-500">{errors.lgpd.message}</span>
+                                        <span className="text-[var(--fs-xs)] text-[var(--danger)]">{errors.lgpd.message}</span>
                                     )}
                                 </div>
                             )}
                         />
 
-        
+                        {/* Erro do servidor */}
                         {serverError && (
-                            <p className="text-xs text-red-500 bg-red-500/10 border border-red-500 rounded-[var(--r-md)] px-3 py-2">
+                            <p className="text-[var(--fs-xs)] text-[var(--danger)] bg-[var(--red-100)]/10 border border-[var(--danger)] rounded-[var(--r-md)] px-3 py-2">
                                 {serverError}
                             </p>
                         )}
 
-                  
+                        {/* Botão submit */}
                         <button
                             type="submit"
                             disabled={isSubmitting || !lgpdAccepted}
@@ -425,7 +446,7 @@ export default function Step1Form() {
                             Já possui conta?{' '}
                             <button
                                 type="button"
-                                onClick={() => router.push('/dashboard')}
+                                onClick={() => router.push('/login')}
                                 className="text-[var(--blue-300)] font-semibold hover:underline"
                             >
                                 Entrar
