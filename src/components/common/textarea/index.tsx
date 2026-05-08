@@ -2,7 +2,7 @@
 
 import { useFormContext, useController } from "react-hook-form";
 
-interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name' | 'value' | 'onChange' | 'defaultValue'> {
+interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'name' | 'value' | 'onChange' | 'defaultValue'> {
     label: string;
     name: string;
     error?: string;
@@ -10,34 +10,31 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
     onChange?: (value: string) => void;
 }
 
-interface BaseInputProps extends InputProps {
+interface BaseTextareaProps extends TextareaProps {
     register?: boolean;
 }
 
-
-export function Input({register = true, ...props}: BaseInputProps) {
+export function Textarea({ register = true, ...props }: BaseTextareaProps) {
     if (register) {
-        return <InputRegister {...props} />
+        return <TextareaRegister {...props} />
     }
-    return <InputUnregister {...props} />
+    return <TextareaUnregister {...props} />
 }
 
-function InputRegister({ label, error, name, value: externalValue, onChange: externalOnChange, ...rest }: InputProps) {
-    const { className, ...inputProps } = rest;
+function TextareaRegister({ label, error, name, value: externalValue, onChange: externalOnChange, ...rest }: TextareaProps) {
+    const { className, ...textareaProps } = rest;
 
     const { control, formState: { errors } } = useFormContext();
-
     const {
         field: { value: fieldValue, onChange: fieldOnChange, onBlur, ref }
-    } = useController({ 
-        name, 
+    } = useController({
+        name,
         control,
         defaultValue: externalValue ?? '', // <-- RHF inicializa com o valor
     });
-
     const resolvedError = (errors[name]?.message as string) ?? error;
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
         const newValue = e.target.value;
         fieldOnChange(newValue);
         externalOnChange?.(newValue);
@@ -48,8 +45,8 @@ function InputRegister({ label, error, name, value: externalValue, onChange: ext
             <label className="block text-sm font-medium text-gray-700 mb-1">
                 {label}
             </label>
-            <input
-                {...inputProps}
+            <textarea
+                {...textareaProps}
                 ref={ref}
                 name={name}
                 onBlur={onBlur}
@@ -64,18 +61,18 @@ function InputRegister({ label, error, name, value: externalValue, onChange: ext
     );
 }
 
-function InputUnregister({ label, error, name, value, onChange, ...rest }: InputProps) {
-    const { className, ...inputProps } = rest;
+function TextareaUnregister({ label, error, name, value, onChange, ...rest }: TextareaProps) {
+    const { className, ...textareaProps } = rest;
     return (
         <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">
                 {label}
             </label>
-            <input
-                {...inputProps}
+            <textarea
+                {...textareaProps}
                 name={name}
                 value={value}
-                onChange={(e) => onChange?.(e.target.value)}
+                onChange={e => onChange?.(e.target.value)}
                 className={`bg-white text-black ${className || ''}`}
             />
             {error && (

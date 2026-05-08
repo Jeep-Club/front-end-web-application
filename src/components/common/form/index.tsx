@@ -6,7 +6,8 @@ import {
     FormProvider, 
     SubmitHandler, 
     FieldValues,
-    UseFormProps
+    UseFormProps,
+    SubmitErrorHandler
  } from "react-hook-form";
 
 
@@ -16,6 +17,7 @@ interface FormProps<T extends FieldValues>{
     className?: string;
     formOptions?: UseFormProps<T>;
     schema: z.ZodType<T>;
+    onError: SubmitErrorHandler<T>;
 }
 
 export function Form<T extends FieldValues>({
@@ -23,12 +25,13 @@ export function Form<T extends FieldValues>({
     onSubmit, 
     className, 
     formOptions,
-    schema
+    schema,
+    onError
 }: FormProps<T>) {
 
     formOptions = {
         ...formOptions,
-        //falta tipar o formOptions para aceitar o schema
+        //falta tipar o formOptions para garantir que o resolver seja do tipo zodResolver, mas funciona mesmo sem a tipagem específica
         resolver: zodResolver(schema as any),
     }
 
@@ -37,7 +40,7 @@ export function Form<T extends FieldValues>({
     return (
     <FormProvider {...methods}>
         <form
-            onSubmit={methods.handleSubmit(onSubmit)}
+            onSubmit={methods.handleSubmit(onSubmit, onError)}
             className={className || "w-full grid grid-cols-1 md:grid-cols-12 gap-6"}
             noValidate
             >
