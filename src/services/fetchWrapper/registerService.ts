@@ -1,6 +1,6 @@
-import { RegisterData } from '@/stores/useRegisterStore';
+import { RegisterFormData } from '@/schemas/registerSchema';
 
-export async function registerService(data: RegisterData) {
+export async function registerService(data: RegisterFormData) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     if (!apiUrl) {

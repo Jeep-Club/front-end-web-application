@@ -14,6 +14,33 @@ interface BaseSelectProps extends SelectProps {
     register?: boolean;
 }
 
+const selectBaseClass = `
+    w-full px-3 py-2
+    bg-[var(--background)]
+    text-[var(--text-primary)]
+    border border-[var(--input-border)]
+    rounded-[var(--r-md)]
+    text-[var(--fs-sm)]
+    transition-colors duration-200
+    focus:outline-none
+    focus:ring-2
+    focus:ring-[var(--input-border-focus)]
+    focus:border-[var(--input-border-focus)]
+    disabled:bg-[var(--input-disabled)]
+    disabled:cursor-not-allowed
+    cursor-pointer
+`;
+
+const selectErrorClass = `border-[var(--danger)] focus:ring-[var(--danger)]`;
+
+const labelBaseClass = `
+    block
+    text-[var(--fs-sm)]
+    font-medium
+    text-[var(--text-primary)]
+    mb-1
+`;
+
 export function Select({ register = true, ...props }: BaseSelectProps) {
     if (register) {
         return <SelectRegister {...props} />
@@ -30,7 +57,7 @@ function SelectRegister({ label, error, name, value: externalValue, onChange: ex
     } = useController({
         name,
         control,
-        defaultValue: externalValue ?? '', // <-- RHF inicializa com o valor
+        defaultValue: externalValue ?? '',
     });
 
     const resolvedError = (errors[name]?.message as string) ?? error;
@@ -42,24 +69,32 @@ function SelectRegister({ label, error, name, value: externalValue, onChange: ex
     }
 
     return (
-        <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="w-full flex flex-col gap-1">
+            <label className={labelBaseClass}>
                 {label}
+                {selectProps.required && (
+                    <span className="text-[var(--danger)] ml-1">*</span>
+                )}
             </label>
             <select
                 {...selectProps}
                 ref={ref}
                 name={name}
                 onBlur={onBlur}
-                value={fieldValue}      // controlado pelo RHF
+                value={fieldValue}
                 onChange={handleChange}
-                className={`bg-white text-black ${className || ''}`}
+                className={`
+                    ${selectBaseClass}
+                    ${resolvedError ? selectErrorClass : ''}
+                    ${className || ''}
+                `}
             >
                 {children}
-
             </select>
             {resolvedError && (
-                <p className="text-red-500 text-sm mt-1">{resolvedError}</p>
+                <p className="text-[var(--fs-xs)] text-[var(--danger)] mt-0.5">
+                    {resolvedError}
+                </p>
             )}
         </div>
     );
@@ -67,22 +102,32 @@ function SelectRegister({ label, error, name, value: externalValue, onChange: ex
 
 function SelectUnregister({ label, error, name, value, onChange, children, ...rest }: SelectProps) {
     const { className, ...selectProps } = rest;
+
     return (
-        <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="w-full flex flex-col gap-1">
+            <label className={labelBaseClass}>
                 {label}
+                {selectProps.required && (
+                    <span className="text-[var(--danger)] ml-1">*</span>
+                )}
             </label>
             <select
                 {...selectProps}
                 name={name}
                 value={value}
                 onChange={e => onChange?.(e.target.value)}
-                className={`bg-white text-black ${className || ''}`}
+                className={`
+                    ${selectBaseClass}
+                    ${error ? selectErrorClass : ''}
+                    ${className || ''}
+                `}
             >
                 {children}
             </select>
             {error && (
-                <p className="text-red-500 text-sm mt-1">{error}</p>
+                <p className="text-[var(--fs-xs)] text-[var(--danger)] mt-0.5">
+                    {error}
+                </p>
             )}
         </div>
     );
