@@ -89,22 +89,24 @@
   --placeholder: var(--gray-400);
 
   /* Buttons */
-  --button-primary-bg: var(--yellow-100);
+  --button-primary-bg: var(--yellow-300);
   --button-primary-bg-hover: var(--yellow-400);
-  --button-primary-bg-active: var(--yellow-300);
-  --button-primary-text: var(--black);
+  --button-primary-bg-disabled: var(--yellow-100);
+  --button-primary-text: var(--gray-600);
+  --button-primary-text-hover: var(--gray-600);
   
   --button-secondary-bg: var(--blue-500);
   --button-secondary-bg-hover: var(--blue-800);
-  --button-secondary-bg-active: var(--blue-700);
-  --button-secondary-text: var(--white);
+  --button-secondary-bg-disabled: var(--blue-700);
+  --button-secondary-text: var(--transparent-white);
+  --button-secondary-text-hover: var(--white);
   
   --button-outline-border: var(--gray-600);
   --button-outline-text: var(--gray-600);
   --button-outline-hover-bg: var(--gray-100);
   
   --button-disabled: var(--gray-300);
-  --button-text-disabled: var(--gray-500);
+  --button-text-disabled: var(--gray-400);
 
   /* Inputs */
   --input-bg: var(--gray-500);
@@ -197,11 +199,11 @@
   --color-background-overlay: var(--background-overlay);
 
   /* Text */
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-  --color-text-inverse: var(--text-inverse);
-  --color-text-disabled: var(--text-disabled);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-tertiary: var(--text-tertiary);
+  --color-inverse: var(--text-inverse);
+  --color-disabled: var(--text-disabled);
 
   /* Placeholder */
   --color-placeholder: var(--placeholder);
@@ -209,14 +211,16 @@
   /* Button Primary */
   --color-button-primary-bg: var(--button-primary-bg);
   --color-button-primary-bg-hover: var(--button-primary-bg-hover);
-  --color-button-primary-bg-active: var(--button-primary-bg-active);
+  --color-button-primary-bg-disabled: var(--button-primary-bg-disabled);
   --color-button-primary-text: var(--button-primary-text);
-
+  --color-button-primary-text-hover: var(--button-primary-text-hover);
+  
   /* Button Secondary */
   --color-button-secondary-bg: var(--button-secondary-bg);
   --color-button-secondary-bg-hover: var(--button-secondary-bg-hover);
-  --color-button-secondary-bg-active: var(--button-secondary-bg-active);
+  --color-button-secondary-bg-disabled: var(--button-secondary-bg-disabled);
   --color-button-secondary-text: var(--button-secondary-text);
+  --color-button-secondary-text-hover: var(--button-secondary-text-hover);
 
   /* Button Outline */
   --color-button-outline-border: var(--button-outline-border);

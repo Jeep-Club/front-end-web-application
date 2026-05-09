@@ -8,3 +8,5 @@ export const loginRequestSchema = z.object({
         message: "Informe a senha"
     })
 })
+
+export type LoginRequestType = z.infer<typeof loginRequestSchema>;
