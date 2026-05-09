@@ -30,7 +30,7 @@ export function Input({label, error, name, value, className, type="text", ...pro
                 value={value}
                 className={twMerge(
                     `
-                    w-full border-transparent p-2.5 rounded-lg font-light
+                    w-full border border-transparent p-2.5 rounded-lg font-light
                     placeholder:text-j-transparent-white
                     transition-colors
                     duration-300
@@ -38,6 +38,10 @@ export function Input({label, error, name, value, className, type="text", ...pro
                     focus:outline-2 focus:outline-offset-1
                     focus:outline-j-yellow-400
                     disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
+                    `,
+                    `
+                        ${isError ? "border border-input-border-error text-input-border-error" : "border-transparent text-input-text"} 
+                        ${isError ? "focus:outline-input-border-error" : "focus:outline-j-yellow-400"}
                     `,
                     className
                 )}
