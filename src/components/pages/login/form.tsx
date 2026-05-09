@@ -31,8 +31,7 @@ export default function FormLogin() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center gap-5">
-            <h1 className="text-2xl font-bold">LOGIN</h1>
+        <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
             <Form
                 schema={loginRequestSchema}
                 onSubmit={handleSubmit}
@@ -41,7 +40,7 @@ export default function FormLogin() {
                 <Input type="text" label="CPF" name="cpf" placeholder="000.000.000-00" />
                 <div className="relative w-full">
                     <Input type="password" label="Senha" name="password" placeholder="*********" />
-                    <span className="text-sm text-placeholder absolute top-0 right-0  hover:text-j-blue-400 hover:cursor-pointer transition-colors duration-300"
+                    <span className="text-sm text-j-transparent-white absolute top-0 right-0  hover:text-j-yellow-300 hover:cursor-pointer transition-colors duration-300"
                         onClick={() => router.push('/forgot-password')}
                     >Esqueceu a senha?</span>
                 </div>
@@ -53,7 +52,6 @@ export default function FormLogin() {
                     {isLoading ? <>Entrando<LoaderCircle size={15} strokeWidth={3} className="animate-spin"/></> : <>Entrar<ArrowRight size={15} strokeWidth={3}/></>}
                 </Button>
             </Form>
-            <p className="text-sm text-placeholder">Não faz parte do clube? <span className="text-j-gray-200 hover:text-j-blue-400 transition-colors duration-300 hover:cursor-pointer" onClick={() => router.push('/register')}>Junte-se a nós</span></p>
-        </div>
+                    </div>
     );
 }

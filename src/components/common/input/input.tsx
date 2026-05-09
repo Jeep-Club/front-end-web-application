@@ -15,7 +15,7 @@ export function Input({label, error, name, value, className, type="text", ...pro
     const isError = error !== 'undefined' && error !== undefined && error !== null;
     
     return (
-        <div className="w-full flex flex-col gap-1">
+        <div className="w-full flex flex-col gap-2">
             <label 
                 htmlFor={id}
                 className="text-sm font-medium text-j-gray-300"
@@ -30,12 +30,14 @@ export function Input({label, error, name, value, className, type="text", ...pro
                 value={value}
                 className={twMerge(
                     `
-                    w-full border p-2.5 rounded-xl font-light
-                    placeholder:text-j-gray-300
-                    border-j-gray-400 text-primary
-                    focus:outline-2 focus:outline-offset-1 focus:border-transparent
-                    focus:outline-j-yellow-300
-                    disabled:bg-j-gray-200
+                    w-full border-transparent p-2.5 rounded-lg font-light
+                    placeholder:text-j-transparent-white
+                    transition-colors
+                    duration-300
+                    bg-input-bg text-input-text
+                    focus:outline-2 focus:outline-offset-1
+                    focus:outline-j-yellow-400
+                    disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
                     `,
                     className
                 )}

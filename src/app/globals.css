@@ -4,6 +4,7 @@
   /* Colors */
   --transparent-black: rgba(0, 0, 0, 0.48);
   --transparent-white: rgba(255, 255, 255, 0.48);
+  --transparent-gray: rgba(128, 128, 128, 0.411);
 
   --white: #ffffff;
   --black: #1c1c1c;
@@ -111,7 +112,7 @@
   /* Inputs */
   --input-bg: var(--gray-500);
   --input-bg-disabled: var(--gray-400);
-  --input-bg-focus: var(--gray-600);
+  --input-bg-focus: var(--gray-400);
   
   --input-border: var(--gray-600);
   --input-border-hover: var(--gray-500);
@@ -147,6 +148,9 @@
   /* Colors *********************************************** */
   --color-j-white: var(--white);
   --color-j-black: var(--black);
+  --color-j-transparent-black: var(--transparent-black);
+  --color-j-transparent-white: var(--transparent-white);
+  --color-j-transparent-gray: var(--transparent-gray);
 
   --color-j-gray-100: var(--gray-100);
   --color-j-gray-200: var(--gray-200);
