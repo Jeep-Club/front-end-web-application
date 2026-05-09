@@ -34,7 +34,7 @@ export default function PainelLogin() {
                     <p className="text-[10px] font-light">{hour}H{minute}</p>
                 </div>
             </div>
-            <p className="text-j-transparent-gray text-[10px] text-center"
+            <p className="text-j-transparent-gray text-[10px] text-center md:mt-0 mt-3"
                 >&copy; 2026 JEEP CLUBE TAMOIOS • OFF-ROAD PERFORMANCE</p>
         </>
     );
