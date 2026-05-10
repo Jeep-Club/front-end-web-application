@@ -8,6 +8,14 @@ export type InputRegisterProps = InputProps &{
      * Função de Mascara
      * @param value e.target.value - valor do input para ser alterado
      * @returns String com mascara adicionada
+     * @example
+     *  ``` typescript
+     *      function maskExample(value: string): string {
+     *          //Alguma alteração em value
+     *          //[...]
+     *          return value;
+     *      }
+     *  ```
      */
     mask?: (value: string)=>string;
 }
