@@ -8,7 +8,8 @@ import {
     FieldValues,
     UseFormProps,
     SubmitErrorHandler
- } from "react-hook-form";
+} from "react-hook-form";
+import { twMerge } from "tailwind-merge";
 
 
 interface FormProps<T extends FieldValues>{
@@ -41,7 +42,10 @@ export function Form<T extends FieldValues>({
     <FormProvider {...methods}>
         <form
             onSubmit={methods.handleSubmit(onSubmit, onError)}
-            className={className || "w-full grid grid-cols-1 md:grid-cols-12 gap-6"}
+            className={twMerge(
+                "w-full flex flex-col items-center gap-6",
+                className
+            )}
             noValidate
             >
             {children}
