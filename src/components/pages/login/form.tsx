@@ -9,6 +9,8 @@ import { Input } from "@/components/common/input";
 import { Button } from "@/components/common/button";
 import { loginRequestSchema, LoginRequestType } from "@/schemas/auth/login/loginRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
+import InputPassword from "@/components/common/input/input-password";
+import InputCPF from "@/components/common/input/input-cpf";
 
 export default function FormLogin() {
     const router = useRouter();
@@ -37,9 +39,9 @@ export default function FormLogin() {
                 onSubmit={handleSubmit}
                 onError={(errors)=>console.log(errors)}
             >
-                <Input type="text" label="CPF" name="cpf" placeholder="000.000.000-00" />
+                <InputCPF />
                 <div className="relative w-full">
-                    <Input type="password" label="Senha" name="password" placeholder="*********" />
+                    <InputPassword />
                     <span className="text-sm text-j-transparent-white absolute top-0 right-0  hover:text-j-yellow-300 hover:cursor-pointer transition-colors duration-300"
                         onClick={() => router.push('/forgot-password')}
                     >Esqueceu a senha?</span>
