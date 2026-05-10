@@ -1,9 +1,9 @@
 import { ButtonProps } from "./Button";
 import { twMerge } from "tailwind-merge";
 
-// export interface ButtonIconProps exports ButtonIcon {}
+export type ButtonIconProps = ButtonProps & {}
 
-export function ButtonIcon({children, type='button', tabIndex=0, className, ...props}: ButtonProps){
+export function ButtonIcon({children, type='button', tabIndex=0, className, ...props}: ButtonIconProps){
     return(
         <button
             {...props}
@@ -20,6 +20,7 @@ export function ButtonIcon({children, type='button', tabIndex=0, className, ...p
                 p-0.5
                 focus-visible:text-button-primary-bg focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-primary-bg focus-visible:rounded-md
                 focus-visible:border-button-primary-bg
+                disabled:hidden
                 `,
                 className
             )}
