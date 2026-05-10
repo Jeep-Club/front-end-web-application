@@ -55,3 +55,4 @@ export function Input({label, error, name, value, className, type="text", childr
         </div>
     );
 }
+

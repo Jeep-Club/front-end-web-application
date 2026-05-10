@@ -5,7 +5,6 @@ import { useMutation } from '@tanstack/react-query';
 import loginAction from '@/actions/login';
 import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
-import { Input } from "@/components/common/input";
 import { Button } from "@/components/common/button";
 import { loginRequestSchema, LoginRequestType } from "@/schemas/auth/login/loginRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
@@ -24,17 +23,12 @@ export default function FormLogin() {
     const isLoading = mutation.isPending;
 
     const handleSubmit = async (loginRequest: LoginRequestType) => {
-        // if(!loginRequest.cpf || !loginRequest.password) {
-        //     toast.error('Por favor, preencha todos os campos.');
-        //     return;
-        // }
-
         mutation.mutateAsync(loginRequest);
     }
 
     return (
         <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
-            <Form
+            <Form<LoginRequest>
                 schema={loginRequestSchema}
                 onSubmit={handleSubmit}
                 onError={(errors)=>console.log(errors)}
@@ -54,6 +48,6 @@ export default function FormLogin() {
                     {isLoading ? <>Entrando<LoaderCircle size={15} strokeWidth={3} className="animate-spin"/></> : <>Entrar<ArrowRight size={15} strokeWidth={3}/></>}
                 </Button>
             </Form>
-                    </div>
+        </div>
     );
 }

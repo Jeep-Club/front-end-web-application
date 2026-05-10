@@ -17,7 +17,7 @@ interface FormProps<T extends FieldValues>{
     onSubmit: SubmitHandler<T>; 
     className?: string;
     formOptions?: UseFormProps<T>;
-    schema: z.ZodType;
+    schema: z.ZodType<T>;
     onError: SubmitErrorHandler<T>;
 }
 
