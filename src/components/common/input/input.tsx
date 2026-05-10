@@ -37,7 +37,7 @@ export function Input({label, error, name, value, className, type="text", childr
                         transition-colors
                         duration-300
                         bg-input-bg text-input-text
-                        focus:outline-2 focus:outline-offset-1 focus:border-j-yellow-400
+                        focus:outline-2 focus:border-j-yellow-400
                         focus:outline-j-yellow-400
                         disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
                         `,
