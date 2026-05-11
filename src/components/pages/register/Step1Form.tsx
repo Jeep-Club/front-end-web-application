@@ -6,19 +6,16 @@ import {
     SubmitHandler,
     SubmitErrorHandler,
     useFormContext,
-    useController
+    useController,
 } from 'react-hook-form';
 
 import { Form } from '@/components/common/form';
-import { Input } from '@/components/common/input';
+import { InputRegistro } from '@/components/common/input/input-solo-register';
 import { Button } from '@/components/common/button_finalizar';
 import { Logo } from '@/components/common/logo';
 
 import { registerAction } from '@/actions/registerAction';
-import {
-    registerFormSchema,
-    RegisterFormData
-} from '@/schemas/registerSchema';
+import { registerFormSchema, RegisterFormData } from '@/schemas/registerSchema';
 
 function maskCPF(value: string) {
     return value
@@ -37,27 +34,19 @@ function maskPhone(value: string) {
         .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
 }
 
-type FormValues = RegisterFormData & {
-    lgpd: boolean;
-};
+type FormValues = RegisterFormData & { lgpd: boolean };
 
-interface LgpdCheckboxProps {
-    onChange?: (value: boolean) => void;
-}
-
-function LgpdCheckbox({ onChange }: LgpdCheckboxProps) {
+function LgpdCheckbox({ onChange }: { onChange?: (value: boolean) => void }) {
     const {
         control,
-        formState: { errors }
+        formState: { errors },
     } = useFormContext<FormValues>();
 
     const { field } = useController({
         name: 'lgpd',
         control,
         defaultValue: false,
-        rules: {
-            required: 'Você precisa aceitar os termos da LGPD.',
-        },
+        rules: { required: 'Você precisa aceitar os termos da LGPD.' },
     });
 
     return (
@@ -73,7 +62,6 @@ function LgpdCheckbox({ onChange }: LgpdCheckboxProps) {
                     }}
                     className="mt-0.5 w-4 h-4 flex-shrink-0 accent-[var(--blue-300)] cursor-pointer"
                 />
-
                 <label
                     htmlFor="lgpd"
                     className="text-[var(--fs-xs)] text-[var(--text-secundary)] leading-relaxed cursor-pointer"
@@ -87,10 +75,10 @@ function LgpdCheckbox({ onChange }: LgpdCheckboxProps) {
                         className="text-[var(--blue-300)] underline hover:text-[var(--blue-200)]"
                     >
                         LGPD
-                    </a>.
+                    </a>
+                    .
                 </label>
             </div>
-
             {errors.lgpd && (
                 <p className="text-[var(--fs-xs)] text-[var(--danger)]">
                     {errors.lgpd.message}
@@ -102,30 +90,17 @@ function LgpdCheckbox({ onChange }: LgpdCheckboxProps) {
 
 export default function Step1Form() {
     const router = useRouter();
-
     const [serverError, setServerError] = useState<string | null>(null);
-
     const [lgpdAccepted, setLgpdAccepted] = useState(false);
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         setServerError(null);
-
         try {
             const { lgpd, ...payload } = data;
-
-            const result = await registerAction({
-                ...payload,
-                state: 'SP',
-            });
-
-            if (result?.success === false) {
-                setServerError(result.error);
-            }
-
+            const result = await registerAction({ ...payload, state: 'SP' });
+            if (result?.success === false) setServerError(result.error);
         } catch {
-            setServerError(
-                'Erro ao realizar cadastro. Tente novamente.'
-            );
+            setServerError('Erro ao realizar cadastro. Tente novamente.');
         }
     };
 
@@ -136,59 +111,50 @@ export default function Step1Form() {
     return (
         <div className="min-h-screen flex flex-col lg:flex-row">
 
-            {/* Para celular, deixar o header simples so */}
+            {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between px-5 py-4 bg-[var(--blue-300)]">
                 <Logo />
-
                 <div className="text-right">
                     <p className="text-[10px] tracking-[0.15em] text-[var(--yellow-100)] uppercase">
                         Desde 09/09/1999
                     </p>
-
                     <p className="text-sm font-black text-[var(--white)] uppercase">
                         Jeep Club Tamoios
                     </p>
                 </div>
             </div>
 
-           <div className="hidden lg:flex w-[45%] relative flex-col justify-between overflow-hidden">
-
+            {/* Left Side */}
+            <div className="hidden lg:flex w-[45%] relative flex-col justify-between overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/images/hero-jeep.jpg')] bg-cover bg-center" />
-
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
-
                 <div className="relative z-10 p-8">
                     <Logo className="w-16 h-16" />
                 </div>
-
                 <div className="relative z-10 p-8 pb-10">
                     <p className="text-xs tracking-[0.2em] text-[var(--yellow-100)] uppercase mb-1">
                         Desde 09/09/1999
                     </p>
-
                     <h2 className="text-4xl font-black text-[var(--white)] uppercase leading-tight">
-                        Jeep Club
-                        <br />
-                        Tamoios
+                        Jeep Club<br />Tamoios
                     </h2>
-
                     <p className="text-sm text-[var(--transparent-white)] mt-2">
                         Jeep Club Tamoios Caraguatatuba
                     </p>
                 </div>
             </div>
 
-            <div className="flex-1 flex items-start lg:items-center justify-center bg-[var(--background)] px-5 lg:px-10 py-8 overflow-y-auto">
-
+            {/* Form area */}
+            <div className="flex-1 min-w-0 flex items-start lg:items-center justify-center bg-[var(--background)] px-5 lg:px-10 py-8 overflow-y-auto">
                 <div className="w-full max-w-lg">
 
                     <h1 className="text-2xl lg:text-3xl font-black text-[var(--blue-300)] uppercase tracking-tight mb-1">
                         Novo Membro
                     </h1>
-
                     <p className="text-[var(--fs-sm)] text-[var(--text-secundary)] mb-5">
                         Preencha os dados abaixo para iniciar sua jornada conosco.
                     </p>
+
                     <div className="w-full h-1.5 bg-[var(--gray-200)] rounded-full mb-7 overflow-hidden">
                         <div className="h-full w-1/2 bg-[var(--blue-300)] rounded-full transition-all duration-500" />
                     </div>
@@ -197,49 +163,36 @@ export default function Step1Form() {
                         schema={registerFormSchema as any}
                         onSubmit={onSubmit}
                         onError={onError}
-                        className="flex flex-col gap-4"
-                        formOptions={{
-                            defaultValues: {
-                                state: 'SP',
-                            },
-                        }}
+                        className="w-full flex flex-col gap-4"
+                        formOptions={{ defaultValues: { state: 'SP' } }}
                     >
-
-                        <Input
-                            name="fullName"
-                            label="Nome Completo"
-                            type="text"
-                            required
-                        />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                            <Input
-                                name="nickname"
-                                label="Apelido"
+                        {/* Nome Completo — linha inteira */}
+                        <div className="w-full">
+                            <InputRegistro
+                                name="fullName"
+                                label="Nome Completo"
                                 type="text"
+                                required
                             />
+                        </div>
 
-                            <Input
+                        {/* Apelido + CPF */}
+                        <div className="w-full grid grid-cols-2 gap-4">
+                            <InputRegistro name="nickname" label="Apelido" type="text" />
+                            <InputRegistro
                                 name="cpf"
                                 label="CPF"
                                 type="text"
                                 placeholder="000.000.000-00"
                                 required
-                                onChange={maskCPF}
+                                mask={maskCPF}
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                            <Input
-                                name="rg"
-                                label="RG"
-                                type="text"
-                                required
-                            />
-
-                            <Input
+                        {/* RG + CNH */}
+                        <div className="w-full grid grid-cols-2 gap-4">
+                            <InputRegistro name="rg" label="RG" type="text" required />
+                            <InputRegistro
                                 name="cnh"
                                 label="CNH"
                                 type="text"
@@ -247,34 +200,32 @@ export default function Step1Form() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                            <Input
+                        {/* Data de Nascimento + Membro Desde */}
+                        <div className="w-full grid grid-cols-2 gap-4">
+                            <InputRegistro
                                 name="birthDate"
                                 label="Data de Nascimento"
                                 type="date"
                                 required
                             />
-
-                            <Input
+                            <InputRegistro
                                 name="memberSince"
                                 label="Membro Desde"
                                 type="date"
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                            <Input
+                        {/* Telefone + Cidade */}
+                        <div className="w-full grid grid-cols-2 gap-4">
+                            <InputRegistro
                                 name="phone"
                                 label="Telefone"
                                 type="tel"
                                 placeholder="(00) 00000-0000"
                                 required
-                                onChange={maskPhone}
+                                mask={maskPhone}
                             />
-
-                            <Input
+                            <InputRegistro
                                 name="city"
                                 label="Cidade"
                                 type="text"
@@ -282,54 +233,50 @@ export default function Step1Form() {
                             />
                         </div>
 
-                        <Input
-                            name="email"
-                            label="E-mail"
-                            type="email"
-                            placeholder="seu@email.com"
-                        />
-
-                        <div className="flex flex-col gap-1">
-
-                      
-
-                        <Input
-                            name="password"
-                            label="Senha"
-                            type="password"
-                            required
-                        />
-
-                        <div className="text-[15px] text-[var(--text-secundary)] leading-relaxed pl-1">
-                            <p>• Mínimo de 8 caracteres</p>
-                            <p>• Pelo menos 1 letra maiúscula</p>
-                            <p>• Pelo menos 1 letra minúscula</p>
-                            <p>• Pelo menos 1 número</p>
+                        {/* E-mail — linha inteira */}
+                        <div className="w-full">
+                            <InputRegistro
+                                name="email"
+                                label="E-mail"
+                                type="email"
+                                placeholder="seu@email.com"
+                            />
                         </div>
 
-                    </div>
+                        {/* Senha — linha inteira */}
+                        <div className="w-full flex flex-col gap-1">
+                            <InputRegistro
+                                name="password"
+                                label="Senha"
+                                type="password"
+                                required
+                            />
+                            <div className="text-[15px] text-[var(--text-secundary)] leading-relaxed pl-1">
+                                <p>• Mínimo de 8 caracteres</p>
+                                <p>• Pelo menos 1 letra maiúscula</p>
+                                <p>• Pelo menos 1 letra minúscula</p>
+                                <p>• Pelo menos 1 número</p>
+                            </div>
+                        </div>
 
                         <LgpdCheckbox onChange={setLgpdAccepted} />
+
                         {serverError && (
-                            <p className="text-[var(--fs-xs)] text-[var(--danger)] bg-[var(--red-100)]/10 border border-[var(--danger)] rounded-[var(--r-md)] px-3 py-2">
+                            <p className="text-[var(--fs-xs)] text-[var(--danger)] bg-[var(--red-100)]/10 border border-[var(--danger)] rounded-lg px-3 py-2">
                                 {serverError}
                             </p>
                         )}
+
                         <Button
                             type="submit"
                             disabled={!lgpdAccepted}
-                            className="
-                                text-white
-                                disabled:opacity-50
-                                disabled:cursor-not-allowed
-                            "
+                            className="text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Finalizar Cadastro ›
                         </Button>
+
                         <p className="text-center text-[var(--fs-sm)] text-[var(--text-secundary)] mt-1 mb-4">
-
                             Já possui conta?{' '}
-
                             <button
                                 type="button"
                                 onClick={() => router.push('/login')}
@@ -338,7 +285,6 @@ export default function Step1Form() {
                                 Entrar
                             </button>
                         </p>
-
                     </Form>
                 </div>
             </div>
