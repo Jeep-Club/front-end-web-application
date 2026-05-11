@@ -27,13 +27,10 @@ export default function HomeClient() {
     router.push("/login");
   };
 
-  const handleRegister = () => {
-    router.push("/register");
-  };
 
   return (
     <main className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
-      {/* ── HERO ── */}
+
       <section id="hero" className="relative min-h-screen md:min-h-[90vh] flex flex-col justify-between overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -45,8 +42,6 @@ export default function HomeClient() {
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/90" />
-
-        {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
           <div />
           <div className="flex items-center gap-3">
@@ -62,8 +57,6 @@ export default function HomeClient() {
             
           </div>
         </div>
-
-        {/* Hero content */}
         <div className="relative z-10 px-6 pb-24 md:pb-20 text-center flex-grow flex flex-col justify-center">
           <h1 className="text-5xl md:text-7xl font-black leading-[0.9] tracking-tight mb-6 uppercase text-white">
             Jeep<br />Club<br />
@@ -84,8 +77,6 @@ export default function HomeClient() {
             <FaChevronRight size={12} />
           </button>
         </div>
-
-        {/* Scroll down trigger */}
         <ScrollLink
           to="experiencias"
           smooth
@@ -96,8 +87,6 @@ export default function HomeClient() {
           <FaChevronDown size={18} className="text-yellow-400 animate-bounce" />
         </ScrollLink>
       </section>
-
-      {/* ── EXPERIÊNCIAS ── */}
       <section id="experiencias" className="px-6 py-16 md:py-24 bg-[#111]">
         <div className="max-w-6xl mx-auto">
           <p className="text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
@@ -136,8 +125,6 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
-
-      {/* ── LEGADO ── */}
       <section id="legado" className="px-6 py-20 bg-white">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="order-2 lg:order-1">
@@ -182,8 +169,6 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
-
-      {/* ── IMPACTO SOCIAL ── */}
       <section id="impacto" className="px-6 py-20 bg-[#0d2c6c] text-white">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-xs tracking-[0.25em] text-yellow-400 uppercase mb-4 font-black">
@@ -211,8 +196,6 @@ export default function HomeClient() {
           ))}
         </div>
       </section>
-
-      {/* ── CTA ── */}
       <section className="px-6 py-20 bg-[#f5f7fb]">
         <div className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
           <div className="relative z-10 text-center md:text-left">
@@ -223,7 +206,7 @@ export default function HomeClient() {
               Junte-se à maior família off-road do Litoral Norte.
             </p>
             <button
-              onClick={handleRegister}
+              onClick={handleLogin}
               className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-all active:scale-95 shadow-lg"
             >
               <FaIdCard size={18} />

@@ -9,8 +9,7 @@ export default function RegisterLayout({ children }: { children: React.ReactNode
     } as React.CSSProperties;
 
     return (
-        <main className="min-h-screen bg-[#0e0e0e] text-white" style={registerTheme}>
-            {}
+        <main className="min-h-screen bg-[var(--background)] text-[var(--text-primary)]" style={registerTheme}>
             {/* Janaina*/}
             {children}
         </main>

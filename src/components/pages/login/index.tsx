@@ -1,7 +1,7 @@
 'use client';
 
 
-
+import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
 import loginAction from '@/actions/login';
@@ -48,7 +48,19 @@ export default function Login() {
                     {isLoading ? 'Entrando...' : 'Entrar'}
                 </button>
             </form>
-            <p className="text-sm text-zinc-400">Não tem uma conta? <span className="text-zinc-200 hover:underline hover:cursor-pointer" onClick={() => router.push('/register')}>Registrar</span></p>
-        </div>
+<p className="text-sm text-zinc-400">
+    Não tem uma conta?{' '}
+
+    <Link
+        href="/register"
+        className="
+            text-blue-400
+            hover:underline
+            font-medium
+        "
+    >
+        Registrar
+    </Link>
+</p>        </div>
     );
 }
