@@ -192,7 +192,7 @@ export function RegisterForm() {
                     />
 
                     {serverError && (
-                        <p className="text-[var(--fs-xs)] text-[var(--danger)] bg-[var(--red-100)]/10 border border-[var(--danger)] rounded-lg px-3 py-2">
+                        <p className=" text-[var(--fs-md)] text-[var(--danger)] bg-[var(--red-100)] rounded-lg px-3 py-2">
                             {serverError}
                         </p>
                     )}
