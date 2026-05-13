@@ -1,6 +1,6 @@
 'use server';
 
-import { registerService } from '@/services/fetchWrapper/registerService';
+import { registerService } from '@/services/registerService';
 import { registerFormSchema, RegisterFormData } from '@/schemas/registerSchema';
 import { redirect } from 'next/navigation';
 

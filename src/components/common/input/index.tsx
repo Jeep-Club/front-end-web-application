@@ -16,7 +16,7 @@ const inputBaseClass = `
     border
     border-[var(--input-border)]
     rounded-[var(--r-md)]
-    text-[var(--fs-sm)]
+    text-[var(--fs-mm)]
     placeholder:text-[var(--text-secundary)]
     transition-colors
     duration-200

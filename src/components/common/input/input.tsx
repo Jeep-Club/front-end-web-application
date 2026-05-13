@@ -19,11 +19,11 @@ export function Input({label, error, name, value, className, type="text", childr
         <div className="w-full flex flex-col gap-2">
             <label 
                 htmlFor={id}
-                className="text-sm font-medium text-j-gray-300"
+                className="text-mm font-medium text-j-gray-200"
             >
                 {label}
             </label>
-            <div className="w-full relative flex items-center">
+            <div className="w-full relative flex items-center text-mm ">
                 <input 
                     {...props}
                     id={id}

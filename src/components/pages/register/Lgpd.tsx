@@ -37,7 +37,7 @@ export function LgpdCheckbox({ onChange }: LgpdCheckboxProps) {
                 />
                 <label
                     htmlFor="lgpd"
-                    className="text-[var(--fs-xs)] text-[var(--text-secundary)] leading-relaxed cursor-pointer"
+                    className="text-1xl text-[var(--text-secundary)] text-j-gray-300 leading-relaxed cursor-pointer"
                 >
                     Declaro que autorizo a coleta e armazenamento dos meus dados
                     conforme as diretrizes da{' '}
