@@ -1,6 +1,6 @@
 export enum HttpAPIRoutes {
-    LOGIN = "api/mock/login",
-    REGISTER = "api/mock/register",
+    LOGIN = "auth/login",
+    REGISTER = "auth/register",
     REFRESH = "api/mock/refresh",
     LOGOUT = "api/mock/logout",
 }

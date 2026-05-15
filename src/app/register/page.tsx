@@ -1,3 +1,5 @@
+import Register from "@/components/pages/register"
+
 export default async function Page() {
     return (
         <div className="flex flex-col items-center justify-center h-screen px-4 text-center">
@@ -6,12 +8,7 @@ export default async function Page() {
                 Crie sua conta para explorar trilhas, compartilhar experiências e celebrar a cultura dos jipes conosco.
             </p>
             
-            <a 
-                href="/auth/register" 
-                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            >
-                Criar minha conta
-            </a>
+            <Register/>
 
             <p className="mt-6 text-sm text-gray-500">
                 Já tem uma conta? <a href="/auth/login" className="text-blue-600 hover:underline">Entre aqui</a>
