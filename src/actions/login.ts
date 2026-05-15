@@ -4,23 +4,23 @@ import { loginResponseSchema } from "@/schemas/auth/login/loginResponse";
 import { login } from '@/utils/auth/login';
 import { HttpAPIRoutes } from '@/utils/http/api';
 
-export default async function loginAction({ cpf, password }: LoginRequest) {
+export default async function loginAction({ cpf, senha }: LoginRequest) {
 
-    if (!password || !cpf) {
-        throw new Error('CPF e password são obrigatórios');
+    if (!senha || !cpf) {
+        throw new Error('CPF e senha são obrigatórios');
     }
     try {
         const response = await actionFetchWrapper<LoginResponse>({
             url: HttpAPIRoutes.LOGIN,
             method: 'POST',
-            body: JSON.stringify({ cpf, password }),
+            body: JSON.stringify({ cpf, senha }),
             schema: loginResponseSchema
         });
 
         const { data } = response;
 
 
-        await login(data.AuthAccessToken, data.AuthRefreshToken, data.AccessTokenExpiration);
+        await login(data.accessToken, data.refreshToken, new Date(Date.now() + data.expiresInSeconds * 1000).toISOString());
        
         return data;
     } catch (error) {

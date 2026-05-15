@@ -1,5 +1,5 @@
 interface LoginResponse {
-    AuthAccessToken: string;
-    AuthRefreshToken: string;
-    AccessTokenExpiration: string;
+    refreshToken: string;
+    accessToken: z.string;
+    expiresInSeconds: z.number;
 }

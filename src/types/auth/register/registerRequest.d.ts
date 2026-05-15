@@ -1,4 +1,4 @@
-export interface RegisterFormData {
+interface RegisterFormData {
     cnh: string;
     fullName: string;
     memberSince: string;
@@ -8,6 +8,22 @@ export interface RegisterFormData {
     nickname?: string;
     cpf: string;
     phone: string;
+}
+
+interface RegisterRequest {
+    name: string;
+    birthData: string;
+    email: string;
+    cpf: string;
+    rg: string;
+    password: string;
+    phoneNumber: string;
+}
+
+interface RegisterResponse {
+  refreshToken: string,
+  accessToken: string,
+  expiresInSeconds: number
 }
 
 /* ======================================================

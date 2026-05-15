@@ -1,7 +1,7 @@
 import z from "zod";
 
-export const loginResponseSchema: z.ZodType<LoginResponse> = z.object({
+export const registerResponseSchema: z.ZodType<RegisterResponse> = z.object({
     refreshToken: z.string(),
     accessToken: z.string(),
     expiresInSeconds: z.number()
-});
+})

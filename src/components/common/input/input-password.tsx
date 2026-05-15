@@ -18,7 +18,7 @@ export function InputPassword({label="Senha", placeholder, className, notSeePass
             <InputRegister 
                 type={isVisible ? 'text' : 'password'} 
                 label={label} 
-                name="password" 
+                name="senha" 
                 placeholder={placeholder || isVisible ? 'Senha-1#' : "********"}
                 className={twMerge(
                     `pl-10 pr-10`,

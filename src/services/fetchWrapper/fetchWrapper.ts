@@ -24,16 +24,15 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
             },
         })
 
-
         const status = response.status;
 
-
         const rawData = await response.clone().json().catch(async () => { return await response.text().catch(() => null) });
+
         const data = schema.safeParse(rawData);
 
 
         if(!data.success){
-            throw data.error;
+            throw {zodError: data.error, rawData, status};
         }
 
         return { status, data: data.data };

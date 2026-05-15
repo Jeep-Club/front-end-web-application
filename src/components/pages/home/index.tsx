@@ -54,7 +54,7 @@ export default function Home() {
                 schema={formSchema}
                 className="flex flex-col gap-4"
             >
-                <Input label="CPF" name="cpf" type="text" value={cpf} onChange={setCpf} />
+                <Input label="CPF" name="cpf" type="text" value={cpf} onChange={(e) => setCpf(e.target.value)} />
                 <Input label="Nome" name="nome" type="text" />
                 <Select label="Opção" name="opcao" value="opcao1">
                     <option value="">Selecione uma opção</option>
