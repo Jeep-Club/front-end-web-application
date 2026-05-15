@@ -10,12 +10,13 @@ export type InputPasswordProps = Omit<InputRegisterProps, "label" | "name"> & {
     notSeePassword?: boolean,
 }
 
-export function InputPassword({label="Senha", placeholder, className, notSeePassword=false}: InputPasswordProps){
+export function InputPassword({label="Senha", placeholder, className, notSeePassword=false, ...props}: InputPasswordProps){
     const [isVisible, setIsVisible] = useState<boolean>(false);
     
     
     return(
             <InputRegister 
+                {...props}
                 type={isVisible ? 'text' : 'password'} 
                 label={label} 
                 name="senha" 

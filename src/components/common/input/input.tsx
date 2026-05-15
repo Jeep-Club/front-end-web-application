@@ -11,7 +11,7 @@ export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' |
 }
 
 
-export function Input({label, error, name, value, className, type="text", children, ...props}: InputProps) {
+export function Input({label, error, name, value, className, type="text", children, required, ...props}: InputProps) {
     const id = useId();
     const isError = error !== 'undefined' && error !== undefined && error !== null;
     
@@ -21,7 +21,7 @@ export function Input({label, error, name, value, className, type="text", childr
                 htmlFor={id}
                 className="text-sm font-medium text-j-gray-300"
             >
-                {label}
+                {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>
             <div className="w-full relative flex items-center">
                 <input 
@@ -30,6 +30,7 @@ export function Input({label, error, name, value, className, type="text", childr
                     type={type}
                     name={name}
                     value={value}
+                    required={required}
                     className={twMerge(
                         `
                         w-full border-2 border-transparent p-2.5 rounded-lg font-light

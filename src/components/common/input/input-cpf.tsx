@@ -8,11 +8,12 @@ export type InputCPFProps = Omit<InputRegisterProps, "label" | "name"> & {
     label?: string,
 }
 
-export function InputCPF({label="CPF", placeholder, className, type='text'}: InputCPFProps){
+export function InputCPF({label="CPF", placeholder, className, type='text', ...props}: InputCPFProps){
     
     
     return(
             <InputRegister 
+                {...props}
                 type={type}
                 label={label} 
                 name="cpf" 
