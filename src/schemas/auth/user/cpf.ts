@@ -18,7 +18,7 @@ import { isValidCPF } from "@/utils/validate/validateCPF";
  */
 export const cpfSchema = z.string()
                         .min(1, {
-                            message: "O CPF precisa ser informado",
+                            message: "O CPF é obrigatório",
                         })
                         .refine((cpf)=> isValidCPF(cpf), {
                             message: "O CPF é inválido",
