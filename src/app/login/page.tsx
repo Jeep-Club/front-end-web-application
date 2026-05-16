@@ -1,5 +1,5 @@
 import Login from "@/components/pages/login";
-import TireBrand from "@/components/pages/login/tire-brand-pattener";
+import TireBrand from "@/components/common/patterns/tire-brand-pattener";
 
 export default async function Page() {
     return (
