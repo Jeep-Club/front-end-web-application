@@ -10,6 +10,8 @@ import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import InputPassword from "@/components/common/input/input-password";
 import InputCPF from "@/components/common/input/input-cpf";
+import InputEmail from "@/components/common/input/input-email";
+import InputDate from "@/components/common/input/input-date";
 import {InputRegister} from "@/components/common/input/input-register";
 
 export default function FormRegister() {
@@ -37,13 +39,13 @@ export default function FormRegister() {
                 onSubmit={handleSubmit}
                 onError={(errors) => console.log(errors)}
             >
-                <InputRegister name="name" label="Nome Completo" placeholder="Digite seu nome" type="text" />
-                <InputRegister name="email" label="Email" placeholder="Digite seu email" type="email" />
-                <InputRegister name="birthData" label="Data de Nascimento" type="text" />
-                <InputCPF />
+                <InputRegister name="name" label="Nome Completo" placeholder="Digite seu nome" type="text" required/>
+                <InputEmail required/>
+                <InputDate />
+                <InputCPF required/>
                 <InputRegister name="rg" label="RG" placeholder="Digite seu RG" type="text" />
                 <InputRegister name="phoneNumber" label="Telefone" placeholder="Digite seu telefone" type="tel" />
-                <InputPassword />
+                <InputPassword required/>
                 
                 <Button 
                     type="submit" 

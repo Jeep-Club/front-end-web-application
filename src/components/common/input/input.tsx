@@ -31,6 +31,8 @@ export function Input({label, error, name, value, className, type="text", childr
                     name={name}
                     value={value}
                     required={required}
+                    aria-invalid={!!error}
+                    aria-describedby={isError ? error : undefined}
                     className={twMerge(
                         `
                         w-full border-2 border-transparent p-2.5 rounded-lg font-light
