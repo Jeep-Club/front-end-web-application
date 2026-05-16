@@ -12,7 +12,6 @@ import InputPassword from "@/components/common/input/input-password";
 import InputCPF from "@/components/common/input/input-cpf";
 import InputEmail from "@/components/common/input/input-email";
 import InputDate from "@/components/common/input/input-date";
-import InputRG from "@/components/common/input/input-rg";
 import {InputRegister} from "@/components/common/input/input-register";
 import { User } from "lucide-react";
 
@@ -45,7 +44,6 @@ export default function FormRegister() {
                 <InputEmail required/>
                 <InputDate />
                 <InputCPF required/>
-                <InputRG />
                 <InputRegister name="phoneNumber" label="Telefone" placeholder="Digite seu telefone" type="tel" />
                 <InputPassword required/>
                 
