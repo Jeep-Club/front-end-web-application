@@ -12,7 +12,9 @@ import InputPassword from "@/components/common/input/input-password";
 import InputCPF from "@/components/common/input/input-cpf";
 import InputEmail from "@/components/common/input/input-email";
 import InputDate from "@/components/common/input/input-date";
+import InputRG from "@/components/common/input/input-rg";
 import {InputRegister} from "@/components/common/input/input-register";
+import { User } from "lucide-react";
 
 export default function FormRegister() {
     const router = useRouter();
@@ -39,11 +41,11 @@ export default function FormRegister() {
                 onSubmit={handleSubmit}
                 onError={(errors) => console.log(errors)}
             >
-                <InputRegister name="name" label="Nome Completo" placeholder="Digite seu nome" type="text" required/>
+                <InputRegister name="name" label="Nome Completo" placeholder="Nome e sobrenome" type="text" required className="pl-10 pr-10"><User className="absolute left-2.5 text-j-transparent-white"/></InputRegister>
                 <InputEmail required/>
                 <InputDate />
                 <InputCPF required/>
-                <InputRegister name="rg" label="RG" placeholder="Digite seu RG" type="text" />
+                <InputRG />
                 <InputRegister name="phoneNumber" label="Telefone" placeholder="Digite seu telefone" type="tel" />
                 <InputPassword required/>
                 
