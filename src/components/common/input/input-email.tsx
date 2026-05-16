@@ -5,9 +5,10 @@ import { Mail } from "lucide-react";
 
 export type InputEmailProps = Omit<InputRegisterProps, "label" | "name"> & {
     label?: string,
+    name?: string,
 }
 
-export function InputEmail({label="Email", placeholder="exemplo@email.com", className, ...props}: InputEmailProps){
+export function InputEmail({label="Email", name='email;', placeholder="exemplo@email.com", className, ...props}: InputEmailProps){
     
     
     return(
@@ -15,7 +16,7 @@ export function InputEmail({label="Email", placeholder="exemplo@email.com", clas
                 {...props}
                 type={'email'} 
                 label={label} 
-                name="email" 
+                name={name} 
                 placeholder={placeholder}
                 className={twMerge(
                     `pl-10 pr-10`,

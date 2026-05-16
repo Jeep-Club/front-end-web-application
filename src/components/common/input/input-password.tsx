@@ -8,9 +8,10 @@ import { Eye, EyeClosed, KeyRound } from "lucide-react";
 export type InputPasswordProps = Omit<InputRegisterProps, "label" | "name"> & {
     label?: string,
     notSeePassword?: boolean,
+    name?: string,
 }
 
-export function InputPassword({label="Senha", placeholder, className, notSeePassword=false, ...props}: InputPasswordProps){
+export function InputPassword({label="Senha", name='senha', placeholder, className, notSeePassword=false, ...props}: InputPasswordProps){
     const [isVisible, setIsVisible] = useState<boolean>(false);
     
     
@@ -19,7 +20,7 @@ export function InputPassword({label="Senha", placeholder, className, notSeePass
                 {...props}
                 type={isVisible ? 'text' : 'password'} 
                 label={label} 
-                name="senha" 
+                name={name} 
                 placeholder={placeholder || isVisible ? 'Senha-1#' : "********"}
                 className={twMerge(
                     `pl-10 pr-10`,

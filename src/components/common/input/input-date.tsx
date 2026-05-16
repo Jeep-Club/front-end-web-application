@@ -22,10 +22,10 @@ export type InputDateProps = Omit<InputProps, "label" | "name" | "placeholder"> 
      *  ```
      */
     mask?: (value: string)=>string;
+    name?: string,
 }
 
-export function InputDate({label="Data de Nascimento", className, value, mask, onChange, ...props}: InputDateProps){
-    const name = "birthData";
+export function InputDate({label="Data de Nascimento", name='birthData', className, value, mask, onChange, ...props}: InputDateProps){
     const refLocal = useRef<HTMLInputElement>(null);
     
     const { control } = useFormContext();

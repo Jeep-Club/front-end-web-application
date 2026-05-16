@@ -6,9 +6,10 @@ import { maskCPF } from "@/utils/masks/maskCPF";
 
 export type InputCPFProps = Omit<InputRegisterProps, "label" | "name"> & {
     label?: string,
+    name?: string,
 }
 
-export function InputCPF({label="CPF", placeholder, className, type='text', ...props}: InputCPFProps){
+export function InputCPF({label="CPF", name='cpf', placeholder, className, type='text', ...props}: InputCPFProps){
     
     
     return(
@@ -16,7 +17,7 @@ export function InputCPF({label="CPF", placeholder, className, type='text', ...p
                 {...props}
                 type={type}
                 label={label} 
-                name="cpf" 
+                name={name} 
                 placeholder={placeholder || "000.000.000-00"}
                 className={twMerge(
                     `pl-10`,
