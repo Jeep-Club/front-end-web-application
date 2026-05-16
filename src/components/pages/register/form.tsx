@@ -41,7 +41,7 @@ export default function FormRegister() {
                 <InputDate required/>
                 <InputCPF required/>
                 <InputPhoneNumber required/>
-                <InputPassword required name="password"/>
+                <InputPassword required name="password" stepErrors/>
                 
                 <Button 
                     type="submit" 
