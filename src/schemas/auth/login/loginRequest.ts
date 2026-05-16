@@ -5,7 +5,7 @@ export const loginRequestSchema: z.ZodType<LoginRequest> = z.object({
     cpf: cpfSchema,
 
     senha: z.string().min(1, {
-        message: "Informe a senha"
+        message: "A senha é obrigatória",
     })
 })
 
