@@ -35,11 +35,10 @@ export async function proxy(request: NextRequest) {
         try {
             const refreshResponse = await fetchRefreshToken({
                 ApiURL: process.env.API_URL || '',
-                AuthAccessToken: authAccessToken,
-                AuthRefreshToken: authRefreshToken,
+                refreshToken: authRefreshToken,
             })
-            setAuthCookies(refreshResponse.AuthAccessToken, refreshResponse.AuthRefreshToken, refreshResponse.AccessTokenExpiration, nextResponse);
-            setAuthCookies(refreshResponse.AuthAccessToken, refreshResponse.AuthRefreshToken, refreshResponse.AccessTokenExpiration, redirectResponse);
+            setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(), nextResponse);
+            setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(), redirectResponse);
         }catch(error){
             return logout();
         }

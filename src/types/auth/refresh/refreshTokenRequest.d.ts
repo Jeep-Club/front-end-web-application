@@ -1,4 +1,3 @@
 interface RefreshTokenRequest {
-    AuthAccessToken: string;
-    AuthRefreshToken: string;
+    refreshToken: string;
 }

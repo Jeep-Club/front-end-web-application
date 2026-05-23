@@ -43,7 +43,7 @@ export default function FormRegister() {
                 <InputCPF />
                 <InputRegister name="rg" label="RG" placeholder="Digite seu RG" type="text" />
                 <InputRegister name="phoneNumber" label="Telefone" placeholder="Digite seu telefone" type="tel" />
-                <InputPassword />
+                <InputPassword name="password"/>
                 
                 <Button 
                     type="submit" 

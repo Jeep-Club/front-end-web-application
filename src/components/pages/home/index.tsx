@@ -9,6 +9,7 @@ import z from "zod";
 import { useState } from "react";
 import { Select } from "@/components/common/select";
 import { Textarea } from "@/components/common/textarea";
+import logoutAction from "@/actions/logout";
 
 interface FormData {
     cpf: string;
@@ -19,9 +20,9 @@ interface FormData {
 
 export default function Home() {
     const mutation = useMutation({ 
-        mutationFn: refreshAction,
-        onSuccess: (message) => toast.success(message),
-        onError: (error) => toast.error('Erro ao fazer refresh')
+        mutationFn: logoutAction,
+        onSuccess: () => toast.success('Logout realizado com sucesso'),
+        onError: (error) => toast.error('Erro ao fazer logout')
     });
 
     const handleSubmit = async (data: any) => {

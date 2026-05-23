@@ -18,17 +18,16 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
     const { url, ...fetchProps } = props;
 
     const apiURL = process.env.API_URL;
-    const access = process.env.ACCESS;
 
-    if (!apiURL || !access) {
-        throw new Error("API_URL or ACCESS");
+    if (!apiURL) {
+        throw new Error("API_URL is not defined");
     }
 
     try {
         const authCookies = await getAuthCookies.SERVER();
         fetchProps.headers = {
             ...fetchProps.headers,
-            'Authorization': authCookies?.AuthAccessToken || ''
+            ...(authCookies?.AuthAccessToken ? {'Authorization': `Bearer ${authCookies.AuthAccessToken}`} : {})
         }
 
         const response = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
@@ -43,10 +42,9 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
             try {
                 const refreshResponse = await fetchRefreshToken({
                     ApiURL: apiURL,
-                    AuthAccessToken: authCookies.AuthAccessToken,
-                    AuthRefreshToken: authCookies.AuthRefreshToken,
+                    refreshToken: authCookies.AuthRefreshToken,
                 });
-                await login(refreshResponse.AuthAccessToken, refreshResponse.AuthRefreshToken, refreshResponse.AccessTokenExpiration);
+                await login(refreshResponse.accessToken, refreshResponse.refreshToken, refreshResponse.expiresInSeconds);
                 const retryResponse = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
                 return retryResponse;
             } catch (refreshError) {

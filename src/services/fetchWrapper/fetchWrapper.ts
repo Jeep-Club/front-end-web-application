@@ -20,19 +20,26 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
             ...requestProps,
             headers: {
                 ...headers,
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json'
             },
         })
-
+        console.log(`${url}`, {
+            ...requestProps,
+            headers: {
+                ...headers,
+                'Content-Type': 'application/json'
+            },
+        })
         const status = response.status;
 
         const rawData = await response.clone().json().catch(async () => { return await response.text().catch(() => null) });
-
+        console.log('Raw response data:', await response.json().catch(async () => { return await response.text().catch(() => null) }));
+        console.log('Response status:', status);
         const data = schema.safeParse(rawData);
 
 
-        if(!data.success){
-            throw {zodError: data.error, rawData, status};
+        if (!data.success) {
+            throw { zodError: data.error, rawData, status };
         }
 
         return { status, data: data.data };

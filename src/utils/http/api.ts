@@ -1,8 +1,9 @@
 export enum HttpAPIRoutes {
-    LOGIN = "auth/login",
-    REGISTER = "auth/register",
-    REFRESH = "api/mock/refresh",
-    LOGOUT = "api/mock/logout",
+    LOGIN = "authentication/login",
+    REGISTER = "authentication/register",
+    REFRESH = "authentication/refresh",
+    LOGOUT = "authentication/logout",
+    ME = "authentication/me"
 }
 
 export enum HttpPublicAPIRoutes {
