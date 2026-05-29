@@ -20,7 +20,15 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
         const { data } = response;
 
 
-        await login(data.accessToken, data.refreshToken, new Date(Date.now() + data.expiresInSeconds * 1000).toISOString());
+        if('accessToken' in data) {
+            await login(data.accessToken, data.refreshToken, new Date(Date.now() + data.expiresInSeconds * 1000).toISOString());
+        }else {
+            throw new Error('É necessário trocar a senha para acessar o sistema');
+
+            //logica troca senha
+        }
+
+
        
         return data;
     } catch (error) {

@@ -20,11 +20,7 @@ interface RegisterRequest {
     phoneNumber: string;
 }
 
-interface RegisterResponse {
-  refreshToken: string,
-  accessToken: string,
-  expiresInSeconds: number
-}
+
 
 /* ======================================================
   MÓDULO FUTURO 

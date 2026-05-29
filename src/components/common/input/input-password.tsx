@@ -6,11 +6,12 @@ import { twMerge } from "tailwind-merge";
 import { Eye, EyeClosed, KeyRound } from "lucide-react";
 
 export type InputPasswordProps = Omit<InputRegisterProps, "label" | "name"> & {
+    name?: string,
     label?: string,
     notSeePassword?: boolean,
 }
 
-export function InputPassword({label="Senha", placeholder, className, notSeePassword=false}: InputPasswordProps){
+export function InputPassword({label="Senha", name="senha", placeholder, className, notSeePassword=false}: InputPasswordProps){
     const [isVisible, setIsVisible] = useState<boolean>(false);
     
     
@@ -18,7 +19,7 @@ export function InputPassword({label="Senha", placeholder, className, notSeePass
             <InputRegister 
                 type={isVisible ? 'text' : 'password'} 
                 label={label} 
-                name="senha" 
+                name={name} 
                 placeholder={placeholder || isVisible ? 'Senha-1#' : "********"}
                 className={twMerge(
                     `pl-10 pr-10`,

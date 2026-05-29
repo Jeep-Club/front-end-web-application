@@ -1,5 +1,8 @@
-interface LoginResponse {
-    refreshToken: string;
-    accessToken: z.string;
-    expiresInSeconds: z.number;
+type LoginResponse = (AuthResponse | LoginResponsePassword) & {
+    status: string;
+} 
+
+interface LoginResponsePassword {
+    passwordChangeToken: string;
+    passwordChangeTokenExpiresAt: string;
 }
