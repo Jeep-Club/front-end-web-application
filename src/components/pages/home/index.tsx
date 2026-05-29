@@ -47,7 +47,7 @@ export default function Home() {
     return (
         <>
             <button onClick={async() => mutation.mutateAsync()}>
-                Clique aqui para testar a página Home
+                Clique aqui para testar a Logout
             </button>
             <Form<FormData>
                 onSubmit={handleSubmit}

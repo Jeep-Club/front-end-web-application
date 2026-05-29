@@ -1,5 +1,3 @@
-interface RefreshTokenResponse {
-    AuthAccessToken: string;
-    AuthRefreshToken: string;
-    AccessTokenExpiration: string;
+interface RefreshTokenResponse extends AuthResponse {
+    
 }

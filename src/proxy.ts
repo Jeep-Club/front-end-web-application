@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fetchRefreshToken from "./utils/auth/refresh";
 
 export async function proxy(request: NextRequest) {
+    //falta pegar prefetch rsc (paralelo, buga refreshtoken) e if para nao passar pelo proxy
 
     function setAuthCookies(authAccessToken: string, authRefreshToken: string, accessExpiration: string, response: NextResponse) {
         request.cookies.set('AuthAccessToken', authAccessToken);

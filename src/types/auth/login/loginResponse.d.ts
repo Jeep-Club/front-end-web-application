@@ -1,2 +1,8 @@
-interface LoginResponse extends AuthResponse {
+type LoginResponse = (AuthResponse | LoginResponsePassword) & {
+    status: string;
+} 
+
+interface LoginResponsePassword {
+    passwordChangeToken: string;
+    passwordChangeTokenExpiresAt: string;
 }
