@@ -8,7 +8,7 @@ import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
 import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
-import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber } from "@/components/common/input/";
+import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/";
 import { User } from "lucide-react";
 
 export default function FormRegister() {
@@ -42,7 +42,8 @@ export default function FormRegister() {
                 <InputCPF required/>
                 <InputPhoneNumber required/>
                 <InputPassword required name="password" stepErrors/>
-                
+                <InputFile name="test1" multiple maxFiles={2} isFallback/>
+                <InputFile.Image2 name="test2" isFallback label="Foto de perfil"/>
                 <Button 
                     type="submit" 
                     disabled={isLoading}
