@@ -6,3 +6,8 @@ interface Permission {
     description: string;
     module: string;
 }
+
+interface PermissionModule {
+    actions: string[];
+    module: string;
+}

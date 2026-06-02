@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 export async function login(
     accessToken: string,
     refreshToken: string,
-    accessExpiration: string
+    accessExpiration: string,
 ) {
     const cookieStore = await cookies();
     cookieStore.set('AuthAccessToken', accessToken, { path: '/'});

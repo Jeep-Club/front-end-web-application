@@ -26,6 +26,9 @@ export async function proxy(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
 
+    //permissao
+    
+
     const authAccessToken = request.cookies.get("AuthAccessToken")?.value;
     const authRefreshToken = request.cookies.get("AuthRefreshToken")?.value;
     const expires = request.cookies.get("AccessTokenExpiration")?.value;
