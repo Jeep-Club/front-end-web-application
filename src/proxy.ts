@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fetchRefreshToken from "./utils/auth/refresh";
+import { permissionModuleSchema } from "./schemas/auth/permission/permissionModule";
+import { verifyWithSchema } from "./services/token/verify";
 
 export async function proxy(request: NextRequest) {
     //falta pegar prefetch rsc (paralelo, buga refreshtoken) e if para nao passar pelo proxy
@@ -14,20 +16,29 @@ export async function proxy(request: NextRequest) {
         response.cookies.set('AccessTokenExpiration', accessExpiration, { path: '/' });
     }
 
-    async function logout(){
+    async function logout() {
         return NextResponse.redirect(new URL('/api/auth/logout', request.url))
     }
 
     const nextResponse = NextResponse.next();
     const redirectResponse = NextResponse.redirect(new URL('/home', request.url));
-    
+
     const authenticatedPaths = ["/home"];
     const authenticationPaths = ["/login", "/register"];
 
     const path = request.nextUrl.pathname;
 
     //permissao
-    
+    if (authenticatedPaths.includes(path)) {
+        const permissions = await verifyWithSchema<PermissionModule[]>(request.cookies.get("Permissions")?.value ?? '', permissionModuleSchema.array()).catch(() => {
+            return null;
+        });
+
+        if (permissions === null) {
+            //retorna null, o usuario tentou mexer no cookie de permission, ou foi removido, entao desloga o usuario para evitar problemas de acesso indevido
+            return logout();
+        }
+    }
 
     const authAccessToken = request.cookies.get("AuthAccessToken")?.value;
     const authRefreshToken = request.cookies.get("AuthRefreshToken")?.value;
@@ -43,7 +54,7 @@ export async function proxy(request: NextRequest) {
             })
             setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(), nextResponse);
             setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(), redirectResponse);
-        }catch(error){
+        } catch (error) {
             return logout();
         }
     }

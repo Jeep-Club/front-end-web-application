@@ -6,6 +6,8 @@ import { HttpAPIRoutes } from '@/utils/http/api';
 import { meResponseSchema } from '@/schemas/auth/me/meResponse';
 import { sign } from '@/services/token/sign';
 import { mapMePermissionToModule } from '@/utils/permission/userPermission';
+import { permissionResponseSchema } from '@/schemas/auth/permission/permissionResponse';
+import { me } from '@/utils/auth/me';
 
 export default async function loginAction({ cpf, senha }: LoginRequest) {
 
@@ -30,6 +32,13 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
                 new Date(Date.now() + data.expiresInSeconds * 1000).toISOString(),
             );
 
+            const responsePermissions = await actionFetchWrapper<MeResponse>({
+                url: HttpAPIRoutes.ME,
+                method: 'GET',
+                schema: meResponseSchema
+            });
+
+            await me(mapMePermissionToModule(responsePermissions.data.authorities))
 
         } else {
             throw new Error('É necessário trocar a senha para acessar o sistema');

@@ -20,13 +20,13 @@ export const mapMePermissionToModule = (permission: string[]): PermissionModule[
     const permissionsByModule: Record<string, string[]> = {};
 
     permission.forEach((perm) => {
-        const [module, action] = perm.split('_');
+        const [module, ...action] = perm.split('_');
 
         if (!permissionsByModule[module]) {
             permissionsByModule[module] = [];
         }
 
-        permissionsByModule[module].push(action);
+        permissionsByModule[module].push(action.join('_'));
     });
 
     return Object.entries(permissionsByModule).map(([module, actions]) => ({
