@@ -42,8 +42,9 @@ export default function FormRegister() {
                 <InputCPF required/>
                 <InputPhoneNumber required/>
                 <InputPassword required name="password" stepErrors/>
-                <InputFile name="test1" multiple maxFiles={2} isFallback/>
-                <InputFile.Image2 name="test2" isFallback label="Foto de perfil"/>
+                <InputFile name="test1" multiple maxFiles={2} isFallback label="Arquivos"/>
+                <InputFile.Image name="test2" label="Foto de perfil"/>
+                <InputFile.Image2 name="test3" label="Foto de perfil"/>
                 <Button 
                     type="submit" 
                     disabled={isLoading}

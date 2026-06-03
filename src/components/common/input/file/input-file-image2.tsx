@@ -9,7 +9,7 @@ import { InputFileProps } from "./input-file";
 import { Image as ImageIcon } from "lucide-react";
 import { RemoveFile } from "./actions/remove";
 
-export type InputFileImageProps = Omit<InputFileProps, 'accept'>
+export type InputFileImageProps = Omit<InputFileProps, 'accept' | 'isFallback'>
 
 export function InputFileImage2({
     name,
