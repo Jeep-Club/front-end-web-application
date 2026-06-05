@@ -10,6 +10,8 @@ import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/";
 import { User } from "lucide-react";
+import { Textarea } from "@/components/common/textarea/";
+import { Select } from "@/components/common/select/";
 
 export default function FormRegister() {
     const router = useRouter();
@@ -45,6 +47,13 @@ export default function FormRegister() {
                 <InputFile name="test1" multiple maxFiles={2} isFallback label="Arquivos"/>
                 <InputFile.Image name="test2" label="Foto de perfil"/>
                 <InputFile.Image2 name="test3" label="Foto de perfil"/>
+                <Textarea label="Textarea" name="test4"/>
+                <Select label="Select exemplo" name="test5" >
+                    <option value="none" defaultChecked hidden>Selecione uma fruta</option>
+                    <option value="uva">Uva</option>
+                    <option value="abacate">Abacate</option>
+                    <option value="morango">Morango</option>
+                </Select>
                 <Button 
                     type="submit" 
                     disabled={isLoading}
