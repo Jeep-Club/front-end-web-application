@@ -3,7 +3,7 @@ import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { loginResponseSchema } from "@/schemas/auth/login/loginResponse";
 import { login } from '@/utils/auth/login';
 import { HttpAPIRoutes } from '@/utils/http/api';
-import { meResponseSchema } from '@/schemas/auth/me/meResponse';
+import { meResponseSchema } from '@/schemas/auth/me/me';
 import { sign } from '@/services/token/sign';
 import { mapMePermissionToModule } from '@/utils/permission/userPermission';
 import { permissionResponseSchema } from '@/schemas/auth/permission/permissionResponse';
@@ -32,13 +32,13 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
                 new Date(Date.now() + data.expiresInSeconds * 1000).toISOString(),
             );
 
-            const responsePermissions = await actionFetchWrapper<MeResponse>({
+            const responseMe = await actionFetchWrapper<MeResponse>({
                 url: HttpAPIRoutes.ME,
                 method: 'GET',
                 schema: meResponseSchema
             });
 
-            await me(mapMePermissionToModule(responsePermissions.data.authorities))
+            await me(responseMe.data);
 
         } else {
             throw new Error('É necessário trocar a senha para acessar o sistema');

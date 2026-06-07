@@ -3,18 +3,23 @@ import fetchRefreshToken from "./utils/auth/refresh";
 import { permissionModuleSchema } from "./schemas/auth/permission/permissionModule";
 import { verifyWithSchema } from "./services/token/verify";
 import { routePermissions } from "./utils/permission/routePermissions";
+import { meCookieSchema, meResponseSchema } from "./schemas/auth/me/me";
+import { HttpAPIRoutes } from "./utils/http/api";
+import { sign } from "./services/token/sign";
+import { mapMePermissionToModule } from "./utils/permission/userPermission";
+import { fetchWrapper } from "./services/fetchWrapper/fetchWrapper";
 
 export async function proxy(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
 
     const response = NextResponse.next();
-    response.headers.set('x-pathname', path);
+    response.headers.set('x-route-pathname', path);
 
     if (request.method !== 'GET') {
         return response;
     }
-    
+
 
     function setAuthCookies(authAccessToken: string, authRefreshToken: string, accessExpiration: string) {
         request.cookies.set('AuthAccessToken', authAccessToken);
@@ -26,70 +31,61 @@ export async function proxy(request: NextRequest) {
         response.cookies.set('AccessTokenExpiration', accessExpiration, { path: '/' });
     }
 
-    async function logout() {
-        return NextResponse.redirect(new URL('/api/auth/logout', request.url), {headers: response.headers});
-    }
+    async function setMeCookies(me: MeResponse) {
+        const permissions = mapMePermissionToModule(me.authorities)
+        const permissionsToken = await sign(permissions);
 
-    const redirectResponse = NextResponse.redirect(new URL('/home', request.url));
-
-    const authenticatedPaths = ["/home"];
-    const authenticationPaths = ["/login", "/register"];
-
-    
-
-    //permissao
-    // if (authenticatedPaths.includes(path)) {
-    //     const permissions = await verifyWithSchema<PermissionModule[]>(request.cookies.get("Permissions")?.value ?? '', permissionModuleSchema.array()).catch(() => {
-    //         return null;
-    //     });
-
-    //     if (permissions === null) {
-    //         //retorna null, o usuario tentou mexer no cookie de permission, ou foi removido, entao desloga o usuario para evitar problemas de acesso indevido
-    //         return logout();
-    //     }
-
-    //     if (routePermissions[path]) {
-
-    //     }
-
-    // }
-
-    const authAccessToken = request.cookies.get("AuthAccessToken")?.value;
-    const authRefreshToken = request.cookies.get("AuthRefreshToken")?.value;
-    const expires = request.cookies.get("AccessTokenExpiration")?.value;
-    const isExpired = expires ? new Date(expires) < new Date() : true;
-
-
-    if (isExpired && authRefreshToken && authAccessToken) {
-        try {
-            const refreshResponse = await fetchRefreshToken({
-                ApiURL: process.env.API_URL || '',
-                refreshToken: authRefreshToken,
-            })
-            setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString());
-        } catch (error) {
-            return logout();
+        const meToSign: MeCookie = {
+            userId: me.userId,
+            sessionId: me.sessionId,
+            sessionActive: me.sessionActive,
+            expires: new Date(Date.now() + me.expiresInSeconds * 1000).toISOString(),
         }
+        const meToken = await sign(meToSign);
+        request.cookies.set('Me', meToken);
+        request.cookies.set('Permissions', permissionsToken);
+        response.cookies.set('Me', meToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
+        response.cookies.set('Permissions', permissionsToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
     }
 
-    // response.cookies.getAll().forEach(cookie => {
-    //     redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
-    // });
+    async function logout() {
+        return NextResponse.redirect(new URL('/api/auth/logout', request.url), { headers: response.headers });
+    }
 
-    // response.headers.forEach((value, key) => {
-    //     if (!redirectResponse.headers.has(key)) {
-    //         redirectResponse.headers.set(key, value);
-    //     }
-    // });
+    if (routePermissions[path]) {
 
-    // if (request.cookies.has("AuthAccessToken") && authenticationPaths.includes(path)) {
-    //     const redirectResponse = NextResponse.redirect(new URL('/home', request.url));
-    //     return redirectResponse;
-    // }
+        const meToken = request.cookies.get("Me")?.value || '';
+        const me = await verifyWithSchema<MeCookie>(meToken, meCookieSchema);
+        if (new Date(me.expires) < new Date()) {
+            const meResponse = await fetchWrapper<MeResponse>({
+                url: process.env.API_URL +  '/' + HttpAPIRoutes.ME,
+                method: 'GET',
+                schema: meResponseSchema
+            });
+            setMeCookies(meResponse.data);
+        }
 
-    // if (!request.cookies.has("AuthAccessToken") && authenticatedPaths.includes(path)) {
-    //     return NextResponse.redirect(new URL('/', request.url));
-    // }
+
+
+        const authAccessToken = request.cookies.get("AuthAccessToken")?.value;
+        const authRefreshToken = request.cookies.get("AuthRefreshToken")?.value;
+        const expires = request.cookies.get("AccessTokenExpiration")?.value;
+        const isExpired = expires ? new Date(expires) < new Date() : true;
+
+
+        if (isExpired && authRefreshToken && authAccessToken) {
+            try {
+                const refreshResponse = await fetchRefreshToken({
+                    ApiURL: process.env.API_URL || '',
+                    refreshToken: authRefreshToken,
+                })
+                setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString());
+            } catch (error) {
+                return logout();
+            }
+        }
+
+    }
 
     return response;
 
@@ -106,4 +102,5 @@ export const config = {
          */
         '/((?!api|_next/static|_next/image|favicon.ico|images/).*)',
     ],
+    missing: [{ type: "header", key: "purpose", value: "prefetch" }],
 }

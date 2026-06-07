@@ -1,5 +1,5 @@
 import UserProvider from "@/providers/auth/UserProvider";
-import { meResponseSchema } from "@/schemas/auth/me/meResponse";
+import { meCookieSchema, meResponseSchema } from "@/schemas/auth/me/me";
 import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
 import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
 import { verifyWithSchema } from "@/services/token/verify";
@@ -19,12 +19,14 @@ export default async function AuthLayout({
   const cookieStore = await cookies();
   const headerStore = await headers();
 
-  const permissionsToken = cookieStore.get("Permissions")?.value || '';
-  const pathname = headerStore.get('x-pathname');
-
+  const pathname = headerStore.get('x-route-pathname');
   if (!pathname) {
     return notFound();
   }
+
+  const meToken = cookieStore.get("Me")?.value || '';
+  const permissionsToken = cookieStore.get("Permissions")?.value || '';
+
 
   const authCookies = await getAuthCookies.SERVER();
   if (!authCookies || !authCookies?.AuthAccessToken || !authCookies?.AuthRefreshToken) {
@@ -51,15 +53,6 @@ export default async function AuthLayout({
       }
     }
 
-    const responsePermissions = await serverFetchWrapper<MeResponse>({
-      url: HttpAPIRoutes.ME,
-      method: 'GET',
-      schema: meResponseSchema
-    });
-
-    console.log("responsePermissions", responsePermissions.data);
-
-
     return (
       <>
         <UserProvider permissions={permissions}>
@@ -70,17 +63,6 @@ export default async function AuthLayout({
   } catch (error) {
     return redirect('api/auth/logout');
   }
-
-
-
-
-  // const responsePermissions = await serverFetchWrapper<GetPermissionResponse>({
-  //   url: HttpAPIRoutes.PERMISSIONS,
-  //   method: 'GET',
-  //   schema: permissionResponseSchema
-  // });
-
-
 
 }
 

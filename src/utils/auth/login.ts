@@ -7,6 +7,6 @@ export async function login(
 ) {
     const cookieStore = await cookies();
     cookieStore.set('AuthAccessToken', accessToken, { path: '/'});
-    cookieStore.set('AuthRefreshToken', refreshToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
+    cookieStore.set('AuthRefreshToken', refreshToken, { path: '/', httpOnly: true, secure: process.env.NODE_SECURE === 'HTTPS', sameSite: "lax" });
     cookieStore.set('AccessTokenExpiration', accessExpiration, { path: '/' });
 }
