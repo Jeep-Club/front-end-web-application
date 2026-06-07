@@ -1,20 +1,20 @@
-// export enum HttpAPIRoutes {
-//     LOGIN = "authentication/login",
-//     REGISTER = "authentication/register",
-//     REFRESH = "authentication/refresh",
-//     LOGOUT = "authentication/logout",
-//     ME = "authentication/me",
-//     PERMISSIONS = "authorization/permissions"
-// }
-
 export enum HttpAPIRoutes {
-    LOGIN = "api/mock/login",
-    REGISTER = "api/mock/register",
-    REFRESH = "api/mock/refresh",
-    LOGOUT = "api/mock/logout",
-    ME = "api/mock/me",
-    PERMISSIONS = "api/mock/permissions"
+    LOGIN = "authentication/login",
+    REGISTER = "authentication/register",
+    REFRESH = "authentication/refresh",
+    LOGOUT = "authentication/logout",
+    ME = "authentication/me",
+    PERMISSIONS = "authorization/permissions"
 }
+
+// export enum HttpAPIRoutes {
+//     LOGIN = "api/mock/login",
+//     REGISTER = "api/mock/register",
+//     REFRESH = "api/mock/refresh",
+//     LOGOUT = "api/mock/logout",
+//     ME = "api/mock/me",
+//     PERMISSIONS = "api/mock/permissions"
+// }
 
 export enum HttpPublicAPIRoutes {
     

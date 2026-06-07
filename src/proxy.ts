@@ -2,11 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import fetchRefreshToken from "./utils/auth/refresh";
 import { permissionModuleSchema } from "./schemas/auth/permission/permissionModule";
 import { verifyWithSchema } from "./services/token/verify";
+import { routePermissions } from "./utils/permission/routePermissions";
 
 export async function proxy(request: NextRequest) {
-    //falta pegar prefetch rsc (paralelo, buga refreshtoken) e if para nao passar pelo proxy
 
-    function setAuthCookies(authAccessToken: string, authRefreshToken: string, accessExpiration: string, response: NextResponse) {
+    const path = request.nextUrl.pathname;
+
+    const response = NextResponse.next();
+    response.headers.set('x-pathname', path);
+
+    if (request.method !== 'GET') {
+        return response;
+    }
+    
+
+    function setAuthCookies(authAccessToken: string, authRefreshToken: string, accessExpiration: string) {
         request.cookies.set('AuthAccessToken', authAccessToken);
         request.cookies.set('AuthRefreshToken', authRefreshToken);
         request.cookies.set('AccessTokenExpiration', accessExpiration);
@@ -17,28 +27,32 @@ export async function proxy(request: NextRequest) {
     }
 
     async function logout() {
-        return NextResponse.redirect(new URL('/api/auth/logout', request.url))
+        return NextResponse.redirect(new URL('/api/auth/logout', request.url), {headers: response.headers});
     }
 
-    const nextResponse = NextResponse.next();
     const redirectResponse = NextResponse.redirect(new URL('/home', request.url));
 
     const authenticatedPaths = ["/home"];
     const authenticationPaths = ["/login", "/register"];
 
-    const path = request.nextUrl.pathname;
+    
 
     //permissao
-    if (authenticatedPaths.includes(path)) {
-        const permissions = await verifyWithSchema<PermissionModule[]>(request.cookies.get("Permissions")?.value ?? '', permissionModuleSchema.array()).catch(() => {
-            return null;
-        });
+    // if (authenticatedPaths.includes(path)) {
+    //     const permissions = await verifyWithSchema<PermissionModule[]>(request.cookies.get("Permissions")?.value ?? '', permissionModuleSchema.array()).catch(() => {
+    //         return null;
+    //     });
 
-        if (permissions === null) {
-            //retorna null, o usuario tentou mexer no cookie de permission, ou foi removido, entao desloga o usuario para evitar problemas de acesso indevido
-            return logout();
-        }
-    }
+    //     if (permissions === null) {
+    //         //retorna null, o usuario tentou mexer no cookie de permission, ou foi removido, entao desloga o usuario para evitar problemas de acesso indevido
+    //         return logout();
+    //     }
+
+    //     if (routePermissions[path]) {
+
+    //     }
+
+    // }
 
     const authAccessToken = request.cookies.get("AuthAccessToken")?.value;
     const authRefreshToken = request.cookies.get("AuthRefreshToken")?.value;
@@ -52,22 +66,32 @@ export async function proxy(request: NextRequest) {
                 ApiURL: process.env.API_URL || '',
                 refreshToken: authRefreshToken,
             })
-            setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(), nextResponse);
-            setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(), redirectResponse);
+            setAuthCookies(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString());
         } catch (error) {
             return logout();
         }
     }
 
-    if (request.cookies.has("AuthAccessToken") && authenticationPaths.includes(path)) {
-        return redirectResponse;
-    }
+    // response.cookies.getAll().forEach(cookie => {
+    //     redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    // });
 
-    if (!request.cookies.has("AuthAccessToken") && authenticatedPaths.includes(path)) {
-        return NextResponse.redirect(new URL('/', request.url));
-    }
+    // response.headers.forEach((value, key) => {
+    //     if (!redirectResponse.headers.has(key)) {
+    //         redirectResponse.headers.set(key, value);
+    //     }
+    // });
 
-    return nextResponse;
+    // if (request.cookies.has("AuthAccessToken") && authenticationPaths.includes(path)) {
+    //     const redirectResponse = NextResponse.redirect(new URL('/home', request.url));
+    //     return redirectResponse;
+    // }
+
+    // if (!request.cookies.has("AuthAccessToken") && authenticatedPaths.includes(path)) {
+    //     return NextResponse.redirect(new URL('/', request.url));
+    // }
+
+    return response;
 
 }
 
@@ -80,6 +104,6 @@ export const config = {
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
          */
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|images/).*)',
     ],
 }

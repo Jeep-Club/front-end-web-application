@@ -1,3 +1,3 @@
-export const routePermissions: Record<string, {module: string[]; actions: string[]}> = {
-    "/register": { module: ["AUTHENTICATION"], actions: ['USER_CREATE'] },
+export const routePermissions: Record<string, PermissionModule[]> = {
+    "/register": [{ module: "AUTHENTICATION", actions: ['USER_CREATE'] }],
 };

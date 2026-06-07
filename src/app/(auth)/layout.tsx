@@ -4,10 +4,12 @@ import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModu
 import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
 import { verifyWithSchema } from "@/services/token/verify";
 import { HttpAPIRoutes } from "@/utils/http/api";
-import { mapMePermissionToModule } from "@/utils/permission/userPermission";
-import { verify } from "crypto";
+import { getAuthCookies } from "@/utils/auth/get";
+import { routePermissions } from "@/utils/permission/routePermissions";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+
 
 export default async function AuthLayout({
   children,
@@ -15,9 +17,60 @@ export default async function AuthLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const permissionsToken = cookieStore.get("Permissions")?.value || '';
+  const headerStore = await headers();
 
-  const permissions = await verifyWithSchema<PermissionModule[]>(permissionsToken, permissionModuleSchema.array());
+  const permissionsToken = cookieStore.get("Permissions")?.value || '';
+  const pathname = headerStore.get('x-pathname');
+
+  if (!pathname) {
+    return notFound();
+  }
+
+  const authCookies = await getAuthCookies.SERVER();
+  if (!authCookies || !authCookies?.AuthAccessToken || !authCookies?.AuthRefreshToken) {
+    return notFound();
+  }
+
+  try {
+    const permissions = await verifyWithSchema<PermissionModule[]>(permissionsToken, permissionModuleSchema.array());
+    if (routePermissions[pathname]) {
+      const requiredPermissions = routePermissions[pathname];
+      const hasRequiredPermissions = requiredPermissions.every(module => {
+        const userModule = permissions.find(userModule => userModule.module === module.module);
+        if (!userModule) {
+          return false;
+        }
+        const hasRequiredActions = module.actions.every(action => userModule.actions.includes(action));
+        if (!hasRequiredActions) {
+          return false;
+        }
+        return true;
+      });
+      if (!hasRequiredPermissions) {
+        return notFound();
+      }
+    }
+
+    const responsePermissions = await serverFetchWrapper<MeResponse>({
+      url: HttpAPIRoutes.ME,
+      method: 'GET',
+      schema: meResponseSchema
+    });
+
+    console.log("responsePermissions", responsePermissions.data);
+
+
+    return (
+      <>
+        <UserProvider permissions={permissions}>
+          {children}
+        </UserProvider>
+      </>
+    )
+  } catch (error) {
+    return redirect('api/auth/logout');
+  }
+
 
 
 
@@ -28,12 +81,6 @@ export default async function AuthLayout({
   // });
 
 
-  return (
-    <>
-    <UserProvider permissions={permissions}>
-      {children}
-    </UserProvider>
-    </>
-  )
+
 }
 
