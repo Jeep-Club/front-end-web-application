@@ -54,15 +54,19 @@ export async function proxy(request: NextRequest) {
 
     if (routePermissions[path]) {
 
-        const meToken = request.cookies.get("Me")?.value || '';
-        const me = await verifyWithSchema<MeCookie>(meToken, meCookieSchema);
-        if (new Date(me.expires) < new Date()) {
-            const meResponse = await fetchWrapper<MeResponse>({
-                url: process.env.API_URL +  '/' + HttpAPIRoutes.ME,
-                method: 'GET',
-                schema: meResponseSchema
-            });
-            setMeCookies(meResponse.data);
+        try {
+            const meToken = request.cookies.get("Me")?.value || '';
+            const me = await verifyWithSchema<MeCookie>(meToken, meCookieSchema);
+            if (new Date(me.expires) < new Date()) {
+                const meResponse = await fetchWrapper<MeResponse>({
+                    url: process.env.API_URL + '/' + HttpAPIRoutes.ME,
+                    method: 'GET',
+                    schema: meResponseSchema
+                });
+                setMeCookies(meResponse.data);
+            }
+        } catch (error) {
+            return logout();
         }
 
 
