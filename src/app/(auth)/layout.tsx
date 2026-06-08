@@ -61,7 +61,7 @@ export default async function AuthLayout({
       </>
     )
   } catch (error) {
-    return redirect('api/auth/logout');
+    throw redirect('api/auth/logout');
   }
 
 }
