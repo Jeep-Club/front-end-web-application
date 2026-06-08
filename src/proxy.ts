@@ -54,23 +54,6 @@ export async function proxy(request: NextRequest) {
 
     if (routePermissions[path]) {
 
-        try {
-            const meToken = request.cookies.get("Me")?.value || '';
-            const me = await verifyWithSchema<MeCookie>(meToken, meCookieSchema);
-            if (new Date(me.expires) < new Date()) {
-                const meResponse = await fetchWrapper<MeResponse>({
-                    url: process.env.API_URL + '/' + HttpAPIRoutes.ME,
-                    method: 'GET',
-                    schema: meResponseSchema
-                });
-                setMeCookies(meResponse.data);
-            }
-        } catch (error) {
-            return logout();
-        }
-
-
-
         const authAccessToken = request.cookies.get("AuthAccessToken")?.value;
         const authRefreshToken = request.cookies.get("AuthRefreshToken")?.value;
         const expires = request.cookies.get("AccessTokenExpiration")?.value;
@@ -87,6 +70,21 @@ export async function proxy(request: NextRequest) {
             } catch (error) {
                 return logout();
             }
+        }
+
+        try {
+            const meToken = request.cookies.get("Me")?.value || '';
+            const me = await verifyWithSchema<MeCookie>(meToken, meCookieSchema);
+            if (new Date(me.expires) < new Date()) {
+                const meResponse = await fetchWrapper<MeResponse>({
+                    url: process.env.API_URL + '/' + HttpAPIRoutes.ME,
+                    method: 'GET',
+                    schema: meResponseSchema
+                });
+                setMeCookies(meResponse.data);
+            }
+        } catch (error) {
+            return logout();
         }
 
     }
