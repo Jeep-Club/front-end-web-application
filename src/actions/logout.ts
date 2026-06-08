@@ -2,6 +2,7 @@
 
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper"
 import { logout } from "@/utils/auth/logout";
+import { HttpAPIRoutes } from "@/utils/http/api";
 import { z } from "zod";
 
 /**
@@ -16,15 +17,15 @@ import { z } from "zod";
 export default async function logoutAction(){
     try{
         // Limpa todos os cookies da sessao
-        await logout();
         
         // Faz chamada na api para realizar logout no usuario
         await actionFetchWrapper({
-            url: `api/logout`,
-            method: `GET`,
-            schema: z.object() // obrigatorio possuir schema porem logout nao possui nenhum no momento
+            url: HttpAPIRoutes.LOGOUT,
+            method: `POST`,
+            schema: z.string().nullable()
         })
-
+        
+        await logout();
     }
     catch(error : unknown){
         throw new Error('Erro ao realizar logout', {cause: error})

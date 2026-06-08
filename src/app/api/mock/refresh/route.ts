@@ -8,14 +8,15 @@ export async function POST(request: NextRequest) {
     //     return NextResponse.json({ message: 'Invalid Access' }, { status: 403 });
     // }
 
-    const { AuthAccessToken, AuthRefreshToken }: RefreshTokenRequest = await request.json();
+    const { refreshToken }: RefreshTokenRequest = await request.json();
 
-    if (AuthAccessToken && AuthRefreshToken ) {
+    if (refreshToken ) {
         return NextResponse.json(
             {
-                AuthAccessToken: 'auth-access-token-12345678910',
-                AuthRefreshToken: 'auth-refresh-token-123456789',
-                AccessTokenExpiration: new Date(new Date().getTime() + 720 * 24 * 60 * 60 * 1000 +(Math.random() * 100000000000)).toISOString()
+                status: "SUCCESS",
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh_token_mock",
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access_token_mock",
+                expiresInSeconds: 3600
             }
             ,
             {

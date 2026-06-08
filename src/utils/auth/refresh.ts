@@ -3,14 +3,13 @@ import { refreshTokenResponseSchema } from "@/schemas/auth/refresh/refreshTokenR
 import { HttpAPIRoutes } from "../http/api";
 
 export default async function fetchRefreshToken({
-    AuthAccessToken,
-    AuthRefreshToken,
+    refreshToken,
     ApiURL
 }: RefreshTokenRequest & {ApiURL: string} ): Promise<RefreshTokenResponse> {
     const response = await fetchWrapper<RefreshTokenResponse>({
         url: `${ApiURL}/${HttpAPIRoutes.REFRESH}`,
         method: 'POST',
-        body: JSON.stringify({ AuthAccessToken, AuthRefreshToken }),
+        body: JSON.stringify({ refreshToken }),
         schema: refreshTokenResponseSchema
     });
     return response.data;

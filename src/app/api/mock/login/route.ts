@@ -8,14 +8,15 @@ export async function POST(request: NextRequest) {
     //     return NextResponse.json({ message: 'Invalid Access' }, { status: 403 });
     // }
 
-    const { cpf, password }: LoginRequest = await request.json();
+    const { cpf, senha }: LoginRequest = await request.json();
 
-    if (cpf === '123.456.789-00' && password === 'password') {
+    if (cpf === '123.456.789-00' && senha === 'password') {
         return NextResponse.json(
             {
-                AuthAccessToken: 'auth-access-token-123456789',
-                AuthRefreshToken: 'auth-refresh-token-123456789',
-                AccessTokenExpiration: '2029-04-19T00:47:34-03:00'
+                status: "SUCCESS",
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh_token_mock",
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access_token_mock",
+                expiresInSeconds: 3600
             }
             ,
             {

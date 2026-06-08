@@ -1,12 +1,10 @@
 'use server';
 import z from 'zod';
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
+import { HttpAPIRoutes } from '@/utils/http/api';
+import { refreshTokenResponseSchema } from '@/schemas/auth/refresh/refreshTokenResponse';
 
 //apenas para testes
-
-interface MockRefreshResponse {
-    message: string;
-}
 
 const mockRefreshResponseSchema = z.object({
     message: z.string()
@@ -14,12 +12,11 @@ const mockRefreshResponseSchema = z.object({
 
 export async function refreshAction() {
     try {
-        const response = await actionFetchWrapper<MockRefreshResponse>({
-            url: '/api/mock/refresh',
-            method: 'GET',
-            schema: mockRefreshResponseSchema
+        const response = await actionFetchWrapper<RefreshTokenResponse>({
+            url: HttpAPIRoutes.REFRESH,
+            method: 'POST',
+            schema: refreshTokenResponseSchema
         }); 
-        return response.data.message;
     } catch (error) {
         throw new Error('Erro ao fazer refresh', { cause: error });
     }
