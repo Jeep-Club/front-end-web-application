@@ -44,7 +44,7 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
                     ApiURL: apiURL,
                     refreshToken: authCookies.AuthRefreshToken,
                 });
-                await login(refreshResponse.accessToken, refreshResponse.refreshToken, refreshResponse.expiresInSeconds);
+                await login(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString());
                 const retryResponse = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
                 return retryResponse;
             } catch (refreshError) {

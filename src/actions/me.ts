@@ -3,7 +3,7 @@
 import z from 'zod';
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from '@/utils/http/api';
-import { meResponseSchema } from '@/schemas/auth/me/meResponse';
+import { meResponseSchema } from '@/schemas/auth/me/me';
 
 export async function meAction() {
     try {
