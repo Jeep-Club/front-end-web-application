@@ -21,7 +21,7 @@ export default async function AuthLayout({
 
   const pathname = headerStore.get('x-route-pathname');
   if (!pathname) {
-    return notFound();
+    throw notFound();
   }
 
   const meToken = cookieStore.get("Me")?.value || '';
@@ -30,11 +30,13 @@ export default async function AuthLayout({
 
   const authCookies = await getAuthCookies.SERVER();
   if (!authCookies || !authCookies?.AuthAccessToken || !authCookies?.AuthRefreshToken) {
-    return notFound();
+    throw notFound();
   }
 
-  try {
-    const permissions = await verifyWithSchema<PermissionModule[]>(permissionsToken, permissionModuleSchema.array());
+    const permissions = await verifyWithSchema<PermissionModule[]>(permissionsToken, permissionModuleSchema.array())
+      .catch(() => {
+        throw redirect('api/auth/logout');
+      });
     if (routePermissions[pathname]) {
       const requiredPermissions = routePermissions[pathname];
       const hasRequiredPermissions = requiredPermissions.every(module => {
@@ -49,7 +51,7 @@ export default async function AuthLayout({
         return true;
       });
       if (!hasRequiredPermissions) {
-        return notFound();
+        throw notFound();
       }
     }
 
@@ -60,9 +62,6 @@ export default async function AuthLayout({
         </UserProvider>
       </>
     )
-  } catch (error) {
-    throw redirect('api/auth/logout');
-  }
 
 }
 
