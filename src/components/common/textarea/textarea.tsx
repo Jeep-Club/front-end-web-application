@@ -3,15 +3,22 @@
 import { twMerge } from "tailwind-merge";
 import { useId } from "react";
 
-export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' | 'defaultValue'> {
+export interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'name' | 'defaultValue'> {
     label: string;
     name: string;
     error?: string;
-    children?: React.ReactNode;
+    required?: boolean;
 }
 
-
-export function Input({label, error, name, value, className, type="text", children, required, ...props}: InputProps) {
+export function Textarea({
+    label,
+    error,
+    name,
+    value,
+    className,
+    required,
+    ...props
+}: TextareaProps) {
     const id = useId();
     const isError = error !== 'undefined' && error !== undefined && error !== null;
     
@@ -23,11 +30,10 @@ export function Input({label, error, name, value, className, type="text", childr
             >
                 {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>
-            <div className="w-full relative flex items-center">
-                <input 
+            <div className="w-full relative flex items-start">
+                <textarea 
                     {...props}
                     id={id}
-                    type={type}
                     name={name}
                     value={value}
                     required={required}
@@ -43,6 +49,7 @@ export function Input({label, error, name, value, className, type="text", childr
                         focus:outline-2 focus:border-j-yellow-400
                         focus:outline-j-yellow-400
                         disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
+                        min-h-25 resize-y
                         `,
                         `
                             ${isError ? "border-input-border-error text-input-border-error" : "border-transparent text-input-text"} 
@@ -51,11 +58,9 @@ export function Input({label, error, name, value, className, type="text", childr
                         className
                     )}
                 />
-                {children}
             </div>
 
             {isError ? <p className="text-j-red-300 text-sm">{error}</p> : null}
         </div>
     );
 }
-

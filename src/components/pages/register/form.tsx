@@ -8,9 +8,10 @@ import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
 import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
-import InputPassword from "@/components/common/input/input-password";
-import InputCPF from "@/components/common/input/input-cpf";
-import {InputRegister} from "@/components/common/input/input-register";
+import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/";
+import { User } from "lucide-react";
+import { Textarea } from "@/components/common/textarea/";
+import { Select } from "@/components/common/select/";
 
 export default function FormRegister() {
     const router = useRouter();
@@ -37,14 +38,22 @@ export default function FormRegister() {
                 onSubmit={handleSubmit}
                 onError={(errors) => console.log(errors)}
             >
-                <InputRegister name="name" label="Nome Completo" placeholder="Digite seu nome" type="text" />
-                <InputRegister name="email" label="Email" placeholder="Digite seu email" type="email" />
-                <InputRegister name="birthData" label="Data de Nascimento" type="text" />
-                <InputCPF />
-                <InputRegister name="rg" label="RG" placeholder="Digite seu RG" type="text" />
-                <InputRegister name="phoneNumber" label="Telefone" placeholder="Digite seu telefone" type="tel" />
-                <InputPassword name="password"/>
-                
+                <InputRegister name="name" label="Nome Completo" placeholder="Nome e sobrenome" type="text" required className="pl-10 pr-10"><User className="absolute left-2.5 text-j-transparent-white"/></InputRegister>
+                <InputEmail required/>
+                <InputDate required/>
+                <InputCPF required/>
+                <InputPhoneNumber required/>
+                <InputPassword required name="password" stepErrors/>
+                <InputFile name="test1" multiple maxFiles={2} isFallback label="Arquivos"/>
+                <InputFile.Image name="test2" label="Foto de perfil"/>
+                <InputFile.Image2 name="test3" label="Foto de perfil"/>
+                <Textarea label="Textarea" name="test4"/>
+                <Select label="Select exemplo" name="test5" >
+                    <option value="none" defaultChecked hidden>Selecione uma fruta</option>
+                    <option value="uva">Uva</option>
+                    <option value="abacate">Abacate</option>
+                    <option value="morango">Morango</option>
+                </Select>
                 <Button 
                     type="submit" 
                     disabled={isLoading}

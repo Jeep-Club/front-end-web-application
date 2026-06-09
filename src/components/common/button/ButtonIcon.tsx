@@ -15,6 +15,7 @@ export function ButtonIcon({children, type='button', tabIndex=0, className, ...p
                 text-placeholder
                 transition-color
                 duration-200
+                border-none
                 hover:text-button-primary-bg-hover
                 border-2 border-transparent
                 p-0.5

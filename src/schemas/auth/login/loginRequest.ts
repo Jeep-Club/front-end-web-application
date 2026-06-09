@@ -1,11 +1,11 @@
 import { z } from "zod";
+import { cpfSchema } from "@/schemas/auth/user/cpf";
 
 export const loginRequestSchema: z.ZodType<LoginRequest> = z.object({
-    cpf: z.string().min(1, {
-        message: "Informe seu CPF"
-    }),
+    cpf: cpfSchema,
+
     senha: z.string().min(1, {
-        message: "Informe a senha"
+        message: "A senha é obrigatória",
     })
 })
 

@@ -15,7 +15,6 @@ interface RegisterRequest {
     birthData: string;
     email: string;
     cpf: string;
-    rg: string;
     password: string;
     phoneNumber: string;
 }
