@@ -8,7 +8,7 @@ import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
 import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
 import { ArrowRight, LoaderCircle } from "lucide-react";
-import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/";
+import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/import";
 import { User } from "lucide-react";
 import { Textarea } from "@/components/common/textarea/";
 import { Select } from "@/components/common/select/";
