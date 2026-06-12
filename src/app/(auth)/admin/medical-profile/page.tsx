@@ -1,16 +1,39 @@
-import { simpleHaveRoutePermissions } from "@/utils/permission/routePermissions";
+import MedicalProfilesListPage from "@/components/pages/admin/medical-profiles";
+import { getAllMedicalProfilesResponseSchema } from "@/schemas/admin/medical-profile";
+import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
+import { HttpAPIRoutes } from "@/utils/http/api";
+import { haveActionPermission } from "@/utils/permission/actionPermissions";
+import SimpleTable from "@/components/common/table/simple";
 
-export default async function Page() {
+interface Props {
+    searchParams: Promise<{
+        size?: string;
+        page?: string;
+    }>
+}
 
+export default async function Page({ searchParams }: Props) {
+    // Resolve os searchParams (necessário nas versões mais recentes do Next.js 14+)
+    const { size, page } = await searchParams;
+    
+    const currentPage = Number(page) || 0;
+    const currentSize = Number(size) || 10;
 
+    // Faz o fetch dos dados
+    const response = await serverFetchWrapper<GetListMedicalProfilesResponse>({
+        url: `${HttpAPIRoutes.ADMIN_MEDICAL_PROFILES}?size=${currentSize}&page=${currentPage}`,
+        method: "GET",
+        schema: getAllMedicalProfilesResponseSchema
+    });
 
-    await simpleHaveRoutePermissions('/admin/medical-profile');
+    // Definimos as chaves baseadas no tipo unitário da resposta
+    const tableColumns: (keyof GetListMedicalProfilesResponse[0])[] = [
+        "id", 
+        "ownerType", 
+        "ownerId", 
+        "bloodType", 
+        "updatedAt"
+    ];
 
-    return (
-        <div className="flex flex-col gap-4">
-            <h1 className="text-2xl font-bold">Perfil Médico</h1>
-            <p>Conteúdo do perfil médico...</p>
-        </div>
-    );
-
+    return <MedicalProfilesListPage data={response.data} currentPage={currentPage} />;
 }

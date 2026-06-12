@@ -8,7 +8,7 @@ interface ClientFetchWrapperResponse<T> extends FetchWrapperResponse<T> {
 
 }
 
-export default async function serverFetchWrapper<T>({ ...props }: ClientFetchWapperProps<T>): Promise<ClientFetchWrapperResponse<T>> {
+export default async function clientFetchWrapper<T>({ ...props }: ClientFetchWapperProps<T>): Promise<ClientFetchWrapperResponse<T>> {
 
     const { url, ...fetchProps } = props;
 

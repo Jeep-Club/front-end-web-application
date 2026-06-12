@@ -4,7 +4,8 @@ export enum HttpAPIRoutes {
     REFRESH = "authentication/refresh",
     LOGOUT = "authentication/logout",
     ME = "authentication/me",
-    PERMISSIONS = "authorization/permissions"
+    PERMISSIONS = "authorization/permissions",
+    ADMIN_MEDICAL_PROFILES = "admin/medical-profiles"
 }
 
 // export enum HttpAPIRoutes {
