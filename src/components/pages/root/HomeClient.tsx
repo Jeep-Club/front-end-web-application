@@ -106,7 +106,9 @@ export default function HomeClient() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
               <div className="relative h-64 md:h-80">
-                <Image src="/images/Expe_jeep.jpg" alt="Expedições" fill className="object-cover" />
+                <Image 
+                src="/images/jeep_vermelho.jpeg" 
+                alt="Expedições" fill className="object-cover" />
               </div>
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
@@ -121,7 +123,7 @@ export default function HomeClient() {
 
             <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
               <div className="relative h-64 md:h-80">
-                <Image src="/images/Events-jeep.jpg" alt="Eventos" fill className="object-cover" />
+                <Image src="/images/mato.jpeg" alt="Eventos" fill className="object-cover" />
               </div>
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
