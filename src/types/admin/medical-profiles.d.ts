@@ -8,6 +8,24 @@ type GetListMedicalProfilesResponse = {
   updatedAt: string;
 }[]
 
+interface GetMedicalProfileResponse {
+  id: number;
+  ownerType: string;
+  ownerId: number;
+  bloodType: string; 
+  allergies: string;
+  chronicConditions: string;
+  continuousMedications: string;
+  healthInsuranceProvider: string;
+  healthInsurancePlan: string;
+  healthInsuranceNumber: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelationship: string;
+  observations: string;
+  createdAt: string;
+  updatedAt: string;
+};
 interface PutMedicalProfile {
   bloodType: BloodType;
   allergies: string;

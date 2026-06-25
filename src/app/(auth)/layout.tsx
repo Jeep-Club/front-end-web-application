@@ -59,6 +59,7 @@ export default async function AuthLayout({
     const havePermissions = await haveRoutePermissions({ pathname, permissionsToken, onCatch: () => redirect('api/auth/logout') });
 
     if (!havePermissions) {
+      console.log('User does not have required permissions for this route.', pathname);
       throw notFound();
     }
 
