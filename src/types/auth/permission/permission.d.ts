@@ -11,3 +11,9 @@ interface PermissionModule {
     actions: string[];
     module: string;
 }
+
+interface HaveRoutePermissionsProps {
+    pathname: string;
+    permissionsToken: string;
+    onCatch: () => void;
+}

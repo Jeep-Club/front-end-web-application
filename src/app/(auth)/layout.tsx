@@ -5,10 +5,11 @@ import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
 import { verifyWithSchema } from "@/services/token/verify";
 import { HttpAPIRoutes } from "@/utils/http/api";
 import { getAuthCookies } from "@/utils/auth/get";
-import { routePermissions } from "@/utils/permission/routePermissions";
+import { haveRoutePermissions, routePermissions } from "@/utils/permission/routePermissions";
 
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import z from "zod";
 
 
 export default async function AuthLayout({
@@ -37,23 +38,37 @@ export default async function AuthLayout({
       .catch(() => {
         throw redirect('api/auth/logout');
       });
-    if (routePermissions[pathname]) {
-      const requiredPermissions = routePermissions[pathname];
-      const hasRequiredPermissions = requiredPermissions.every(module => {
-        const userModule = permissions.find(userModule => userModule.module === module.module);
-        if (!userModule) {
-          return false;
-        }
-        const hasRequiredActions = module.actions.every(action => userModule.actions.includes(action));
-        if (!hasRequiredActions) {
-          return false;
-        }
-        return true;
-      });
-      if (!hasRequiredPermissions) {
-        throw notFound();
-      }
+    // if (routePermissions[pathname]) {
+    //   const requiredPermissions = routePermissions[pathname];
+    //   const hasRequiredPermissions = requiredPermissions.every(module => {
+    //     const userModule = permissions.find(userModule => userModule.module === module.module);
+    //     if (!userModule) {
+    //       return false;
+    //     }
+    //     const hasRequiredActions = module.actions.every(action => userModule.actions.includes(action));
+    //     if (!hasRequiredActions) {
+    //       return false;
+    //     }
+    //     return true;
+    //   });
+    //   if (!hasRequiredPermissions) {
+    //     throw notFound();
+    //   }
+    // }
+
+    const havePermissions = await haveRoutePermissions({ pathname, permissionsToken, onCatch: () => redirect('api/auth/logout') });
+
+    if (!havePermissions) {
+      console.log('User does not have required permissions for this route.', pathname);
+      throw notFound();
     }
+
+    const response = await serverFetchWrapper({
+      url: HttpAPIRoutes.PERMISSIONS,
+      method: 'GET',
+      schema: z.any()
+    })
+    console.log(response.data);
 
     return (
       <>
