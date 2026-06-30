@@ -40,3 +40,19 @@ export const getMedicalProfileResponseSchema: z.ZodType<GetMedicalProfileRespons
   createdAt: z.string(),
   updatedAt: z.string(),
 });
+
+export const putMedicalProfileRequestSchema: z.ZodType<PutMedicalProfileUserRequest | PutMedicalProfileDependentRequest> = z.object({
+  bloodType: z.string(),
+  allergies: z.string(),
+  chronicConditions: z.string(),
+  continuousMedications: z.string(),
+  healthInsuranceProvider: z.string(),
+  healthInsurancePlan: z.string(),
+  healthInsuranceNumber: z.string(),
+  emergencyContactName: z.string(),
+  emergencyContactPhone: z.string(),
+  emergencyContactRelationship: z.string(),
+  observations: z.string(),
+});
+
+export const putMedicalProfileResponseSchema: z.ZodType<PutMedicalProfileResponse> = getMedicalProfileResponseSchema;
