@@ -5,6 +5,7 @@ export const routePermissions: Record<string, PermissionModule[]> = {
     "/register": [{ module: "AUTHENTICATION", actions: ['USER_CREATE'] }],
     "/home": [],
     "/admin/medical-profile": [{ module: "HEALTH", actions: ['MEDICAL_PROFILE_READ'] }],
+    "/admin/socios": [{ module: "DEPENDENTS", actions: ['DEPENDENT_READ'] }],
 };
 
 const checkRoutePermissions = (pathname: string): PermissionModule[] | false => {
