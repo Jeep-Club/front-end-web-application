@@ -14,13 +14,31 @@ const checkRoutePermissions = (pathname: string): PermissionModule[] | false => 
         return routePermissions[pathname];
     }
 
-    // 2. Busca pelas rotas que cobrem o pathname com slug (ex: /admin/medical-profile/1)
+    // 2. Busca por rotas dinâmicas declaradas (ex: /admin/medical-profile/[id]/edit)
+    // Transforma "[id]" ou qualquer "[...]" em um padrão Regex que aceita qualquer valor na URL exceto "/"
+    const dynamicMatches = Object.keys(routePermissions).filter(route => {
+        // Ignora rotas que não são dinâmicas
+        if (!route.includes('[')) return false;
+        
+        // Substitui tudo que está entre colchetes por [^/]+ (1 ou mais caracteres que não sejam '/')
+        const regexPattern = route.replace(/\[.*?\]/g, '[^/]+');
+        const regex = new RegExp(`^${regexPattern}$`);
+        
+        return regex.test(pathname);
+    });
+
+    if (dynamicMatches.length > 0) {
+        // Se houver conflito, pega a mais específica (a string declarada mais longa)
+        const bestDynamicMatch = dynamicMatches.sort((a, b) => b.length - a.length)[0];
+        return routePermissions[bestDynamicMatch];
+    }
+
+    // 3. Busca pelas rotas que cobrem o pathname com slug (ex: /admin/medical-profile/1) - Funcionamento antigo
     // O `${route}/` garante que "/admin/medical-profiles" não daria match com "/admin/medical-profile"
     const matchingRoutes = Object.keys(routePermissions).filter(route =>
         pathname.startsWith(`${route}/`)
     );
 
-    // 3. Se encontrou alguma rota correspondente, pega a mais específica (a string mais longa)
     if (matchingRoutes.length > 0) {
         const bestMatch = matchingRoutes.sort((a, b) => b.length - a.length)[0];
         return routePermissions[bestMatch];
@@ -37,6 +55,8 @@ export const haveRoutePermissions = async ({ pathname, permissionsToken, onCatch
         });
 
     const requiredPermissions = checkRoutePermissions(pathname);
+    
+    // Se requiredPermissions for um array (mesmo que vazio como em /home), a avaliação continua
     if (requiredPermissions) {
         const hasRequiredPermissions = requiredPermissions.every(module => {
             const userModule = permissions.find(userModule => userModule.module === module.module);
@@ -51,6 +71,8 @@ export const haveRoutePermissions = async ({ pathname, permissionsToken, onCatch
         });
         return hasRequiredPermissions;
     }
+    
+    // Retorna falso se checkRoutePermissions retornar false (rota não declarada/inexistente)
     return false;
 }
 
