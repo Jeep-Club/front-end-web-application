@@ -34,11 +34,13 @@ export default function FormLogin() {
                 onError={(errors)=>console.log(errors)}
             >
                 <InputCPF required />
-                <div className="relative w-full">
-                    <InputPassword required/>
-                    <span className="text-sm text-j-transparent-white absolute top-0 right-0  hover:text-j-yellow-300 hover:cursor-pointer transition-colors duration-300"
-                        onClick={() => router.push('/forgot-password')}
-                    >Esqueceu a senha?</span>
+                <div className="w-full pb-6">
+                    <div className="relative w-full">
+                        <InputPassword required/>
+                        <span className="text-sm text-j-transparent-white absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
+                            onClick={() => router.push('/forgot-password')}
+                        >Esqueceu a senha?</span>
+                    </div>
                 </div>
                 <Button 
                     type="submit" 

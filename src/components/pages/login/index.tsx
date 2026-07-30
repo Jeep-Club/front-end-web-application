@@ -2,13 +2,18 @@
 
 import FormLogin from "./form";
 import PainelLogin from "./painel";
-import Link from "next/link";
-import Image from "next/image";
 import { Logo } from "@/components/common/logo";
+import { useModal } from "@/providers/ModalProvider";
+import { JoinClubModal } from "./JoinClubModal";
 
 
 export default function Login() {
+    const { setContent, setOpen } = useModal();
 
+    const handleOpenJoinClub = () => {
+        setContent(<JoinClubModal />);
+        setOpen();
+    };
 
     return (
         <div className={
@@ -37,7 +42,7 @@ export default function Login() {
                 <div className="w-full flex flex-col items-center justify-between md:h-full">
                     <h1 className="text-3xl font-extrabold text-j-white md:mt-0 mt-5">LOGIN</h1>
                     <FormLogin />
-                    <p className="text-sm text-j-transparent-white">Não faz parte do clube? <Link href={"/register"} className="text-j-gray-200 hover:text-j-yellow-300 transition-colors duration-300 hover:cursor-pointer">Junte-se a nós</Link></p>
+                    <p className="text-sm text-j-transparent-white">Quer fazer parte do clube? <button type="button" onClick={handleOpenJoinClub} className="text-j-gray-200 hover:text-j-yellow-300 hover:underline transition-colors duration-300 hover:cursor-pointer">Conheça o caminho</button></p>
                 </div>
             </div>
         </div>
