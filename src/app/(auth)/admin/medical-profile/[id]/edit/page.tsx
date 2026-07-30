@@ -1,4 +1,5 @@
 import AdminMedicalProfilePage from "@/components/pages/admin/medical-profiles/[id]";
+import AdminMedicalProfileEditPage from "@/components/pages/admin/medical-profiles/[id]/edit";
 import { getMedicalProfileResponseSchema } from "@/schemas/admin/medical-profile";
 import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
 import { HttpAPIRoutes } from "@/utils/http/api";
@@ -29,5 +30,5 @@ export default async function Page({ params }: Props) {
     //     schema: getMedicalProfileResponseSchema
     // });
 
-    return <AdminMedicalProfilePage canUpdate={canUpdate} medicalProfile={response.data} />;
+    return <AdminMedicalProfileEditPage id={response.data.id} medicalProfile={response.data} />;
 }

@@ -1,5 +1,6 @@
 interface MeResponse {
     userId: number;
+    userName: string;
     sessionId: number;
     sessionActive: boolean;
     expiresInSeconds: number;

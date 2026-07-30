@@ -40,6 +40,7 @@ export async function proxy(request: NextRequest) {
             sessionId: me.sessionId,
             sessionActive: me.sessionActive,
             expires: new Date(Date.now() + me.expiresInSeconds * 1000).toISOString(),
+            userName: me.userName
         }
         const meToken = await sign(meToSign);
         request.cookies.set('Me', meToken);

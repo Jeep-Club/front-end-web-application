@@ -40,28 +40,11 @@ interface PutMedicalProfile {
   observations: string;
 }
 
-type PutMedicalProfileUserRequest = Partial<PutMedicalProfile>;
+type PutMedicalProfileUserRequest = PutMedicalProfile;
 
-type PutMedicalProfileDependentRequest = Partial<PutMedicalProfile>;
+type PutMedicalProfileDependentRequest = PutMedicalProfile;
 
-interface PutMedicalProfileResponse {
-  id: number;
-  ownerType: 'USER' | 'DEPENDENT'; // Usando união literal baseada no banco
-  ownerId: number;
-  bloodType: BloodType;
-  allergies: string;
-  chronicConditions: string;
-  continuousMedications: string;
-  healthInsuranceProvider: string;
-  healthInsurancePlan: string;
-  healthInsuranceNumber: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  emergencyContactRelationship: string;
-  observations: string;
-  createdAt: string; 
-  updatedAt: string;
-}
+type PutMedicalProfileResponse = GetMedicalProfileResponse;
 
 type PutMedicalProfileUserResponse = PutMedicalProfileResponse;
 
