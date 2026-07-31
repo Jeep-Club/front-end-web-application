@@ -5,10 +5,10 @@ import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { ForgotPasswordRequestType } from "@/schemas/auth/forgot-password/forgotPasswordRequest";
 import { HttpAPIRoutes } from '@/utils/http/api';
 
-export default async function forgotPasswordAction({ cpf }: ForgotPasswordRequestType) {
+export default async function forgotPasswordEmailTokenAction({ cpf }: ForgotPasswordRequestType) {
     try {
         await actionFetchWrapper({
-            url: HttpAPIRoutes.PASSWORD_RECOVERY_REQUEST,
+            url: HttpAPIRoutes.PASSWORD_RECOVERY_EMAIL_TOKEN,
             method: 'POST',
             body: JSON.stringify({ cpf }),
             schema: z.any()
@@ -16,6 +16,6 @@ export default async function forgotPasswordAction({ cpf }: ForgotPasswordReques
 
         return { success: true };
     } catch (error) {
-        throw new Error('Erro ao solicitar a troca de senha. Verifique o CPF e tente novamente.', { cause: error });
+        throw new Error('Erro ao enviar o e-mail de redefinição. Tente novamente.', { cause: error });
     }
 }
