@@ -8,6 +8,7 @@ import { sign } from '@/services/token/sign';
 import { mapMePermissionToModule } from '@/utils/permission/userPermission';
 import { permissionResponseSchema } from '@/schemas/auth/permission/permissionResponse';
 import { me } from '@/utils/auth/me';
+import { unMaskCPF } from '@/utils/masks/maskCPF';
 
 export default async function loginAction({ cpf, senha }: LoginRequest) {
 
@@ -18,7 +19,7 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
         const response = await actionFetchWrapper<LoginResponse>({
             url: HttpAPIRoutes.LOGIN,
             method: 'POST',
-            body: JSON.stringify({ cpf, senha }),
+            body: JSON.stringify({ cpf: unMaskCPF(cpf), senha }),
             schema: loginResponseSchema
         });
 
