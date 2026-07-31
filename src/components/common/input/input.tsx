@@ -19,7 +19,7 @@ export function Input({label, error, name, value, className, type="text", childr
         <div className="w-full flex flex-col gap-2">
             <label 
                 htmlFor={id}
-                className="text-sm font-medium text-j-gray-300"
+                className="text-sm font-bold text-j-white"
             >
                 {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>

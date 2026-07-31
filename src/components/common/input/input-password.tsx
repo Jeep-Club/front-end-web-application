@@ -18,7 +18,7 @@ export type InputPasswordProps = Omit<InputProps, "label" | "name"> & {
     stepErrors?: boolean
 }
 
-export function InputPassword({label="Senha", name='senha', placeholder, className, value, notSeePassword=false, onChange, stepErrors=false, ...props}: InputPasswordProps){
+export function InputPassword({label="Senha", name='senha', placeholder, className, value, notSeePassword=false, onChange, stepErrors=false, autoComplete='new-password', ...props}: InputPasswordProps){
     const [isVisible, setIsVisible] = useState<boolean>(false);
     
     const { control } = useFormContext();
@@ -33,9 +33,10 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
         <div className="w-full flex flex-col gap-3">
             <Input
                 {...props}
-                type={isVisible ? 'text' : 'password'} 
+                type={isVisible ? 'text' : 'password'}
+                autoComplete={autoComplete}
                 ref={ref}
-                label={label} 
+                label={label}
                 name={name} 
                 value={fieldValue}
                 onBlur={onBlur}
@@ -51,7 +52,7 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                     className
                 )}
             >
-                <KeyRound size={20} className="absolute left-2.5 text-j-transparent-white"/>
+                <KeyRound size={20} className="absolute left-2.5 text-j-blue-800"/>
                 <ButtonIcon
                     disabled={notSeePassword}
                     onClick={()=>{setIsVisible((prev)=>!prev)}}

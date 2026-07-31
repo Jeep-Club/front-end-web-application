@@ -18,7 +18,7 @@ export default function PainelLogin() {
 
     return (
         <>
-            <div className="flex p-5 gap-3 text-j-transparent-gray items-center">
+            <div className="flex p-5 gap-3 text-j-white items-center">
                 <div className="flex flex-col items-center">
                     <Mountain size={20}/>
                     <p className="text-[10px] font-light">1,240M</p>
@@ -34,7 +34,7 @@ export default function PainelLogin() {
                     <p className="text-[10px] font-light">{hour}H{minute}</p>
                 </div>
             </div>
-            <p className="text-j-transparent-gray text-[10px] text-center md:mt-0 mt-3"
+            <p className="text-j-white text-[10px] text-center md:mt-0 mt-3"
                 >&copy; 2026 JEEP CLUBE TAMOIOS • OFF-ROAD PERFORMANCE</p>
         </>
     );
