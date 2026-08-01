@@ -9,11 +9,11 @@ export interface ModalRootProps {
 export function ModalRoot({ children, onClose, isOpen }: ModalRootProps) {
     return (
         <div
-            className={`fixed inset-0 flex items-center justify-center z-30 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 flex items-center justify-center p-4 overflow-y-auto z-30 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             onClick={onClose}
             style={{ backgroundColor: '#000000CC' }}
         >
-            <div className={``}
+            <div className="w-full max-w-125"
                 onClick={(e) => e.stopPropagation()}>
                 {children}
             </div>
