@@ -3,7 +3,7 @@ import TireBrand from "@/components/common/patterns/tire-brand-pattener";
 
 export default function ForgotPasswordPage() {
     return (
-        <div className="w-full flex flex-col items-center md:justify-center justify-end min-h-dvh bg-j-blue-500 md:p-5 pt-5 pl-5 pr-5">
+        <div className="w-full flex flex-col items-center justify-center min-h-dvh bg-j-blue-500 p-5">
             <ForgotPassword />
             <div className="fixed top-0 left-0 bottom-0 right-0 overflow-hidden flex items-center">
                 <div className="flex items-center md:w-[200%] w-500 h-full">
