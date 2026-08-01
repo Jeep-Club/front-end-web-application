@@ -9,7 +9,7 @@ export default async function NoAuthLayout({
 }>) {
     const cookies = await getAuthCookies.SERVER();
     if (cookies?.AuthAccessToken || cookies?.AuthRefreshToken) {
-        throw redirect('/home');
+        throw redirect('/feed');
     }
 
     return (

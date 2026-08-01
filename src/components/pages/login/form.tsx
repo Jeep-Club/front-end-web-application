@@ -16,7 +16,7 @@ export default function FormLogin() {
 
     const mutation = useMutation({ 
         mutationFn: loginAction, 
-        onSuccess: () => {router.push("/home"); toast.success('Login realizado com sucesso!');}, 
+        onSuccess: () => {router.push("/feed"); toast.success('Login realizado com sucesso!');}, 
         onError: (error) => toast.error(error.message || 'Erro ao realizar login. Verifique suas credenciais e tente novamente.') 
     });
 
