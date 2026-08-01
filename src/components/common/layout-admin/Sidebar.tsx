@@ -33,7 +33,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, full
             <aside className={twMerge(
                 `
                 fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col
-                border-r border-j-blue-700 bg-j-blue-800
+                border-r border-j-yellow-300 bg-j-blue-800
                 transition-transform duration-300
                 md:sticky md:top-0 md:z-auto md:translate-x-0 md:transition-[width]
                 `,
@@ -77,7 +77,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, full
                                     isCollapsed && "md:justify-center md:px-0",
                                     isActive
                                         ? "bg-j-yellow-300 text-j-blue-800 font-bold shadow-sm"
-                                        : "text-j-transparent-white hover:bg-j-blue-700 hover:text-j-white"
+                                        : "text-j-white/70 hover:bg-j-blue-700 hover:text-j-white"
                                 )}
                             >
                                 <Icon size={18} />
