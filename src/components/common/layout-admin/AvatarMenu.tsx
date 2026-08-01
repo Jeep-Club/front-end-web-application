@@ -50,15 +50,17 @@ export function AvatarMenu({ src }: AvatarMenuProps) {
                     role="menu"
                     className="absolute right-0 top-full mt-2 w-48 flex flex-col gap-1 rounded-lg border border-j-gray-200 bg-j-white p-2 shadow-lg"
                 >
-                    {/* TODO: liga pra rota de perfil quando ela existir */}
                     <button
                         type="button"
                         role="menuitem"
-                        onClick={() => setIsOpen(false)}
+                        onClick={() => {
+                            setIsOpen(false);
+                            router.push('/profile');
+                        }}
                         className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-j-gray-600 transition-colors hover:bg-j-gray-100 cursor-pointer"
                     >
                         <User size={16} />
-                        Ver perfil
+                        Gerenciar conta
                     </button>
 
                     {/* TODO: liga pra rota de configuracoes quando ela existir */}
