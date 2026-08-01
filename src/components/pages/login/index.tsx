@@ -1,7 +1,6 @@
 'use client';
 
 import FormLogin from "./form";
-import PainelLogin from "./painel";
 import { Logo } from "@/components/common/logo";
 import { useModal } from "@/providers/ModalProvider";
 import { JoinClubModal } from "./JoinClubModal";
@@ -24,8 +23,8 @@ export default function Login() {
         }>
             <Logo
                 className="w-40 h-40 md:w-40 md:h-40 z-10 relative top-16"
-            /> 
-            <div 
+            />
+            <div
                 className={
                     `
                     flex md:flex-col flex-col-reverse
@@ -37,10 +36,13 @@ export default function Login() {
                 }
             >
                 <div className="w-full flex flex-col items-center justify-center">
-                    <PainelLogin />
+                    <p className="text-j-white text-[10px] text-center md:mt-0 my-3"
+                    >&copy; 2026 JEEP CLUBE TAMOIOS • OFF-ROAD</p>
+                    <div className="flex">
+                        <h1 className="text-3xl font-extrabold text-j-white">LOGIN</h1>
+                    </div>
                 </div>
                 <div className="w-full flex flex-col items-center justify-between md:h-full">
-                    <h1 className="text-3xl font-extrabold text-j-white md:mt-0 mt-5">LOGIN</h1>
                     <FormLogin />
                     <p className="text-sm text-j-transparent-white">Quer fazer parte do clube? <button type="button" onClick={handleOpenJoinClub} className="text-j-gray-200 hover:text-j-yellow-300 hover:underline transition-colors duration-300 hover:cursor-pointer">Conheça o caminho</button></p>
                 </div>

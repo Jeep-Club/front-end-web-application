@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import FormForgotPassword from "./form";
-import PainelLogin from "@/components/pages/login/painel";
 import { Logo } from "@/components/common/logo";
 
 
@@ -31,15 +30,15 @@ export default function ForgotPassword() {
                 }
             >
                 <div className="w-full flex flex-col items-center justify-center">
-                    <PainelLogin />
+                    <p className="text-j-white text-[10px] text-center md:mt-0 my-3">&copy; 2026 JEEP CLUBE TAMOIOS • OFF-ROAD</p>
+                    <div className="flex">
+                        <h1 className="text-3xl font-extrabold text-j-white">RECUPERAR SENHA</h1>
+                    </div>
+                    <p className="text-sm text-j-transparent-white text-center mt-2">
+                        Digite seu CPF para receber as instruções de recuperação.
+                    </p>
                 </div>
                 <div className="w-full flex flex-col items-center justify-between md:h-full">
-                    <div className="text-center md:mt-0 mt-5">
-                        <h1 className="text-3xl font-extrabold text-j-white">RECUPERAR SENHA</h1>
-                        <p className="text-sm text-j-transparent-white mt-2">
-                            Digite seu CPF para receber as instruções de recuperação.
-                        </p>
-                    </div>
                     <FormForgotPassword />
                     <p className="text-sm text-j-transparent-white">
                         Lembrou a senha?{" "}

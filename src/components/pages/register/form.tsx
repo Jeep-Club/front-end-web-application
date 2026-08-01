@@ -20,7 +20,7 @@ export default function FormRegister() {
         mutationFn: registerAction, 
         onSuccess: (data) => {
             console.log(data);
-            router.push("/home"); 
+            router.push("/feed");
             toast.success('Registro realizado com sucesso!');
         }, 
     });
