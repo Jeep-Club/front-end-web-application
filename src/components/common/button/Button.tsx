@@ -14,7 +14,7 @@ export function Button({children, type='button', tabIndex=0, className, ...props
             className={twMerge(
                 `
                 flex gap-1 items-center justify-center
-                p-2.5 rounded-lg font-bold cursor-pointer
+                p-2.5 rounded-lg font-bold cursor-pointer text-sm md:text-base
                 transition-color
                 duration-300
                 bg-button-primary-bg text-button-primary-text

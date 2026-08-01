@@ -43,7 +43,7 @@ export function Form<T extends FieldValues>({
         <form
             onSubmit={methods.handleSubmit(onSubmit, onError)}
             className={twMerge(
-                "w-full flex flex-col items-center gap-6",
+                "w-full flex flex-col items-center gap-4",
                 className
             )}
             noValidate

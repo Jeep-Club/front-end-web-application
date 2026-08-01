@@ -16,15 +16,15 @@ export function Input({label, error, name, value, className, type="text", childr
     const isError = error !== 'undefined' && error !== undefined && error !== null;
     
     return (
-        <div className="w-full flex flex-col gap-2">
-            <label 
+        <div className="w-full flex flex-col gap-1.5">
+            <label
                 htmlFor={id}
-                className="text-sm font-bold text-j-white"
+                className="text-xs md:text-sm font-bold text-j-white"
             >
                 {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>
             <div className="w-full relative flex items-center">
-                <input 
+                <input
                     {...props}
                     id={id}
                     type={type}
@@ -35,7 +35,7 @@ export function Input({label, error, name, value, className, type="text", childr
                     aria-describedby={isError ? error : undefined}
                     className={twMerge(
                         `
-                        w-full border-2 border-transparent p-2.5 rounded-lg font-light
+                        w-full border-2 border-transparent py-2 px-2.5 rounded-lg font-light text-sm md:text-base
                         placeholder:text-j-transparent-white
                         transition-colors
                         duration-300
