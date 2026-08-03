@@ -51,7 +51,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, full
                     <Logo className="w-12 h-12" />
                     {!isCollapsed && (
                         <>
-                            <h1 className="text-lg font-black tracking-tight text-j-white">JEEP CLUB</h1>
+                            <h1 className="text-lg font-black tracking-tight text-j-white">JEEP CLUBE</h1>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-j-transparent-white">Tamoios</p>
                         </>
                     )}

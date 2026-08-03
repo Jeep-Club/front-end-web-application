@@ -43,9 +43,7 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
 
                 <span className="h-8 w-px bg-j-transparent-white" />
 
-                <div className="hidden flex-col leading-tight md:flex">
-                    <span className="text-sm font-bold text-j-white">{fullName}</span>
-                </div>
+                <span className="hidden text-sm font-bold text-j-white md:inline">{fullName}</span>
 
                 <AvatarMenu src={MOCK_AVATAR_URL} />
             </div>

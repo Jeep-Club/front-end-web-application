@@ -1,0 +1,25 @@
+type FuelType =
+    | 'GASOLINE'
+    | 'ETHANOL'
+    | 'FLEX'
+    | 'DIESEL'
+    | 'ELECTRIC'
+    | 'HYBRID';
+
+interface IncludeVehicleMemberRequest {
+    nickname?: string;
+    photo?: string;
+    plate: string;
+    renavam: string;
+    brand: string;
+    model: string;
+    manufacturingYear: number;
+    modelYear: number;
+    color: string;
+    seatingCapacity: number;
+    fuelType: FuelType;
+    engineDisplacement: number;
+    towing: boolean;
+}
+
+type IncludeVehicleMemberFormData = IncludeVehicleMemberRequest;
