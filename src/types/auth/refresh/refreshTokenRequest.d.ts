@@ -1,0 +1,3 @@
+interface RefreshTokenRequest {
+    refreshToken: string;
+}
