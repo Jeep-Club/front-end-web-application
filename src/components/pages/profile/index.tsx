@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IdCard, HeartPulse, Users, Car, Wrench } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { PageHeader } from "@/components/common/page-header";
+import { VehiclesTabContent } from "@/components/pages/profile/tabs/vehicles/VehiclesTabContent";
 
 const TABS = [
     { key: "personal", label: "Dados pessoais", icon: IdCard, content: "dados pessoal" },
@@ -23,7 +24,7 @@ export default function Profile() {
 
     return (
         <div className="h-full w-full p-3 md:p-4">
-            <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full flex-col gap-4 pb-5">
                 <PageHeader
                     title="Gerenciamento de conta"
                     breadcrumbs={[
@@ -57,7 +58,11 @@ export default function Profile() {
                 </div>
 
                 <div className="flex min-h-40 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-6 shadow-sm">
-                    <p>{activeContent}</p>
+                    {activeTab === "vehicles" ? (
+                        <VehiclesTabContent />
+                    ) : (
+                        <p>{activeContent}</p>
+                    )}
                 </div>
             </div>
         </div>
