@@ -15,10 +15,9 @@ interface SidebarProps {
     isMobileOpen: boolean;
     onCloseMobile: () => void;
     fullName: string;
-    role: string;
 }
 
-export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, fullName, role }: SidebarProps) {
+export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, fullName }: SidebarProps) {
     const pathname = usePathname();
 
     return (
@@ -60,7 +59,6 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, full
 
                 <div className="flex flex-col items-center gap-0.5 border-b border-j-blue-700 p-4 md:hidden">
                     <span className="text-sm font-bold text-j-white">{fullName}</span>
-                    <span className="text-xs text-j-transparent-white">{role}</span>
                 </div>
 
                 <nav className="flex flex-1 flex-col gap-2 p-4">
