@@ -59,7 +59,7 @@ export function JoinClubModal() {
             <div className="flex flex-col gap-2 pr-6 md:pr-8">
                 <h2 className="text-base md:text-2xl font-extrabold text-j-white">Quer fazer parte do clube?</h2>
                 <p className="text-xs md:text-sm text-j-transparent-white">
-                    Para se tornar sócio do JeepClub Tamoios, você envia uma solicitação de associação com as informações abaixo:
+                    Para se tornar sócio do Jeep Clube Tamoios, você envia uma solicitação de associação com as informações abaixo:
                 </p>
             </div>
 
