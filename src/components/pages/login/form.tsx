@@ -27,17 +27,17 @@ export default function FormLogin() {
     }
 
     return (
-        <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
+        <div className="w-full flex flex-col items-center justify-center gap-5 px-5">
             <Form<LoginRequest>
                 schema={loginRequestSchema}
                 onSubmit={handleSubmit}
                 onError={(errors)=>console.log(errors)}
             >
                 <InputCPF required />
-                <div className="w-full pb-6">
+                <div className="w-full pb-5">
                     <div className="relative w-full">
                         <InputPassword required/>
-                        <span className="text-sm text-j-transparent-white absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
+                        <span className="text-xs md:text-sm text-j-transparent-white absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
                             onClick={() => router.push('/forgot-password')}
                         >Esqueceu a senha?</span>
                     </div>

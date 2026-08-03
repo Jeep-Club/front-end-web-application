@@ -31,7 +31,7 @@ export default function FormForgotPassword() {
     }
 
     return (
-        <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
+        <div className="w-full flex flex-col items-center justify-center gap-5 px-5">
             <Form<ForgotPasswordRequestType>
                 schema={forgotPasswordRequestSchema}
                 onSubmit={handleSubmit}

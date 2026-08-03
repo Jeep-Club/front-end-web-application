@@ -3,7 +3,7 @@ import TireBrand from "@/components/common/patterns/tire-brand-pattener";
 
 export default async function Page() {
     return (
-        <div className="w-full flex flex-col items-center md:justify-center justify-end min-h-dvh bg-j-blue-500 md:p-5 pt-5 pl-5 pr-5">
+        <div className="w-full flex flex-col items-center justify-center min-h-dvh bg-j-blue-500 p-5">
             {/* <h1 className="text-4xl font-bold mb-4">Bem-vindo ao JeepClub Tamoios!</h1>
             <p className="text-lg text-gray-600 mb-8">Explore trilhas, compartilhe experiências e celebre a cultura dos jipes conosco.</p> */}
             <Login />
