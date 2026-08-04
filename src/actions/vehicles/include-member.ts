@@ -5,7 +5,7 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { includeVehicleMemberResponseSchema } from "@/schemas/vehicles/include";
 
-export async function includeVehicleMemberAction(data: IncludeVehicleMemberFormData) {
+export async function includeVehicleMemberAction(data: IncludeVehicleMemberRequest) {
     try {
         await actionFetchWrapper({
             url: HttpAPIRoutes.VEHICLES_INCLUDE_MEMBER,

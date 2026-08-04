@@ -1,14 +1,5 @@
-type FuelType =
-    | 'GASOLINE'
-    | 'ETHANOL'
-    | 'FLEX'
-    | 'DIESEL'
-    | 'ELECTRIC'
-    | 'HYBRID';
-
-type VehicleStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
-
-interface IncludeVehicleMemberRequest {
+// Espelha o EditRequestDTO do backend (PUT /vehicles/edit/member/{vehicleId}).
+interface EditVehicleMemberRequest {
     nickname?: string;
     photo?: string;
     plate: string;
@@ -24,6 +15,6 @@ interface IncludeVehicleMemberRequest {
     towing: boolean;
 }
 
-type IncludeVehicleMemberFormData = Omit<IncludeVehicleMemberRequest, 'photo'> & {
+type EditVehicleMemberFormData = Omit<EditVehicleMemberRequest, 'photo'> & {
     photo?: File[];
 };

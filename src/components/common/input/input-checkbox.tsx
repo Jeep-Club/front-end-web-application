@@ -7,14 +7,15 @@ import { twMerge } from "tailwind-merge";
 export interface InputCheckboxProps {
     label: string;
     name: string;
+    value?: boolean;
     className?: string;
 }
 
-export function InputCheckbox({ label, name, className }: InputCheckboxProps) {
+export function InputCheckbox({ label, name, value, className }: InputCheckboxProps) {
     const { control } = useFormContext();
     const {
-        field: { value, onChange, onBlur, ref }
-    } = useController({ name, control, defaultValue: false });
+        field: { value: fieldValue, onChange, onBlur, ref }
+    } = useController({ name, control, defaultValue: value ?? false });
 
     return (
         <label className={twMerge("flex w-full cursor-pointer items-center gap-3", className)}>
@@ -22,7 +23,7 @@ export function InputCheckbox({ label, name, className }: InputCheckboxProps) {
                 ref={ref}
                 type="checkbox"
                 name={name}
-                checked={!!value}
+                checked={!!fieldValue}
                 onChange={(e) => onChange(e.target.checked)}
                 onBlur={onBlur}
                 className="peer sr-only"
