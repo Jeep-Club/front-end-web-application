@@ -1,7 +1,7 @@
 import { getAuthCookies } from "@/utils/auth/get";
 import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWrapper";
 import { HttpStatus } from "@/utils/http/status";
-import logoutAction from "@/actions/logout";
+import logoutAction from "@/actions/auth/logout";
 import fetchRefreshToken from "@/utils/auth/refresh";
 import { login } from "@/utils/auth/login";
 
