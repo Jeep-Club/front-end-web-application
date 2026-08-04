@@ -6,7 +6,6 @@ type FuelType =
     | 'ELECTRIC'
     | 'HYBRID';
 
-// TODO: depois precisamos tirar esse ownerId daqui
 interface IncludeVehicleMemberRequest {
     nickname?: string;
     photo?: string;
@@ -21,7 +20,6 @@ interface IncludeVehicleMemberRequest {
     fuelType: FuelType;
     engineDisplacement: number;
     towing: boolean;
-    ownerId: number;
 }
 
-type IncludeVehicleMemberFormData = Omit<IncludeVehicleMemberRequest, 'ownerId'>;
+type IncludeVehicleMemberFormData = IncludeVehicleMemberRequest;

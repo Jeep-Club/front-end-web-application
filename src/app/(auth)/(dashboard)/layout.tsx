@@ -6,7 +6,6 @@ import Topbar from "@/components/common/layout-admin/Topbar";
 import { hasAnyAdminAccess } from "@/config/adminModules";
 // TODO: nao tem nome/role reais ainda vindo do cookie Me (nem no schema), mockando por enquanto
 const MOCK_FULL_NAME = "João Gabriel de Faria Beserra";
-const MOCK_ROLE = "Super Administrador";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -19,7 +18,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 isMobileOpen={isMobileMenuOpen}
                 onCloseMobile={() => setIsMobileMenuOpen(false)}
                 fullName={MOCK_FULL_NAME}
-                role={MOCK_ROLE}
             />
             <div className="flex h-screen flex-1 flex-col overflow-hidden">
                 <Topbar
@@ -27,7 +25,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
                     onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
                     fullName={MOCK_FULL_NAME}
-                    role={MOCK_ROLE}
                 />
                 <div className="flex-1 overflow-y-auto bg-j-gray-100">
                     {children}

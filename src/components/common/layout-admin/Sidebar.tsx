@@ -27,7 +27,6 @@ interface SidebarProps {
     isMobileOpen: boolean;
     onCloseMobile: () => void;
     fullName: string;
-    role: string;
 }
 
 export default function Sidebar({
