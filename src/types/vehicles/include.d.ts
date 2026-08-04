@@ -22,4 +22,6 @@ interface IncludeVehicleMemberRequest {
     towing: boolean;
 }
 
-type IncludeVehicleMemberFormData = IncludeVehicleMemberRequest;
+type IncludeVehicleMemberFormData = Omit<IncludeVehicleMemberRequest, 'photo'> & {
+    photo?: File[];
+};

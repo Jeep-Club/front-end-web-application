@@ -15,7 +15,7 @@ export const fuelTypeSchema: z.ZodType<FuelType> = z.enum([
 
 export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormData> = z.object({
     nickname: z.string().max(100, { message: "O apelido deve ter no máximo 100 caracteres" }).optional(),
-    photo: z.string().max(255, { message: "A foto deve ter no máximo 255 caracteres" }).optional(),
+    photo: z.array(z.instanceof(File)).max(1, { message: "Envie apenas uma foto" }).optional(),
     plate: z.string()
         .min(1, { message: "A placa é obrigatória" })
         .transform((value) => value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
@@ -44,9 +44,9 @@ export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormD
         ),
     color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }),
     seatingCapacity: z.string()
-        .min(1, { message: "A capacidade de assentos é obrigatória" })
+        .min(1, { message: "O nº assentos é obrigatório" })
         .transform((value) => Number(value))
-        .pipe(z.number().int().min(1, { message: "A capacidade de assentos deve ser maior que zero" })),
+        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" })),
     fuelType: z.string()
         .min(1, { message: "O combustível é obrigatório" })
         .transform((value) => value as FuelType),
