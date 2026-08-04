@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Plus, ChevronLeft, ChevronRight, IdCard, MoreVertical } from "lucide-react";
+import { Car, Plus, ChevronLeft, ChevronRight, IdCard, Eye, Trash2 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { IncludeVehicleModal } from "./IncludeVehicleModal";
+import { DeleteVehicleModal } from "./DeleteVehicleModal";
+import { ViewVehicleModal } from "./ViewVehicleModal";
 
 const PAGE_SIZE = 10;
 
@@ -25,13 +27,34 @@ export function VehiclesTabContent() {
         setOpen();
     };
 
+    const handleOpenEditVehicle = (vehicleId: number) => {
+        setContent(<IncludeVehicleModal vehicleId={vehicleId} />);
+        setOpen();
+    };
+
+    const handleOpenViewVehicle = (vehicleId: number) => {
+        setContent(<ViewVehicleModal vehicleId={vehicleId} />);
+        setOpen();
+    };
+
+    const handleOpenDeleteVehicle = (vehicle: VehicleListItem) => {
+        setContent(
+            <DeleteVehicleModal
+                vehicleId={vehicle.id}
+                vehicleLabel={vehicle.nickname || `${vehicle.model} (${maskPlate(vehicle.plate)})`}
+            />
+        );
+        setOpen();
+    };
+
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-j-gray-700">Meus veículos</h3>
                 <Button onClick={handleOpenIncludeVehicle}>
                     <Plus size={16} />
-                    Incluir Veículo
+                    <span className="hidden sm:inline">Incluir Veículo</span>
+                    <span className="sm:hidden">Incluir</span>
                 </Button>
             </div>
 
@@ -76,14 +99,9 @@ export function VehiclesTabContent() {
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-3 p-4">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h4 className="text-lg font-extrabold leading-tight text-j-gray-700">
-                                            {vehicle.model}
-                                        </h4>
-                                        <span className="shrink-0 rounded-full bg-j-green-100 px-3 py-1 text-xs font-bold text-j-green-600">
-                                            Ativo
-                                        </span>
-                                    </div>
+                                    <h4 className="text-lg font-extrabold leading-tight text-j-gray-700">
+                                        {vehicle.model}
+                                    </h4>
 
                                     <div className="flex items-center gap-1.5 text-sm font-semibold text-j-gray-500">
                                         <IdCard size={16} />
@@ -107,18 +125,24 @@ export function VehiclesTabContent() {
 
                                     <div className="mt-auto flex items-center gap-2 pt-1">
                                         <Button
-                                            disabled
-                                            title="Em breve"
-                                            className="flex-1 border-2 border-j-blue-800 bg-transparent text-j-blue-800 hover:bg-j-blue-800 hover:text-j-white"
+                                            onClick={() => handleOpenEditVehicle(vehicle.id)}
+                                            className="flex-1 bg-yellow-400 text-yellow-950 hover:bg-yellow-500 hover:text-yellow-950"
                                         >
                                             Editar
                                         </Button>
                                         <ButtonIcon
-                                            disabled
-                                            title="Em breve"
-                                            className="rounded-lg border-2 border-j-gray-200 p-2.5 text-j-gray-500 disabled:flex"
+                                            onClick={() => handleOpenViewVehicle(vehicle.id)}
+                                            title="Visualizar"
+                                            className="rounded-lg border-none bg-j-blue-800 p-3 text-white hover:bg-j-blue-500 hover:text-white disabled:flex"
                                         >
-                                            <MoreVertical size={18} />
+                                            <Eye size={20} />
+                                        </ButtonIcon>
+                                        <ButtonIcon
+                                            onClick={() => handleOpenDeleteVehicle(vehicle)}
+                                            title="Excluir"
+                                            className="rounded-lg border-none bg-red-500 p-3 text-white hover:bg-red-600 hover:text-white disabled:flex"
+                                        >
+                                            <Trash2 size={20} />
                                         </ButtonIcon>
                                     </div>
                                 </div>

@@ -4,19 +4,8 @@ import { isValidRenavam } from "@/utils/validate/validateRenavam";
 const PLATE_REGEX = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
 const MAX_YEAR = new Date().getFullYear();
 
-export const fuelTypeSchema: z.ZodType<FuelType> = z.enum([
-    'GASOLINE',
-    'ETHANOL',
-    'FLEX',
-    'DIESEL',
-    'ELECTRIC',
-    'HYBRID',
-]);
-
-export const vehicleStatusSchema: z.ZodType<VehicleStatus> = z.enum(['ACTIVE', 'INACTIVE', 'PENDING']);
-
-export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormData> = z.object({
-    nickname: z.string().max(100, { message: "O apelido deve ter no máximo 100 caracteres" }).optional(),
+export const editVehicleMemberFormSchema: z.ZodType<EditVehicleMemberFormData> = z.object({
+    nickname: z.string().max(50, { message: "O apelido deve ter no máximo 50 caracteres" }).optional(),
     photo: z.array(z.instanceof(File)).max(1, { message: "Envie apenas uma foto" }).optional(),
     plate: z.string()
         .min(1, { message: "A placa é obrigatória" })
@@ -27,7 +16,7 @@ export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormD
         .transform((value) => value.replace(/\D/g, ""))
         .pipe(z.string().refine(isValidRenavam, { message: "Renavam inválido" })),
     brand: z.string().trim().min(1, { message: "A marca é obrigatória" }).max(50, { message: "A marca deve ter no máximo 50 caracteres" }),
-    model: z.string().trim().min(1, { message: "O modelo é obrigatório" }).max(50, { message: "O modelo deve ter no máximo 50 caracteres" }),
+    model: z.string().trim().min(1, { message: "O modelo é obrigatório" }).max(100, { message: "O modelo deve ter no máximo 100 caracteres" }),
     manufacturingYear: z.string()
         .min(1, { message: "O ano de fabricação é obrigatório" })
         .transform((value) => Number(value))
@@ -48,7 +37,7 @@ export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormD
     seatingCapacity: z.string()
         .min(1, { message: "O nº assentos é obrigatório" })
         .transform((value) => Number(value))
-        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" })),
+        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" }).max(50, { message: "Capacidade máxima é 50" })),
     fuelType: z.string()
         .min(1, { message: "O combustível é obrigatório" })
         .transform((value) => value as FuelType),
@@ -59,4 +48,4 @@ export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormD
     towing: z.boolean(),
 });
 
-export const includeVehicleMemberResponseSchema = z.union([z.literal(""), z.null()]);
+export const editVehicleMemberResponseSchema = z.union([z.literal(""), z.null()]);
