@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { fuelTypeSchema } from "./include";
-import { vehicleStatusSchema } from "./detail-for-edit";
+import { fuelTypeSchema, vehicleStatusSchema } from "./include";
 
 export const vehicleDetailResponseSchema: z.ZodType<VehicleDetail> = z.object({
     id: z.number(),

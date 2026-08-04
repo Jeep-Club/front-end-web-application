@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { fuelTypeSchema } from "./include";
 
-export const vehicleStatusSchema: z.ZodType<VehicleStatus> = z.enum(['ACTIVE', 'INACTIVE', 'PENDING']);
-
 export const vehicleDetailForEditResponseSchema: z.ZodType<VehicleDetailForEdit> = z.object({
     id: z.number(),
     nickname: z.string().nullable(),
@@ -17,10 +15,5 @@ export const vehicleDetailForEditResponseSchema: z.ZodType<VehicleDetailForEdit>
     seatingCapacity: z.number(),
     fuelType: fuelTypeSchema,
     engineDisplacement: z.number(),
-    status: vehicleStatusSchema,
     towing: z.boolean().nullable(),
-    ownerId: z.number(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable(),
-    disabledAt: z.string().nullable(),
 });

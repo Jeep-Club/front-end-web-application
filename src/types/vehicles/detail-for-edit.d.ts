@@ -1,5 +1,6 @@
-type VehicleStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
-
+// Espelha o DetailForEditResponseDTO retornado por GET /vehicles/detail-for-edit/member/{vehicleId}.
+// So os campos usados pra pre-preencher o formulario de edicao — sem status,
+// ownerId ou campos de auditoria (createdAt/updatedAt/disabledAt).
 interface VehicleDetailForEdit {
     id: number;
     nickname: string | null;
@@ -14,10 +15,5 @@ interface VehicleDetailForEdit {
     seatingCapacity: number;
     fuelType: FuelType;
     engineDisplacement: number;
-    status: VehicleStatus;
     towing: boolean | null;
-    ownerId: number;
-    createdAt: string;
-    updatedAt: string | null;
-    disabledAt: string | null;
 }

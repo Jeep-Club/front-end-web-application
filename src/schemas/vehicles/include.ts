@@ -13,6 +13,8 @@ export const fuelTypeSchema: z.ZodType<FuelType> = z.enum([
     'HYBRID',
 ]);
 
+export const vehicleStatusSchema: z.ZodType<VehicleStatus> = z.enum(['ACTIVE', 'INACTIVE', 'PENDING']);
+
 export const includeVehicleMemberFormSchema: z.ZodType<IncludeVehicleMemberFormData> = z.object({
     nickname: z.string().max(100, { message: "O apelido deve ter no máximo 100 caracteres" }).optional(),
     photo: z.array(z.instanceof(File)).max(1, { message: "Envie apenas uma foto" }).optional(),
