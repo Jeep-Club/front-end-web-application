@@ -1,34 +1,19 @@
-'use client';
+import { cookies } from "next/headers";
+import DashboardShell from "@/components/common/layout-admin/DashboardShell";
+import { meCookieSchema } from "@/schemas/auth/me/me";
+import { verifyWithSchema } from "@/services/token/verify";
 
-import { useState } from "react";
-import Sidebar from "@/components/common/layout-admin/Sidebar";
-import Topbar from "@/components/common/layout-admin/Topbar";
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+    const cookieStore = await cookies();
+    const meToken = cookieStore.get("Me")?.value || '';
 
-const MOCK_FULL_NAME = "João Gabriel de Faria Beserra";
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const fullName = await verifyWithSchema<MeCookie>(meToken, meCookieSchema)
+        .then((me) => me.userName)
+        .catch(() => "Usuário");
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-j-white">
-            <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                isMobileOpen={isMobileMenuOpen}
-                onCloseMobile={() => setIsMobileMenuOpen(false)}
-                fullName={MOCK_FULL_NAME}
-            />
-            <div className="flex h-screen flex-1 flex-col overflow-hidden">
-                <Topbar
-                    isSidebarCollapsed={isSidebarCollapsed}
-                    onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
-                    onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-                    fullName={MOCK_FULL_NAME}
-                />
-                <div className="flex-1 overflow-y-auto bg-j-gray-100">
-                    {children}
-                </div>
-            </div>
-        </div>
+        <DashboardShell fullName={fullName}>
+            {children}
+        </DashboardShell>
     );
 }
