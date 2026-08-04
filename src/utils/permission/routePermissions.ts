@@ -1,7 +1,21 @@
 import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
 import { verifyWithSchema } from "@/services/token/verify";
 
-export const routePermissions: Record<string, PermissionModule[]> = {
+/*
+ * "all" (padrão): o usuário precisa satisfazer TODAS as entradas de
+ * `permissions` pra acessar a rota.
+ * "any": basta satisfazer UMA das entradas — usado em páginas compostas,
+ * onde permissões diferentes dão acesso a partes diferentes da mesma
+ * página (ex.: abas), mas qualquer uma delas já libera a página em si.
+ */
+interface RoutePermissionRule {
+    match: "all" | "any";
+    permissions: PermissionModule[];
+}
+
+type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
+
+export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/register": [
         {
             module: "AUTHENTICATION",
@@ -9,49 +23,31 @@ export const routePermissions: Record<string, PermissionModule[]> = {
         },
     ],
 
-    /*
-     * Rotas autenticadas acessíveis para qualquer usuário logado.
-     * O array vazio significa que nenhuma permissão específica é exigida.
-     */
+
+    // rotas autenticadas acessíveis para qualquer usuário logado.
+    // array vazio significa que nenhuma permissão específica é exigida.
     "/feed": [],
     "/profile": [],
 
-    /*
-     * Administração de roles e permissões.
-     *
-     * Todas essas permissões são obrigatórias.
-     * Dessa forma, apenas o administrador supremo consegue
-     * acessar a página.
-     */
-    "/admin/roles-permissoes": [
-        {
-            module: "AUTHORIZATION",
-            actions: [
-                "ROLE_READ",
-                "ROLE_CREATE",
-                "ROLE_UPDATE",
-                "ROLE_ENABLE",
-                "ROLE_DISABLE",
-                "ROLE_DELETE",
 
-                "PERMISSION_READ",
-                "PERMISSION_ASSIGN",
-                "PERMISSION_REVOKE",
+    "/admin/roles-permissoes": {
+        match: "any",
+        permissions: [
+            {
+                module: "AUTHORIZATION",
+                actions: ["ROLE_READ"],
+            },
+            {
+                module: "AUTHORIZATION",
+                actions: ["PERMISSION_READ"],
+            },
+            {
+                module: "AUTHORIZATION",
+                actions: ["USER_ROLE_READ"],
+            },
+        ],
+    },
 
-                "USER_ROLE_READ",
-                "USER_ROLE_ASSIGN",
-                "USER_ROLE_REVOKE",
-            ],
-        },
-    ],
-
-    /*
-     * Administração de fichas médicas.
-     *
-     * Essa regra também protege rotas filhas, como:
-     * /admin/medical-profile/1
-     * /admin/medical-profile/1/edit
-     */
     "/admin/medical-profile": [
         {
             module: "HEALTH",
@@ -59,12 +55,6 @@ export const routePermissions: Record<string, PermissionModule[]> = {
         },
     ],
 
-    /*
-     * Administração de sócios e dependentes.
-     *
-     * Também protege rotas filhas, como:
-     * /admin/socios/1
-     */
     "/admin/socios": [
         {
             module: "DEPENDENTS",
@@ -73,16 +63,14 @@ export const routePermissions: Record<string, PermissionModule[]> = {
     ],
 };
 
-/**
- * Transforma uma rota dinâmica declarada no objeto de permissões
- * em uma expressão regular.
- *
- * Exemplo:
- * /admin/users/[id]
- *
- * Torna-se:
- * /admin/users/qualquer-valor
- */
+function normalizeRule(config: RoutePermissionsConfig): RoutePermissionRule {
+    if (Array.isArray(config)) {
+        return { match: "all", permissions: config };
+    }
+
+    return config;
+}
+
 function createDynamicRouteRegex(route: string): RegExp {
     const dynamicRoutePattern = route.replace(
         /\[.*?\]/g,
@@ -92,33 +80,15 @@ function createDynamicRouteRegex(route: string): RegExp {
     return new RegExp(`^${dynamicRoutePattern}$`);
 }
 
-/**
- * Procura a regra de permissões correspondente ao pathname atual.
- *
- * Ordem da busca:
- * 1. Correspondência exata;
- * 2. Rota dinâmica declarada;
- * 3. Rota filha de uma rota protegida;
- * 4. Bloqueio por padrão.
- */
 function checkRoutePermissions(
     pathname: string,
-): PermissionModule[] | false {
-    /*
-     * Exemplo:
-     * pathname = /feed
-     */
+): RoutePermissionsConfig | false {
+
     if (routePermissions[pathname] !== undefined) {
         return routePermissions[pathname];
     }
 
-    /*
-     * Exemplo declarado:
-     * /admin/users/[id]
-     *
-     * Pathname recebido:
-     * /admin/users/10
-     */
+
     const dynamicMatches = Object.keys(routePermissions).filter(
         (route) => {
             if (!route.includes("[")) {
@@ -130,10 +100,7 @@ function checkRoutePermissions(
     );
 
     if (dynamicMatches.length > 0) {
-        /*
-         * Havendo mais de uma correspondência, utiliza a rota
-         * mais específica, ou seja, a string mais longa.
-         */
+
         const bestDynamicMatch = dynamicMatches.sort(
             (firstRoute, secondRoute) =>
                 secondRoute.length - firstRoute.length,
@@ -142,13 +109,7 @@ function checkRoutePermissions(
         return routePermissions[bestDynamicMatch];
     }
 
-    /*
-     * Protege automaticamente rotas filhas.
-     *
-     * Exemplo:
-     * Regra: /admin/medical-profile
-     * Rota:  /admin/medical-profile/15/edit
-     */
+
     const parentMatches = Object.keys(routePermissions).filter(
         (route) => pathname.startsWith(`${route}/`),
     );
@@ -162,10 +123,7 @@ function checkRoutePermissions(
         return routePermissions[bestParentMatch];
     }
 
-    /*
-     * Segurança por padrão:
-     * rota autenticada não cadastrada é bloqueada.
-     */
+
     return false;
 }
 
@@ -182,33 +140,22 @@ export const haveRoutePermissions = async ({
             throw onCatch();
         });
 
-    const requiredPermissions =
+    const requiredConfig =
         checkRoutePermissions(pathname);
 
-    /*
-     * A rota não está registrada.
-     */
-    if (requiredPermissions === false) {
+
+    if (requiredConfig === false) {
         return false;
     }
 
-    /*
-     * Um array vazio representa uma rota autenticada que não exige
-     * nenhuma permissão específica.
-     *
-     * Exemplo:
-     * /feed
-     * /profile
-     */
+    const { match, permissions: requiredPermissions } =
+        normalizeRule(requiredConfig);
+
     if (requiredPermissions.length === 0) {
         return true;
     }
 
-    /*
-     * Todos os módulos e todas as ações declaradas precisam
-     * existir nas permissões do usuário.
-     */
-    return requiredPermissions.every((requiredModule) => {
+    const satisfies = (requiredModule: PermissionModule) => {
         const userModule = permissions.find(
             (permissionModule) =>
                 permissionModule.module ===
@@ -222,13 +169,13 @@ export const haveRoutePermissions = async ({
         return requiredModule.actions.every((requiredAction) =>
             userModule.actions.includes(requiredAction),
         );
-    });
+    };
+
+    return match === "any"
+        ? requiredPermissions.some(satisfies)
+        : requiredPermissions.every(satisfies);
 };
 
-/**
- * Atalho para validar permissões diretamente em uma página
- * Server Component.
- */
 export const simpleHaveRoutePermissions = async (
     pathname: string,
 ) => {
