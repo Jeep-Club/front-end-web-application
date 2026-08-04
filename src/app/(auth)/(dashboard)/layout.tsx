@@ -4,7 +4,6 @@ import { useState } from "react";
 import Sidebar from "@/components/common/layout-admin/Sidebar";
 import Topbar from "@/components/common/layout-admin/Topbar";
 
-// TODO: nao tem nome real ainda vindo do cookie Me (nem no schema), mockando por enquanto
 const MOCK_FULL_NAME = "João Gabriel de Faria Beserra";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
