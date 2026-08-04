@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     const { cpf, senha }: LoginRequest = await request.json();
 
-    if (cpf === '123.456.789-00' && senha === 'password') {
+    if (cpf === "52998224725" && senha === "password") {
         return NextResponse.json(
             {
                 status: "SUCCESS",
