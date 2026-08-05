@@ -22,8 +22,8 @@ export default function FormLogin() {
 
     const isLoading = mutation.isPending;
 
-    const handleSubmit = async (loginRequest: LoginRequestType) => {
-        mutation.mutateAsync(loginRequest);
+    const handleSubmit = (loginRequest: LoginRequestType) => {
+        mutation.mutate(loginRequest);
     }
 
     return (
