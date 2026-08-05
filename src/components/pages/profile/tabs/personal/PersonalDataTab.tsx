@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { MembershipCard } from "./MembershipCard";
+import toast from "react-hot-toast";
+
+import type { CardExportRequest } from "@/components/common/card-export/CardExportActions";
 import { useModal } from "@/providers/ModalProvider";
 
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
+import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
 
 const INITIAL_PERSONAL_DATA: GetUserProfileResponse = {
@@ -54,39 +57,60 @@ export function PersonalDataTab() {
         setOpen();
     };
 
-    return (
-    <div className="grid w-full items-start gap-5 xl:grid-cols-[320px_minmax(0,640px)]">
-        <PersonalDataCard
-            photoUrl={personalData.profilePhotoUrl}
-            fullName={personalData.name}
-            roleLabel="Associado"
-            memberSince={formatMemberSince(
-                personalData.createdAt,
-            )}
-            registrationNumber={`ID#${personalData.id}`}
-            onEdit={handleOpenEdit}
-        />
+    const handleExportCard = ({
+        format,
+        scope,
+    }: CardExportRequest) => {
+        const scopeLabel =
+            scope === "front"
+                ? "somente a frente"
+                : "frente e verso";
 
-        <MembershipCard
-    profilePhotoUrl={
-        personalData.profilePhotoUrl
-    }
-    fullName={personalData.name}
-    birthDate={personalData.birthDate}
-    memberSince={personalData.createdAt}
-    phoneNumber={
-        personalData.phoneNumber
-    }
-    roleLabel="Associado"
-    registrationNumber={String(
-        personalData.id,
-    )}
-    cityState="SP - Caraguatatuba"
-    driverLicense="B"
-    bloodType="O+"
-/>
-    </div>
-);
+        toast.success(
+            `Selecionado: ${format.toUpperCase()} com ${scopeLabel}`,
+        );
+    };
+
+    return (
+        <div className="grid w-full items-start gap-5 xl:grid-cols-[320px_minmax(0,640px)]">
+            <PersonalDataCard
+                photoUrl={
+                    personalData.profilePhotoUrl
+                }
+                fullName={personalData.name}
+                roleLabel="Associado"
+                memberSince={formatMemberSince(
+                    personalData.createdAt,
+                )}
+                registrationNumber={`ID#${personalData.id}`}
+                onEdit={handleOpenEdit}
+            />
+
+            <MembershipCard
+                profilePhotoUrl={
+                    personalData.profilePhotoUrl
+                }
+                fullName={personalData.name}
+                birthDate={
+                    personalData.birthDate
+                }
+                memberSince={
+                    personalData.createdAt
+                }
+                phoneNumber={
+                    personalData.phoneNumber
+                }
+                roleLabel="Associado"
+                registrationNumber={String(
+                    personalData.id,
+                )}
+                cityState="SP - Caraguatatuba"
+                driverLicense="B"
+                bloodType="O+"
+                onExport={handleExportCard}
+            />
+        </div>
+    );
 }
 
 export default PersonalDataTab;

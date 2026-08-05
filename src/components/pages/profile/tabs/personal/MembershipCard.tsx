@@ -3,14 +3,15 @@
 import Image from "next/image";
 import { useState } from "react";
 import {
-    FileDown,
     Globe,
-    ImageDown,
     QrCode,
     UserRound,
 } from "lucide-react";
 
-import { Button } from "@/components/common/button";
+import {
+    CardExportActions,
+    type CardExportRequest,
+} from "@/components/common/card-export/CardExportActions";
 import { Logo } from "@/components/common/logo";
 
 interface MembershipCardProps {
@@ -24,27 +25,36 @@ interface MembershipCardProps {
     cityState?: string | null;
     driverLicense?: string | null;
     bloodType?: string | null;
-    onDownloadPdf?: () => void;
-    onDownloadPng?: () => void;
+    onExport?: (
+        request: CardExportRequest,
+    ) => void | Promise<void>;
 }
 
 type CardSide = "front" | "back";
 
-function displayValue(value?: string | null) {
+function displayValue(
+    value?: string | null,
+) {
     return value?.trim() || "—";
 }
 
-function formatDate(value?: string | null) {
+function formatDate(
+    value?: string | null,
+) {
     if (!value) {
         return "—";
     }
 
     const normalizedDate =
-        /^\d{4}-\d{2}-\d{2}$/.test(value)
+        /^\d{4}-\d{2}-\d{2}$/.test(
+            value,
+        )
             ? `${value}T12:00:00`
             : value;
 
-    const date = new Date(normalizedDate);
+    const date = new Date(
+        normalizedDate,
+    );
 
     if (Number.isNaN(date.getTime())) {
         return value;
@@ -62,7 +72,8 @@ function formatMembershipId(
         return "0000-0";
     }
 
-    const digits = value.replace(/\D/g, "");
+    const digits =
+        value.replace(/\D/g, "");
 
     if (!digits) {
         return value;
@@ -87,7 +98,7 @@ function CardField({
     value,
 }: CardFieldProps) {
     return (
-        <div className="relative min-w-0 pt-[clamp(5px,0.8vw,6px)]">
+        <div className="relative min-w-0 pt-[clamp(4px,0.8vw,6px)]">
             <span className="absolute left-[clamp(4px,1vw,8px)] top-0 z-10 max-w-[90%] truncate bg-[#f3f3f3] px-1 text-[clamp(4px,1vw,7px)] font-extrabold uppercase leading-none text-j-black">
                 {label}
             </span>
@@ -112,11 +123,12 @@ export function MembershipCard({
     cityState,
     driverLicense,
     bloodType,
-    onDownloadPdf,
-    onDownloadPng,
+    onExport,
 }: MembershipCardProps) {
-    const [currentSide, setCurrentSide] =
-        useState<CardSide>("front");
+    const [
+        currentSide,
+        setCurrentSide,
+    ] = useState<CardSide>("front");
 
     return (
         <section className="flex w-full max-w-[640px] flex-col gap-3">
@@ -131,16 +143,26 @@ export function MembershipCard({
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div
+                    className="flex items-center gap-2"
+                    aria-label="Selecionar lado da carteirinha"
+                >
                     <button
                         type="button"
                         onClick={() =>
-                            setCurrentSide("front")
+                            setCurrentSide(
+                                "front",
+                            )
                         }
                         aria-label="Visualizar frente"
+                        aria-pressed={
+                            currentSide ===
+                            "front"
+                        }
                         title="Frente"
                         className={`h-2.5 w-2.5 cursor-pointer rounded-full transition-colors ${
-                            currentSide === "front"
+                            currentSide ===
+                            "front"
                                 ? "bg-j-yellow-400"
                                 : "bg-j-gray-300 hover:bg-j-gray-400"
                         }`}
@@ -149,12 +171,19 @@ export function MembershipCard({
                     <button
                         type="button"
                         onClick={() =>
-                            setCurrentSide("back")
+                            setCurrentSide(
+                                "back",
+                            )
                         }
                         aria-label="Visualizar verso"
+                        aria-pressed={
+                            currentSide ===
+                            "back"
+                        }
                         title="Verso"
                         className={`h-2.5 w-2.5 cursor-pointer rounded-full transition-colors ${
-                            currentSide === "back"
+                            currentSide ===
+                            "back"
                                 ? "bg-j-yellow-400"
                                 : "bg-j-gray-300 hover:bg-j-gray-400"
                         }`}
@@ -163,27 +192,30 @@ export function MembershipCard({
             </header>
 
             <div className="w-full">
-                {currentSide === "front" ? (
+                {currentSide ===
+                "front" ? (
                     <div
                         id="membership-card-front"
-                        className="aspect-[1011/638] w-full overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-[#f3f3f3] shadow-sm"
+                        className="flex aspect-[1011/638] w-full flex-col overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-[#f3f3f3] shadow-sm"
                     >
-                        <div className="h-[clamp(12px,4.2vw,28px)] w-full bg-j-blue-700" />
+                        <div className="h-[clamp(12px,4.2vw,28px)] w-full shrink-0 bg-j-blue-700" />
 
-                        <div className="flex h-[calc(100%-clamp(12px,4.2vw,28px))] flex-col px-[clamp(8px,3vw,20px)] pb-[clamp(6px,2vw,16px)]">
-                            <header className="grid grid-cols-[clamp(40px,13vw,85px)_1fr] items-center gap-[clamp(4px,2vw,12px)]">
+                        <div className="flex min-h-0 flex-1 flex-col px-[clamp(8px,3vw,20px)] pb-[clamp(6px,2vw,16px)]">
+                            <header className="grid shrink-0 grid-cols-[clamp(40px,13vw,85px)_1fr] items-center gap-[clamp(4px,2vw,12px)]">
                                 <div className="-mt-[clamp(8px,2.5vw,16px)] flex justify-center">
                                     <Logo className="pointer-events-none h-[clamp(38px,11vw,76px)] w-[clamp(38px,11vw,76px)] md:h-[76px] md:w-[76px]" />
                                 </div>
 
                                 <div className="min-w-0 text-center">
-                                    <h3 className="truncate text-[clamp(9px,3vw,20px)] font-black uppercase leading-none text-j-blue-700">
-                                        Jeep Tamoios
+                                    <h3 className="text-[clamp(9px,3vw,20px)] font-black uppercase leading-none text-j-blue-700">
+                                        Jeep Clube
+                                        Tamoios
                                         Caraguatatuba
                                     </h3>
 
                                     <p className="mt-[clamp(1px,0.5vw,4px)] text-[clamp(5px,1.45vw,10px)] font-extrabold uppercase text-j-blue-400">
-                                        Fundado em 09/09/1999
+                                        Fundado em
+                                        09/09/1999
                                     </p>
                                 </div>
                             </header>
@@ -222,7 +254,9 @@ export function MembershipCard({
                                     <div className="grid grid-cols-[1fr_33%] gap-[clamp(3px,1.2vw,8px)]">
                                         <CardField
                                             label="Nome e sobrenome"
-                                            value={fullName}
+                                            value={
+                                                fullName
+                                            }
                                         />
 
                                         <CardField
@@ -235,7 +269,9 @@ export function MembershipCard({
 
                                     <CardField
                                         label="UF e cidade"
-                                        value={cityState}
+                                        value={
+                                            cityState
+                                        }
                                     />
 
                                     <div className="grid grid-cols-2 gap-[clamp(3px,1.2vw,8px)]">
@@ -256,18 +292,24 @@ export function MembershipCard({
 
                                     <CardField
                                         label="Telefone"
-                                        value={phoneNumber}
+                                        value={
+                                            phoneNumber
+                                        }
                                     />
 
                                     <div className="grid grid-cols-[1fr_25%_20%] items-end gap-[clamp(3px,1.2vw,8px)]">
                                         <CardField
                                             label="Função"
-                                            value={roleLabel}
+                                            value={
+                                                roleLabel
+                                            }
                                         />
 
                                         <CardField
                                             label="T sanguíneo"
-                                            value={bloodType}
+                                            value={
+                                                bloodType
+                                            }
                                         />
 
                                         <div
@@ -284,29 +326,34 @@ export function MembershipCard({
                 ) : (
                     <div
                         id="membership-card-back"
-                        className="aspect-[1011/638] w-full overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-j-blue-700 shadow-sm"
+                        className="flex aspect-[1011/638] w-full flex-col overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-j-blue-700 shadow-sm"
                     >
-                        <div className="h-[clamp(5px,1.8vw,12px)] w-full bg-j-white" />
+                        <div className="h-[clamp(5px,1.8vw,12px)] w-full shrink-0 bg-j-white" />
 
-                        <div className="flex h-[calc(100%-clamp(5px,1.8vw,12px))] flex-col">
-                            <div className="flex flex-1 items-start justify-end p-[clamp(8px,3vw,20px)]">
-                                <Logo className="pointer-events-none h-[clamp(30px,8vw,56px)] w-[clamp(30px,8vw,56px)] md:h-14 md:w-14" />
+                        <div className="flex min-h-0 flex-1 flex-col">
+                            <div className="flex min-h-0 flex-1 items-start justify-end p-[clamp(8px,3vw,20px)]">
+                                <Logo className="pointer-events-none h-[clamp(30px,8vw,56px)] w-[clamp(30px,8vw,56px)]  md:h-14 md:w-14" />
                             </div>
 
-                            <div className="h-[clamp(14px,4vw,32px)] w-full bg-j-yellow-400" />
+                            <div className="h-[clamp(14px,4vw,32px)] w-full shrink-0 bg-j-yellow-400" />
 
-                            <footer className="flex items-center justify-around gap-[clamp(8px,3vw,24px)] px-[clamp(10px,4vw,24px)] py-[clamp(8px,3vw,20px)] text-j-white">
+                            <footer className="flex shrink-0 items-center justify-around gap-[clamp(8px,3vw,24px)] px-[clamp(10px,4vw,24px)] py-[clamp(8px,3vw,20px)] text-j-white">
                                 <div className="flex min-w-0 items-center gap-[clamp(4px,1.5vw,8px)]">
                                     <Image
                                         src="/svgs/instaB.svg"
                                         alt="Instagram"
-                                        width={22}
-                                        height={22}
-                                        className="h-[clamp(12px,3.5vw,22px)] w-[clamp(12px,3.5vw,22px)]"
+                                        width={
+                                            22
+                                        }
+                                        height={
+                                            22
+                                        }
+                                        className="h-[clamp(12px,3.5vw,22px)] w-[clamp(12px,3.5vw,22px)] shrink-0"
                                     />
 
                                     <span className="truncate text-[clamp(7px,2vw,14px)] font-medium">
-                                        JeepTamoios
+                                        Jeep Clube
+                                        Tamoios
                                     </span>
                                 </div>
 
@@ -323,35 +370,9 @@ export function MembershipCard({
                 )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-                <Button
-                    type="button"
-                    onClick={onDownloadPdf}
-                    disabled={!onDownloadPdf}
-                    title="Baixar em PDF"
-                    className="w-full gap-2 px-2 py-2 sm:w-auto sm:px-3"
-                >
-                    <FileDown size={15} />
-
-                    <span className="text-xs">
-                        PDF
-                    </span>
-                </Button>
-
-                <Button
-                    type="button"
-                    onClick={onDownloadPng}
-                    disabled={!onDownloadPng}
-                    title="Baixar em PNG"
-                    className="w-full gap-2 px-2 py-2 sm:w-auto sm:px-3"
-                >
-                    <ImageDown size={15} />
-
-                    <span className="text-xs">
-                        PNG
-                    </span>
-                </Button>
-            </div>
+            <CardExportActions
+                onExport={onExport}
+            />
         </section>
     );
 }
