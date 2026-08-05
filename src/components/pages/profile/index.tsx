@@ -5,6 +5,7 @@ import { IdCard, HeartPulse, Users, Car, Wrench } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { PageHeader } from "@/components/common/page-header";
 import { VehiclesTabContent } from "@/components/pages/profile/tabs/vehicles/VehiclesTabContent";
+import { PersonalDataTab } from "@/components/pages/profile/tabs/personal/PersonalDataTab";
 
 const TABS = [
     { key: "personal", label: "Dados pessoais", icon: IdCard, content: "dados pessoal" },
@@ -58,7 +59,9 @@ export default function Profile() {
                 </div>
 
                 <div className="flex min-h-40 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-6 shadow-sm">
-                    {activeTab === "vehicles" ? (
+                    {activeTab === "personal" ? (
+                        <PersonalDataTab />
+                    ) : activeTab === "vehicles" ? (
                         <VehiclesTabContent />
                     ) : (
                         <p>{activeContent}</p>
