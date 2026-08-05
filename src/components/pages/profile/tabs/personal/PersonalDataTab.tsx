@@ -1,26 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import {
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
 
+import { getUserProfileAction } from "@/actions/profile/get";
+import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
-
-const INITIAL_PERSONAL_DATA: GetUserProfileResponse = {
-    id: 10293,
-    name: "João Gabriel de Faria Beserra",
-    birthDate: "2004-08-15",
-    email: "joao.gabriel@email.com",
-    cpf: "52998224725",
-    rg: "491234567",
-    phoneNumber: "12999999999",
-    profilePhotoUrl: null,
-    status: "ACTIVE",
-    createdAt: "2026-01-12T14:30:00Z",
-    lastLoginAt: "2026-08-05T13:20:00Z",
-};
 
 function formatMemberSince(createdAt: string) {
     const date = new Date(createdAt);
@@ -38,25 +29,60 @@ function formatMemberSince(createdAt: string) {
 
 export function PersonalDataTab() {
     const { setContent, setOpen } = useModal();
+    const queryClient = useQueryClient();
+    const {
+        data: personalData,
+        isLoading,
+        isError,
+        refetch,
+        isFetching,
+    } = useQuery({
+        queryKey: ["profile", "me"],
+        queryFn: getUserProfileAction,
+    });
 
-    const [personalData, setPersonalData] =
-        useState<GetUserProfileResponse>(
-            INITIAL_PERSONAL_DATA,
+    if (isLoading) {
+        return (
+            <p className="text-sm text-j-gray-400">
+                Carregando dados pessoais...
+            </p>
         );
+    }
+
+    if (isError || !personalData) {
+        return (
+            <div className="flex flex-col items-start gap-3">
+                <p className="text-sm text-j-red-400">
+                    Não foi possível carregar seus dados pessoais.
+                </p>
+                <Button
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                >
+                    <RefreshCw size={16} />
+                    Tentar novamente
+                </Button>
+            </div>
+        );
+    }
 
     const handleOpenEdit = () => {
         setContent(
             <EditPersonalDataModal
                 personalData={personalData}
-                onSave={setPersonalData}
+                onSave={(updatedPersonalData) => {
+                    queryClient.setQueryData(
+                        ["profile", "me"],
+                        updatedPersonalData,
+                    );
+                }}
             />,
         );
-
         setOpen();
     };
 
     return (
-        <div className="grid w-full items-start gap-5 xl:grid-cols-[320px_minmax(0,640px)]">
+        <div className="grid w-full items-start gap-5 xl:grid-cols-[minmax(280px,1fr)_minmax(0,2fr)]">
             <PersonalDataCard
                 photoUrl={
                     personalData.profilePhotoUrl
@@ -88,9 +114,9 @@ export function PersonalDataTab() {
                 registrationNumber={String(
                     personalData.id,
                 )}
-                cityState="SP - Caraguatatuba"
-                driverLicense="B"
-                bloodType="O+"
+                cityState={null}
+                driverLicense={null}
+                bloodType={null}
                 exportFileName={`carteirinha-${personalData.id}`}
             />
         </div>
