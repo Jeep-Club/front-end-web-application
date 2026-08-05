@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import { MembershipCard } from "./MembershipCard";
 import { useModal } from "@/providers/ModalProvider";
 
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
@@ -55,19 +55,38 @@ export function PersonalDataTab() {
     };
 
     return (
-        <div className="grid w-full items-start gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <PersonalDataCard
-                photoUrl={personalData.profilePhotoUrl}
-                fullName={personalData.name}
-                roleLabel="Associado"
-                memberSince={formatMemberSince(
-                    personalData.createdAt,
-                )}
-                registrationNumber={`ID#${personalData.id}`}
-                onEdit={handleOpenEdit}
-            />
-        </div>
-    );
+    <div className="grid w-full items-start gap-5 xl:grid-cols-[320px_minmax(0,640px)]">
+        <PersonalDataCard
+            photoUrl={personalData.profilePhotoUrl}
+            fullName={personalData.name}
+            roleLabel="Associado"
+            memberSince={formatMemberSince(
+                personalData.createdAt,
+            )}
+            registrationNumber={`ID#${personalData.id}`}
+            onEdit={handleOpenEdit}
+        />
+
+        <MembershipCard
+    profilePhotoUrl={
+        personalData.profilePhotoUrl
+    }
+    fullName={personalData.name}
+    birthDate={personalData.birthDate}
+    memberSince={personalData.createdAt}
+    phoneNumber={
+        personalData.phoneNumber
+    }
+    roleLabel="Associado"
+    registrationNumber={String(
+        personalData.id,
+    )}
+    cityState="SP - Caraguatatuba"
+    driverLicense="B"
+    bloodType="O+"
+/>
+    </div>
+);
 }
 
 export default PersonalDataTab;
