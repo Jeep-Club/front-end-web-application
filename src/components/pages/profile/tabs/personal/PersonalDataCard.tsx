@@ -2,7 +2,6 @@
 
 import {
     Edit3,
-    QrCode,
     UserRound,
 } from "lucide-react";
 
@@ -33,8 +32,8 @@ export function PersonalDataCard({
 }: PersonalDataCardProps) {
     return (
         <section className="flex w-full max-w-[320px] flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-j-gray-200 px-4 py-3">
-                <div>
+            <header className="flex items-center justify-between gap-3 border-b border-j-gray-200 px-4 py-3">
+                <div className="min-w-0">
                     <h2 className="text-sm font-extrabold text-j-gray-700">
                         Dados pessoais
                     </h2>
@@ -47,7 +46,9 @@ export function PersonalDataCard({
                 <Button
                     type="button"
                     onClick={onEdit}
-                    className="px-3 py-2"
+                    disabled={!onEdit}
+                    title="Editar dados pessoais"
+                    className="shrink-0 gap-2 px-3 py-2"
                 >
                     <Edit3 size={15} />
 
@@ -55,7 +56,7 @@ export function PersonalDataCard({
                         Editar
                     </span>
                 </Button>
-            </div>
+            </header>
 
             <div className="flex flex-col gap-4 p-4">
                 <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-j-gray-100">
@@ -84,21 +85,17 @@ export function PersonalDataCard({
                         {displayValue(roleLabel)}
                     </span>
 
-                    <div className="flex w-full items-start justify-between gap-3">
-                        <div className="min-w-0">
-                            <h3 className="break-words text-xl font-extrabold leading-tight text-j-gray-700">
-                                {displayValue(fullName)}
-                            </h3>
+                    <div className="w-full min-w-0">
+                        <h3 className="break-words text-xl font-extrabold leading-tight text-j-gray-700">
+                            {displayValue(fullName)}
+                        </h3>
 
-                            <p className="mt-1 text-xs text-j-gray-500">
-                                Membro desde{" "}
-                                {displayValue(
-                                    memberSince,
-                                )}
-                            </p>
-                        </div>
-
-                       
+                        <p className="mt-1 text-xs text-j-gray-500">
+                            Membro desde{" "}
+                            {displayValue(
+                                memberSince,
+                            )}
+                        </p>
                     </div>
                 </div>
 
