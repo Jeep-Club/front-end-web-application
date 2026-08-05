@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import {
     captureCardElement,
     exportCardImages,
-} from "@/components/common/card-export/exportCard";
+} from "@/utils/card-export/exportCard";
 import {
     Globe,
     QrCode,
@@ -116,13 +116,13 @@ function CardField({
     value,
 }: CardFieldProps) {
     return (
-        <div className="relative min-w-0 pt-[clamp(4px,0.8vw,6px)]">
-            <span className="absolute left-[clamp(4px,1vw,8px)] top-0 z-10 max-w-[90%] truncate bg-[#f3f3f3] px-1 text-[clamp(4px,1vw,7px)] font-extrabold uppercase leading-none text-j-black">
+        <div className="relative min-w-0 pt-[clamp(10px,1.8vw,12px)]">
+            <span className="absolute left-[clamp(4px,1vw,8px)] top-[clamp(6px,1.4vw,8px)] z-10 max-w-[90%] truncate bg-[#f3f3f3] px-1 text-[clamp(6px,1.2vw,8px)] font-extrabold uppercase leading-none text-j-black">
                 {label}
             </span>
 
-            <div className="flex min-h-[clamp(16px,4vw,28px)] items-center overflow-hidden rounded-[clamp(3px,1vw,6px)] border-[clamp(1px,0.35vw,2px)] border-j-black bg-j-white px-[clamp(4px,1.2vw,8px)] py-[clamp(2px,0.6vw,4px)]">
-                <span className="w-full truncate text-[clamp(5px,1.35vw,10px)] font-semibold leading-tight text-j-gray-700">
+            <div className="flex min-h-[clamp(18px,4.8vw,30px)] items-center overflow-hidden rounded-[clamp(3px,1vw,6px)] border-[clamp(1px,0.35vw,2px)] border-j-black bg-j-white px-[clamp(4px,1.2vw,8px)] py-[clamp(3px,0.8vw,5px)]">
+                <span className="w-full truncate text-[clamp(7px,1.6vw,12px)] font-semibold leading-tight text-j-gray-700">
                     {displayValue(value)}
                 </span>
             </div>
@@ -452,7 +452,7 @@ export function MembershipCard({
                         data-card-side="back"
                         className="flex aspect-[1011/638] w-full flex-col overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-j-blue-700 shadow-sm"
                     >
-                        <div className="h-[clamp(5px,1.8vw,12px)] w-full shrink-0 bg-j-white" />
+                        <div className="h-[clamp(5px,1.8vw,12px)] w-full shrink-0 bg-j-yellow-400" />
 
                         <div className="flex min-h-0 flex-1 flex-col">
                             <div className="flex min-h-0 flex-1 items-start justify-end p-[clamp(8px,3vw,20px)]">

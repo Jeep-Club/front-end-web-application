@@ -14,8 +14,18 @@ interface ExportCardImagesParams {
     fileName: string;
 }
 
+interface ExportImageParams {
+    scope: CardExportScope;
+    frontImage: string;
+    backImage?: string;
+    fileName: string;
+}
+
 const CARD_WIDTH_MM = 85.6;
 const CARD_HEIGHT_MM = 53.98;
+
+const EXPORT_SCALE = 3;
+const PDF_BLEED_MM = 0.15;
 
 export async function captureCardElement(
     element: HTMLElement,
@@ -24,10 +34,59 @@ export async function captureCardElement(
         await document.fonts.ready;
     }
 
+    const rect =
+        element.getBoundingClientRect();
+
+    const width = Math.ceil(rect.width);
+    const height = Math.ceil(rect.height);
+
+    const computedBackground =
+        window.getComputedStyle(
+            element,
+        ).backgroundColor;
+
+    const backgroundColor =
+        computedBackground ===
+            "rgba(0, 0, 0, 0)" ||
+        computedBackground ===
+            "transparent"
+            ? "#f3f3f3"
+            : computedBackground;
+
     return toPng(element, {
         cacheBust: true,
-        pixelRatio: 3,
-        backgroundColor: "#f3f3f3",
+
+        /*
+         * Não usamos pixelRatio junto com
+         * canvasWidth/canvasHeight para não
+         * aumentar a imagem duas vezes.
+         */
+        pixelRatio: 1,
+
+        width,
+        height,
+
+        canvasWidth:
+            width * EXPORT_SCALE,
+
+        canvasHeight:
+            height * EXPORT_SCALE,
+
+        /*
+         * Essas alterações são aplicadas somente
+         * ao clone usado no arquivo exportado.
+         * A carteirinha da tela continua arredondada.
+         */
+        style: {
+            width: `${width}px`,
+            height: `${height}px`,
+            maxWidth: "none",
+            margin: "0",
+            transform: "none",
+            boxShadow: "none",
+            borderRadius: "0px",
+            backgroundColor,
+        },
     });
 }
 
@@ -39,7 +98,8 @@ export async function exportCardImages({
     fileName,
 }: ExportCardImagesParams) {
     const safeFileName =
-        sanitizeFileName(fileName);
+        sanitizeFileName(fileName) ||
+        "carteirinha";
 
     if (format === "pdf") {
         exportAsPdf({
@@ -60,43 +120,17 @@ export async function exportCardImages({
     });
 }
 
-interface ExportImageParams {
-    scope: CardExportScope;
-    frontImage: string;
-    backImage?: string;
-    fileName: string;
-}
-
 function exportAsPdf({
     scope,
     frontImage,
     backImage,
     fileName,
 }: ExportImageParams) {
-    const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: [
-            CARD_WIDTH_MM,
-            CARD_HEIGHT_MM,
-        ],
-    });
+    const pdf = createCardPdf();
 
-    const pageWidth =
-        pdf.internal.pageSize.getWidth();
-
-    const pageHeight =
-        pdf.internal.pageSize.getHeight();
-
-    pdf.addImage(
+    addImageToCurrentPage(
+        pdf,
         frontImage,
-        "PNG",
-        0,
-        0,
-        pageWidth,
-        pageHeight,
-        undefined,
-        "FAST",
     );
 
     if (
@@ -111,19 +145,53 @@ function exportAsPdf({
             "landscape",
         );
 
-        pdf.addImage(
+        addImageToCurrentPage(
+            pdf,
             backImage,
-            "PNG",
-            0,
-            0,
-            pdf.internal.pageSize.getWidth(),
-            pdf.internal.pageSize.getHeight(),
-            undefined,
-            "FAST",
         );
     }
 
     pdf.save(`${fileName}.pdf`);
+}
+
+function createCardPdf() {
+    return new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: [
+            CARD_WIDTH_MM,
+            CARD_HEIGHT_MM,
+        ],
+        compress: true,
+    });
+}
+
+function addImageToCurrentPage(
+    pdf: jsPDF,
+    image: string,
+) {
+    const pageWidth =
+        pdf.internal.pageSize.getWidth();
+
+    const pageHeight =
+        pdf.internal.pageSize.getHeight();
+
+    /*
+     * A pequena sangria remove possíveis
+     * linhas brancas nas bordas do PDF.
+     */
+    pdf.addImage(
+        image,
+        "PNG",
+        -PDF_BLEED_MM,
+        -PDF_BLEED_MM,
+        pageWidth +
+            PDF_BLEED_MM * 2,
+        pageHeight +
+            PDF_BLEED_MM * 2,
+        undefined,
+        "FAST",
+    );
 }
 
 async function exportAsPng({
@@ -167,8 +235,10 @@ async function combineCardImages(
         ]);
 
     const gap = Math.max(
-        24,
-        Math.round(frontImage.width * 0.03),
+        32,
+        Math.round(
+            frontImage.width * 0.025,
+        ),
     );
 
     const canvas =
@@ -189,7 +259,7 @@ async function combineCardImages(
 
     if (!context) {
         throw new Error(
-            "Não foi possível gerar a imagem",
+            "Não foi possível gerar a imagem.",
         );
     }
 
@@ -237,15 +307,17 @@ function loadImage(
         (resolve, reject) => {
             const image = new Image();
 
-            image.onload = () =>
+            image.onload = () => {
                 resolve(image);
+            };
 
-            image.onerror = () =>
+            image.onerror = () => {
                 reject(
                     new Error(
-                        "Não foi possível carregar a imagem gerada",
+                        "Não foi possível carregar a imagem gerada.",
                     ),
                 );
+            };
 
             image.src = source;
         },
@@ -278,7 +350,10 @@ function sanitizeFileName(
             "",
         )
         .toLowerCase()
-        .replace(/[^a-z0-9-_]/g, "-")
+        .replace(
+            /[^a-z0-9-_]/g,
+            "-",
+        )
         .replace(/-+/g, "-")
         .replace(/^-|-$/g, "");
 }
