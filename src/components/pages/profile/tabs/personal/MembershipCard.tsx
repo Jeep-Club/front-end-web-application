@@ -345,7 +345,7 @@ export function MembershipCard({
 
                             <div className="mt-[clamp(2px,1vw,8px)] grid min-h-0 flex-1 grid-cols-[31%_1fr] gap-[clamp(5px,2vw,12px)]">
                                 <div className="flex min-h-0 flex-col gap-[clamp(3px,1vw,8px)]">
-                                    <div className="min-h-0 flex-1 overflow-hidden rounded-[clamp(5px,2vw,12px)] border-[clamp(1px,0.35vw,2px)] border-j-black bg-j-white">
+                                    <div className="min-h-0 flex-1 overflow-hidden rounded-[clamp(5px,2vw,12px)] border-[clamp(1px,0.35vw,1px)] border-j-black bg-j-white">
                                         {profilePhotoUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
