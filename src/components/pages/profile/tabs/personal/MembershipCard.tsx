@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import {
+    useRef,
+    useState,
+} from "react";
+import toast from "react-hot-toast";
+import {
+    captureCardElement,
+    exportCardImages,
+} from "@/components/common/card-export/exportCard";
 import {
     Globe,
     QrCode,
@@ -25,9 +33,7 @@ interface MembershipCardProps {
     cityState?: string | null;
     driverLicense?: string | null;
     bloodType?: string | null;
-    onExport?: (
-        request: CardExportRequest,
-    ) => void | Promise<void>;
+    exportFileName?: string;
 }
 
 type CardSide = "front" | "back";
@@ -88,6 +94,18 @@ function formatMembershipId(
     )}-${normalizedDigits.slice(-1)}`;
 }
 
+function waitForRender() {
+    return new Promise<void>(
+        (resolve) => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(
+                    () => resolve(),
+                );
+            });
+        },
+    );
+}
+
 interface CardFieldProps {
     label: string;
     value?: string | null;
@@ -123,12 +141,113 @@ export function MembershipCard({
     cityState,
     driverLicense,
     bloodType,
-    onExport,
+    exportFileName,
 }: MembershipCardProps) {
     const [
         currentSide,
         setCurrentSide,
     ] = useState<CardSide>("front");
+
+    const cardContainerRef =
+        useRef<HTMLDivElement>(null);
+
+    const handleExport = async ({
+        format,
+        scope,
+    }: CardExportRequest) => {
+        const previousSide = currentSide;
+
+        try {
+            setCurrentSide("front");
+
+            await waitForRender();
+
+            const frontElement =
+                cardContainerRef.current
+                    ?.querySelector<HTMLElement>(
+                        '[data-card-side="front"]',
+                    );
+
+            if (!frontElement) {
+                throw new Error(
+                    "Não foi possível localizar a frente da carteirinha",
+                );
+            }
+
+            const frontImage =
+                await captureCardElement(
+                    frontElement,
+                );
+
+            let backImage:
+                | string
+                | undefined;
+
+            if (
+                scope ===
+                "front-and-back"
+            ) {
+                setCurrentSide("back");
+
+                await waitForRender();
+
+                const backElement =
+                    cardContainerRef.current
+                        ?.querySelector<HTMLElement>(
+                            '[data-card-side="back"]',
+                        );
+
+                if (!backElement) {
+                    throw new Error(
+                        "Não foi possível localizar o verso da carteirinha",
+                    );
+                }
+
+                backImage =
+                    await captureCardElement(
+                        backElement,
+                    );
+            }
+
+            await exportCardImages({
+                format,
+                scope,
+                frontImage,
+                backImage,
+                fileName:
+                    exportFileName ??
+                    `carteirinha-${
+                        registrationNumber ??
+                        fullName ??
+                        "associado"
+                    }`,
+            });
+
+            toast.success(
+                `${
+                    format === "pdf"
+                        ? "PDF"
+                        : "Imagem"
+                } gerado com sucesso!`,
+            );
+        } catch (error) {
+            console.error(
+                "Erro ao exportar carteirinha:",
+                error,
+            );
+
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao exportar a carteirinha";
+
+            toast.error(message);
+        } finally {
+            setCurrentSide(
+                previousSide,
+            );
+        }
+    };
 
     return (
         <section className="flex w-full max-w-[640px] flex-col gap-3">
@@ -191,11 +310,15 @@ export function MembershipCard({
                 </div>
             </header>
 
-            <div className="w-full">
+            <div
+                ref={cardContainerRef}
+                className="w-full"
+            >
                 {currentSide ===
                 "front" ? (
                     <div
                         id="membership-card-front"
+                        data-card-side="front"
                         className="flex aspect-[1011/638] w-full flex-col overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-[#f3f3f3] shadow-sm"
                     >
                         <div className="h-[clamp(12px,4.2vw,28px)] w-full shrink-0 bg-j-blue-700" />
@@ -326,6 +449,7 @@ export function MembershipCard({
                 ) : (
                     <div
                         id="membership-card-back"
+                        data-card-side="back"
                         className="flex aspect-[1011/638] w-full flex-col overflow-hidden rounded-[clamp(8px,2.2vw,16px)] border border-j-gray-200 bg-j-blue-700 shadow-sm"
                     >
                         <div className="h-[clamp(5px,1.8vw,12px)] w-full shrink-0 bg-j-white" />
@@ -371,7 +495,7 @@ export function MembershipCard({
             </div>
 
             <CardExportActions
-                onExport={onExport}
+                onExport={handleExport}
             />
         </section>
     );

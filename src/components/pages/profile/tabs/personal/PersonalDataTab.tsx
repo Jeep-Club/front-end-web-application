@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import toast from "react-hot-toast";
 
-import type { CardExportRequest } from "@/components/common/card-export/CardExportActions";
 import { useModal } from "@/providers/ModalProvider";
 
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
@@ -57,20 +55,6 @@ export function PersonalDataTab() {
         setOpen();
     };
 
-    const handleExportCard = ({
-        format,
-        scope,
-    }: CardExportRequest) => {
-        const scopeLabel =
-            scope === "front"
-                ? "somente a frente"
-                : "frente e verso";
-
-        toast.success(
-            `Selecionado: ${format.toUpperCase()} com ${scopeLabel}`,
-        );
-    };
-
     return (
         <div className="grid w-full items-start gap-5 xl:grid-cols-[320px_minmax(0,640px)]">
             <PersonalDataCard
@@ -107,7 +91,7 @@ export function PersonalDataTab() {
                 cityState="SP - Caraguatatuba"
                 driverLicense="B"
                 bloodType="O+"
-                onExport={handleExportCard}
+                exportFileName={`carteirinha-${personalData.id}`}
             />
         </div>
     );
