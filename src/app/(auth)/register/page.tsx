@@ -1,4 +1,4 @@
-import Register from "@/components/pages/register"
+import Register from "@/components/pages/profile/register"
 
 export default async function Page() {
     return (

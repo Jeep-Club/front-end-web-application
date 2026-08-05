@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
-import {registerAction} from '@/actions/registerAction';
+import {registerAction} from '@/actions/auth/registerAction';
 import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";

@@ -9,7 +9,7 @@ import InputCPF from "@/components/common/input/input-cpf";
 import { useModal } from "@/providers/ModalProvider";
 import { PasswordRecoveryModal } from "./PasswordRecoveryModal";
 
-import forgotPasswordAction from '@/actions/forgot-password';
+import forgotPasswordAction from '@/actions/auth/forgot-password';
 import { forgotPasswordRequestSchema, ForgotPasswordRequestType } from "@/schemas/auth/forgot-password/forgotPasswordRequest";
 
 export default function FormForgotPassword() {
