@@ -82,7 +82,7 @@ export function PersonalDataTab() {
     };
 
     return (
-        <div className="grid w-full items-start gap-5 xl:grid-cols-[minmax(280px,1fr)_minmax(0,2fr)]">
+        <div className="mx-auto grid w-full max-w-[1104px] items-start justify-center gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,720px)]">
             <PersonalDataCard
                 photoUrl={
                     personalData.profilePhotoUrl
@@ -105,6 +105,9 @@ export function PersonalDataTab() {
                     personalData.birthDate
                 }
                 memberSince={
+                    personalData.createdAt
+                }
+                issuedAt={
                     personalData.createdAt
                 }
                 phoneNumber={

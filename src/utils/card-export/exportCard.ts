@@ -24,7 +24,20 @@ interface ExportImageParams {
 const CARD_WIDTH_MM = 85.6;
 const CARD_HEIGHT_MM = 53.98;
 
-const EXPORT_SCALE = 3;
+const MILLIMETERS_PER_INCH = 25.4;
+const CARD_EXPORT_DPI = 300;
+const CARD_RENDER_WIDTH_PX = 856;
+const CARD_RENDER_HEIGHT_PX = 540;
+const CARD_EXPORT_WIDTH_PX = Math.round(
+    (CARD_WIDTH_MM /
+        MILLIMETERS_PER_INCH) *
+        CARD_EXPORT_DPI,
+);
+const CARD_EXPORT_HEIGHT_PX = Math.round(
+    (CARD_HEIGHT_MM /
+        MILLIMETERS_PER_INCH) *
+        CARD_EXPORT_DPI,
+);
 const PDF_BLEED_MM = 0.15;
 
 export async function captureCardElement(
@@ -33,12 +46,6 @@ export async function captureCardElement(
     if ("fonts" in document) {
         await document.fonts.ready;
     }
-
-    const rect =
-        element.getBoundingClientRect();
-
-    const width = Math.ceil(rect.width);
-    const height = Math.ceil(rect.height);
 
     const computedBackground =
         window.getComputedStyle(
@@ -53,7 +60,46 @@ export async function captureCardElement(
             ? "#f3f3f3"
             : computedBackground;
 
-    return toPng(element, {
+    const exportHost =
+        document.createElement("div");
+    const exportElement =
+        element.cloneNode(true) as HTMLElement;
+
+    exportHost.setAttribute(
+        "aria-hidden",
+        "true",
+    );
+    Object.assign(exportHost.style, {
+        position: "fixed",
+        left: "-10000px",
+        top: "0",
+        width: `${CARD_RENDER_WIDTH_PX}px`,
+        height: `${CARD_RENDER_HEIGHT_PX}px`,
+        containerType: "inline-size",
+        pointerEvents: "none",
+        overflow: "hidden",
+    });
+
+    exportElement.removeAttribute("id");
+    Object.assign(exportElement.style, {
+        width: `${CARD_RENDER_WIDTH_PX}px`,
+        height: `${CARD_RENDER_HEIGHT_PX}px`,
+        maxWidth: "none",
+        margin: "0",
+        transform: "none",
+        boxShadow: "none",
+        borderRadius: "0px",
+        backgroundColor,
+    });
+
+    exportHost.appendChild(exportElement);
+    document.body.appendChild(exportHost);
+
+    try {
+        await waitForImages(exportElement);
+        await waitForLayout();
+
+        return await toPng(exportElement, {
         cacheBust: true,
 
         /*
@@ -63,14 +109,14 @@ export async function captureCardElement(
          */
         pixelRatio: 1,
 
-        width,
-        height,
+        width: CARD_RENDER_WIDTH_PX,
+        height: CARD_RENDER_HEIGHT_PX,
 
         canvasWidth:
-            width * EXPORT_SCALE,
+            CARD_EXPORT_WIDTH_PX,
 
         canvasHeight:
-            height * EXPORT_SCALE,
+            CARD_EXPORT_HEIGHT_PX,
 
         /*
          * Essas alterações são aplicadas somente
@@ -78,16 +124,60 @@ export async function captureCardElement(
          * A carteirinha da tela continua arredondada.
          */
         style: {
-            width: `${width}px`,
-            height: `${height}px`,
+            width: `${CARD_RENDER_WIDTH_PX}px`,
+            height: `${CARD_RENDER_HEIGHT_PX}px`,
             maxWidth: "none",
             margin: "0",
             transform: "none",
             boxShadow: "none",
             borderRadius: "0px",
             backgroundColor,
-        },
+            },
+        });
+    } finally {
+        exportHost.remove();
+    }
+}
+
+function waitForLayout() {
+    return new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() =>
+                resolve(),
+            );
+        });
     });
+}
+
+async function waitForImages(
+    element: HTMLElement,
+) {
+    const images = Array.from(
+        element.querySelectorAll("img"),
+    );
+
+    await Promise.all(
+        images.map((image) => {
+            if (image.complete) {
+                return Promise.resolve();
+            }
+
+            return new Promise<void>(
+                (resolve) => {
+                    image.addEventListener(
+                        "load",
+                        () => resolve(),
+                        { once: true },
+                    );
+                    image.addEventListener(
+                        "error",
+                        () => resolve(),
+                        { once: true },
+                    );
+                },
+            );
+        }),
+    );
 }
 
 export async function exportCardImages({
