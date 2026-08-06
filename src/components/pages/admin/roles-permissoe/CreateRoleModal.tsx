@@ -8,7 +8,7 @@ import { Button, ButtonIcon } from "@/components/common/button";
 import { InputRegister } from "@/components/common/input/input-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
-import { createRoleRequestSchema } from "@/schemas/authorization/role";
+import { createRoleRequestSchema } from "@/schemas/authorization/create";
 import { createRoleAction } from "@/actions/authorization/create-role";
 
 export function CreateRoleModal() {

@@ -3,7 +3,7 @@
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from "@/utils/http/api";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { roleListResponseSchema } from "@/schemas/authorization/role";
+import { roleListResponseSchema } from "@/schemas/authorization/list";
 
 export async function listRolesAction(): Promise<RoleResponse[]> {
     try {
