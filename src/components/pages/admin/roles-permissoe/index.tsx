@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { Eye, KeyRound, Plus, ShieldCheck, Users } from "lucide-react";
+import { Eye, KeyRound, Pencil, Plus, ShieldCheck, Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -14,6 +14,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { listRolesAction } from "@/actions/authorization/list-roles";
 import { CreateRoleModal } from "./CreateRoleModal";
 import { ViewRoleModal } from "./ViewRoleModal";
+import { EditRoleModal } from "./EditRoleModal";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
@@ -44,6 +45,7 @@ const TABS_GRID_COLS: Record<number, string> = {
 export default function RolesPermissions() {
     const permissions = useUserStore((state) => state.permissions);
     const canCreateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_CREATE");
+    const canUpdateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_UPDATE");
 
     const visibleTabs = TABS.filter((tab) =>
         hasPermission(permissions, tab.module, tab.action)
@@ -79,6 +81,11 @@ export default function RolesPermissions() {
 
     const handleOpenViewRole = (roleId: number) => {
         setContent(<ViewRoleModal roleId={roleId} />);
+        setOpen();
+    };
+
+    const handleOpenEditRole = (roleId: number) => {
+        setContent(<EditRoleModal roleId={roleId} />);
         setOpen();
     };
 
@@ -168,7 +175,16 @@ export default function RolesPermissions() {
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 flex items-center justify-end border-t border-j-gray-100 pt-3">
+                                            <div className="mt-3 flex items-center justify-end gap-2 border-t border-j-gray-100 pt-3">
+                                                {canUpdateRole && (
+                                                    <ButtonIcon
+                                                        onClick={() => handleOpenEditRole(role.id)}
+                                                        title="Editar"
+                                                        className="rounded-lg border-none bg-yellow-400 p-3 text-yellow-950 hover:bg-yellow-500 hover:text-yellow-950"
+                                                    >
+                                                        <Pencil size={20} />
+                                                    </ButtonIcon>
+                                                )}
                                                 <ButtonIcon
                                                     onClick={() => handleOpenViewRole(role.id)}
                                                     title="Visualizar"
