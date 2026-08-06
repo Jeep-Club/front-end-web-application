@@ -26,7 +26,7 @@ export default function Admin() {
                             href: "/feed",
                         },
                         {
-                            label: "Painel administrativo",
+                            label: "Painel admin",
                         },
                     ]}
                 />

@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { KeyRound, Plus, ShieldCheck, Users } from "lucide-react";
+import { Eye, KeyRound, Pencil, Plus, ShieldCheck, Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
-import { Button } from "@/components/common/button";
+import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { listRolesAction } from "@/actions/authorization/list-roles";
 import { CreateRoleModal } from "./CreateRoleModal";
+import { ViewRoleModal } from "./ViewRoleModal";
+import { EditRoleModal } from "./EditRoleModal";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
@@ -29,7 +31,7 @@ const ROLE_STATUS_STYLE: Record<RoleStatus, string> = {
 const TABS = [
     { key: "roles", label: "Cargos", icon: KeyRound, module: "AUTHORIZATION", action: "ROLE_READ" },
     { key: "permissions", label: "Permissões", icon: ShieldCheck, module: "AUTHORIZATION", action: "PERMISSION_READ" },
-    { key: "users", label: "Usuários", icon: Users, module: "AUTHORIZATION", action: "USER_ROLE_READ" },
+    { key: "users", label: "Atribuições", icon: Users, module: "AUTHORIZATION", action: "USER_ROLE_READ" },
 ] as const;
 
 type TabKey = typeof TABS[number]["key"];
@@ -43,6 +45,7 @@ const TABS_GRID_COLS: Record<number, string> = {
 export default function RolesPermissions() {
     const permissions = useUserStore((state) => state.permissions);
     const canCreateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_CREATE");
+    const canUpdateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_UPDATE");
 
     const visibleTabs = TABS.filter((tab) =>
         hasPermission(permissions, tab.module, tab.action)
@@ -76,6 +79,16 @@ export default function RolesPermissions() {
         setOpen();
     };
 
+    const handleOpenViewRole = (roleId: number) => {
+        setContent(<ViewRoleModal roleId={roleId} />);
+        setOpen();
+    };
+
+    const handleOpenEditRole = (roleId: number) => {
+        setContent(<EditRoleModal roleId={roleId} />);
+        setOpen();
+    };
+
     return (
         <div className="h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
@@ -83,8 +96,8 @@ export default function RolesPermissions() {
                     title="Cargos e permissões"
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
-                        { label: "Painel administrativo", href: "/admin" },
-                        { label: "Cargos e permissões" },
+                        { label: "Painel admin", href: "/admin" },
+                        { label: "Gestão" },
                         { label: activeTabLabel ?? "" },
                     ]}
                 />
@@ -161,6 +174,25 @@ export default function RolesPermissions() {
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            <div className="mt-3 flex items-center justify-end gap-2 border-t border-j-gray-100 pt-3">
+                                                {canUpdateRole && (
+                                                    <ButtonIcon
+                                                        onClick={() => handleOpenEditRole(role.id)}
+                                                        title="Editar"
+                                                        className="rounded-lg border-none bg-yellow-400 p-3 text-yellow-950 hover:bg-yellow-500 hover:text-yellow-950"
+                                                    >
+                                                        <Pencil size={20} />
+                                                    </ButtonIcon>
+                                                )}
+                                                <ButtonIcon
+                                                    onClick={() => handleOpenViewRole(role.id)}
+                                                    title="Visualizar"
+                                                    className="rounded-lg border-none bg-j-blue-800 p-3 text-white hover:bg-j-blue-500 hover:text-white"
+                                                >
+                                                    <Eye size={20} />
+                                                </ButtonIcon>
+                                            </div>
                                         </article>
                                     ))}
                                 </div>
@@ -216,7 +248,7 @@ export default function RolesPermissions() {
                     <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
                             <div>
-                                <h2 className="font-black text-j-blue-800">Usuários</h2>
+                                <h2 className="font-black text-j-blue-800">Permissões</h2>
                                 <p className="text-sm text-j-gray-600">
                                     Veja e gerencie o cargo de cada usuário administrativo.
                                 </p>
