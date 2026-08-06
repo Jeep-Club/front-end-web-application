@@ -31,7 +31,7 @@ export function PersonalDataCard({
     onEdit,
 }: PersonalDataCardProps) {
     return (
-        <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+        <section className="mx-auto flex w-full max-w-[360px] flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
             <header className="flex items-center justify-between gap-3 border-b border-j-gray-200 px-4 py-3">
                 <div className="min-w-0">
                     <h2 className="text-sm font-extrabold text-j-gray-700">
@@ -59,7 +59,7 @@ export function PersonalDataCard({
             </header>
 
             <div className="flex flex-col gap-4 p-4">
-                <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-j-gray-100">
+                <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-j-gray-100 sm:h-52">
                     {photoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

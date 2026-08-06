@@ -180,7 +180,7 @@ function CardExportButton({
             </Button>
 
             {isOpen && !isDisabled && (
-                <div className="absolute bottom-[calc(100%+8px)] right-0 z-50 w-64 overflow-hidden rounded-xl border border-j-gray-200 bg-j-white p-2 shadow-xl">
+                <div className="fixed inset-x-4 bottom-4 z-50 max-h-[70dvh] overflow-y-auto rounded-xl border border-j-gray-200 bg-j-white p-2 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-[calc(100%+8px)] sm:right-0 sm:w-64 sm:overflow-hidden sm:shadow-xl">
                     <div className="border-b border-j-gray-100 px-3 py-2">
                         <p className="text-xs font-extrabold text-j-gray-700">
                             Exportar em{" "}
