@@ -33,10 +33,18 @@ const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
 ];
 
 const STEPS = [
-    { step: 1, fields: ["plate", "renavam", "brand", "nickname"] as const },
-    { step: 2, fields: ["model", "color", "manufacturingYear", "modelYear", "seatingCapacity", "fuelType", "engineDisplacement", "towing"] as const },
-    { step: 3, fields: ["photo"] as const },
+    { step: 1, label: "Identificação", fields: ["plate", "renavam", "brand", "nickname"] as const },
+    { step: 2, label: "Características", fields: ["model", "color", "manufacturingYear", "modelYear", "seatingCapacity", "fuelType", "engineDisplacement", "towing"] as const },
+    { step: 3, label: "Foto", fields: ["photo"] as const },
 ];
+
+const LIGHT_FIELDS_CLASS = `
+    [&_label]:!text-j-gray-700
+    [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!px-4 [&_input]:!py-3
+    [&_input]:!text-j-gray-700 [&_input]:placeholder:!text-j-gray-400 [&_input:focus]:!bg-j-white
+    [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!px-4 [&_select]:!py-3
+    [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
+`;
 
 function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -73,42 +81,54 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
     };
 
     return (
-        <div onKeyDown={handleKeyDown} className="w-full flex flex-col items-center gap-4">
-            <div className="flex items-center justify-center gap-2">
-                {STEPS.map(({ step, fields }) => {
+        <div onKeyDown={handleKeyDown} className="flex w-full flex-col items-center gap-5">
+            <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-j-gray-100 p-1.5">
+                {STEPS.map(({ step, label, fields }) => {
                     const hasError = fields.some((field) => !!errors[field]);
+                    const isActive = step === currentStep;
+                    const isCompleted = step < currentStep;
                     return (
                         <div
                             key={step}
                             title={`Etapa ${step}`}
                             className={twMerge(
-                                "w-2.5 h-2.5 rounded-full transition-colors",
+                                "flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors md:text-sm",
                                 hasError
-                                    ? "bg-j-red-400"
-                                    : step === currentStep
-                                        ? "bg-j-yellow-300"
-                                        : "bg-j-blue-700"
+                                    ? "bg-j-red-100 text-j-red-600"
+                                    : isActive
+                                        ? "bg-j-blue-700 text-j-white shadow-sm"
+                                        : isCompleted
+                                            ? "bg-j-blue-100/30 text-j-blue-700"
+                                            : "text-j-gray-400"
                             )}
-                        />
+                        >
+                            <span className={twMerge(
+                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]",
+                                isActive ? "bg-j-yellow-300 text-j-blue-800" : "bg-j-white",
+                            )}>
+                                {step}
+                            </span>
+                            <span className="hidden truncate sm:inline">{label}</span>
+                        </div>
                     );
                 })}
             </div>
 
-            <div className="w-full min-h-[420px]">
-            <div className={currentStep === 1 ? "w-full flex flex-col gap-4" : "hidden"}>
-                <InputRegister label="Placa" name="plate" placeholder="ESC-1B23" mask={maskPlate} value={vehicle?.plate} required />
-                <InputRegister label="Renavam" name="renavam" placeholder="00000000000" mask={maskRenavam} value={vehicle?.renavam} required />
-                <InputRegister label="Marca" name="brand" placeholder="Ex: Jeep" value={vehicle?.brand} required />
-                <InputRegister label="Apelido" name="nickname" placeholder="Ex: Marruá" value={vehicle?.nickname ?? undefined} />
-            </div>
+            <div className="min-h-[360px] w-full">
+                <div className={currentStep === 1 ? twMerge("grid w-full gap-4 sm:grid-cols-2", LIGHT_FIELDS_CLASS) : "hidden"}>
+                    <InputRegister label="Placa" name="plate" placeholder="ESC-1B23" mask={maskPlate} value={vehicle?.plate} required />
+                    <InputRegister label="Renavam" name="renavam" placeholder="00000000000" mask={maskRenavam} value={vehicle?.renavam} required />
+                    <InputRegister label="Marca" name="brand" placeholder="Ex: Jeep" value={vehicle?.brand} required />
+                    <InputRegister label="Apelido" name="nickname" placeholder="Ex: Marruá" value={vehicle?.nickname ?? undefined} />
+                </div>
 
-            <div className={currentStep === 2 ? "w-full flex flex-col gap-4" : "hidden"}>
-                <div className="w-full grid grid-cols-2 gap-4">
+            <div className={currentStep === 2 ? twMerge("flex w-full flex-col gap-4", LIGHT_FIELDS_CLASS) : "hidden"}>
+                <div className="grid w-full gap-4 sm:grid-cols-2">
                     <InputRegister label="Modelo" name="model" placeholder="Ex: Wrangler" value={vehicle?.model} required />
                     <InputRegister label="Cor" name="color" placeholder="Ex: Preto" value={vehicle?.color} required />
                 </div>
 
-                <div className="w-full grid grid-cols-2 gap-4">
+                <div className="grid w-full gap-4 sm:grid-cols-2">
                     <InputRegister
                         type="text"
                         inputMode="numeric"
@@ -133,7 +153,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                     />
                 </div>
 
-                <div className="w-full grid grid-cols-2 gap-4">
+                <div className="grid w-full gap-4 sm:grid-cols-2">
                     <InputRegister
                         type="number"
                         label="Assentos"
@@ -161,25 +181,35 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                     ))}
                 </SelectRegister>
 
-                <InputCheckbox label="Possui guincho/reboque" name="towing" value={vehicle?.towing ?? undefined} />
-            </div>
+                <InputCheckbox
+                    label="Possui guincho/reboque"
+                    name="towing"
+                    value={vehicle?.towing ?? undefined}
+                    className="rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 [&>span:last-child]:!text-j-gray-700 [&>span:first-of-type]:!border-j-gray-300 [&>span:first-of-type]:!bg-j-white"
+                />
+                </div>
 
-            <div className={currentStep === 3 ? "w-full flex flex-col gap-4" : "hidden"}>
-                <InputFile.Image name="photo" label="Foto do veículo" maxFiles={1} />
+            <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
+                <InputFile.Image
+                    name="photo"
+                    label="Foto do veículo"
+                    maxFiles={1}
+                    className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
+                />
                 {isEditMode && vehicle?.photo && (
-                    <p className="text-xs text-j-transparent-white">
+                    <p className="text-xs text-j-gray-500">
                         Já existe uma foto cadastrada. Envie uma nova apenas se quiser substituí-la.
                     </p>
                 )}
             </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
                 {currentStep > 1 && (
                     <Button
                         type="button"
                         onClick={onBack}
-                        className="flex-1 bg-transparent border-2 border-j-transparent-white text-j-white hover:bg-j-transparent-white/10 hover:text-j-white"
+                        className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
                     >
                         <ArrowLeft size={16} />
                         Voltar
@@ -187,7 +217,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                 )}
 
                 {currentStep < STEPS.length ? (
-                    <Button type="button" onClick={handleNext} className="flex-1">
+                    <Button type="button" onClick={handleNext} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">
                         Próximo
                         <ArrowRight size={16} />
                     </Button>
@@ -209,7 +239,7 @@ function SubmitButton({ isEditMode }: { isEditMode: boolean }) {
         <Button
             type="submit"
             disabled={formState.isSubmitting}
-            className="flex-1 bg-j-yellow-300 text-j-black hover:bg-j-yellow-500 hover:text-j-black"
+            className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
         >
             {label}
         </Button>
@@ -274,37 +304,38 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
     return (
         <div
             className={`
-                relative w-full max-w-125
-                flex flex-col gap-4 md:gap-6
-                p-4 md:p-8 max-h-[90dvh] overflow-y-auto overflow-x-hidden
-                bg-j-blue-800 rounded-2xl
-                shadow-[-1px_16px_23px_1px_rgba(0,0,0,0.35)]
-                text-j-white
+                relative flex max-h-[92dvh] w-full max-w-3xl
+                flex-col overflow-y-auto overflow-x-hidden
+                rounded-3xl bg-j-white shadow-2xl
             `}
         >
             <ButtonIcon
                 onClick={setClose}
-                className="absolute top-3 right-3 md:top-4 md:right-4 text-j-transparent-white hover:text-j-yellow-300"
+                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
                 <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
             </ButtonIcon>
 
-            <div className="flex flex-col gap-2 pr-6 md:pr-8">
-                <span className="flex w-10 h-10 items-center justify-center rounded-full bg-j-blue-700 text-j-yellow-300">
-                    <Car size={20} />
-                </span>
-                <h2 className="text-lg md:text-2xl font-extrabold text-j-white">
-                    {isEditMode ? "Editar veículo" : "Incluir veículo"}
-                </h2>
-                <p className="text-xs md:text-sm text-j-transparent-white">
-                    {isEditMode
-                        ? "Atualize os dados do seu jipe."
-                        : "Cadastre o seu jipe pra ele ficar vinculado ao seu perfil no clube."}
-                </p>
-            </div>
+            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                        <Car size={20} />
+                    </span>
+                    <div>
+                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                            {isEditMode ? "Editar veículo" : "Incluir veículo"}
+                        </h2>
+                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                            {isEditMode
+                                ? "Atualize os dados do seu jipe."
+                                : "Cadastre o seu jipe pra ele ficar vinculado ao seu perfil no clube."}
+                        </p>
+                    </div>
+                </div>
+            </header>
 
             {isEditMode && isLoadingVehicle ? (
-                <div className="flex items-center justify-center gap-2 py-10 text-j-transparent-white">
+                <div className="flex items-center justify-center gap-2 px-5 py-16 text-j-gray-500 md:px-8">
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados do veículo...
                 </div>
@@ -313,7 +344,7 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                     schema={isEditMode ? editVehicleMemberFormSchema : includeVehicleMemberFormSchema}
                     onSubmit={handleSubmit}
                     onError={(errors) => console.log(errors)}
-                    className="gap-4"
+                    className="gap-5 px-5 py-5 md:px-8 md:py-6"
                 >
                     <VehicleStepsFields
                         currentStep={currentStep}

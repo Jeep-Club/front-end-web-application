@@ -4,11 +4,9 @@ import { loginResponseSchema } from "@/schemas/auth/login/loginResponse";
 import { login } from '@/utils/auth/login';
 import { HttpAPIRoutes } from '@/utils/http/api';
 import { meResponseSchema } from '@/schemas/auth/me/me';
-import { sign } from '@/services/token/sign';
-import { mapMePermissionToModule } from '@/utils/permission/userPermission';
-import { permissionResponseSchema } from '@/schemas/auth/permission/permissionResponse';
 import { me } from '@/utils/auth/me';
 import { unMaskCPF } from '@/utils/masks/maskCPF';
+import { extractApiErrorMessage } from '@/utils/http/apiError';
 
 export default async function loginAction({ cpf, senha }: LoginRequest) {
 
@@ -51,6 +49,12 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
 
         return data;
     } catch (error) {
-        throw new Error('Erro ao fazer login', { cause: error });
+        throw new Error(
+            extractApiErrorMessage(
+                error,
+                error instanceof Error ? error.message : 'Erro ao fazer login',
+            ),
+            { cause: error },
+        );
     }
 }

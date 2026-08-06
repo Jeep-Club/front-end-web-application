@@ -31,7 +31,7 @@ export function PersonalDataCard({
     onEdit,
 }: PersonalDataCardProps) {
     return (
-        <section className="flex w-full max-w-[320px] flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+        <section className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
             <header className="flex items-center justify-between gap-3 border-b border-j-gray-200 px-4 py-3">
                 <div className="min-w-0">
                     <h2 className="text-sm font-extrabold text-j-gray-700">

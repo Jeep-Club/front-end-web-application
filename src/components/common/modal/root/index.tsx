@@ -13,7 +13,7 @@ export function ModalRoot({ children, onClose, isOpen }: ModalRootProps) {
             onClick={onClose}
             style={{ backgroundColor: '#000000CC' }}
         >
-            <div className="w-full max-w-125"
+            <div className="flex w-full max-w-3xl justify-center"
                 onClick={(e) => e.stopPropagation()}>
                 {children}
             </div>
