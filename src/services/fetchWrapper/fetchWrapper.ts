@@ -18,6 +18,8 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
     const response = await fetch(url, {
         ...requestProps,
         headers: {
+            'Accept': 'application/json',
+            'Accept-Language': 'pt-BR',
             ...headers,
             'Content-Type': 'application/json'
         },
