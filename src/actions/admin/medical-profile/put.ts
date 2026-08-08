@@ -3,6 +3,7 @@
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from '@/utils/http/api';
 import { putMedicalProfileResponseSchema } from "@/schemas/admin/medical-profile";
+import { extractApiErrorMessage } from '@/utils/http/apiError';
 
 interface Props {
     id: number;
@@ -19,6 +20,6 @@ export async function putMedicalProfileAction({ id, data }: Props) {
             });
             return response.data;
         } catch (error) {
-            throw new Error('Erro ao atualizar perfil médico', { cause: error });
+            throw new Error(extractApiErrorMessage(error, 'Erro ao atualizar perfil médico'), { cause: error });
         }
 }
