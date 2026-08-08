@@ -11,6 +11,8 @@ import { useModal } from "@/providers/ModalProvider";
 import { createRoleRequestSchema } from "@/schemas/authorization/create";
 import { createRoleAction } from "@/actions/authorization/create-role";
 
+const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+
 export function CreateRoleModal() {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
@@ -32,38 +34,39 @@ export function CreateRoleModal() {
     return (
         <div
             className={`
-                relative w-full max-w-125
-                flex flex-col gap-4 md:gap-6
-                p-4 md:p-8 max-h-[90dvh] overflow-y-auto overflow-x-hidden
-                bg-j-blue-800 rounded-2xl
-                shadow-[-1px_16px_23px_1px_rgba(0,0,0,0.35)]
-                text-j-white
+                relative flex max-h-[92dvh] w-full max-w-125
+                flex-col overflow-y-auto overflow-x-hidden
+                rounded-3xl bg-j-white shadow-2xl
             `}
         >
             <ButtonIcon
                 onClick={setClose}
-                className="absolute top-3 right-3 md:top-4 md:right-4 text-j-transparent-white hover:text-j-yellow-300"
+                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
                 <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
             </ButtonIcon>
 
-            <div className="flex flex-col gap-2 pr-6 md:pr-8">
-                <span className="flex w-10 h-10 items-center justify-center rounded-full bg-j-blue-700 text-j-yellow-300">
-                    <KeyRound size={20} />
-                </span>
-                <h2 className="text-lg md:text-2xl font-extrabold text-j-white">
-                    Criar cargo
-                </h2>
-                <p className="text-xs md:text-sm text-j-transparent-white">
-                    Um cargo define o que os administradores com ele podem acessar e fazer.
-                </p>
-            </div>
+            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                        <KeyRound size={20} />
+                    </span>
+                    <div>
+                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                            Criar cargo
+                        </h2>
+                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                            Um cargo define o que os administradores com ele podem acessar e fazer.
+                        </p>
+                    </div>
+                </div>
+            </header>
 
             <Form<CreateRoleRequest>
                 schema={createRoleRequestSchema}
                 onSubmit={handleSubmit}
                 onError={(errors) => console.log(errors)}
-                className="gap-4"
+                className="gap-4 px-5 py-5 md:px-8 md:py-6"
             >
                 <InputRegister
                     label="Nome do cargo"
@@ -71,6 +74,8 @@ export function CreateRoleModal() {
                     placeholder="Ex.: Administrador de autorização"
                     maxLength={100}
                     required
+                    labelClassName="text-j-gray-700"
+                    className={LIGHT_FIELD_CLASS}
                 />
 
                 <TextareaRegister
@@ -79,15 +84,19 @@ export function CreateRoleModal() {
                     placeholder="Explique para que este cargo será utilizado."
                     maxLength={255}
                     rows={4}
+                    labelClassName="text-j-gray-700"
+                    className={LIGHT_FIELD_CLASS}
                 />
 
-                <Button
-                    type="submit"
-                    disabled={mutation.isPending}
-                    className="w-full bg-j-yellow-300 text-j-black hover:bg-j-yellow-500 hover:text-j-black"
-                >
-                    {mutation.isPending ? "Criando..." : "Criar cargo"}
-                </Button>
+                <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
+                    <Button
+                        type="submit"
+                        disabled={mutation.isPending}
+                        className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
+                    >
+                        {mutation.isPending ? "Criando..." : "Criar cargo"}
+                    </Button>
+                </div>
             </Form>
         </div>
     );
