@@ -6,6 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { PageHeader } from "@/components/common/page-header";
 import { VehiclesTabContent } from "@/components/pages/profile/tabs/vehicles/VehiclesTabContent";
 import { PersonalDataTab } from "@/components/pages/profile/tabs/personal/PersonalDataTab";
+import { MedicalProfileTab } from "@/components/pages/profile/tabs/medical/MedicalProfileTab";
 
 const TABS = [
     { key: "personal", label: "Dados pessoais", icon: IdCard, content: "dados pessoal" },
@@ -61,6 +62,8 @@ export default function Profile() {
                 <div className="flex min-h-40 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-3 shadow-sm sm:p-4 lg:p-6">
                     {activeTab === "personal" ? (
                         <PersonalDataTab />
+                    ) : activeTab === "medical" ? (
+                        <MedicalProfileTab />
                     ) : activeTab === "vehicles" ? (
                         <VehiclesTabContent />
                     ) : (
