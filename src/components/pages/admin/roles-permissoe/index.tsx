@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
-import { Eye, KeyRound, Pencil, Plus, ShieldCheck, Users } from "lucide-react";
+import { Eye, KeyRound, Pencil, Plus, Power, PowerOff, ShieldCheck, Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -12,6 +13,8 @@ import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { listRolesAction } from "@/actions/authorization/list-roles";
+import { activateRoleAction } from "@/actions/authorization/activate-role";
+import { deactivateRoleAction } from "@/actions/authorization/deactivate-role";
 import { CreateRoleModal } from "./CreateRoleModal";
 import { ViewRoleModal } from "./ViewRoleModal";
 import { EditRoleModal } from "./EditRoleModal";
@@ -46,6 +49,8 @@ export default function RolesPermissions() {
     const permissions = useUserStore((state) => state.permissions);
     const canCreateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_CREATE");
     const canUpdateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_UPDATE");
+    const canEnableRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_ENABLE");
+    const canDisableRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_DISABLE");
 
     const visibleTabs = TABS.filter((tab) =>
         hasPermission(permissions, tab.module, tab.action)
@@ -54,6 +59,7 @@ export default function RolesPermissions() {
         visibleTabs.some((tab) => tab.key === key);
 
     const { setContent, setOpen } = useModal();
+    const queryClient = useQueryClient();
 
     const [activeTab, setActiveTab] = useState<TabKey>(
         () => visibleTabs[0]?.key ?? TABS[0].key
@@ -73,6 +79,16 @@ export default function RolesPermissions() {
     });
 
     const activeTabLabel = TABS.find((tab) => tab.key === activeTab)?.label;
+
+    const toggleRoleStatusMutation = useMutation({
+        mutationFn: (role: RoleResponse) =>
+            role.status === "ACTIVE" ? deactivateRoleAction(role.id) : activateRoleAction(role.id),
+        onSuccess: (_, role) => {
+            toast.success(role.status === "ACTIVE" ? "Cargo desativado com sucesso!" : "Cargo ativado com sucesso!");
+            queryClient.invalidateQueries({ queryKey: ["authorization", "roles"] });
+        },
+        onError: (error) => toast.error(error.message || "Erro ao alterar status do cargo."),
+    });
 
     const handleOpenCreateRole = () => {
         setContent(<CreateRoleModal />);
@@ -176,6 +192,23 @@ export default function RolesPermissions() {
                                             </div>
 
                                             <div className="mt-3 flex items-center justify-end gap-2 border-t border-j-gray-100 pt-3">
+                                                {role.status !== "DELETED" && (
+                                                    (role.status === "ACTIVE" ? canDisableRole : canEnableRole) && (
+                                                        <ButtonIcon
+                                                            onClick={() => toggleRoleStatusMutation.mutate(role)}
+                                                            disabled={toggleRoleStatusMutation.isPending}
+                                                            title={role.status === "ACTIVE" ? "Desativar" : "Ativar"}
+                                                            className={twMerge(
+                                                                "rounded-lg border-none p-3 text-white",
+                                                                role.status === "ACTIVE"
+                                                                    ? "bg-red-500 hover:bg-red-600"
+                                                                    : "bg-j-green-600 hover:bg-j-green-700"
+                                                            )}
+                                                        >
+                                                            {role.status === "ACTIVE" ? <PowerOff size={20} /> : <Power size={20} />}
+                                                        </ButtonIcon>
+                                                    )
+                                                )}
                                                 {canUpdateRole && (
                                                     <ButtonIcon
                                                         onClick={() => handleOpenEditRole(role.id)}
