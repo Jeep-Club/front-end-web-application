@@ -13,6 +13,7 @@ import {
     captureCardElement,
     exportCardImages,
 } from "@/utils/card-export/exportCard";
+import { maskDate } from "@/utils/masks";
 
 interface MembershipCardProps {
     profilePhotoUrl?: string | null;
@@ -33,23 +34,6 @@ type CardSide = "front" | "back";
 
 function displayValue(value?: string | null) {
     return value?.trim() || "—";
-}
-
-function formatDate(value?: string | null) {
-    if (!value) {
-        return "—";
-    }
-
-    const normalizedDate = /^\d{4}-\d{2}-\d{2}$/.test(value)
-        ? `${value}T12:00:00`
-        : value;
-    const date = new Date(normalizedDate);
-
-    if (Number.isNaN(date.getTime())) {
-        return value;
-    }
-
-    return new Intl.DateTimeFormat("pt-BR").format(date);
 }
 
 function formatMembershipId(value?: string | null) {
@@ -137,7 +121,7 @@ function MembershipCardFront({
         >
             <div className="flex h-[clamp(12px,4cqw,26px)] w-full shrink-0 items-center justify-end bg-j-blue-800 px-[clamp(7px,2.6cqw,17px)]">
                 <span className="truncate text-[clamp(5px,1.15cqw,8px)] font-bold uppercase tracking-[0.08em] text-j-white/90">
-                    Expedida em {formatDate(issuedAt)}
+                    Expedida em {maskDate(issuedAt, { includeTime: false })}
                 </span>
             </div>
             <div className="h-[clamp(2px,0.65cqw,4px)] w-full shrink-0 bg-j-yellow-300" />
@@ -200,7 +184,7 @@ function MembershipCardFront({
                         />
                         <CardField
                             label="Nascimento"
-                            value={formatDate(birthDate)}
+                            value={maskDate(birthDate, { includeTime: false })}
                         />
                     </div>
 
@@ -213,7 +197,7 @@ function MembershipCardFront({
                         />
                         <CardField
                             label="Membro desde"
-                            value={formatDate(memberSince)}
+                            value={maskDate(memberSince, { includeTime: false })}
                         />
                     </div>
 

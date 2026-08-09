@@ -9,23 +9,10 @@ import { RefreshCw } from "lucide-react";
 import { getUserProfileAction } from "@/actions/profile/get";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
+import { maskDate } from "@/utils/masks";
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
-
-function formatMemberSince(createdAt: string) {
-    const date = new Date(createdAt);
-
-    if (Number.isNaN(date.getTime())) {
-        return "Não informado";
-    }
-
-    return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
-}
 
 export function PersonalDataTab() {
     const { setContent, setOpen } = useModal();
@@ -89,9 +76,11 @@ export function PersonalDataTab() {
                 }
                 fullName={personalData.name}
                 roleLabel="Associado"
-                memberSince={formatMemberSince(
-                    personalData.createdAt,
-                )}
+                memberSince={maskDate(personalData.createdAt, {
+                    dateStyle: "long",
+                    fallback: "Não informado",
+                    includeTime: false,
+                })}
                 registrationNumber={`ID#${personalData.id}`}
                 onEdit={handleOpenEdit}
             />

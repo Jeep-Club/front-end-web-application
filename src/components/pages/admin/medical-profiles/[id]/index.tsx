@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/common/button";
+import { maskDate } from "@/utils/masks";
 
 interface Props {
   canUpdate: boolean;
@@ -13,20 +14,6 @@ const cardStyle = "bg-white p-8 rounded-2xl shadow-xl border border-slate-100 fl
 const tagStyle = "px-3 py-1 text-xs font-bold rounded-md";
 
 export default function AdminMedicalProfilePage({ canUpdate, medicalProfile }: Props) {
-  // Simple date formatter
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      }).toUpperCase();
-    } catch {
-      return dateString;
-    }
-  };
-
   return (
     <div className="bg-slate-100 min-h-screen p-10">
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
@@ -63,8 +50,8 @@ export default function AdminMedicalProfilePage({ canUpdate, medicalProfile }: P
           
           {/* Metadata */}
           <div className="flex justify-between items-center text-sm text-slate-500">
-            <span>Criado em: {formatDate(medicalProfile.createdAt)}</span>
-            <span>Última atualização: {formatDate(medicalProfile.updatedAt)}</span>
+            <span>Criado em: {maskDate(medicalProfile.createdAt)}</span>
+            <span>Última atualização: {maskDate(medicalProfile.updatedAt)}</span>
           </div>
         </div>
 
