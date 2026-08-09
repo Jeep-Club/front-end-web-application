@@ -9,19 +9,12 @@ import { PageHeader } from "@/components/common/page-header";
 import { createMockAdminUsersDataSource } from "@/mocks/admin/users";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
-import type {
-    AdminRole,
-    UserListItem,
-    UserListQuery,
-    UserManagementPermissions,
-    UserStatus,
-} from "@/types/admin/users";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { UserDetailsModal } from "./UserDetailsModal";
 import { UserManagementView } from "./UserManagementView";
 import { UserRolesModal } from "./UserRolesModal";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
+import { useRouter } from "next/navigation";
 
 const INITIAL_QUERY: UserListQuery = {
     search: "",
@@ -32,12 +25,17 @@ const INITIAL_QUERY: UserListQuery = {
     // sort: "name,asc",
 };
 
-export default function AdminUsersPage() {
+interface Props {
+    users: AdminUser[];
+}
+
+export default function AdminUsersPage({ users }: Props) {
     const permissionsFromStore = useUserStore((state) => state.permissions);
     const { setContent, setOpen } = useModal();
     const queryClient = useQueryClient();
     const [query, setQuery] = useState<UserListQuery>(INITIAL_QUERY);
     const dataSource = useMemo(() => createMockAdminUsersDataSource(), []);
+    const router = useRouter();
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
         canReadUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_READ"),
@@ -96,18 +94,22 @@ export default function AdminUsersPage() {
         refreshUsers();
     }, [queryClient, refreshUsers]);
 
-    const handleViewUser = useCallback((userId: number) => {
-        setContent(
-            <UserDetailsModal
-                userId={userId}
-                canReadRoles={permissions.canReadUserRoles}
-                onLoadUser={dataSource.getUser}
-            />,
-        );
-        setOpen();
-    }, [dataSource, permissions.canReadUserRoles, setContent, setOpen]);
+    // const handleViewUser = useCallback((userId: number) => {
+    //     setContent(
+    //         <UserDetailsModal
+    //             userId={userId}
+    //             canReadRoles={permissions.canReadUserRoles}
+    //             onLoadUser={dataSource.getUser}
+    //         />,
+    //     );
+    //     setOpen();
+    // }, [dataSource, permissions.canReadUserRoles, setContent, setOpen]);
 
-    const handleChangeUserStatus = useCallback((user: UserListItem) => {
+    const handleViewUser = useCallback((userId: number) => {
+        router.push(`/admin/users/${userId}`);
+    }, [router]);
+
+    const handleChangeUserStatus = useCallback((user: AdminUser) => {
         const onConfirm = user.status === "DISABLED"
             ? dataSource.enableUser
             : dataSource.disableUser;
@@ -122,17 +124,21 @@ export default function AdminUsersPage() {
         setOpen();
     }, [dataSource, setContent, setOpen, updateUserInCache]);
 
-    const handleManageRoles = useCallback((user: UserListItem) => {
-        setContent(
-            <UserRolesModal
-                user={user}
-                onLoadRoles={dataSource.listRoles}
-                onSaveRoles={dataSource.replaceUserRoles}
-                onSuccess={updateRolesInCache}
-            />,
-        );
-        setOpen();
-    }, [dataSource, setContent, setOpen, updateRolesInCache]);
+    // const handleManageRoles = useCallback((user: AdminUser) => {
+    //     setContent(
+    //         <UserRolesModal
+    //             user={user}
+    //             onLoadRoles={dataSource.listRoles}
+    //             onSaveRoles={dataSource.replaceUserRoles}
+    //             onSuccess={updateRolesInCache}
+    //         />,
+    //     );
+    //     setOpen();
+    // }, [dataSource, setContent, setOpen, updateRolesInCache]);
+
+    const handleManageRoles = useCallback((user: AdminUser) => {
+        router.push(`/admin/users/${user.id}/roles`);
+    }, [router]);
 
     function updateFilters(patch: Partial<UserListQuery>) {
         setQuery((current) => ({ ...current, ...patch, page: 0 }));
@@ -185,9 +191,9 @@ export default function AdminUsersPage() {
                 />
 
                 <UserManagementView
-                    users={page?.content ?? []}
+                    users={users}
                     query={query}
-                    roles={rolesQuery.data ?? []}
+                    // roles={rolesQuery.data ?? []}
                     permissions={permissions}
                     totalItems={page?.totalElements ?? 0}
                     totalPages={page?.totalPages ?? 0}

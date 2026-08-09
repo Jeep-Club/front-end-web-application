@@ -12,7 +12,6 @@ import { Button, ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { useModal } from "@/providers/ModalProvider";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
-import type { AdminRole, UserListItem } from "@/types/admin/users";
 import { ROLE_STATUS_LABEL } from "./user-display";
 import { useModalFocusRestoration } from "./useModalFocusRestoration";
 
@@ -23,7 +22,7 @@ const roleAssignmentSchema = z.object({
 type RoleAssignmentForm = z.infer<typeof roleAssignmentSchema>;
 
 interface UserRolesModalProps {
-    user: UserListItem;
+    user: AdminUser;
     onLoadRoles: () => Promise<AdminRole[]>;
     onSaveRoles: (userId: number, roleIds: number[]) => Promise<AdminRole[]>;
     onSuccess: (userId: number, roles: AdminRole[]) => void;
@@ -103,7 +102,7 @@ function RoleAssignmentFormContent({
     onConfirmRemoval,
 }: {
     roles: AdminRole[];
-    user: UserListItem;
+    user: AdminUser;
     isSaving: boolean;
     errorMessage?: string;
     pendingRoleIds?: number[];
@@ -113,7 +112,7 @@ function RoleAssignmentFormContent({
 }) {
     const { setClose } = useModal();
     const removedRoles = pendingRoleIds
-        ? user.roles.filter((role) => !pendingRoleIds.includes(role.id))
+        ? useModaler.roles.filter((role) => !pendingRoleIds.includes(role.id))
         : [];
 
     return (

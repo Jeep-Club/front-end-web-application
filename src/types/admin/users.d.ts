@@ -1,11 +1,11 @@
-export type UserStatus =
+type UserStatus =
     | "ACTIVE"
     | "LOCKED"
     | "DISABLED"
     | "PENDING_FIRST_ACCESS"
     | "CHANGE_PASSWORD_REQUIRED";
 
-export interface AdminUser {
+interface AdminUser {
     id: number;
     name: string;
     cpf: string;
@@ -17,9 +17,9 @@ export interface AdminUser {
     updatedAt: string | null;
 }
 
-export type RoleStatus = "ACTIVE" | "INACTIVE" | "DELETED";
+type RoleStatus = "ACTIVE" | "INACTIVE" | "DELETED";
 
-export interface AdminRole {
+interface AdminRole {
     id: number;
     name: string;
     description: string | null;
@@ -29,11 +29,11 @@ export interface AdminRole {
     deletedAt: string | null;
 }
 
-export interface UserListItem extends AdminUser {
+interface UserListItem extends AdminUser {
     roles: AdminRole[];
 }
 
-export interface UserListQuery {
+interface UserListQuery {
     search?: string;
     statuses?: UserStatus[];
     roleIds?: number[];
@@ -41,8 +41,7 @@ export interface UserListQuery {
     pageSize: number;
     sort?: string;
 }
-
-export interface UserManagementPermissions {
+interface UserManagementPermissions {
     canReadUsers: boolean;
     canDisableUsers: boolean;
     canEnableUsers: boolean;
@@ -52,7 +51,7 @@ export interface UserManagementPermissions {
     canRevokeRoles: boolean;
 }
 
-export interface AdminUsersDataSource {
+interface AdminUsersDataSource {
     listUsers(query: UserListQuery): Promise<PageResponse<UserListItem>>;
     getUser(userId: number): Promise<UserListItem>;
     listRoles(): Promise<AdminRole[]>;

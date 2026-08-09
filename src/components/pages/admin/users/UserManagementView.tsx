@@ -9,19 +9,13 @@ import { ButtonIcon } from "@/components/common/button";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
 import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
-import type {
-    AdminRole,
-    UserListItem,
-    UserListQuery,
-    UserManagementPermissions,
-    UserStatus,
-} from "@/types/admin/users";
+
 import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "./user-display";
 
 interface UserManagementViewProps {
-    users: UserListItem[];
+    users: AdminUser[];
     query: UserListQuery;
-    roles: AdminRole[];
+    // roles: AdminRole[];
     permissions: UserManagementPermissions;
     totalItems: number;
     totalPages: number;
@@ -34,14 +28,14 @@ interface UserManagementViewProps {
     onClearFilters: () => void;
     onPaginationChange: (pagination: PaginationState) => void;
     onViewUser: (userId: number) => void;
-    onChangeUserStatus: (user: UserListItem) => void;
-    onManageRoles: (user: UserListItem) => void;
+    onChangeUserStatus: (user: AdminUser) => void;
+    onManageRoles: (user: AdminUser) => void;
 }
 
 export function UserManagementView({
     users,
     query,
-    roles,
+    // roles,
     permissions,
     totalItems,
     totalPages,
@@ -65,8 +59,8 @@ export function UserManagementView({
         && permissions.canAssignRoles
         && permissions.canRevokeRoles;
 
-    const columns = useMemo<ColumnDef<UserListItem, unknown>[]>(() => {
-        const baseColumns: ColumnDef<UserListItem, unknown>[] = [
+    const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => {
+        const baseColumns: ColumnDef<AdminUser, unknown>[] = [
             {
                 accessorKey: "name",
                 header: "Nome",
@@ -107,34 +101,34 @@ export function UserManagementView({
             },
         ];
 
-        if (permissions.canReadUserRoles) {
-            baseColumns.push({
-                accessorKey: "roles",
-                header: "Papéis",
-                cell: ({ row }) => {
-                    const userRoles = row.original.roles;
-                    if (!userRoles.length) return "—";
+        // if (permissions.canReadUserRoles) {
+        //     baseColumns.push({
+        //         accessorKey: "roles",
+        //         header: "Papéis",
+        //         cell: ({ row }) => {
+        //             const userRoles = row.original.roles;
+        //             if (!userRoles.length) return "—";
 
-                    return (
-                        <div className="flex max-w-64 flex-wrap gap-1.5">
-                            {userRoles.map((role) => (
-                                <span
-                                    key={role.id}
-                                    className={twMerge(
-                                        "rounded-full border px-2 py-0.5 text-[11px] font-bold",
-                                        role.status === "ACTIVE"
-                                            ? "border-j-blue-200 bg-j-blue-100/20 text-j-blue-800"
-                                            : "border-j-gray-200 bg-j-gray-100 text-j-gray-500",
-                                    )}
-                                >
-                                    {role.name}{role.status !== "ACTIVE" ? ` · ${role.status === "INACTIVE" ? "inativo" : "excluído"}` : ""}
-                                </span>
-                            ))}
-                        </div>
-                    );
-                },
-            });
-        }
+        //             return (
+        //                 <div className="flex max-w-64 flex-wrap gap-1.5">
+        //                     {userRoles.map((role) => (
+        //                         <span
+        //                             key={role.id}
+        //                             className={twMerge(
+        //                                 "rounded-full border px-2 py-0.5 text-[11px] font-bold",
+        //                                 role.status === "ACTIVE"
+        //                                     ? "border-j-blue-200 bg-j-blue-100/20 text-j-blue-800"
+        //                                     : "border-j-gray-200 bg-j-gray-100 text-j-gray-500",
+        //                             )}
+        //                         >
+        //                             {role.name}{role.status !== "ACTIVE" ? ` · ${role.status === "INACTIVE" ? "inativo" : "excluído"}` : ""}
+        //                         </span>
+        //                     ))}
+        //                 </div>
+        //             );
+        //         },
+        //     });
+        // }
 
         baseColumns.push(
             {
@@ -254,7 +248,7 @@ export function UserManagementView({
                     ))}
                 </Select.Unregister>
 
-                {permissions.canReadRoleCatalog && permissions.canReadUserRoles && (
+                {/* {permissions.canReadRoleCatalog && permissions.canReadUserRoles && (
                     <Select.Unregister
                         label="Papel de acesso"
                         name="role"
@@ -269,7 +263,7 @@ export function UserManagementView({
                             </option>
                         ))}
                     </Select.Unregister>
-                )}
+                )} */}
             </Table.Filters>
 
             <Table.Content loadingRows={query.pageSize} />

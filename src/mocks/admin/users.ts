@@ -1,9 +1,4 @@
-import type {
-    AdminRole,
-    AdminUsersDataSource,
-    UserListItem,
-    UserListQuery,
-} from "@/types/admin/users";
+
 
 export interface MockAdminUsersOptions {
     delay?: number;

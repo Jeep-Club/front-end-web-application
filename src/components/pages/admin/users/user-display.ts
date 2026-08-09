@@ -1,4 +1,3 @@
-import type { RoleStatus, UserStatus } from "@/types/admin/users";
 
 export const USER_STATUS_LABEL: Record<UserStatus, string> = {
     ACTIVE: "Ativo",
