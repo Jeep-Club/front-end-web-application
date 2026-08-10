@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { ShieldX } from "lucide-react";
@@ -15,6 +15,9 @@ import { UserManagementView } from "./UserManagementView";
 import { UserRolesModal } from "./UserRolesModal";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
+import toast from "react-hot-toast";
 
 const INITIAL_QUERY: UserListQuery = {
     search: "",
@@ -26,16 +29,19 @@ const INITIAL_QUERY: UserListQuery = {
 };
 
 interface Props {
-    users: AdminUser[];
+    users: PageResponse<AdminUser>;
 }
 
 export default function AdminUsersPage({ users }: Props) {
     const permissionsFromStore = useUserStore((state) => state.permissions);
     const { setContent, setOpen } = useModal();
-    const queryClient = useQueryClient();
+    // const queryClient = useQueryClient();
     const [query, setQuery] = useState<UserListQuery>(INITIAL_QUERY);
-    const dataSource = useMemo(() => createMockAdminUsersDataSource(), []);
+    // const dataSource = useMemo(() => createMockAdminUsersDataSource(), []);
     const router = useRouter();
+
+    const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(true);
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
         canReadUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_READ"),
@@ -47,52 +53,55 @@ export default function AdminUsersPage({ users }: Props) {
         canRevokeRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_REVOKE"),
     }), [permissionsFromStore]);
 
-    const usersQuery = useQuery({
-        queryKey: ["admin-users", "list", query],
-        queryFn: () => dataSource.listUsers(query),
-        enabled: permissions.canReadUsers,
-        placeholderData: keepPreviousData,
-        retry: false,
-    });
+    // const usersQuery = useQuery({
+    //     queryKey: ["admin-users", "list", query],
+    //     queryFn: () => dataSource.listUsers(query),
+    //     enabled: permissions.canReadUsers,
+    //     placeholderData: keepPreviousData,
+    //     retry: false,
+    // });
+    // const rolesQuery = useQuery({
+    //     queryKey: ["admin-users", "role-catalog"],
+    //     queryFn: dataSource.listRoles,
+    //     enabled: permissions.canReadRoleCatalog && permissions.canReadUserRoles,
+    //     retry: false,
+    // });
 
-    const rolesQuery = useQuery({
-        queryKey: ["admin-users", "role-catalog"],
-        queryFn: dataSource.listRoles,
-        enabled: permissions.canReadRoleCatalog && permissions.canReadUserRoles,
-        retry: false,
-    });
+    // const refreshUsers = useCallback(() => {
+    //     void queryClient.invalidateQueries({ queryKey: ["admin-users", "list"] });
+    //     void queryClient.invalidateQueries({ queryKey: ["admin-users", "details"] });
+    // }, [queryClient]);
 
-    const refreshUsers = useCallback(() => {
-        void queryClient.invalidateQueries({ queryKey: ["admin-users", "list"] });
-        void queryClient.invalidateQueries({ queryKey: ["admin-users", "details"] });
-    }, [queryClient]);
+    // const updateUserInCache = useCallback((updatedUser: AdminUser) => {
+    //     queryClient.setQueriesData<PageResponse<UserListItem>>(
+    //         { queryKey: ["admin-users", "list"] },
+    //         (current) => current
+    //             ? {
+    //                 ...current,
+    //                 content: current.content.map((user) => user.id === updatedUser.id ? updatedUser : user),
+    //             }
+    //             : current,
+    //     );
+    //     queryClient.setQueryData(["admin-users", "details", updatedUser.id], updatedUser);
+    //     refreshUsers();
+    // }, [queryClient, refreshUsers]);
 
-    const updateUserInCache = useCallback((updatedUser: UserListItem) => {
-        queryClient.setQueriesData<PageResponse<UserListItem>>(
-            { queryKey: ["admin-users", "list"] },
-            (current) => current
-                ? {
-                    ...current,
-                    content: current.content.map((user) => user.id === updatedUser.id ? updatedUser : user),
-                }
-                : current,
-        );
-        queryClient.setQueryData(["admin-users", "details", updatedUser.id], updatedUser);
-        refreshUsers();
-    }, [queryClient, refreshUsers]);
+    const updateUserInCache = useCallback((updatedUser: AdminUser) => {
+        users.content = users.content.map((user) => user.id === updatedUser.id ? updatedUser : user);
+    }, [users]);
 
-    const updateRolesInCache = useCallback((userId: number, roles: AdminRole[]) => {
-        queryClient.setQueriesData<PageResponse<UserListItem>>(
-            { queryKey: ["admin-users", "list"] },
-            (current) => current
-                ? {
-                    ...current,
-                    content: current.content.map((user) => user.id === userId ? { ...user, roles } : user),
-                }
-                : current,
-        );
-        refreshUsers();
-    }, [queryClient, refreshUsers]);
+    // const updateRolesInCache = useCallback((userId: number, roles: AdminRole[]) => {
+    //     queryClient.setQueriesData<PageResponse<UserListItem>>(
+    //         { queryKey: ["admin-users", "list"] },
+    //         (current) => current
+    //             ? {
+    //                 ...current,
+    //                 content: current.content.map((user) => user.id === userId ? { ...user, roles } : user),
+    //             }
+    //             : current,
+    //     );
+    //     refreshUsers();
+    // }, [queryClient, refreshUsers]);
 
     // const handleViewUser = useCallback((userId: number) => {
     //     setContent(
@@ -109,20 +118,32 @@ export default function AdminUsersPage({ users }: Props) {
         router.push(`/admin/users/${userId}`);
     }, [router]);
 
+    const updateUserStatusMutation = useMutation({
+        mutationFn: patchUserStatusAction,
+        onSuccess: (updatedUser) => {
+            toast.success(`Usuário ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
+            updateUserInCache(updatedUser);
+        }
+    });
+
+    const updateUserStatus = useCallback(async (userId: number, status: "enable" | "disable"): Promise<void> => {
+        updateUserStatusMutation.mutateAsync({ userId, status});
+    }, []);
+
     const handleChangeUserStatus = useCallback((user: AdminUser) => {
-        const onConfirm = user.status === "DISABLED"
-            ? dataSource.enableUser
-            : dataSource.disableUser;
+        // const onConfirm = user.status === "DISABLED"
+        //     ? dataSource.enableUser
+        //     : dataSource.disableUser;
 
         setContent(
             <UserStatusConfirmationModal
                 user={user}
-                onConfirm={onConfirm}
+                onConfirm={updateUserStatus}
                 onSuccess={updateUserInCache}
             />,
         );
         setOpen();
-    }, [dataSource, setContent, setOpen, updateUserInCache]);
+    }, [, setContent, setOpen]);
 
     // const handleManageRoles = useCallback((user: AdminUser) => {
     //     setContent(
@@ -152,6 +173,10 @@ export default function AdminUsersPage({ users }: Props) {
         }));
     }
 
+    useEffect(() => {
+        setFetching(false);
+    }, [users]);
+
     if (!permissions.canReadUsers) {
         return (
             <div className="h-full w-full p-3 md:p-4">
@@ -176,7 +201,6 @@ export default function AdminUsersPage({ users }: Props) {
         );
     }
 
-    const page = usersQuery.data;
 
     return (
         <div className="h-full w-full p-3 md:p-4">
@@ -191,17 +215,17 @@ export default function AdminUsersPage({ users }: Props) {
                 />
 
                 <UserManagementView
-                    users={users}
+                    users={users.content}
                     query={query}
                     // roles={rolesQuery.data ?? []}
                     permissions={permissions}
-                    totalItems={page?.totalElements ?? 0}
-                    totalPages={page?.totalPages ?? 0}
-                    isLoading={usersQuery.isLoading}
-                    isFetching={usersQuery.isFetching}
-                    error={usersQuery.error
-                        ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
-                        : undefined}
+                    totalItems={users.totalElements}
+                    totalPages={users.totalPages}
+                    isLoading={loading}
+                    isFetching={fetching}
+                    // error={usersQuery.error
+                    //     ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
+                    //     : undefined}
                     onSearchChange={(search) => updateFilters({ search })}
                     onStatusChange={(statuses: UserStatus[]) => updateFilters({ statuses })}
                     onRoleChange={(roleIds) => updateFilters({ roleIds })}

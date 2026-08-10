@@ -7,13 +7,12 @@ import toast from "react-hot-toast";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
-import type { UserListItem } from "@/types/admin/users";
 import { useModalFocusRestoration } from "./useModalFocusRestoration";
 
 interface UserStatusConfirmationModalProps {
-    user: UserListItem;
-    onConfirm: (userId: number) => Promise<UserListItem>;
-    onSuccess: (updatedUser: UserListItem) => void;
+    user: AdminUser;
+    onConfirm: (userId: number, status: "enable" | "disable") => Promise<void>;
+    onSuccess: (updatedUser: AdminUser) => void;
 }
 
 export function UserStatusConfirmationModal({
@@ -30,19 +29,25 @@ export function UserStatusConfirmationModal({
 
     async function handleConfirm() {
         setIsPending(true);
-        setErrorMessage(undefined);
+        // setErrorMessage(undefined);
 
+        // // try {
+        // //     const updatedUser = await onConfirm(user.id, isEnabling ? "enable" : "disable");
+        // //     onSuccess(updatedUser);
+        // //     toast.success(`Usuário ${isEnabling ? "reativado" : "desativado"} com sucesso!`);
+        // //     setClose();
+        // // } catch (error) {
+        // //     const message = extractApiErrorMessage(error, `Não foi possível ${actionLabel.toLowerCase()} o usuário.`);
+        // //     setErrorMessage(message);
+        // //     toast.error(message);
+        // // } finally {
+        // //     setIsPending(false);
+        // // }
         try {
-            const updatedUser = await onConfirm(user.id);
-            onSuccess(updatedUser);
-            toast.success(`Usuário ${isEnabling ? "reativado" : "desativado"} com sucesso!`);
-            setClose();
-        } catch (error) {
-            const message = extractApiErrorMessage(error, `Não foi possível ${actionLabel.toLowerCase()} o usuário.`);
-            setErrorMessage(message);
-            toast.error(message);
-        } finally {
+            await onConfirm(user.id, isEnabling ? "enable" : "disable");
             setIsPending(false);
+        } finally {
+            setClose();
         }
     }
 

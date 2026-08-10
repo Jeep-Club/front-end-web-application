@@ -24,5 +24,6 @@ export default async function Page({ searchParams }: Props) {
         schema: getAllMedicalProfilesResponseSchema
     });
 
+
     return <MedicalProfilesListPage data={response.data} currentPage={currentPage} />;
 }
