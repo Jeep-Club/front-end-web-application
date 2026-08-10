@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Plus, ChevronLeft, ChevronRight, IdCard, Eye, Trash2 } from "lucide-react";
+import { Car, Plus, ChevronLeft, ChevronRight, IdCard, Eye, Pencil, Trash2 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
@@ -72,11 +72,11 @@ export function VehiclesTabContent() {
 
             {!isLoading && !isError && data && data.content.length > 0 && (
                 <>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4">
                         {data.content.map((vehicle) => (
                             <div
                                 key={vehicle.id}
-                                className="flex flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm"
+                                className="flex w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm md:w-1/3"
                             >
                                 <div className="relative h-40 w-full bg-j-gray-100">
                                     {vehicle.photo ? (
@@ -99,51 +99,51 @@ export function VehiclesTabContent() {
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-3 p-4">
-                                    <h4 className="text-lg font-extrabold leading-tight text-j-gray-700">
-                                        {vehicle.model}
-                                    </h4>
-
-                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-j-gray-500">
-                                        <IdCard size={16} />
-                                        {maskPlate(vehicle.plate)}
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 border-t border-j-gray-100 pt-3">
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                                                Ano/Modelo
-                                            </span>
-                                            <span className="text-sm font-bold text-j-gray-700">{vehicle.modelYear}</span>
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300">
+                                            <Car size={21} />
                                         </div>
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                                                Cor
-                                            </span>
-                                            <span className="text-sm font-bold text-j-gray-700">{vehicle.color}</span>
+
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="truncate font-black text-j-blue-800">
+                                                {vehicle.model}
+                                            </h4>
+                                            <div className="mt-1 flex items-center gap-1.5 text-sm text-j-gray-600">
+                                                <IdCard size={14} />
+                                                {maskPlate(vehicle.plate)}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-auto flex items-center gap-2 pt-1">
-                                        <Button
+                                    <p className="text-sm text-j-gray-600">
+                                        {vehicle.modelYear} • {vehicle.color}
+                                    </p>
+
+                                    <div className="mt-1 grid grid-cols-1 gap-2 border-t border-j-gray-100 pt-3">
+                                        <button
+                                            type="button"
                                             onClick={() => handleOpenEditVehicle(vehicle.id)}
-                                            className="flex-1 bg-yellow-400 text-yellow-950 hover:bg-yellow-500 hover:text-yellow-950"
+                                            className="flex items-center gap-2.5 rounded-lg bg-yellow-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-yellow-100"
                                         >
+                                            <Pencil size={16} className="text-yellow-500" />
                                             Editar
-                                        </Button>
-                                        <ButtonIcon
+                                        </button>
+                                        <button
+                                            type="button"
                                             onClick={() => handleOpenViewVehicle(vehicle.id)}
-                                            title="Visualizar"
-                                            className="rounded-lg border-none bg-j-blue-800 p-3 text-white hover:bg-j-blue-500 hover:text-white disabled:flex"
+                                            className="flex items-center gap-2.5 rounded-lg bg-blue-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
                                         >
-                                            <Eye size={20} />
-                                        </ButtonIcon>
-                                        <ButtonIcon
+                                            <Eye size={16} className="text-j-blue-800" />
+                                            Visualizar
+                                        </button>
+                                        <button
+                                            type="button"
                                             onClick={() => handleOpenDeleteVehicle(vehicle)}
-                                            title="Excluir"
-                                            className="rounded-lg border-none bg-red-500 p-3 text-white hover:bg-red-600 hover:text-white disabled:flex"
+                                            className="flex items-center gap-2.5 rounded-lg bg-red-50 px-2.5 py-2 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-100"
                                         >
-                                            <Trash2 size={20} />
-                                        </ButtonIcon>
+                                            <Trash2 size={16} />
+                                            Excluir
+                                        </button>
                                     </div>
                                 </div>
                             </div>
