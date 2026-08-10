@@ -4,6 +4,7 @@ import { registerResponseSchema } from '@/schemas/auth/register/registerResponse
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { login } from '@/utils/auth/login';
 import { HttpAPIRoutes } from '@/utils/http/api';
+import { extractApiErrorMessage } from '@/utils/http/apiError';
 
 export async function registerAction(data: RegisterRequest) {
     try {
@@ -16,8 +17,7 @@ export async function registerAction(data: RegisterRequest) {
         login(response.data.accessToken, response.data.refreshToken, new Date(Date.now() + response.data.expiresInSeconds * 1000).toISOString());
         return response.data;
     } catch (error) {
-        console.log('Error in registerAction:', error);
-        throw new Error('Erro ao realizar cadastro, tente novamente.');
+        throw new Error(extractApiErrorMessage(error, 'Erro ao realizar cadastro, tente novamente.'), { cause: error });
     }
 
 }

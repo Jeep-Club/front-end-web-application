@@ -4,6 +4,7 @@ import z from 'zod';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { ForgotPasswordRequestType } from "@/schemas/auth/forgot-password/forgotPasswordRequest";
 import { HttpAPIRoutes } from '@/utils/http/api';
+import { extractApiErrorMessage } from '@/utils/http/apiError';
 
 export default async function forgotPasswordEmailTokenAction({ cpf }: ForgotPasswordRequestType) {
     try {
@@ -16,6 +17,6 @@ export default async function forgotPasswordEmailTokenAction({ cpf }: ForgotPass
 
         return { success: true };
     } catch (error) {
-        throw new Error('Erro ao enviar o e-mail de redefinição. Tente novamente.', { cause: error });
+        throw new Error(extractApiErrorMessage(error, 'Erro ao enviar o e-mail de redefinição. Tente novamente.'), { cause: error });
     }
 }

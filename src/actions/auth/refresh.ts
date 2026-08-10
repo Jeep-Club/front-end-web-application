@@ -3,6 +3,7 @@ import z from 'zod';
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from '@/utils/http/api';
 import { refreshTokenResponseSchema } from '@/schemas/auth/refresh/refreshTokenResponse';
+import { extractApiErrorMessage } from '@/utils/http/apiError';
 
 //apenas para testes
 
@@ -18,6 +19,6 @@ export async function refreshAction() {
             schema: refreshTokenResponseSchema
         }); 
     } catch (error) {
-        throw new Error('Erro ao fazer refresh', { cause: error });
+        throw new Error(extractApiErrorMessage(error, 'Erro ao fazer refresh'), { cause: error });
     }
 }
