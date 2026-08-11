@@ -7,6 +7,7 @@ interface RoleResponse {
     name: string;
     description: string | null;
     status: RoleStatus;
+    protected: boolean;
     createdAt: string;
     updatedAt: string | null;
     deletedAt: string | null;
