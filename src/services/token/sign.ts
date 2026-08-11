@@ -1,7 +1,7 @@
 import * as jose from 'jose';
 
 export async function sign(data: object, expiration?: string): Promise<string> {
-    const access = process.env.ACCESS;
+    const access = process.env.ACCESS || "secret-key-jeep-clube-dev-token";
     if (!access) {
         throw new Error('ACCESS is not defined in environment variables');
     }
