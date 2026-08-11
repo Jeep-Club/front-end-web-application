@@ -2,7 +2,7 @@ import z from "zod";
 
 export const meResponseSchema: z.ZodType<MeResponse> = z.object({
     userId: z.number(),
-    userName: z.string(),
+    userName: z.string().optional(),
     sessionId: z.number(),
     sessionActive: z.boolean(),
     expiresInSeconds: z.number(),

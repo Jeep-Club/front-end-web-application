@@ -10,7 +10,7 @@ export async function me(
     const permissions = mapMePermissionToModule(me.authorities)
     const permissionsToken = await sign(permissions);
     const meToSign: MeCookie = {
-        userName: me.userName,
+        userName: me.userName ?? '',
         userId: me.userId,
         sessionId: me.sessionId,
         sessionActive: me.sessionActive,
