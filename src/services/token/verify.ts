@@ -2,7 +2,7 @@ import * as jose from 'jose';
 import z from 'zod';
 
 export async function verify(token: string){
-    const access = process.env.ACCESS;
+    const access = process.env.ACCESS || "secret-key-jeep-clube-dev-token";
     if (!access) {
         throw new Error('ACCESS is not defined in environment variables');
     }   

@@ -15,19 +15,21 @@ import { z } from "zod";
  * - Por fim redireciona para rota inicial
  */
 export default async function logoutAction(){
-    try{
-        // Limpa todos os cookies da sessao
-        
-        // Faz chamada na api para realizar logout no usuario
-        await actionFetchWrapper({
-            url: HttpAPIRoutes.LOGOUT,
-            method: `POST`,
-            schema: z.string().nullable()
-        })
+    try {
+        if (process.env.API_URL) {
+            try {
+                await actionFetchWrapper({
+                    url: HttpAPIRoutes.LOGOUT,
+                    method: `POST`,
+                    schema: z.string().nullable()
+                });
+            } catch {
+                // Silencia exceções em ambiente dev/mock
+            }
+        }
         
         await logout();
-    }
-    catch(error : unknown){
+    } catch(error : unknown) {
         throw new Error('Erro ao realizar logout', {cause: error})
     }
 }
