@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
     useQuery,
@@ -17,7 +17,7 @@ function formatMemberSince(createdAt: string) {
     const date = new Date(createdAt);
 
     if (Number.isNaN(date.getTime())) {
-        return "Não informado";
+        return "NÃ£o informado";
     }
 
     return new Intl.DateTimeFormat("pt-BR", {
@@ -53,7 +53,7 @@ export function PersonalDataTab() {
         return (
             <div className="flex flex-col items-start gap-3">
                 <p className="text-sm text-j-red-400">
-                    Não foi possível carregar seus dados pessoais.
+                    NÃ£o foi possÃ­vel carregar seus dados pessoais.
                 </p>
                 <Button
                     onClick={() => refetch()}
@@ -117,8 +117,6 @@ export function PersonalDataTab() {
                 registrationNumber={String(
                     personalData.id,
                 )}
-                cityState={null}
-                driverLicense={null}
                 bloodType={null}
                 exportFileName={`carteirinha-${personalData.id}`}
             />

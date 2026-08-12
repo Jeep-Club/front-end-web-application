@@ -23,8 +23,6 @@ interface MembershipCardProps {
     phoneNumber?: string | null;
     roleLabel?: string | null;
     registrationNumber?: string | null;
-    cityState?: string | null;
-    driverLicense?: string | null;
     bloodType?: string | null;
     exportFileName?: string;
 }
@@ -32,12 +30,12 @@ interface MembershipCardProps {
 type CardSide = "front" | "back";
 
 function displayValue(value?: string | null) {
-    return value?.trim() || "—";
+    return value?.trim() || "--";
 }
 
 function formatDate(value?: string | null) {
     if (!value) {
-        return "—";
+        return "--";
     }
 
     const normalizedDate = /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -54,7 +52,7 @@ function formatDate(value?: string | null) {
 
 function formatMembershipId(value?: string | null) {
     if (!value) {
-        return "0000-0";
+        return "--";
     }
 
     const digits = value.replace(/\D/g, "");
@@ -75,7 +73,7 @@ function waitForRender() {
         });
     });
 }
-
+    
 interface CardFieldProps {
     label: string;
     value?: string | null;
@@ -90,7 +88,7 @@ function CardField({ label, value }: CardFieldProps) {
                 {label}
             </span>
 
-            <div className="flex min-h-[clamp(11px,3.7cqw,25px)] items-center overflow-hidden rounded-[clamp(3px,0.8cqw,7px)] border border-j-blue-100 bg-j-gray-100/70 px-[clamp(3px,1cqw,8px)] py-[clamp(1px,0.35cqw,3px)]">
+            <div className="flex min-h-[clamp(17px,6.2cqw,44px)] items-center overflow-hidden rounded-[clamp(3px,0.8cqw,7px)] border-[clamp(1px,0.3cqw,2px)] border-j-blue-700 bg-transparent px-[clamp(4px,1.2cqw,9px)] py-[clamp(2px,0.55cqw,4px)]">
                 <span
                     title={displayedValue}
                     className="w-full truncate text-[clamp(6px,1.65cqw,12px)] font-bold leading-tight text-j-blue-800"
@@ -111,8 +109,6 @@ interface MembershipCardFaceProps {
     phoneNumber?: string | null;
     roleLabel?: string | null;
     registrationNumber?: string | null;
-    cityState?: string | null;
-    driverLicense?: string | null;
     bloodType?: string | null;
 }
 
@@ -125,8 +121,6 @@ function MembershipCardFront({
     phoneNumber,
     roleLabel,
     registrationNumber,
-    cityState,
-    driverLicense,
     bloodType,
 }: MembershipCardFaceProps) {
     return (
@@ -142,9 +136,9 @@ function MembershipCardFront({
             </div>
             <div className="h-[clamp(2px,0.65cqw,4px)] w-full shrink-0 bg-j-yellow-300" />
 
-            <header className="grid h-[clamp(30px,10cqw,64px)] shrink-0 grid-cols-[18%_1fr] items-center px-[clamp(8px,3cqw,20px)]">
+            <header className="grid h-[clamp(48px,15cqw,96px)] shrink-0 grid-cols-[27%_1fr] items-center px-[clamp(8px,3cqw,20px)]">
                 <div className="flex justify-center">
-                    <div className="relative h-[clamp(26px,8cqw,52px)] w-[clamp(26px,8cqw,52px)] overflow-hidden">
+                    <div className="relative h-[clamp(48px,14cqw,92px)] w-[clamp(48px,14cqw,92px)] overflow-hidden">
                         <Image
                             src="/images/logo_grande.jpg"
                             alt="Jeep Clube Tamoios"
@@ -156,19 +150,19 @@ function MembershipCardFront({
                 </div>
 
                 <div className="min-w-0 text-center">
-                    <h3 className="whitespace-nowrap text-[clamp(10px,3.3cqw,24px)] font-black uppercase leading-none tracking-tight text-j-blue-800">
+                    <h3 className="whitespace-nowrap text-[clamp(11px,3.6cqw,26px)] font-black uppercase leading-none tracking-tight text-j-blue-800">
                         Jeep Clube Tamoios
                     </h3>
 
                     <p className="mt-[clamp(2px,0.6cqw,4px)] truncate text-[clamp(5px,1.45cqw,11px)] font-bold uppercase tracking-[0.1em] text-j-blue-300">
-                        Caraguatatuba • Fundado em 09/09/1999
+                        Caraguatatuba - Fundado em 09/09/1999
                     </p>
                 </div>
             </header>
 
-            <div className="grid min-h-0 flex-1 grid-cols-[26%_1fr] gap-[clamp(5px,1.7cqw,11px)] px-[clamp(7px,2.6cqw,17px)] pb-[clamp(9px,2.8cqw,18px)] @[480px]:grid-cols-[30%_1fr]">
-                <div className="flex min-h-0 flex-col gap-[clamp(3px,0.8cqw,6px)] rounded-[clamp(6px,1.5cqw,12px)] bg-j-blue-800 p-[clamp(3px,1cqw,7px)]">
-                    <div className="min-h-0 flex-1 overflow-hidden rounded-[clamp(4px,1.1cqw,9px)] border-[clamp(2px,0.4cqw,3px)] border-j-yellow-300 bg-j-white">
+            <div className="grid min-h-0 flex-1 grid-cols-[30%_1fr] items-start gap-[clamp(5px,1.7cqw,11px)] px-[clamp(7px,2.6cqw,17px)] pb-[clamp(9px,2.8cqw,18px)] @[480px]:grid-cols-[30%_1fr]">
+                <div className="mt-[clamp(9px,2.2cqw,15px)] flex flex-col gap-[clamp(3px,0.8cqw,6px)] rounded-[clamp(6px,1.5cqw,12px)]">
+                    <div className="aspect-square w-full shrink-0 overflow-hidden rounded-[clamp(4px,1.1cqw,9px)] border-[clamp(2px,0.4cqw,3px)] border-j-blue-700 bg-j-gray-100/40">
                         {profilePhotoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -181,8 +175,8 @@ function MembershipCardFront({
                                 className="h-full w-full object-cover"
                             />
                         ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-j-blue-900">
-                                <UserRound className="h-[clamp(22px,7cqw,46px)] w-[clamp(22px,7cqw,46px)] text-j-blue-100" />
+                            <div className="flex h-full w-full items-center justify-center bg-j-blue-100">
+                                <UserRound className="h-[clamp(22px,7cqw,46px)] w-[clamp(22px,7cqw,46px)] text-j-blue-500" />
                             </div>
                         )}
                     </div>
@@ -192,7 +186,7 @@ function MembershipCardFront({
                     </p>
                 </div>
 
-                <div className="flex min-h-0 flex-col justify-between gap-[clamp(2px,0.65cqw,4px)]">
+                <div className="flex min-h-0 flex-col gap-[clamp(3px,0.9cqw,6px)]">
                     <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[clamp(3px,1cqw,7px)]">
                         <CardField
                             label="Nome e sobrenome"
@@ -203,31 +197,33 @@ function MembershipCardFront({
                             value={formatDate(birthDate)}
                         />
                     </div>
-
-                    <CardField label="UF e cidade" value={cityState} />
-
-                    <div className="grid grid-cols-2 gap-[clamp(3px,1cqw,7px)]">
-                        <CardField
-                            label="Habilitação"
-                            value={driverLicense}
-                        />
-                        <CardField
-                            label="Membro desde"
-                            value={formatDate(memberSince)}
-                        />
-                    </div>
+                    <CardField
+                        label="Membro desde"
+                        value={formatDate(memberSince)}
+                    />
 
                     <CardField label="Telefone" value={phoneNumber} />
 
-                    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.55fr)_auto] items-end gap-[clamp(3px,1cqw,7px)]">
-                        <CardField label="Função" value={roleLabel} />
-                        <CardField label="T sanguíneo" value={bloodType} />
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-[clamp(3px,1cqw,7px)]">
+                        <CardField label="Funcao" value={roleLabel} />
+                        <div
+                            aria-label="Tipo sanguineo"
+                            title={`Tipo sanguineo: ${displayValue(bloodType)}`}
+                            className="flex aspect-square w-[clamp(22px,7cqw,46px)] shrink-0 flex-col items-center justify-center rounded-[clamp(3px,0.8cqw,7px)] border border-j-red-200 bg-j-red-100 px-1 text-j-red-600"
+                        >
+                            <span className="text-[clamp(4px,0.7cqw,6px)] font-extrabold uppercase leading-none">
+                                TS
+                            </span>
+                            <span className="mt-[clamp(1px,0.2cqw,2px)] text-[clamp(7px,1.7cqw,12px)] font-black leading-none">
+                                {displayValue(bloodType)}
+                            </span>
+                        </div>
 
                         <div
-                            aria-label="Espaço reservado para QR Code"
-                            className="flex aspect-square w-[clamp(22px,7cqw,46px)] shrink-0 items-center justify-center rounded-[clamp(3px,0.8cqw,7px)] border-[clamp(1px,0.3cqw,2px)] border-dashed border-j-blue-200 bg-j-blue-100/10"
+                            aria-label="Espaco reservado para QR Code"
+                            className="order-first flex aspect-square w-[clamp(40px,11cqw,76px)] shrink-0 items-center justify-center rounded-[clamp(4px,1cqw,8px)] border-[clamp(1px,0.3cqw,2px)] border-dashed border-j-blue-400 bg-j-blue-50"
                         >
-                            <span className="text-center text-[clamp(4px,0.7cqw,6px)] font-bold uppercase leading-tight tracking-wide text-j-blue-200">
+                            <span className="text-center text-[clamp(5px,1.05cqw,8px)] font-bold uppercase leading-tight tracking-wide text-j-blue-500">
                                 QR Code
                             </span>
                         </div>
@@ -271,8 +267,8 @@ function MembershipCardBack() {
                         <br />
                         Tamoios
                     </p>
-                    <p className="mt-[clamp(3px,0.8cqw,6px)] text-[clamp(6px,1.4cqw,10px)] font-medium text-j-blue-100">
-                        Caraguatatuba • SP
+                    <p className="mt-[clamp(3px,0.8cqw,6px)] text-[clamp(6px,1.4cqw,10px)] font-medium text-j-blue-500">
+                        Caraguatatuba - SP
                     </p>
                 </div>
             </div>
@@ -313,8 +309,6 @@ export function MembershipCard({
     phoneNumber,
     roleLabel,
     registrationNumber,
-    cityState,
-    driverLicense,
     bloodType,
     exportFileName,
 }: MembershipCardProps) {
@@ -335,7 +329,7 @@ export function MembershipCard({
 
             if (!frontElement) {
                 throw new Error(
-                    "Não foi possível localizar a frente da carteirinha",
+                    "Nao foi possivel localizar a frente da carteirinha",
                 );
             }
 
@@ -353,7 +347,7 @@ export function MembershipCard({
 
                 if (!backElement) {
                     throw new Error(
-                        "Não foi possível localizar o verso da carteirinha",
+                        "Nao foi possivel localizar o verso da carteirinha",
                     );
                 }
 
@@ -396,7 +390,7 @@ export function MembershipCard({
                         Carteirinha digital
                     </h2>
                     <p className="text-[11px] text-j-gray-400">
-                        Padrão 85,6 × 53,98 mm
+                        Padrao 85,6 x 53,98 mm
                     </p>
                 </div>
 
@@ -442,8 +436,6 @@ export function MembershipCard({
                         phoneNumber={phoneNumber}
                         roleLabel={roleLabel}
                         registrationNumber={registrationNumber}
-                        cityState={cityState}
-                        driverLicense={driverLicense}
                         bloodType={bloodType}
                     />
                 ) : (
