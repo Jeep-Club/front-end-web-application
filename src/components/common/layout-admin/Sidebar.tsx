@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+    Bell,
+    CalendarDays,
     Newspaper,
     ShieldCheck,
     UserRound,
@@ -19,6 +21,16 @@ const navItems = [
         href: "/feed",
         label: "Feed",
         icon: Newspaper,
+    },
+    {
+        href: "/eventos",
+        label: "Eventos",
+        icon: CalendarDays,
+    },
+    {
+        href: "/avisos",
+        label: "Avisos",
+        icon: Bell,
     },
 ];
 

@@ -28,6 +28,8 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     // array vazio significa que nenhuma permissão específica é exigida.
     "/feed": [],
     "/profile": [],
+    "/eventos": [],
+    "/avisos": [],
 
 
     "/admin/roles-permissoes": {
