@@ -25,6 +25,7 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
 export const backendUserProfileResponseSchema = z.object({
     id: z.number(),
     name: z.string(),
+    birthDate: z.string().nullable().optional(),
     cpf: z.string(),
     email: z.string().nullable().optional(),
     phone: z.string().nullable().optional(),

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
     useQuery,
@@ -7,17 +7,30 @@ import {
 import { RefreshCw } from "lucide-react";
 
 import { getUserProfileAction } from "@/actions/profile/get";
+import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
 
+const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string | null> = {
+    A_POSITIVE: "A+",
+    A_NEGATIVE: "A-",
+    B_POSITIVE: "B+",
+    B_NEGATIVE: "B-",
+    AB_POSITIVE: "AB+",
+    AB_NEGATIVE: "AB-",
+    O_POSITIVE: "O+",
+    O_NEGATIVE: "O-",
+    UNKNOWN: null,
+};
+
 function formatMemberSince(createdAt: string) {
     const date = new Date(createdAt);
 
     if (Number.isNaN(date.getTime())) {
-        return "Não informado";
+        return "NÃ£o informado";
     }
 
     return new Intl.DateTimeFormat("pt-BR", {
@@ -40,6 +53,10 @@ export function PersonalDataTab() {
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
     });
+    const { data: medicalProfile } = useQuery({
+        queryKey: ["medical-profile", "me"],
+        queryFn: getMedicalProfileAction,
+    });
 
     if (isLoading) {
         return (
@@ -53,7 +70,7 @@ export function PersonalDataTab() {
         return (
             <div className="flex flex-col items-start gap-3">
                 <p className="text-sm text-j-red-400">
-                    Não foi possível carregar seus dados pessoais.
+                    NÃ£o foi possÃ­vel carregar seus dados pessoais.
                 </p>
                 <Button
                     onClick={() => refetch()}
@@ -117,9 +134,11 @@ export function PersonalDataTab() {
                 registrationNumber={String(
                     personalData.id,
                 )}
-                cityState={null}
-                driverLicense={null}
-                bloodType={null}
+                bloodType={
+                    medicalProfile?.bloodType
+                        ? BLOOD_TYPE_LABELS[medicalProfile.bloodType]
+                        : null
+                }
                 exportFileName={`carteirinha-${personalData.id}`}
             />
         </div>
