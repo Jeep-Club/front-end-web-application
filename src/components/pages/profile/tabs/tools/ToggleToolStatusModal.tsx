@@ -2,28 +2,32 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AlertTriangle, X } from "lucide-react";
+import { Power, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { deleteToolAction } from "@/actions/tools/delete";
+import { activateToolAction } from "@/actions/tools/activate";
+import { deactivateToolAction } from "@/actions/tools/deactivate";
 
-interface DeleteToolModalProps {
+interface ToggleToolStatusModalProps {
     toolId: number;
-    toolLabel: string;
+    toolName: string;
+    nextStatus: "ACTIVATE" | "DEACTIVATE";
 }
 
-export function DeleteToolModal({ toolId, toolLabel }: DeleteToolModalProps) {
+export function ToggleToolStatusModal({ toolId, toolName, nextStatus }: ToggleToolStatusModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
 
+    const isDeactivating = nextStatus === "DEACTIVATE";
+
     const mutation = useMutation({
-        mutationFn: () => deleteToolAction(toolId),
+        mutationFn: () => (isDeactivating ? deactivateToolAction(toolId) : activateToolAction(toolId)),
         onSuccess: () => {
-            toast.success("Ferramenta excluída com sucesso!");
+            toast.success(isDeactivating ? "Ferramenta desativada com sucesso!" : "Ferramenta ativada com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["tools", "list"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao excluir ferramenta."),
+        onError: (error) => toast.error(error.message || "Erro ao alterar status da ferramenta."),
     });
 
     return (
@@ -44,17 +48,16 @@ export function DeleteToolModal({ toolId, toolLabel }: DeleteToolModalProps) {
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
                 <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-500 shadow-sm">
-                        <AlertTriangle size={20} />
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                        <Power size={20} />
                     </span>
                     <div>
                         <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            Excluir ferramenta?
+                            {isDeactivating ? "Desativar ferramenta?" : "Ativar ferramenta?"}
                         </h2>
                         <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Tem certeza que deseja excluir{" "}
-                            <span className="font-bold text-j-blue-800">{toolLabel}</span>?
-                            Essa ação não pode ser desfeita.
+                            Tem certeza que deseja {isDeactivating ? "desativar" : "ativar"}{" "}
+                            <span className="font-bold text-j-blue-800">{toolName}</span>?
                         </p>
                     </div>
                 </div>
@@ -73,13 +76,15 @@ export function DeleteToolModal({ toolId, toolLabel }: DeleteToolModalProps) {
                     type="button"
                     onClick={() => mutation.mutate()}
                     disabled={mutation.isPending}
-                    className="flex-1 bg-red-500 text-white hover:bg-red-600 hover:text-white"
+                    className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
                 >
-                    {mutation.isPending ? "Excluindo..." : "Excluir"}
+                    {mutation.isPending
+                        ? (isDeactivating ? "Desativando..." : "Ativando...")
+                        : (isDeactivating ? "Desativar" : "Ativar")}
                 </Button>
             </div>
         </div>
     );
 }
 
-export default DeleteToolModal;
+export default ToggleToolStatusModal;

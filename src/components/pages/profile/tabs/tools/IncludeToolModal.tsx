@@ -14,6 +14,8 @@ import { editToolFormSchema } from "@/schemas/tools/update";
 import { updateToolAction } from "@/actions/tools/update";
 import { getToolDetailAction } from "@/actions/tools/detail";
 
+const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+
 interface IncludeToolModalProps {
     toolId?: number;
 }
@@ -43,24 +45,30 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
     });
 
     return (
-        <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-3xl bg-j-white shadow-2xl">
+        <div
+            className={`
+                relative flex max-h-[92dvh] w-full max-w-125
+                flex-col overflow-y-auto overflow-x-hidden
+                rounded-3xl bg-j-white shadow-2xl
+            `}
+        >
             <ButtonIcon
                 onClick={setClose}
-                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800"
+                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5 md:h-[22px] md:w-[22px]" />
             </ButtonIcon>
 
-            <header className="border-b border-j-gray-200 px-6 pb-5 pr-16 pt-6">
+            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
                 <div className="flex items-start gap-4">
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
                         <Wrench size={20} />
                     </span>
                     <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800">
+                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
                             {isEditMode ? "Editar ferramenta" : "Incluir ferramenta"}
                         </h2>
-                        <p className="mt-1 text-xs leading-relaxed text-j-gray-500">
+                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
                             {isEditMode
                                 ? "Atualize o nome ou a descrição da ferramenta."
                                 : "Cadastre uma ferramenta ou equipamento vinculado ao seu perfil."}
@@ -70,7 +78,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
             </header>
 
             {isEditMode && isLoadingTool ? (
-                <div className="flex items-center justify-center gap-2 px-6 py-16 text-j-gray-500">
+                <div className="flex items-center justify-center gap-2 px-5 py-16 text-j-gray-500 md:px-8">
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados da ferramenta...
                 </div>
@@ -79,7 +87,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                     schema={isEditMode ? editToolFormSchema : createToolFormSchema}
                     onSubmit={(data) => mutation.mutateAsync(data)}
                     onError={(errors) => console.log(errors)}
-                    className="gap-4 px-6 py-6"
+                    className="gap-4 px-5 py-5 md:px-8 md:py-6"
                 >
                     <InputRegister
                         label="Nome"
@@ -87,19 +95,29 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                         placeholder="Ex: Macaco Hidráulico"
                         value={tool?.name}
                         required
+                        labelClassName="text-j-gray-700"
+                        className={LIGHT_FIELD_CLASS}
                     />
                     <TextareaRegister
                         label="Descrição"
                         name="description"
                         placeholder="Ex: Macaco tipo jacaré, 2 toneladas."
                         value={tool?.description}
+                        labelClassName="text-j-gray-700"
+                        className={LIGHT_FIELD_CLASS}
                     />
 
-                    <Button type="submit" disabled={mutation.isPending} className="mt-2 w-full">
-                        {mutation.isPending
-                            ? (isEditMode ? "Salvando..." : "Cadastrando...")
-                            : (isEditMode ? "Salvar" : "Cadastrar ferramenta")}
-                    </Button>
+                    <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
+                        <Button
+                            type="submit"
+                            disabled={mutation.isPending}
+                            className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
+                        >
+                            {mutation.isPending
+                                ? (isEditMode ? "Salvando..." : "Cadastrando...")
+                                : (isEditMode ? "Salvar alterações" : "Cadastrar ferramenta")}
+                        </Button>
+                    </div>
                 </Form>
             )}
         </div>
