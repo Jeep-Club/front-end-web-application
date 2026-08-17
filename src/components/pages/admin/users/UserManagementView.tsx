@@ -11,10 +11,11 @@ import { Table } from "@/components/common/table";
 import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
 
 import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "./user-display";
+import { InputRadioGroup } from "@/components/common/input/input-radio-group";
 
 interface UserManagementViewProps {
     users: AdminUser[];
-    query: UserListQuery;
+    query: AdminUserSearchParams;
     // roles: AdminRole[];
     permissions: UserManagementPermissions;
     totalItems: number;
@@ -24,12 +25,14 @@ interface UserManagementViewProps {
     error?: string;
     onSearchChange: (value: string) => void;
     onStatusChange: (statuses: UserStatus[]) => void;
-    onRoleChange: (roleIds: number[]) => void;
+    // onRoleChange: (roleIds: number[]) => void;
     onClearFilters: () => void;
     onPaginationChange: (pagination: PaginationState) => void;
     onViewUser: (userId: number) => void;
     onChangeUserStatus: (user: AdminUser) => void;
     onManageRoles: (user: AdminUser) => void;
+    searchType: "q" | "name" | "email" | "cpf" | "phone";
+    setSearchType: (type: "q" | "name" | "email" | "cpf" | "phone") => void;
 }
 
 export function UserManagementView({
@@ -44,16 +47,16 @@ export function UserManagementView({
     error,
     onSearchChange,
     onStatusChange,
-    onRoleChange,
+    // onRoleChange,
     onClearFilters,
     onPaginationChange,
     onViewUser,
     onChangeUserStatus,
     onManageRoles,
+    searchType,
+    setSearchType,
 }: UserManagementViewProps) {
-    const hasActiveFilters = Boolean(
-        query.search || query.statuses?.length || query.roleIds?.length,
-    );
+    const hasActiveFilters = Object.keys(query).length > 0;
     const canReplaceRoles = permissions.canReadUserRoles
         && permissions.canReadRoleCatalog
         && permissions.canAssignRoles
@@ -92,10 +95,10 @@ export function UserManagementView({
                     <span
                         className={twMerge(
                             "inline-flex rounded-full px-2.5 py-1 text-xs font-bold",
-                            USER_STATUS_STYLE[row.original.status],
+                            USER_STATUS_STYLE[row.original.accountStatus],
                         )}
                     >
-                        {USER_STATUS_LABEL[row.original.status]}
+                        {USER_STATUS_LABEL[row.original.accountStatus]}
                     </span>
                 ),
             },
@@ -141,7 +144,7 @@ export function UserManagementView({
                 header: "Ações",
                 cell: ({ row }) => {
                     const user = row.original;
-                    const canChangeStatus = user.status === "DISABLED"
+                    const canChangeStatus = user.accountStatus === "DISABLED"
                         ? permissions.canEnableUsers
                         : permissions.canDisableUsers;
 
@@ -162,17 +165,17 @@ export function UserManagementView({
                             {canChangeStatus && (
                                 <ButtonIcon
                                     type="button"
-                                    title={user.status === "DISABLED" ? "Reativar usuário" : "Desativar usuário"}
-                                    aria-label={`${user.status === "DISABLED" ? "Reativar" : "Desativar"} ${user.name}`}
+                                    title={user.accountStatus === "DISABLED" ? "Reativar usuário" : "Desativar usuário"}
+                                    aria-label={`${user.accountStatus === "DISABLED" ? "Reativar" : "Desativar"} ${user.name}`}
                                     onClick={() => onChangeUserStatus(user)}
                                     className={twMerge(
                                         "rounded-lg p-2 text-white hover:text-white",
-                                        user.status === "DISABLED"
+                                        user.accountStatus === "DISABLED"
                                             ? "bg-j-green-600 hover:bg-j-green-700"
                                             : "bg-j-red-500 hover:bg-j-red-600",
                                     )}
                                 >
-                                    {user.status === "DISABLED" ? <Power size={18} /> : <PowerOff size={18} />}
+                                    {user.accountStatus === "DISABLED" ? <Power size={18} /> : <PowerOff size={18} />}
                                 </ButtonIcon>
                             )}
 
@@ -200,8 +203,8 @@ export function UserManagementView({
             columns={columns}
             getRowId={(user) => String(user.id)}
             pagination={{
-                pageIndex: query.page,
-                pageSize: query.pageSize,
+                pageIndex: parseInt(query.page ?? "1", 10),
+                pageSize: parseInt(query.size ?? "10", 10),
                 pageCount: totalPages,
                 rowCount: totalItems,
                 pageSizeOptions: [5, 10, 20],
@@ -221,13 +224,32 @@ export function UserManagementView({
                 description={isLoading ? "Carregando usuários..." : `${totalItems} usuário(s) encontrado(s)`}
                 className="items-stretch"
             >
-                <Table.Search
-                    value={query.search ?? ""}
-                    onValueChange={onSearchChange}
-                    label="Buscar usuários"
-                    placeholder="Nome, e-mail, CPF ou telefone"
-                    formClassName="sm:min-w-80"
-                />
+                <div className="flex flex-col gap-3 rounded-lg bg-j-blue-800 p-4">
+                    <Table.Search
+                        value={query.q ?? ""}
+                        onValueChange={onSearchChange}
+                        label="Buscar usuários"
+                        placeholder="Nome, e-mail, CPF ou telefone"
+                        formClassName="sm:min-w-80"
+                    />
+                    <InputRadioGroup
+                        register={false} // Usamos false porque não estamos dentro de um <form> do RHF
+                        name="searchType"
+                        value={searchType}
+                        onChange={(val) => {
+                            setSearchType(val as "q" | "name" | "email" | "cpf" | "phone");
+                            // Limpa a busca ao trocar de categoria para evitar conflitos de dados antigos
+                            onClearFilters();
+                        }}
+                        options={[
+                            { label: "Geral", value: "q" },
+                            { label: "Nome", value: "name" },
+                            { label: "CPF", value: "cpf" },
+                            { label: "E-mail", value: "email" },
+                            { label: "Telefone", value: "phoneNumber" },
+                        ]}
+                    />
+                </div>
             </Table.Header>
 
             <Table.Filters
@@ -238,7 +260,7 @@ export function UserManagementView({
                 <Select.Unregister
                     label="Status"
                     name="status"
-                    value={query.statuses?.[0] ?? ""}
+                    value={query.accountStatus?.[0] ?? ""}
                     onChange={(event) => onStatusChange(event.target.value ? [event.target.value as UserStatus] : [])}
                     className="h-10 min-w-56 border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white"
                 >
@@ -266,7 +288,7 @@ export function UserManagementView({
                 )} */}
             </Table.Filters>
 
-            <Table.Content loadingRows={query.pageSize} />
+            <Table.Content loadingRows={parseInt(query.size ?? "10", 10)} />
             <Table.Pagination />
         </Table.Root>
     );

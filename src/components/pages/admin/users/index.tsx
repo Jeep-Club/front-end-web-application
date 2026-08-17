@@ -19,13 +19,11 @@ import { useMutation } from "@tanstack/react-query";
 import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
 import toast from "react-hot-toast";
 
-const INITIAL_QUERY: UserListQuery = {
-    search: "",
-    statuses: [],
-    roleIds: [],
-    page: 0,
-    pageSize: 10,
-    // sort: "name,asc",
+const INITIAL_QUERY: AdminUserSearchParams = {
+    q: "",
+    page: "1",
+    size: "10",
+    // sort: "id,asc",
 };
 
 interface Props {
@@ -36,7 +34,8 @@ export default function AdminUsersPage({ users }: Props) {
     const permissionsFromStore = useUserStore((state) => state.permissions);
     const { setContent, setOpen } = useModal();
     // const queryClient = useQueryClient();
-    const [query, setQuery] = useState<UserListQuery>(INITIAL_QUERY);
+    const [query, setQuery] = useState<AdminUserSearchParams>({});
+    const [searchType, setSearchType] = useState<"q" | "name" | "email" | "cpf" | "phone">("q");
     // const dataSource = useMemo(() => createMockAdminUsersDataSource(), []);
     const router = useRouter();
 
@@ -121,17 +120,17 @@ export default function AdminUsersPage({ users }: Props) {
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,
         onSuccess: (updatedUser) => {
-            toast.success(`Usuário ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
+            toast.success(`Usuário ${updatedUser.accountStatus === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
             updateUserInCache(updatedUser);
         }
     });
 
     const updateUserStatus = useCallback(async (userId: number, status: "enable" | "disable"): Promise<void> => {
-        updateUserStatusMutation.mutateAsync({ userId, status});
+        updateUserStatusMutation.mutateAsync({ userId, status });
     }, []);
 
     const handleChangeUserStatus = useCallback((user: AdminUser) => {
-        // const onConfirm = user.status === "DISABLED"
+        // const onConfirm = user.accountStatus === "DISABLED"
         //     ? dataSource.enableUser
         //     : dataSource.disableUser;
 
@@ -161,18 +160,18 @@ export default function AdminUsersPage({ users }: Props) {
         router.push(`/admin/users/${user.id}/roles`);
     }, [router]);
 
-    function updateFilters(patch: Partial<UserListQuery>) {
-        setQuery((current) => ({ ...current, ...patch, page: 0 }));
+    function updateFilters(patch: Partial<AdminUserSearchParams>) {
+        // Agora passando "page" como string "0" para resetar a paginação ao filtrar
+        setQuery((current) => ({ ...current, ...patch, page: "0" }));
     }
 
     function handlePaginationChange(pagination: PaginationState) {
         setQuery((current) => ({
             ...current,
-            page: pagination.pageSize === current.pageSize ? pagination.pageIndex : 0,
-            pageSize: pagination.pageSize,
+            page: pagination.pageSize.toString() === current.size ? pagination.pageIndex.toString() : "0",
+            size: pagination.pageSize.toString(),
         }));
     }
-
     useEffect(() => {
         setFetching(false);
     }, [users]);
@@ -217,6 +216,8 @@ export default function AdminUsersPage({ users }: Props) {
                 <UserManagementView
                     users={users.content}
                     query={query}
+                    searchType={searchType}
+                    setSearchType={setSearchType}
                     // roles={rolesQuery.data ?? []}
                     permissions={permissions}
                     totalItems={users.totalElements}
@@ -226,16 +227,19 @@ export default function AdminUsersPage({ users }: Props) {
                     // error={usersQuery.error
                     //     ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
                     //     : undefined}
-                    onSearchChange={(search) => updateFilters({ search })}
-                    onStatusChange={(statuses: UserStatus[]) => updateFilters({ statuses })}
-                    onRoleChange={(roleIds) => updateFilters({ roleIds })}
-                    onClearFilters={() => setQuery((current) => ({
-                        ...current,
-                        search: "",
-                        statuses: [],
-                        roleIds: [],
-                        page: 0,
-                    }))}
+                    onSearchChange={(search) => updateFilters({ q: search })}
+
+                    // Atualizado para usar `accountStatus` no lugar de `statuses`
+                    // OBS: O frontend parece enviar um array, mas a nova tipagem recebe string.
+                    // Extraímos o primeiro valor do array como fallback.
+                    onStatusChange={(statuses: UserStatus[]) => updateFilters({
+                        accountStatus: statuses.length > 0 ? (statuses[0] as "ACTIVE" | "DISABLED") : undefined
+                    })}
+
+                    // onRoleChange não existe na nova tipagem explicitamente (a não ser que backend use Q ou fields)
+                    // onRoleChange={(roleIds) => updateFilters({ roleIds })} // Reavalie se precisa manter
+
+                    onClearFilters={() => setQuery(INITIAL_QUERY)}
                     onPaginationChange={handlePaginationChange}
                     onViewUser={handleViewUser}
                     onChangeUserStatus={handleChangeUserStatus}

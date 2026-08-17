@@ -11,8 +11,10 @@ interface AdminUser {
     cpf: string;
     email: string | null;
     phone: string | null;
-    status: UserStatus;
+    accountStatus: UserStatus;
+    authenticationStatus: string;
     passwordChangeRequired: boolean;
+    credentialStatus: string;
     createdAt: string;
     updatedAt: string | null;
 }
@@ -59,3 +61,33 @@ interface AdminUsersDataSource {
     enableUser(userId: number): Promise<UserListItem>;
     replaceUserRoles(userId: number, roleIds: number[]): Promise<AdminRole[]>;
 }
+
+interface AdminUserSearchParams {
+    id?: string;
+    name?: string;
+    cpf?: string;
+    email?: string;
+    phoneNumber?: string;
+
+    accountStatus?: "ACTIVE" | "DISABLED";
+    authenticationStatus?: "ENABLED" | "LOCKED";
+    credentialStatus?:
+        | "PERMANENT"
+        | "PENDING_FIRST_ACCESS"
+        | "CHANGE_REQUIRED";
+
+    passwordChangeRequired?: string;
+
+    createdFrom?: string;
+    createdTo?: string;
+    updatedFrom?: string;
+    updatedTo?: string;
+
+    q?: string;
+
+    fields?: string;
+    page?: string;
+    size?: string;
+    sort?: string;
+}
+

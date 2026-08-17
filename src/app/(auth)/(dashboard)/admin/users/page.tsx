@@ -1,36 +1,32 @@
 import AdminUsersPage from "@/components/pages/admin/users";
 import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
-import z from "zod";
 import { HttpAPIRoutes } from "@/utils/http/api";
 import { adminUserListResponseSchema } from "@/schemas/admin/users";
+import { parseAdminUserSearchParams } from "@/utils/searchParam/admin/user";
 
-export default async function Page() {
-    const res = await serverFetchWrapper<AdminUser[]>({
-        url: HttpAPIRoutes.ADMIN_USERS,
+interface Props {
+    searchParams: Promise<AdminUserSearchParams>
+}
+
+export default async function Page({ searchParams }: Props) {
+    const rawSearchParams = await searchParams;
+
+    const validSearchParams =
+        parseAdminUserSearchParams(rawSearchParams);
+
+    const query = new URLSearchParams(validSearchParams);
+
+
+    const res = await serverFetchWrapper<PageResponse<AdminUser>>({
+        url: HttpAPIRoutes.ADMIN_USERS + `?${query.toString()}`,
         method: "GET",
         schema: adminUserListResponseSchema,
     });
 
-    const pageRes: PageResponse<AdminUser> = {
-        content: res.data,
-        totalElements: res.data.length,
-        totalPages: 1,
-        number: 0,
-        size: res.data.length,
-        first: true,
-        last: true,
-        numberOfElements: res.data.length,
-        empty: res.data.length === 0,
-        sort: {
-            sorted: false,
-            unsorted: true,
-            empty: res.data.length === 0,
-        },
-    };
 
     return (
         <AdminUsersPage
-            users={pageRes}
+            users={res.data}
         />
     );
 }
