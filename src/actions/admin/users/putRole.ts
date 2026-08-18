@@ -10,7 +10,7 @@ interface Props {
     roles: PutUserRoleRequest;
 }
 
-export async function postUserAction({ id, roles }: Props) {
+export async function putUserRoleAction({ id, roles }: Props) {
     const res = await actionFetchWrapper<null>({
         url: HttpAPIRoutes.USER_ROLES.replace('{id}', id.toString()),
         method: "PUT",
