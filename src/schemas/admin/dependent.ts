@@ -8,7 +8,7 @@ const dependentMedicalProfileSchema: z.ZodType<DependentMedicalProfile> = z.obje
     medicalNotes: z.string().nullable(),
 })
 
-const dependentSchema: z.ZodType<Dependent> = z.object({
+export const dependentSchema: z.ZodType<Dependent> = z.object({
     id: z.number(),
     name: z.string(),
     cpf: z.string(),

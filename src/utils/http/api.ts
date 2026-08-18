@@ -11,6 +11,7 @@ export enum HttpAPIRoutes {
     TOOLS = "tools",
 
     ADMIN_DEPENDENTS = "socios/{id}/dependents",
+    DEPENDENTS = "dependents",
     ADMIN_MEDICAL_PROFILES = "admin/medical-profiles",
     MEDICAL_PROFILE_MEMBER = "medical-profiles/me",
     PASSWORD_RECOVERY_REQUEST = "authentication/password-recovery/requests",

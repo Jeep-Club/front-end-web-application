@@ -28,7 +28,7 @@ function display(value: string | null | undefined) {
     return value?.trim() || "Não informado";
 }
 
-export function MedicalProfileTab() {
+export function MedicalProfileTabContent() {
     const { setContent, setOpen } = useModal();
     const { data, isLoading, isError, refetch, isFetching } = useQuery({
         queryKey: ["medical-profile", "me"],
@@ -136,4 +136,4 @@ function ProfileItem({ label, value }: { label: string; value: string }) {
     );
 }
 
-export default MedicalProfileTab;
+export default MedicalProfileTabContent;

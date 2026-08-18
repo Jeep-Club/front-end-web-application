@@ -27,7 +27,7 @@ function formatMemberSince(createdAt: string) {
     }).format(date);
 }
 
-export function PersonalDataTab() {
+export function PersonalDataTabContent() {
     const { setContent, setOpen } = useModal();
     const queryClient = useQueryClient();
     const {
@@ -126,4 +126,4 @@ export function PersonalDataTab() {
     );
 }
 
-export default PersonalDataTab;
+export default PersonalDataTabContent;
