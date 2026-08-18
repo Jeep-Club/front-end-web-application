@@ -138,7 +138,7 @@ export default function RolesPermissions() {
     };
 
     const handleOpenManageRolePermissions = (role: RoleResponse) => {
-        setContent(<ManageRolePermissionsModal roleId={role.id} roleName={role.name} roleProtected={role.protected} />);
+        setContent(<ManageRolePermissionsModal roleId={role.id} roleName={role.name} roleKind={role.kind} />);
         setOpen();
     };
 
@@ -219,7 +219,7 @@ export default function RolesPermissions() {
                                                     <div className="flex items-center justify-between gap-2">
                                                         <div className="flex min-w-0 items-center gap-1.5">
                                                             <h3 className="truncate font-black text-j-blue-800">{role.name}</h3>
-                                                            {role.protected && (
+                                                            {role.kind === "ROOT" && (
                                                                 <Lock size={13} className="shrink-0 text-j-gray-400" />
                                                             )}
                                                         </div>
@@ -235,7 +235,7 @@ export default function RolesPermissions() {
                                             </div>
 
                                             <div className="mt-3 grid grid-cols-1 gap-0.5 border-t border-j-gray-100 pt-3 sm:grid-cols-2">
-                                                {role.status !== "DELETED" && !(role.protected && role.status === "ACTIVE") && (
+                                                {role.status !== "DELETED" && !(role.kind === "ROOT" && role.status === "ACTIVE") && (
                                                     (role.status === "ACTIVE" ? canDisableRole : canEnableRole) && (
                                                         <button
                                                             type="button"
@@ -254,7 +254,7 @@ export default function RolesPermissions() {
                                                         </button>
                                                     )
                                                 )}
-                                                {canUpdateRole && !role.protected && (
+                                                {canUpdateRole && role.kind !== "ROOT" && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenEditRole(role.id)}
@@ -292,7 +292,7 @@ export default function RolesPermissions() {
                                                         Gerenciar permissões
                                                     </button>
                                                 )}
-                                                {canDeleteRole && role.status !== "DELETED" && !role.protected && (
+                                                {canDeleteRole && role.status !== "DELETED" && role.kind !== "ROOT" && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenDeleteRole(role)}
