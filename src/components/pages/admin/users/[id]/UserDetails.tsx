@@ -20,24 +20,24 @@ interface UserDetailsModalProps {
     // userId: number;
     // canReadRoles: boolean;
     // onLoadUser: (userId: number) => Promise<UserListItem>;
+    roles: RoleListResponse;
     user: AdminUser;
     modal?: boolean;
 }
 
-export function AdminUserDetailsPage({ user, modal = false }: UserDetailsModalProps) {
+export function AdminUserDetailsPage({ user,roles, modal = false }: UserDetailsModalProps) {
 
 
     if (!modal) {
         return (
-            <UserDetails user={user} />
+            <UserDetails user={user} roles={roles} />
         );
     }
 
-
-    return <UserDetailsModal user={user} />;
+    return <UserDetailsModal user={user} roles={roles} />;
 }
 
-export function UserDetails({ user }: UserDetailsModalProps) {
+export function UserDetails({ user, roles }: UserDetailsModalProps) {
     return (
         <div
             className="relative flex w-full flex-col gap-5 bg-j-white-800 p-4 text-j-black shadow-[-1px_16px_23px_1px_rgba(0,0,0,0.35)] md:p-8"
@@ -77,10 +77,10 @@ export function UserDetails({ user }: UserDetailsModalProps) {
                     <span
                         className={twMerge(
                             "w-fit rounded-full px-3 py-1 text-xs font-bold",
-                            USER_STATUS_STYLE[user.status],
+                            USER_STATUS_STYLE[user.accountStatus],
                         )}
                     >
-                        {USER_STATUS_LABEL[user.status]}
+                        {USER_STATUS_LABEL[user.accountStatus]}
                     </span>
                 </div>
 
@@ -91,8 +91,11 @@ export function UserDetails({ user }: UserDetailsModalProps) {
                 />
                 <ReadOnlyField label="Data de cadastro" value={maskDate(user.createdAt)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
                 <ReadOnlyField label="Última atualização" value={maskDate(user.updatedAt)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
+                
+                <UserRoles roles={roles} />
 
             </div>
+            
         </div>
     );
 }
@@ -102,6 +105,7 @@ export function UserDetailsModal({
     // canReadRoles,
     // onLoadUser,
     user,
+    roles,
 }: UserDetailsModalProps) {
     // useModalFocusRestoration();
     const router = useRouter()
@@ -228,10 +232,10 @@ export function UserDetailsModal({
                         <span
                             className={twMerge(
                                 "w-fit rounded-full px-3 py-1 text-xs font-bold",
-                                USER_STATUS_STYLE[user.status],
+                                USER_STATUS_STYLE[user.accountStatus],
                             )}
                         >
-                            {USER_STATUS_LABEL[user.status]}
+                            {USER_STATUS_LABEL[user.accountStatus]}
                         </span>
                     </div>
 
@@ -243,8 +247,76 @@ export function UserDetailsModal({
                     <ReadOnlyField label="Data de cadastro" value={maskDate(user.createdAt)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
                     <ReadOnlyField label="Última atualização" value={maskDate(user.updatedAt)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
 
+                            <UserRoles roles={roles} />
                 </div>
             </div>
         </ModalRoot>
+    );
+}
+
+export function UserRoles({ roles }: { roles: RoleListResponse }) {
+   useEffect(() => {
+        if (typeof window !== "undefined" && window.location.hash === "#roles") {
+            const element = document.getElementById("roles");
+            if (element) {
+                // Um pequeno delay garante que o DOM do modal/página esteja totalmente renderizado
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 150);
+            }
+        }
+    }, []);
+
+    // Assumindo que roles é um array, caso a tipagem seja um objeto com um array dentro (ex: roles.data), ajuste o map.
+    const rolesArray = Array.isArray(roles) ? roles : [];
+
+    return (
+        <div 
+            id="roles" 
+            className="flex flex-col gap-2 sm:col-span-2 scroll-mt-24"
+        >
+            <span className="text-xs font-bold text-j-white md:text-sm">Papéis de acesso</span>
+            
+            {rolesArray.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                    {rolesArray.map((role) => (
+                        <div 
+                            key={role.id} 
+                            className="flex flex-col gap-1 rounded-xl border border-j-transparent-white/20 bg-j-gray-500/50 p-4"
+                        >
+                            <div className="flex items-center justify-between gap-4">
+                                <span className="font-bold text-j-white text-sm md:text-base">
+                                    {role.name}
+                                </span>
+                                <span
+                                    className={twMerge(
+                                        "rounded-full px-3 py-1 text-[10px] uppercase font-bold tracking-wider",
+                                        role.status === "ACTIVE"
+                                            ? "bg-j-yellow-300 text-j-blue-800"
+                                            : "bg-j-gray-200 text-j-gray-600"
+                                    )}
+                                >
+                                    {ROLE_STATUS_LABEL[role.status] || role.status}
+                                </span>
+                            </div>
+                            <span className="text-xs text-j-transparent-white md:text-sm leading-relaxed">
+                                {role.description}
+                            </span>
+                            
+                            {/* Opcional: Badge indicando se é CUSTOM ou SYSTEM
+                            <div className="mt-2 flex">
+                                <span className="text-[10px] font-semibold text-j-gray-300 bg-j-blue-800/50 px-2 py-0.5 rounded">
+                                    Tipo: {role.}
+                                </span>
+                            </div> */}
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <span className="text-sm text-j-transparent-white italic">
+                    Nenhum papel de acesso vinculado a este usuário.
+                </span>
+            )}
+        </div>
     );
 }

@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
 import toast from "react-hot-toast";
+import { Button } from "@/components/common/button";
 
 const INITIAL_QUERY: AdminUserSearchParams = {
     q: "",
@@ -157,7 +158,7 @@ export default function AdminUsersPage({ users }: Props) {
     // }, [dataSource, setContent, setOpen, updateRolesInCache]);
 
     const handleManageRoles = useCallback((user: AdminUser) => {
-        router.push(`/admin/users/${user.id}/roles`);
+        router.push(`/admin/users/${user.id}#roles`);
     }, [router]);
 
     function updateFilters(patch: Partial<AdminUserSearchParams>) {
@@ -212,6 +213,15 @@ export default function AdminUsersPage({ users }: Props) {
                         { label: "Usuários" },
                     ]}
                 />
+                {permissions.canAssignRoles &&
+                    <Button
+                    className="w-fit"
+                    onClick={() => router.push("/admin/users/new")}
+                    disabled={loading || fetching}
+                >
+                    Cadastrar novo usuário
+                </Button>
+                }
 
                 <UserManagementView
                     users={users.content}

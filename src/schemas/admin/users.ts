@@ -111,3 +111,16 @@ export const adminUserSearchParamsSchema = z.object({
         )
         .optional(),
 });
+
+// export const userRegisterSchema = z.object({
+//   name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
+//   birthData: z.string().min(1, "A data de nascimento é obrigatória"), // Pode aplicar um regex de data se necessário
+//   email: z.email("Formato de e-mail inválido"),
+//   cpf: z.string().min(11, "O CPF é obrigatório e deve ter 11 dígitos"),
+//   rg: z.string().min(1, "O RG é obrigatório"),
+//   password: z.string()
+//     .min(8, "A senha deve ter no mínimo 8 caracteres"),
+//     // .regex(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
+//     // .regex(/[^a-zA-Z0-9]/, "A senha deve conter pelo menos um caractere especial"),
+//   phoneNumber: z.string().min(10, "Telefone inválido")
+// }) satisfies z.ZodType<RegisterRequest>;

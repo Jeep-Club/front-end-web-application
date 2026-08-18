@@ -90,4 +90,3 @@ interface AdminUserSearchParams {
     size?: string;
     sort?: string;
 }
-
