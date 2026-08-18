@@ -18,7 +18,7 @@ import { getModuleLabel, getPermissionName } from "./permissionLabels";
 interface ManageRolePermissionsModalProps {
     roleId: number;
     roleName: string;
-    roleProtected: boolean;
+    roleKind: RoleKind;
 }
 
 interface PermissionRowProps {
@@ -62,12 +62,13 @@ function PermissionRow({ permission, checked, disabled, disabledReason, isPendin
     );
 }
 
-export function ManageRolePermissionsModal({ roleId, roleName, roleProtected }: ManageRolePermissionsModalProps) {
+export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: ManageRolePermissionsModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
     const userPermissions = useUserStore((state) => state.permissions);
     const canAssign = hasPermission(userPermissions, "AUTHORIZATION", "PERMISSION_ASSIGN");
     const canRevoke = hasPermission(userPermissions, "AUTHORIZATION", "PERMISSION_REVOKE");
+    const isProtected = roleKind === "ROOT";
 
     const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
 
@@ -94,7 +95,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleProtected }: 
     const isError = isCatalogError || isRolePermissionsError;
 
     const handleToggle = async (permission: PermissionResponse, nextChecked: boolean) => {
-        if (roleProtected) return;
+        if (isProtected) return;
 
         setPendingIds((prev) => new Set(prev).add(permission.id));
 
@@ -174,8 +175,8 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleProtected }: 
                                     {items.map((permission) => {
                                         const checked = assignedIds.has(permission.id);
                                         const missingPermission = checked ? !canRevoke : !canAssign;
-                                        const disabled = roleProtected || missingPermission;
-                                        const disabledReason = roleProtected
+                                        const disabled = isProtected || missingPermission;
+                                        const disabledReason = isProtected
                                             ? "As permissões deste cargo são gerenciadas pelo sistema e não podem ser alteradas."
                                             : missingPermission
                                                 ? (checked ? "Você não tem permissão para revogar permissões." : "Você não tem permissão para atribuir permissões.")
