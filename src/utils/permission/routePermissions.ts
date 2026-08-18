@@ -63,6 +63,13 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["DEPENDENT_READ"],
         },
     ],
+
+    "/admin/gestao-financeira": [
+        {
+            module: "FINANCE",
+            actions: ["FINANCE_READ"],
+        },
+    ],
 };
 
 function normalizeRule(config: RoutePermissionsConfig): RoutePermissionRule {
