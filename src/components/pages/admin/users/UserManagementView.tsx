@@ -11,7 +11,8 @@ import { Table } from "@/components/common/table";
 import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
 
 import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "./user-display";
-import { InputRadioGroup } from "@/components/common/input/input-radio-group";
+
+type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
 
 interface UserManagementViewProps {
     users: AdminUser[];
@@ -20,19 +21,22 @@ interface UserManagementViewProps {
     permissions: UserManagementPermissions;
     totalItems: number;
     totalPages: number;
+    pageIndex: number;
+    pageSize: number;
     isLoading: boolean;
     isFetching: boolean;
     error?: string;
     onSearchChange: (value: string) => void;
-    onStatusChange: (statuses: UserStatus[]) => void;
+    onStatusChange: (status: "ACTIVE" | "DISABLED" | undefined) => void;
     // onRoleChange: (roleIds: number[]) => void;
     onClearFilters: () => void;
     onPaginationChange: (pagination: PaginationState) => void;
+    onSortChange: (field: string) => void;
     onViewUser: (userId: number) => void;
     onChangeUserStatus: (user: AdminUser) => void;
     onManageRoles: (user: AdminUser) => void;
-    searchType: "q" | "name" | "email" | "cpf" | "phone";
-    setSearchType: (type: "q" | "name" | "email" | "cpf" | "phone") => void;
+    searchType: SearchType;
+    setSearchType: (type: SearchType) => void;
 }
 
 export function UserManagementView({
@@ -42,6 +46,8 @@ export function UserManagementView({
     permissions,
     totalItems,
     totalPages,
+    pageIndex,
+    pageSize,
     isLoading,
     isFetching,
     error,
@@ -50,13 +56,30 @@ export function UserManagementView({
     // onRoleChange,
     onClearFilters,
     onPaginationChange,
+    onSortChange,
     onViewUser,
     onChangeUserStatus,
     onManageRoles,
     searchType,
     setSearchType,
 }: UserManagementViewProps) {
-    const hasActiveFilters = Object.keys(query).length > 0;
+    const hasActiveFilters = Boolean(
+        query.q
+        || query.name
+        || query.email
+        || query.cpf
+        || query.phoneNumber
+        || query.id
+        || query.accountStatus
+        || query.authenticationStatus
+        || query.credentialStatus
+        || query.passwordChangeRequired
+        || query.createdFrom
+        || query.createdTo
+        || query.updatedFrom
+        || query.updatedTo
+        || query.fields,
+    );
     const canReplaceRoles = permissions.canReadUserRoles
         && permissions.canReadRoleCatalog
         && permissions.canAssignRoles
@@ -66,30 +89,38 @@ export function UserManagementView({
         const baseColumns: ColumnDef<AdminUser, unknown>[] = [
             {
                 accessorKey: "name",
-                header: "Nome",
+                header: () => (
+                    <Table.Sortable field="name" label="Nome" sort={query.sort} onSortChange={onSortChange} />
+                ),
                 cell: ({ row }) => (
                     <span className="font-bold text-j-gray-700">{row.original.name}</span>
                 ),
             },
             {
                 accessorKey: "email",
-                header: "E-mail",
+                header: () => (
+                    <Table.Sortable field="email" label="E-mail" sort={query.sort} onSortChange={onSortChange} />
+                ),
                 cell: ({ row }) => row.original.email ?? "—",
             },
             {
                 accessorKey: "cpf",
-                header: "CPF",
+                header: () => (
+                    <Table.Sortable field="cpf" label="CPF" sort={query.sort} onSortChange={onSortChange} />
+                ),
                 cell: ({ row }) => maskCPF(row.original.cpf),
             },
             {
                 accessorKey: "phone",
-                header: "Telefone",
+                header: () => (
+                    <Table.Sortable field="phoneNumber" label="Telefone" sort={query.sort} onSortChange={onSortChange} />
+                ),
                 cell: ({ row }) => row.original.phone
                     ? maskPhoneNumber(row.original.phone)
                     : "—",
             },
             {
-                accessorKey: "status",
+                accessorKey: "accountStatus",
                 header: "Status",
                 cell: ({ row }) => (
                     <span
@@ -136,7 +167,9 @@ export function UserManagementView({
         baseColumns.push(
             {
                 accessorKey: "createdAt",
-                header: "Cadastro",
+                header: () => (
+                    <Table.Sortable field="createdAt" label="Cadastro" sort={query.sort} onSortChange={onSortChange} />
+                ),
                 cell: ({ row }) => maskDate(row.original.createdAt),
             },
             {
@@ -195,7 +228,7 @@ export function UserManagementView({
         );
 
         return baseColumns;
-    }, [canReplaceRoles, onChangeUserStatus, onManageRoles, onViewUser, permissions]);
+    }, [canReplaceRoles, onChangeUserStatus, onManageRoles, onSortChange, onViewUser, permissions, query.sort]);
 
     return (
         <Table.Root
@@ -203,11 +236,11 @@ export function UserManagementView({
             columns={columns}
             getRowId={(user) => String(user.id)}
             pagination={{
-                pageIndex: parseInt(query.page ?? "1", 10),
-                pageSize: parseInt(query.size ?? "10", 10),
+                pageIndex,
+                pageSize,
                 pageCount: totalPages,
                 rowCount: totalItems,
-                pageSizeOptions: [5, 10, 20],
+                pageSizeOptions: [5, 10, 20, 50, 100],
                 onChange: onPaginationChange,
             }}
             isLoading={isLoading}
@@ -222,53 +255,68 @@ export function UserManagementView({
             <Table.Header
                 title="Usuários cadastrados"
                 description={isLoading ? "Carregando usuários..." : `${totalItems} usuário(s) encontrado(s)`}
-                className="items-stretch"
+                className="items-stretch border-b-0"
             >
-                <div className="flex flex-col gap-3 rounded-lg bg-j-blue-800 p-4">
+                <div className="flex w-full items-end rounded-lg">
                     <Table.Search
-                        value={query.q ?? ""}
+                        value={searchType === "cpf"
+                            ? maskCPF(query.cpf ?? "")
+                            : searchType === "phoneNumber"
+                                ? maskPhoneNumber(query.phoneNumber ?? "")
+                                : query[searchType] ?? ""}
                         onValueChange={onSearchChange}
                         label="Buscar usuários"
-                        placeholder="Nome, e-mail, CPF ou telefone"
-                        formClassName="sm:min-w-80"
+                        placeholder="Digite a busca e pressione Enter"
+                        submitOnChange={false}
+                        mask={searchType === "cpf"
+                            ? maskCPF
+                            : searchType === "phoneNumber"
+                                ? maskPhoneNumber
+                                : undefined}
+                        inputMode={searchType === "cpf" || searchType === "phoneNumber" ? "numeric" : "search"}
+                        formClassName="sm:min-w-80 sm:flex-1"
+                        className="rounded-r-none"
                     />
-                    <InputRadioGroup
-                        register={false} // Usamos false porque não estamos dentro de um <form> do RHF
-                        name="searchType"
-                        value={searchType}
-                        onChange={(val) => {
-                            setSearchType(val as "q" | "name" | "email" | "cpf" | "phone");
-                            // Limpa a busca ao trocar de categoria para evitar conflitos de dados antigos
-                            onClearFilters();
-                        }}
-                        options={[
-                            { label: "Geral", value: "q" },
-                            { label: "Nome", value: "name" },
-                            { label: "CPF", value: "cpf" },
-                            { label: "E-mail", value: "email" },
-                            { label: "Telefone", value: "phoneNumber" },
-                        ]}
-                    />
+                    <div>
+                        <Select.Unregister
+                            label="Buscar por"
+                            name="searchType"
+                            value={searchType}
+                            onChange={(event) => setSearchType(event.target.value as SearchType)}
+                            className="h-10 w-fit rounded-l-none bg-j-blue-600 py-2 text-sm text-j-white focus:bg-j-blue-700"
+                        >
+                            <option value="q">Geral</option>
+                            <option value="name">Nome</option>
+                            <option value="cpf">CPF</option>
+                            <option value="email">E-mail</option>
+                            <option value="phoneNumber">Telefone</option>
+                        </Select.Unregister>
+                    </div>
                 </div>
             </Table.Header>
 
             <Table.Filters
                 hasActiveFilters={hasActiveFilters}
                 onClear={onClearFilters}
-                className="border-b border-j-gray-200 bg-j-white px-4 py-3 md:px-6 [&_label]:text-j-gray-700"
+                className="justify-start border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6 [&_label]:text-j-gray-700"
             >
-                <Select.Unregister
-                    label="Status"
-                    name="status"
-                    value={query.accountStatus?.[0] ?? ""}
-                    onChange={(event) => onStatusChange(event.target.value ? [event.target.value as UserStatus] : [])}
-                    className="h-10 min-w-56 border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white"
-                >
-                    <option value="">Todos os status</option>
-                    {Object.entries(USER_STATUS_LABEL).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                    ))}
-                </Select.Unregister>
+                <div className="w-fit">
+                    <Select.Unregister
+                        label="Status"
+                        name="status"
+                        value={query.accountStatus ?? ""}
+                        onChange={(event) => onStatusChange(
+                            event.target.value
+                                ? event.target.value as "ACTIVE" | "DISABLED"
+                                : undefined,
+                        )}
+                        className="h-10 border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white"
+                    >
+                        <option value="">Todos os status</option>
+                        <option value="ACTIVE">{USER_STATUS_LABEL.ACTIVE}</option>
+                        <option value="DISABLED">{USER_STATUS_LABEL.DISABLED}</option>
+                    </Select.Unregister>
+                </div>
 
                 {/* {permissions.canReadRoleCatalog && permissions.canReadUserRoles && (
                     <Select.Unregister
@@ -288,7 +336,7 @@ export function UserManagementView({
                 )} */}
             </Table.Filters>
 
-            <Table.Content loadingRows={parseInt(query.size ?? "10", 10)} />
+            <Table.Content loadingRows={pageSize} />
             <Table.Pagination />
         </Table.Root>
     );

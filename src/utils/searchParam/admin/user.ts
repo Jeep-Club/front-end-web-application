@@ -2,7 +2,7 @@ import { adminUserSearchParamsSchema } from "@/schemas/admin/users";
 
 export function parseAdminUserSearchParams(
     searchParams: Record<string, string | string[] | undefined > | AdminUserSearchParams
-) {
+): AdminUserSearchParams {
     const validParams: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(searchParams)) {
@@ -36,5 +36,5 @@ export function parseAdminUserSearchParams(
         validParams[key] = rawValue;
     }
 
-    return validParams;
+    return validParams as AdminUserSearchParams;
 }

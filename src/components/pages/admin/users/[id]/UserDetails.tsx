@@ -117,6 +117,7 @@ export function UserDetailsModal({
     //     queryFn: () => onLoadUser(userId),
     //     retry: false,
     // });
+
     return (
         <ModalRoot isOpen={true} onClose={() => router.back()} >
             <div
@@ -393,7 +394,7 @@ function UserRolesModal({setClose, addRole}: {setClose: () => void, addRole: (ro
     });
 
     return (
-        <div className="flex flex-col h-full max-h-[80vh]">
+        <div className="flex flex-col h-full max-h-[80vh] bg-j-blue-800 rounded-lg shadow-2xl">
             <div className="p-4 md:p-6 border-b border-j-transparent-white/20 flex items-center justify-between shrink-0">
                 <div>
                     <h2 className="text-lg font-bold text-j-white md:text-xl">Adicionar Papéis</h2>

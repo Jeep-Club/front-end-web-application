@@ -14,7 +14,11 @@ export default async function Page({ searchParams }: Props) {
     const validSearchParams =
         parseAdminUserSearchParams(rawSearchParams);
 
-    const query = new URLSearchParams(validSearchParams);
+    const query = new URLSearchParams(
+        Object.entries(validSearchParams).filter(
+            (entry): entry is [string, string] => typeof entry[1] === "string",
+        ),
+    );
 
 
     const res = await serverFetchWrapper<PageResponse<AdminUser>>({
@@ -27,6 +31,7 @@ export default async function Page({ searchParams }: Props) {
     return (
         <AdminUsersPage
             users={res.data}
+            searchParams={validSearchParams}
         />
     );
 }

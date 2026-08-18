@@ -15,7 +15,7 @@ export async function putUserRoleAction({ id, roles }: Props) {
         url: HttpAPIRoutes.USER_ROLES.replace('{id}', id.toString()),
         method: "PUT",
         body: JSON.stringify(roles),
-        schema: z.null()
+        schema: z.any()
     });
 
     return res.data;

@@ -1,47 +1,81 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState, useTransition } from "react";
+import { useMutation } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { ShieldX } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
+import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
+import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
-import { createMockAdminUsersDataSource } from "@/mocks/admin/users";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
+import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
+import { isValidCPF } from "@/utils/validate";
 import { UserManagementView } from "./UserManagementView";
-import { UserRolesModal } from "./UserRolesModal";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
-import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
-import toast from "react-hot-toast";
-import { Button } from "@/components/common/button";
 
-const INITIAL_QUERY: AdminUserSearchParams = {
-    q: "",
-    page: "1",
-    size: "10",
-    // sort: "id,asc",
-};
+type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
+
+const SEARCH_PARAMS: SearchType[] = ["q", "name", "email", "cpf", "phoneNumber"];
+const PHONE_SEARCH_PATTERN = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+const FILTER_PARAMS: (keyof AdminUserSearchParams)[] = [
+    ...SEARCH_PARAMS,
+    "id",
+    "accountStatus",
+    "authenticationStatus",
+    "credentialStatus",
+    "passwordChangeRequired",
+    "createdFrom",
+    "createdTo",
+    "updatedFrom",
+    "updatedTo",
+    "fields",
+];
+
+function normalizeSearchValue(value: string, type: SearchType) {
+    const trimmedValue = value.trim();
+
+    if (type === "cpf") {
+        return unMaskCPF(trimmedValue);
+    }
+
+    if (type === "phoneNumber") {
+        return unMaskPhoneNumber(trimmedValue);
+    }
+
+    if (type === "q" && isValidCPF(trimmedValue)) {
+        return unMaskCPF(trimmedValue);
+    }
+
+    if (type === "q" && PHONE_SEARCH_PATTERN.test(trimmedValue)) {
+        return unMaskPhoneNumber(trimmedValue);
+    }
+
+    return trimmedValue;
+}
 
 interface Props {
     users: PageResponse<AdminUser>;
+    searchParams: AdminUserSearchParams;
 }
 
-export default function AdminUsersPage({ users }: Props) {
+export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const permissionsFromStore = useUserStore((state) => state.permissions);
     const { setContent, setOpen } = useModal();
     // const queryClient = useQueryClient();
-    const [query, setQuery] = useState<AdminUserSearchParams>({});
-    const [searchType, setSearchType] = useState<"q" | "name" | "email" | "cpf" | "phone">("q");
-    // const dataSource = useMemo(() => createMockAdminUsersDataSource(), []);
     const router = useRouter();
-
-    const [loading, setLoading] = useState(false);
-    const [fetching, setFetching] = useState(true);
+    const pathname = usePathname();
+    const currentSearchParams = useSearchParams();
+    const [isPending, startTransition] = useTransition();
+    const [selectedSearchType, setSelectedSearchType] = useState<SearchType>(() =>
+        SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? "q",
+    );
+    const searchType = SEARCH_PARAMS.find((param) => Boolean(query[param]))
+        ?? selectedSearchType;
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
         canReadUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_READ"),
@@ -143,7 +177,7 @@ export default function AdminUsersPage({ users }: Props) {
             />,
         );
         setOpen();
-    }, [, setContent, setOpen]);
+    }, [setContent, setOpen]);
 
     // const handleManageRoles = useCallback((user: AdminUser) => {
     //     setContent(
@@ -161,21 +195,77 @@ export default function AdminUsersPage({ users }: Props) {
         router.push(`/admin/users/${user.id}#roles`);
     }, [router]);
 
-    function updateFilters(patch: Partial<AdminUserSearchParams>) {
-        // Agora passando "page" como string "0" para resetar a paginação ao filtrar
-        setQuery((current) => ({ ...current, ...patch, page: "0" }));
+    function replaceSearchParams(
+        patch: Partial<AdminUserSearchParams>,
+        { resetPage = false }: { resetPage?: boolean } = {},
+    ) {
+        const params = new URLSearchParams(currentSearchParams.toString());
+        Object.entries(patch).forEach(([key, value]) => {
+            if (value === undefined || value === "") {
+                params.delete(key);
+                return;
+            }
+
+            params.set(key, value);
+        });
+
+        if (resetPage) {
+            params.set("page", "0");
+        }
+
+        const nextUrl = params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
+        startTransition(() => router.replace(nextUrl, { scroll: false }));
+    }
+
+    function updateSearch(value: string) {
+        const normalizedValue = normalizeSearchValue(value, searchType);
+        const patch = Object.fromEntries(
+            SEARCH_PARAMS.map((param) => [
+                param,
+                param === searchType ? normalizedValue : undefined,
+            ]),
+        ) as Partial<AdminUserSearchParams>;
+
+        replaceSearchParams(patch, { resetPage: true });
+    }
+
+    function updateSearchType(type: SearchType) {
+        setSelectedSearchType(type);
+
+        if (SEARCH_PARAMS.some((param) => Boolean(query[param]))) {
+            const patch = Object.fromEntries(
+                SEARCH_PARAMS.map((param) => [param, undefined]),
+            ) as Partial<AdminUserSearchParams>;
+            replaceSearchParams(patch, { resetPage: true });
+        }
+    }
+
+    function clearFilters() {
+        const patch = Object.fromEntries(
+            FILTER_PARAMS.map((param) => [param, undefined]),
+        ) as Partial<AdminUserSearchParams>;
+
+        replaceSearchParams(patch, { resetPage: true });
     }
 
     function handlePaginationChange(pagination: PaginationState) {
-        setQuery((current) => ({
-            ...current,
-            page: pagination.pageSize.toString() === current.size ? pagination.pageIndex.toString() : "0",
+        replaceSearchParams({
+            page: pagination.pageSize === users.size ? pagination.pageIndex.toString() : "0",
             size: pagination.pageSize.toString(),
-        }));
+        });
     }
-    useEffect(() => {
-        setFetching(false);
-    }, [users]);
+
+    function handleSortChange(field: string) {
+        const [currentField, currentDirection] = query.sort?.split(",") ?? [];
+        const normalizedDirection = currentDirection?.toLowerCase();
+        const nextSort = currentField !== field
+            ? `${field},asc`
+            : normalizedDirection === "asc"
+                ? `${field},desc`
+                : undefined;
+
+        replaceSearchParams({ sort: nextSort }, { resetPage: true });
+    }
 
     if (!permissions.canReadUsers) {
         return (
@@ -217,7 +307,7 @@ export default function AdminUsersPage({ users }: Props) {
                     <Button
                     className="w-fit"
                     onClick={() => router.push("/admin/users/new")}
-                    disabled={loading || fetching}
+                    disabled={isPending}
                 >
                     Cadastrar novo usuário
                 </Button>
@@ -227,33 +317,34 @@ export default function AdminUsersPage({ users }: Props) {
                     users={users.content}
                     query={query}
                     searchType={searchType}
-                    setSearchType={setSearchType}
                     // roles={rolesQuery.data ?? []}
                     permissions={permissions}
                     totalItems={users.totalElements}
                     totalPages={users.totalPages}
-                    isLoading={loading}
-                    isFetching={fetching}
+                    pageIndex={users.number}
+                    pageSize={users.size}
+                    isLoading={false}
+                    isFetching={isPending}
                     // error={usersQuery.error
                     //     ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
                     //     : undefined}
-                    onSearchChange={(search) => updateFilters({ q: search })}
+                    onSearchChange={updateSearch}
 
-                    // Atualizado para usar `accountStatus` no lugar de `statuses`
-                    // OBS: O frontend parece enviar um array, mas a nova tipagem recebe string.
-                    // Extraímos o primeiro valor do array como fallback.
-                    onStatusChange={(statuses: UserStatus[]) => updateFilters({
-                        accountStatus: statuses.length > 0 ? (statuses[0] as "ACTIVE" | "DISABLED") : undefined
-                    })}
+                    onStatusChange={(accountStatus) => replaceSearchParams(
+                        { accountStatus },
+                        { resetPage: true },
+                    )}
 
                     // onRoleChange não existe na nova tipagem explicitamente (a não ser que backend use Q ou fields)
                     // onRoleChange={(roleIds) => updateFilters({ roleIds })} // Reavalie se precisa manter
 
-                    onClearFilters={() => setQuery(INITIAL_QUERY)}
+                    onClearFilters={clearFilters}
                     onPaginationChange={handlePaginationChange}
+                    onSortChange={handleSortChange}
                     onViewUser={handleViewUser}
                     onChangeUserStatus={handleChangeUserStatus}
                     onManageRoles={handleManageRoles}
+                    setSearchType={updateSearchType}
                 />
             </div>
         </div>
