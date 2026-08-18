@@ -12,21 +12,21 @@ export const medicalProfileBloodTypeSchema = z.enum([
     'UNKNOWN',
 ]);
 
-const optionalDescription = z.string().max(2000, 'Use no máximo 2000 caracteres');
-const optionalShortText = (max: number) => z.string().max(max, `Use no máximo ${max} caracteres`);
+const requiredDescription = z.string().trim().min(1, 'Campo obrigatório').max(2000);
+const requiredShortText = (max: number) => z.string().trim().min(1, 'Campo obrigatório').max(max);
 
 export const medicalProfileFormSchema: z.ZodType<MedicalProfileFormData> = z.object({
-    bloodType: medicalProfileBloodTypeSchema,
-    allergies: optionalDescription,
-    chronicConditions: optionalDescription,
-    continuousMedications: optionalDescription,
-    healthInsuranceProvider: optionalShortText(120),
-    healthInsurancePlan: optionalShortText(120),
-    healthInsuranceNumber: optionalShortText(80),
-    emergencyContactName: optionalShortText(120),
-    emergencyContactPhone: optionalShortText(20),
-    emergencyContactRelationship: optionalShortText(80),
-    observations: optionalDescription,
+    bloodType: medicalProfileBloodTypeSchema.refine((value) => value !== 'UNKNOWN', 'Selecione o tipo sanguineo'),
+    allergies: requiredDescription,
+    chronicConditions: requiredDescription,
+    continuousMedications: requiredDescription,
+    healthInsuranceProvider: requiredShortText(120),
+    healthInsurancePlan: requiredShortText(120),
+    healthInsuranceNumber: requiredShortText(80),
+    emergencyContactName: requiredShortText(120),
+    emergencyContactPhone: requiredShortText(20),
+    emergencyContactRelationship: requiredShortText(80),
+    observations: requiredDescription,
 });
 
 export const medicalProfileResponseSchema: z.ZodType<MedicalProfile> = z.object({
