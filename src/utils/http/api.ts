@@ -1,26 +1,26 @@
 export enum HttpAPIRoutes {
     LOGIN = "authentication/login",
-    REGISTER = "authentication/register",
     REFRESH = "authentication/refresh",
-    LOGOUT = "authentication/logout",
     ME = "authentication/me",
+    ADMIN_USERS = "authentication/admin/users",
+    REGISTER = "authentication/register",
+    LOGOUT = "authentication/logout",
     PERMISSIONS = "authorization/permissions",
+    AUTHORIZATION_ROLES = "authorization/roles",
+
+    TOOLS = "tools",
+
     ADMIN_DEPENDENTS = "socios/{id}/dependents",
     ADMIN_MEDICAL_PROFILES = "admin/medical-profiles",
+    MEDICAL_PROFILE_MEMBER = "medical-profiles/me",
     PASSWORD_RECOVERY_REQUEST = "authentication/password-recovery/requests",
-    PASSWORD_RECOVERY_EMAIL_TOKEN = "authentication/password-recovery/requests/email-token"
-
+    PASSWORD_RECOVERY_EMAIL_TOKEN = "authentication/password-recovery/requests/email-token",
+    VEHICLES_INCLUDE_MEMBER = "vehicles/include/member",
+    VEHICLES_LIST_MEMBER = "vehicles/list/member",
+    VEHICLES_EDIT_MEMBER = "vehicles/edit/member",
+    VEHICLES_DETAIL_FOR_EDIT_MEMBER = "vehicles/detail-for-edit/member",
+    VEHICLES_DELETE_MEMBER = "vehicles/delete/member",
+    VEHICLES_DETAIL_MEMBER = "vehicles/detail/member"
 }
 
-// export enum HttpAPIRoutes {
-//     LOGIN = "api/mock/login",
-//     REGISTER = "api/mock/register",
-//     REFRESH = "api/mock/refresh",
-//     LOGOUT = "api/mock/logout",
-//     ME = "api/mock/me",
-//     PERMISSIONS = "api/mock/permissions"
-// }
-
-export enum HttpPublicAPIRoutes {
-    
-}
+export enum HttpPublicAPIRoutes {}

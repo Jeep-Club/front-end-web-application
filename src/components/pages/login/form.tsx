@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
-import loginAction from '@/actions/login';
+import loginAction from '@/actions/auth/login';
 import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
@@ -22,8 +22,8 @@ export default function FormLogin() {
 
     const isLoading = mutation.isPending;
 
-    const handleSubmit = async (loginRequest: LoginRequestType) => {
-        mutation.mutateAsync(loginRequest);
+    const handleSubmit = (loginRequest: LoginRequestType) => {
+        mutation.mutate(loginRequest);
     }
 
     return (

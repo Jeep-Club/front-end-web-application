@@ -8,7 +8,7 @@ import { Button } from "@/components/common/button";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import InputPassword from "@/components/common/input/input-password";
 
-import resetPasswordAction from '@/actions/reset-password';
+import resetPasswordAction from '@/actions/auth/reset-password';
 import { resetPasswordRequestSchema, ResetPasswordRequestType } from "@/schemas/auth/reset-password/resetPasswordRequest";
 
 interface FormResetPasswordProps {

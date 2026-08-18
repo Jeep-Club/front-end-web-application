@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export function GET() {
     return NextResponse.json({
-        userId: 10293,
+    userId: 10293,
+    userName: "João Gabriel de Faria Beserra",
     sessionId: 987654321,
     sessionActive: true,
     expiresInSeconds: 3600,

@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { User, Settings, LogOut, LoaderCircle } from "lucide-react";
 import { Avatar } from "@/components/common/avatar";
-import logoutAction from "@/actions/logout";
+import logoutAction from "@/actions/auth/logout";
 
 interface AvatarMenuProps {
     src: string;

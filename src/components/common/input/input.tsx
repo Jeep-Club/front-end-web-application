@@ -8,10 +8,11 @@ export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' |
     name: string;
     error?: string;
     children?: React.ReactNode;
+    labelClassName?: string;
 }
 
 
-export function Input({label, error, name, value, className, type="text", children, required, ...props}: InputProps) {
+export function Input({label, error, name, value, className, labelClassName, type="text", children, required, ...props}: InputProps) {
     const id = useId();
     const isError = error !== 'undefined' && error !== undefined && error !== null;
     
@@ -19,7 +20,7 @@ export function Input({label, error, name, value, className, type="text", childr
         <div className="w-full flex flex-col gap-1.5">
             <label
                 htmlFor={id}
-                className="text-xs md:text-sm font-bold text-j-white"
+                className={twMerge("text-xs md:text-sm font-bold text-j-white", labelClassName)}
             >
                 {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>

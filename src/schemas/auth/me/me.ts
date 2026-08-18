@@ -2,6 +2,7 @@ import z from "zod";
 
 export const meResponseSchema: z.ZodType<MeResponse> = z.object({
     userId: z.number(),
+    userName: z.string().optional(),
     sessionId: z.number(),
     sessionActive: z.boolean(),
     expiresInSeconds: z.number(),
@@ -10,6 +11,7 @@ export const meResponseSchema: z.ZodType<MeResponse> = z.object({
 
 export const meCookieSchema: z.ZodType<MeCookie> = z.object({
     userId: z.number(),
+    userName: z.string(),
     sessionId: z.number(),
     sessionActive: z.boolean(),
     expires: z.string()

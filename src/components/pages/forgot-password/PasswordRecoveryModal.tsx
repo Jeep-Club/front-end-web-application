@@ -8,7 +8,7 @@ import { twMerge } from "tailwind-merge";
 import { ShieldCheck, Mail, X, LoaderCircle, CheckCircle2 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import forgotPasswordEmailTokenAction from "@/actions/forgot-password-email-token";
+import forgotPasswordEmailTokenAction from "@/actions/auth/forgot-password-email-token";
 
 const AUTO_CLOSE_SECONDS = 30;
 
