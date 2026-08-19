@@ -8,6 +8,7 @@ export enum HttpAPIRoutes {
     PERMISSIONS = "authorization/permissions",
     AUTHORIZATION_ROLES = "authorization/roles",
 
+    USER_ROLES = "authorization/users/{id}/roles",
     TOOLS = "tools",
 
     ADMIN_DEPENDENTS = "socios/{id}/dependents",

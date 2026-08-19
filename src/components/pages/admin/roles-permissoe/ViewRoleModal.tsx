@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { X, KeyRound, LoaderCircle } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
+import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
 import { getRoleAction } from "@/actions/authorization/get-role";
+import { maskDate } from "@/utils/masks";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
@@ -19,19 +21,14 @@ const ROLE_STATUS_DOT_STYLE: Record<RoleStatus, string> = {
     DELETED: "bg-red-500",
 };
 
-function formatDate(value: string | null): string {
-    if (!value) return "—";
-    return new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-        <div className="w-full flex flex-col gap-1.5">
-            <span className="text-xs md:text-sm font-bold text-j-gray-700">{label}</span>
-            <div className="w-full border-2 border-j-gray-200 py-2 px-2.5 rounded-lg font-light text-sm md:text-base bg-j-gray-100 text-j-gray-700">
-                {value || "—"}
-            </div>
-        </div>
+        <CommonReadOnlyField
+            label={label}
+            value={value}
+            labelClassName="text-j-gray-700"
+            valueClassName="border-j-gray-200 bg-j-gray-100 text-j-gray-700"
+        />
     );
 }
 
@@ -96,12 +93,12 @@ export function ViewRoleModal({ roleId }: ViewRoleModalProps) {
                         </div>
 
                         <div className="w-full grid grid-cols-2 gap-4">
-                            <ReadOnlyField label="Criado em" value={formatDate(role.createdAt)} />
-                            <ReadOnlyField label="Atualizado em" value={formatDate(role.updatedAt)} />
+                            <ReadOnlyField label="Criado em" value={maskDate(role.createdAt)} />
+                            <ReadOnlyField label="Atualizado em" value={maskDate(role.updatedAt)} />
                         </div>
 
                         {role.status === "DELETED" && (
-                            <ReadOnlyField label="Excluído em" value={formatDate(role.deletedAt)} />
+                            <ReadOnlyField label="Excluído em" value={maskDate(role.deletedAt)} />
                         )}
                     </div>
                 )}

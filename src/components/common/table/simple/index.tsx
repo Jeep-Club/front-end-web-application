@@ -9,7 +9,7 @@ interface Props<T> {
     onView?: (row: T) => void;
 }
 
-export default function SimpleTable<T extends Record<string, any>>({ 
+export default function SimpleTable<T>({
     columns, 
     data, 
     currentPage, 

@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { Button, ButtonIcon } from "@/components/common/button";
+import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
 import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
+import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
 
 const FUEL_TYPE_LABELS: Record<FuelType, string> = {
@@ -30,22 +32,16 @@ const STEPS = [
     { step: 3, label: "Foto" },
 ];
 
-function formatDate(value: string | null): string {
-    if (!value) return "—";
-    return new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-        <div className="w-full flex flex-col gap-1.5">
-            <span className="text-xs md:text-sm font-bold text-j-gray-700">{label}</span>
-            <div className="w-full border-2 border-j-gray-200 py-2 px-2.5 rounded-lg font-light text-sm md:text-base bg-j-gray-100 text-j-gray-700">
-                {value || "—"}
-            </div>
-        </div>
+        <CommonReadOnlyField
+            label={label}
+            value={value}
+            labelClassName="text-j-gray-700"
+            valueClassName="border-j-gray-200 bg-j-gray-100 text-j-gray-700"
+        />
     );
 }
-
 interface ViewVehicleStepsProps {
     currentStep: number;
     onNext: () => void;
@@ -131,8 +127,8 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                     <ReadOnlyField label="Status" value={STATUS_LABELS[vehicle.status]} />
 
                     <div className="w-full grid grid-cols-2 gap-4">
-                        <ReadOnlyField label="Cadastrado em" value={formatDate(vehicle.createdAt)} />
-                        <ReadOnlyField label="Atualizado em" value={formatDate(vehicle.updatedAt)} />
+                        <ReadOnlyField label="Cadastrado em" value={maskDate(vehicle.createdAt)} />
+                        <ReadOnlyField label="Atualizado em" value={maskDate(vehicle.updatedAt)} />
                     </div>
                 </div>
             </div>
