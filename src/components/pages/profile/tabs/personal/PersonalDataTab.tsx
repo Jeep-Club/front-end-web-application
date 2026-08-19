@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
     useQuery,
@@ -7,6 +7,7 @@ import {
 import { RefreshCw } from "lucide-react";
 
 import { getUserProfileAction } from "@/actions/profile/get";
+import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { maskDate } from "@/utils/masks";
@@ -14,6 +15,17 @@ import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
 
+const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string | null> = {
+    A_POSITIVE: "A+",
+    A_NEGATIVE: "A-",
+    B_POSITIVE: "B+",
+    B_NEGATIVE: "B-",
+    AB_POSITIVE: "AB+",
+    AB_NEGATIVE: "AB-",
+    O_POSITIVE: "O+",
+    O_NEGATIVE: "O-",
+    UNKNOWN: null,
+};
 export function PersonalDataTab() {
     const { setContent, setOpen } = useModal();
     const queryClient = useQueryClient();
@@ -26,6 +38,10 @@ export function PersonalDataTab() {
     } = useQuery({
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
+    });
+    const { data: medicalProfile } = useQuery({
+        queryKey: ["medical-profile", "me"],
+        queryFn: getMedicalProfileAction,
     });
 
     if (isLoading) {
@@ -108,7 +124,11 @@ export function PersonalDataTab() {
                 )}
                 cityState={null}
                 driverLicense={null}
-                bloodType={null}
+                bloodType={
+                    medicalProfile?.bloodType
+                        ? BLOOD_TYPE_LABELS[medicalProfile.bloodType]
+                        : null
+                }
                 exportFileName={`carteirinha-${personalData.id}`}
             />
         </div>

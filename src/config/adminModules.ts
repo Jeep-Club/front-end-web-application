@@ -54,6 +54,18 @@ export const adminModules: AdminModuleConfig[] = [
             action: "ROLE_READ",
         },
     },
+    {
+        key: "financial-management",
+        title: "Gestão financeira",
+        description:
+            "Acompanhe mensalidades, faturas e a saúde financeira do clube.",
+        href: "/admin/gestao-financeira",
+        icon: WalletCards,
+        visibilityPermission: {
+            module: "FINANCE",
+            action: "FINANCE_READ",
+        },
+    },
 ];
 
 export function canAccessAdminModule(

@@ -17,18 +17,28 @@ export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
 
         const user = response.data;
 
+        // TODO: mapeamento provisório até confirmarmos os valores reais dos
+        // enums AccountStatus/AuthenticationStatus/CredentialStatus no backend.
+        const status: UserStatus = user.passwordChangeRequired
+            ? 'CHANGE_PASSWORD_REQUIRED'
+            : user.credentialStatus === 'TEMPORARY'
+                ? 'PENDING_FIRST_ACCESS'
+                : user.accountStatus === 'LOCKED'
+                    ? 'LOCKED'
+                    : user.accountStatus === 'DISABLED' || user.authenticationStatus === 'DISABLED'
+                        ? 'DISABLED'
+                        : 'ACTIVE';
+
         return {
             id: user.id,
             name: user.name,
-            birthDate: null,
+            birthDate: user.birthDate ?? null,
             email: user.email ?? '',
             cpf: user.cpf,
             rg: null,
             phoneNumber: user.phone ?? null,
             profilePhotoUrl: null,
-            status: user.passwordChangeRequired
-                ? 'CHANGE_PASSWORD_REQUIRED'
-                : user.status,
+            status,
             createdAt: user.createdAt,
             lastLoginAt: null,
         };

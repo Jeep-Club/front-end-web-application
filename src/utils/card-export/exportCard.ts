@@ -39,6 +39,7 @@ const CARD_EXPORT_HEIGHT_PX = Math.round(
         CARD_EXPORT_DPI,
 );
 const PDF_BLEED_MM = 0.15;
+const PDF_FOOTER_HEIGHT_MM = 7;
 
 export async function captureCardElement(
     element: HTMLElement,
@@ -217,73 +218,65 @@ function exportAsPdf({
     fileName,
 }: ExportImageParams) {
     const pdf = createCardPdf();
+    const generatedAt = new Date();
+    const generatedDate = generatedAt.toISOString().slice(0, 10);
 
-    addImageToCurrentPage(
-        pdf,
-        frontImage,
-    );
+    pdf.setCreationDate(generatedAt);
+    pdf.setProperties({
+        title: "Carteirinha Jeep Clube Tamoios",
+        subject: "Carteirinha digital de associado",
+        author: "Jeep Clube Tamoios",
+    });
 
-    if (
-        scope === "front-and-back" &&
-        backImage
-    ) {
-        pdf.addPage(
-            [
-                CARD_WIDTH_MM,
-                CARD_HEIGHT_MM,
-            ],
-            "landscape",
-        );
+    addImageToCurrentPage(pdf, frontImage);
+    addPdfGenerationDate(pdf, generatedDate);
 
-        addImageToCurrentPage(
-            pdf,
-            backImage,
-        );
+    if (scope === "front-and-back" && backImage) {
+        pdf.addPage([CARD_WIDTH_MM, CARD_HEIGHT_MM + PDF_FOOTER_HEIGHT_MM], "landscape");
+        addImageToCurrentPage(pdf, backImage);
+        addPdfGenerationDate(pdf, generatedDate);
     }
 
-    pdf.save(`${fileName}.pdf`);
+    pdf.save(`${fileName}-emitida-${generatedDate}.pdf`);
 }
 
 function createCardPdf() {
     return new jsPDF({
         orientation: "landscape",
         unit: "mm",
-        format: [
-            CARD_WIDTH_MM,
-            CARD_HEIGHT_MM,
-        ],
+        format: [CARD_WIDTH_MM, CARD_HEIGHT_MM + PDF_FOOTER_HEIGHT_MM],
         compress: true,
     });
 }
 
-function addImageToCurrentPage(
-    pdf: jsPDF,
-    image: string,
-) {
-    const pageWidth =
-        pdf.internal.pageSize.getWidth();
+function addImageToCurrentPage(pdf: jsPDF, image: string) {
+    const pageWidth = pdf.internal.pageSize.getWidth();
 
-    const pageHeight =
-        pdf.internal.pageSize.getHeight();
-
-    /*
-     * A pequena sangria remove possíveis
-     * linhas brancas nas bordas do PDF.
-     */
     pdf.addImage(
         image,
         "PNG",
         -PDF_BLEED_MM,
         -PDF_BLEED_MM,
-        pageWidth +
-            PDF_BLEED_MM * 2,
-        pageHeight +
-            PDF_BLEED_MM * 2,
+        pageWidth + PDF_BLEED_MM * 2,
+        CARD_HEIGHT_MM + PDF_BLEED_MM * 2,
         undefined,
         "FAST",
     );
 }
 
+function addPdfGenerationDate(pdf: jsPDF, generatedDate: string) {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    pdf.setFontSize(6);
+    pdf.setTextColor(71, 85, 105);
+    pdf.text(
+        `PDF gerado em ${generatedDate} - recorte na linha acima para imprimir a carteirinha.`,
+        pageWidth / 2,
+        pageHeight - 2.5,
+        { align: "center" },
+    );
+}
 async function exportAsPng({
     scope,
     frontImage,

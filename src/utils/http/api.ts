@@ -9,9 +9,11 @@ export enum HttpAPIRoutes {
     AUTHORIZATION_ROLES = "authorization/roles",
 
     USER_ROLES = "authorization/users/{id}/roles",
+    TOOLS = "tools",
 
     ADMIN_DEPENDENTS = "socios/{id}/dependents",
     ADMIN_MEDICAL_PROFILES = "admin/medical-profiles",
+    MEDICAL_PROFILE_MEMBER = "medical-profiles/me",
     PASSWORD_RECOVERY_REQUEST = "authentication/password-recovery/requests",
     PASSWORD_RECOVERY_EMAIL_TOKEN = "authentication/password-recovery/requests/email-token",
     VEHICLES_INCLUDE_MEMBER = "vehicles/include/member",

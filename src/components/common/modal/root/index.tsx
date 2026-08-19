@@ -9,10 +9,9 @@ export interface ModalRootProps {
     isEscapable?: boolean;
 }
 
-export function ModalRoot({ children, onClose, isOpen, ref, isEscapable=true }: ModalRootProps) {
-    
+export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true }: ModalRootProps) {
     useEffect(() => {
-        if(!isEscapable) return;
+        if (!isEscapable) return;
         if (!isOpen) return;
 
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -27,7 +26,6 @@ export function ModalRoot({ children, onClose, isOpen, ref, isEscapable=true }: 
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [isOpen, onClose, isEscapable]);
-
 
     return (
         <div
