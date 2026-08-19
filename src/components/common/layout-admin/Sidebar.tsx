@@ -178,7 +178,13 @@ export default function Sidebar({
                             href={panelHref}
                             title={panelLabel}
                             id="tour-admin-link"
-                            onClick={onCloseMobile}
+                            onClick={() => {
+                                onCloseMobile();
+                                if (typeof window !== "undefined") {
+                                    sessionStorage.setItem('force_branch_tour', 'true');
+                                    window.dispatchEvent(new CustomEvent('tour:destroy-and-diverge'));
+                                }
+                            }}
                             className={twMerge(
                                 `
                                 flex items-center justify-center gap-3

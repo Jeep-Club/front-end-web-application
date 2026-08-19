@@ -10,13 +10,12 @@ interface DashboardShellProps {
     children: React.ReactNode;
 }
 
-
 export default function DashboardShell({ fullName, children }: DashboardShellProps) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <GuidedTour>
+        <GuidedTour setMobileMenuOpen={setIsMobileMenuOpen}>
             <div className="flex h-screen w-full overflow-hidden bg-j-white">
                 <Sidebar
                     isCollapsed={isSidebarCollapsed}

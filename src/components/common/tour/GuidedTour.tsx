@@ -1,29 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from "react";
 import { useTour } from "@/hooks/useTour";
 import { TourContext } from "./TourContext";
 
 interface GuidedTourProps {
     children: React.ReactNode;
+    setMobileMenuOpen?: (open: boolean) => void;
 }
 
-export function GuidedTour({ children }: GuidedTourProps) {
-    const { isTourCompleted, startTour, restartTour } = useTour();
-    const hasAutoStarted = useRef(false);
-
-    useEffect(() => {
-        if (hasAutoStarted.current) return;
-        hasAutoStarted.current = true;
-
-        if (!isTourCompleted) {
-            const timer = setTimeout(() => {
-                startTour();
-            }, 300);
-
-            return () => clearTimeout(timer);
-        }
-    }, [isTourCompleted, startTour]);
+export function GuidedTour({ children, setMobileMenuOpen }: GuidedTourProps) {
+    const { isTourCompleted, startTour, restartTour } = useTour(setMobileMenuOpen);
 
     return (
         <TourContext.Provider value={{ isTourCompleted, startTour, restartTour }}>

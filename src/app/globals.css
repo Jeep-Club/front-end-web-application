@@ -274,3 +274,120 @@ body {
   color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==========================================================================
+   Driver.js Custom Theme & Mobile Optimization
+   ========================================================================== */
+.driver-popover {
+  background-color: var(--white) !important;
+  color: var(--blue-800) !important;
+  border-radius: 1rem !important;
+  padding: 1.25rem !important;
+  box-shadow: 0 20px 25px -5px rgba(6, 30, 80, 0.2), 0 8px 10px -6px rgba(6, 30, 80, 0.15) !important;
+  border: 1.5px solid var(--yellow-300) !important;
+  max-width: 360px !important;
+  width: auto !important;
+}
+
+@media (max-width: 640px) {
+  .driver-popover {
+    max-width: calc(100vw - 28px) !important;
+    padding: 1rem !important;
+    margin: 0 14px !important;
+  }
+  
+  .driver-popover-title {
+    font-size: 1rem !important;
+  }
+
+  .driver-popover-description {
+    font-size: 0.8125rem !important;
+  }
+
+  .driver-popover-footer {
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .driver-popover-footer button {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+.driver-popover-title {
+  font-family: inherit !important;
+  font-weight: 900 !important;
+  font-size: 1.125rem !important;
+  color: var(--blue-800) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.driver-popover-description {
+  font-family: inherit !important;
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+  color: var(--gray-600) !important;
+  margin-bottom: 1rem !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: var(--gray-500) !important;
+}
+
+.driver-popover-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-top: 0.75rem !important;
+}
+
+.driver-popover-next-btn,
+.driver-popover-done-btn {
+  background-color: var(--yellow-300) !important;
+  color: var(--blue-800) !important;
+  font-weight: 800 !important;
+  font-size: 0.8125rem !important;
+  border-radius: 0.5rem !important;
+  padding: 0.45rem 0.9rem !important;
+  border: none !important;
+  text-shadow: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-done-btn:hover {
+  background-color: var(--yellow-400) !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: var(--gray-100) !important;
+  color: var(--gray-600) !important;
+  font-weight: 700 !important;
+  font-size: 0.8125rem !important;
+  border-radius: 0.5rem !important;
+  padding: 0.45rem 0.8rem !important;
+  border: 1px solid var(--gray-300) !important;
+  text-shadow: none !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: var(--gray-200) !important;
+  color: var(--blue-800) !important;
+}
+
+.driver-popover-close-btn {
+  color: var(--gray-400) !important;
+  font-size: 1.25rem !important;
+  transition: color 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: var(--red-500) !important;
+}
+

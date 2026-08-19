@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react";
-import { Input, InputProps } from "./";
+import { Input, InputProps } from "./input";
 import { ButtonIcon } from "../button";
 import { twMerge } from "tailwind-merge";
 import { Eye, EyeClosed, KeyRound } from "lucide-react";
@@ -87,8 +87,6 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                 </ul>
             }
         </div>
-
-
     );
 }
 

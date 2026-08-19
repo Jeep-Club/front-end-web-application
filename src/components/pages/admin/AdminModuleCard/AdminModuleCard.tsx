@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 
 interface AdminModuleCardProps {
+    id?: string;
     title: string;
     description: string;
     href: string;
@@ -9,6 +10,7 @@ interface AdminModuleCardProps {
 }
 
 export default function AdminModuleCard({
+    id,
     title,
     description,
     href,
@@ -16,6 +18,7 @@ export default function AdminModuleCard({
 }: AdminModuleCardProps) {
     return (
         <article
+            id={id}
             className="
                 group flex min-h-[330px] flex-col
                 rounded-xl border border-j-gray-300
@@ -57,6 +60,12 @@ export default function AdminModuleCard({
 
                 <Link
                     href={href}
+                    onClick={() => {
+                        if (typeof window !== "undefined") {
+                            sessionStorage.setItem('force_branch_tour', 'true');
+                            window.dispatchEvent(new CustomEvent('tour:destroy-and-diverge'));
+                        }
+                    }}
                     className="
                         mt-auto flex w-full items-center
                         justify-center gap-2 rounded-lg

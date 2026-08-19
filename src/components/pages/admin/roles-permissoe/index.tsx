@@ -21,6 +21,9 @@ import { DeleteRoleModal } from "./DeleteRoleModal";
 import { RolePermissionsModal } from "./RolePermissionsModal";
 import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
 import { getModuleLabel, getPermissionName } from "./permissionLabels";
+import { usePageTour } from "@/hooks/useTour";
+import { getRolesTourSteps } from "@/config/tourSteps";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
@@ -70,6 +73,14 @@ export default function RolesPermissions() {
     const [activeTab, setActiveTab] = useState<TabKey>(
         () => visibleTabs[0]?.key ?? TABS[0].key
     );
+
+    // Tour do módulo de Roles e Permissões (Mobile e Desktop)
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_admin_roles",
+        steps: getRolesTourSteps,
+        autoStartOnFirstVisit: true,
+        enabled: permissions.length > 0,
+    });
 
     useEffect(() => {
         if (!isTabVisible(activeTab)) {
@@ -146,6 +157,7 @@ export default function RolesPermissions() {
         <div className="h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
+                    id="tour-roles-header"
                     title="Cargos e permissões"
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
@@ -153,6 +165,13 @@ export default function RolesPermissions() {
                         { label: "Gestão" },
                         { label: activeTabLabel ?? "" },
                     ]}
+                    actions={
+                        <TourHelpButton
+                            id="tour-roles-help-btn"
+                            onClick={restartTour}
+                            label="Como gerenciar cargos?"
+                        />
+                    }
                 />
 
                 <div className={twMerge("grid gap-2 md:gap-3", TABS_GRID_COLS[visibleTabs.length] ?? "grid-cols-1")}>
@@ -180,7 +199,7 @@ export default function RolesPermissions() {
 
                 {activeTab === "roles" && isTabVisible("roles") && (
                     <div className="flex w-full flex-col gap-4">
-                        <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                        <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
                                 <div>
                                     <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
@@ -190,7 +209,7 @@ export default function RolesPermissions() {
                                 </div>
 
                                 {canCreateRole && (
-                                    <Button onClick={handleOpenCreateRole}>
+                                    <Button id="tour-create-role-btn" onClick={handleOpenCreateRole}>
                                         <Plus size={18} />
                                         Criar cargo
                                     </Button>
@@ -205,7 +224,7 @@ export default function RolesPermissions() {
 
                             {!isLoading && !isError && roles && roles.length > 0 && (
                                 <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 md:p-6">
-                                    {roles.map((role) => (
+                                    {roles.map((role, index) => (
                                         <article
                                             key={role.id}
                                             className="rounded-xl border border-j-gray-200 p-4"
@@ -234,7 +253,10 @@ export default function RolesPermissions() {
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 grid grid-cols-1 gap-0.5 border-t border-j-gray-100 pt-3 sm:grid-cols-2">
+                                            <div
+                                                id={index === 0 ? "tour-role-actions" : undefined}
+                                                className="mt-3 grid grid-cols-1 gap-0.5 border-t border-j-gray-100 pt-3 sm:grid-cols-2"
+                                            >
                                                 {role.status !== "DELETED" && !(role.kind === "ROOT" && role.status === "ACTIVE") && (
                                                     (role.status === "ACTIVE" ? canDisableRole : canEnableRole) && (
                                                         <button
