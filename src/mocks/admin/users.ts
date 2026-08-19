@@ -58,7 +58,11 @@ const roles: AdminRole[] = [
     },
 ];
 
-const seedUsers: UserListItem[] = [
+type SeedUser = Omit<UserListItem, "accountStatus" | "authenticationStatus" | "credentialStatus"> & {
+    status: UserStatus;
+};
+
+const seedUsers: UserListItem[] = ([
     { id: 1001, name: "Ana Carolina Martins", cpf: "52998224725", email: "ana.martins@exemplo.com", phone: "11987654321", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2024-01-12T13:45:00.000Z", updatedAt: "2026-06-15T16:20:00.000Z", roles: [roles[0], roles[2]] },
     { id: 1002, name: "Bruno Henrique Souza", cpf: "16899535009", email: "bruno.souza@exemplo.com", phone: "21976543210", status: "LOCKED", passwordChangeRequired: false, createdAt: "2024-02-18T10:10:00.000Z", updatedAt: "2026-07-01T12:00:00.000Z", roles: [roles[1]] },
     { id: 1003, name: "Camila Ribeiro Lima", cpf: "11144477735", email: "camila.lima@exemplo.com", phone: "31965432109", status: "DISABLED", passwordChangeRequired: false, createdAt: "2024-03-22T17:30:00.000Z", updatedAt: "2026-05-19T09:40:00.000Z", roles: [] },
@@ -77,7 +81,12 @@ const seedUsers: UserListItem[] = [
     { id: 1016, name: "Paulo César Teixeira", cpf: "21345678901", email: "paulo.teixeira@exemplo.com", phone: "31955667788", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2025-04-17T16:40:00.000Z", updatedAt: null, roles: [roles[2]] },
     { id: 1017, name: "Renata Gomes Batista", cpf: "32456789012", email: "renata.batista@exemplo.com", phone: "11944557788", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2025-05-29T12:05:00.000Z", updatedAt: null, roles: [roles[1], roles[2]] },
     { id: 1018, name: "Samuel Lopes Moraes", cpf: "43567890123", email: "samuel.moraes@exemplo.com", phone: "21933446677", status: "LOCKED", passwordChangeRequired: false, createdAt: "2025-06-20T09:25:00.000Z", updatedAt: "2026-05-08T10:30:00.000Z", roles: [] },
-];
+] as SeedUser[]).map(({ status, ...user }): UserListItem => ({
+    ...user,
+    accountStatus: status,
+    authenticationStatus: "ENABLED",
+    credentialStatus: "PERMANENT",
+}));
 
 function cloneRole(role: AdminRole): AdminRole {
     return { ...role };
@@ -134,7 +143,7 @@ export function createMockAdminUsersDataSource(
             let filtered = users.filter((user) => {
                 const matchesSearch = !search || [user.name, user.email, user.cpf, user.phone]
                     .some((value) => value && normalize(value).includes(search));
-                const matchesStatus = !query.statuses?.length || query.statuses.includes(user.status);
+                const matchesStatus = !query.statuses?.length || query.statuses.includes(user.accountStatus);
                 const matchesRole = !query.roleIds?.length || user.roles.some((role) => query.roleIds?.includes(role.id));
                 return matchesSearch && matchesStatus && matchesRole;
             });
@@ -182,10 +191,10 @@ export function createMockAdminUsersDataSource(
                 throw createProblem("ACCESS_DENIED", "Você não tem permissão para desativar este usuário.", 403);
             }
             const current = findUser(userId);
-            if (current.status === "DISABLED") {
+            if (current.accountStatus === "DISABLED") {
                 throw createProblem("USER_ALREADY_DISABLED", "O usuário já está desativado.", 409);
             }
-            const updated = { ...current, status: "DISABLED" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
+            const updated = { ...current, accountStatus: "DISABLED" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
             users = users.map((user) => user.id === userId ? updated : user);
             return cloneUser(updated);
         },
@@ -196,10 +205,10 @@ export function createMockAdminUsersDataSource(
                 throw createProblem("ACCESS_DENIED", "Você não tem permissão para reativar este usuário.", 403);
             }
             const current = findUser(userId);
-            if (current.status !== "DISABLED") {
+            if (current.accountStatus !== "DISABLED") {
                 throw createProblem("USER_NOT_DISABLED", "O usuário não está desativado.", 409);
             }
-            const updated = { ...current, status: "ACTIVE" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
+            const updated = { ...current, accountStatus: "ACTIVE" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
             users = users.map((user) => user.id === userId ? updated : user);
             return cloneUser(updated);
         },
