@@ -39,6 +39,7 @@ interface SidebarProps {
     isMobileOpen: boolean;
     onCloseMobile: () => void;
     fullName: string;
+    role?: string;
 }
 
 export default function Sidebar({
@@ -76,6 +77,7 @@ export default function Sidebar({
             )}
 
             <aside
+                id="tour-sidebar"
                 className={twMerge(
                     `
                     fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col
@@ -142,6 +144,7 @@ export default function Sidebar({
                                     key={href}
                                     href={href}
                                     title={label}
+                                    id={href === "/feed" ? "tour-nav-feed" : undefined}
                                     onClick={onCloseMobile}
                                     className={twMerge(
                                         "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
@@ -174,7 +177,14 @@ export default function Sidebar({
                         <Link
                             href={panelHref}
                             title={panelLabel}
-                            onClick={onCloseMobile}
+                            id="tour-admin-link"
+                            onClick={() => {
+                                onCloseMobile();
+                                if (typeof window !== "undefined") {
+                                    sessionStorage.setItem('force_branch_tour', 'true');
+                                    window.dispatchEvent(new CustomEvent('tour:destroy-and-diverge'));
+                                }
+                            }}
                             className={twMerge(
                                 `
                                 flex items-center justify-center gap-3

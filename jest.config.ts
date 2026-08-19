@@ -20,5 +20,6 @@ export default {
     coverageReporters: ['text', 'lcov', 'html'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
+        '\\.css$': 'identity-obj-proxy',
     },
 };

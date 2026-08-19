@@ -6,19 +6,30 @@ import { PageHeader } from "@/components/common/page-header";
 import AdminModuleCard from "./AdminModuleCard";
 import { useUserStore } from "@/stores/userStore";
 import { getAvailableAdminModules } from "@/config/adminModules";
+import { usePageTour } from "@/hooks/useTour";
+import { getAdminPanelTourSteps } from "@/config/tourSteps";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
 
 export default function Admin() {
     const permissions = useUserStore(
         (state) => state.permissions,
     );
 
-    const availableModules =
-        getAvailableAdminModules(permissions);
+    const availableModules = getAvailableAdminModules(permissions);
+
+    // Tour do Painel do Administrador (responsivo para Mobile e Desktop)
+    const { startTour, restartTour } = usePageTour({
+        storageKey: "tour_completed_admin_panel",
+        steps: getAdminPanelTourSteps,
+        autoStartOnFirstVisit: true,
+        enabled: permissions.length > 0,
+    });
 
     return (
         <div className="h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-6">
                 <PageHeader
+                    id="tour-admin-header"
                     title="Painel do Administrador"
                     breadcrumbs={[
                         {
@@ -29,12 +40,20 @@ export default function Admin() {
                             label: "Painel admin",
                         },
                     ]}
+                    actions={
+                        availableModules.length > 0 ? (
+                            <TourHelpButton
+                                id="tour-admin-help-btn"
+                                onClick={restartTour}
+                                label="Como usar o painel?"
+                            />
+                        ) : undefined
+                    }
                 />
-
-                
 
                 {availableModules.length > 0 ? (
                     <section
+                        id="tour-admin-modules-grid"
                         className="
                             grid grid-cols-1 gap-5
                             md:grid-cols-2
@@ -51,6 +70,7 @@ export default function Admin() {
                             }) => (
                                 <AdminModuleCard
                                     key={key}
+                                    id={`tour-admin-module-${key}`}
                                     title={title}
                                     description={description}
                                     href={href}
