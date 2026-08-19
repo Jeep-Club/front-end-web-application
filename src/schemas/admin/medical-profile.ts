@@ -42,17 +42,17 @@ export const getMedicalProfileResponseSchema: z.ZodType<GetMedicalProfileRespons
 });
 
 export const putMedicalProfileRequestSchema: z.ZodType<PutMedicalProfileUserRequest | PutMedicalProfileDependentRequest> = z.object({
-  bloodType: z.string(),
-  allergies: z.string(),
-  chronicConditions: z.string(),
-  continuousMedications: z.string(),
-  healthInsuranceProvider: z.string(),
-  healthInsurancePlan: z.string(),
-  healthInsuranceNumber: z.string(),
-  emergencyContactName: z.string(),
-  emergencyContactPhone: z.string(),
-  emergencyContactRelationship: z.string(),
-  observations: z.string(),
+  bloodType: z.string().trim().min(1, 'Campo obrigatório'),
+  allergies: z.string().trim().min(1, 'Campo obrigatório'),
+  chronicConditions: z.string().trim().min(1, 'Campo obrigatório'),
+  continuousMedications: z.string().trim().min(1, 'Campo obrigatório'),
+  healthInsuranceProvider: z.string().trim().min(1, 'Campo obrigatório'),
+  healthInsurancePlan: z.string().trim().min(1, 'Campo obrigatório'),
+  healthInsuranceNumber: z.string().trim().min(1, 'Campo obrigatório'),
+  emergencyContactName: z.string().trim().min(1, 'Campo obrigatório'),
+  emergencyContactPhone: z.string().trim().min(1, 'Campo obrigatório'),
+  emergencyContactRelationship: z.string().trim().min(1, 'Campo obrigatório'),
+  observations: z.string().trim().min(1, 'Campo obrigatório'),
 });
 
 export const putMedicalProfileResponseSchema: z.ZodType<PutMedicalProfileResponse> = getMedicalProfileResponseSchema;

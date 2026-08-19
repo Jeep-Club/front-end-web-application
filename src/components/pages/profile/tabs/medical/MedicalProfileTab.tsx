@@ -7,8 +7,8 @@ import {
     Ambulance,
     ClipboardPlus,
     Edit3,
-    HeartPulse,
     Pill,
+    Plus,
     RefreshCw,
     ShieldPlus,
 } from "lucide-react";
@@ -56,32 +56,22 @@ export function MedicalProfileTab() {
         );
     }
 
-    if (!data) {
-        return (
-            <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-j-gray-300 bg-j-gray-100/50 px-5 py-10 text-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-j-blue-100 text-j-blue-800">
-                    <HeartPulse size={28} />
-                </span>
-                <div>
-                    <h3 className="font-extrabold text-j-gray-700">Seu perfil médico ainda não foi preenchido</h3>
-                    <p className="mt-1 max-w-md text-sm text-j-gray-500">Cadastre informações importantes para facilitar o atendimento em uma emergência.</p>
-                </div>
-                <Button onClick={openEditor}><ClipboardPlus size={17} /> Cadastrar perfil médico</Button>
-            </div>
-        );
-    }
-
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h3 className="text-base font-bold text-j-gray-700">Meu perfil médico</h3>
-                    <p className="text-xs text-j-gray-400">Informações para atendimento e contato em emergências</p>
-                </div>
-                <Button onClick={openEditor} className="self-start sm:self-auto"><Edit3 size={16} /> Editar perfil</Button>
+            <div className="flex items-center justify-between gap-3">
+                <h3 className="text-base font-bold text-j-gray-700">Meus dados médicos</h3>
+                <Button onClick={openEditor}>
+                    {data ? <Edit3 size={16} /> : <Plus size={16} />}
+                    <span className="hidden sm:inline">{data ? "Editar Dados Médicos" : "Incluir Dados Médicos"}</span>
+                    <span className="sm:hidden">{data ? "Editar" : "Incluir"}</span>
+                </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {!data && (
+                <p className="text-sm text-j-gray-400">Você ainda não tem dados médicos cadastrados.</p>
+            )}
+
+            {data && <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <MedicalCard title="Informações médicas" icon={Activity} accent="bg-red-100 text-red-600">
                     <div className="mb-3 flex items-center justify-between rounded-xl bg-red-50 px-4 py-3">
                         <span className="text-xs font-bold uppercase tracking-wide text-j-gray-500">Tipo sanguíneo</span>
@@ -110,7 +100,7 @@ export function MedicalProfileTab() {
                 <MedicalCard title="Observações" icon={ClipboardPlus} accent="bg-violet-100 text-violet-700" className="md:col-span-2 xl:col-span-2">
                     <p className="whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{display(data.observations)}</p>
                 </MedicalCard>
-            </div>
+            </div>}
         </div>
     );
 }

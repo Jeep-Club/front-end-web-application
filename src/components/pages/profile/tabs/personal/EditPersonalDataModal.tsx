@@ -1,6 +1,5 @@
 "use client";
 
-import type { ElementType } from "react";
 import {
     CalendarDays,
     Camera,
@@ -16,6 +15,7 @@ import {
     Button,
     ButtonIcon,
 } from "@/components/common/button";
+import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { Form } from "@/components/common/form";
 import { InputFile } from "@/components/common/input/file";
 import { InputRegister } from "@/components/common/input/input-register";
@@ -81,33 +81,6 @@ function fileToBase64(
             reader.readAsDataURL(file);
         },
     );
-}
-
-function formatDate(
-    value: string | null,
-) {
-    if (!value) {
-        return "Não informado";
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return "Não informado";
-    }
-
-    return new Intl.DateTimeFormat(
-        "pt-BR",
-        {
-            dateStyle: "short",
-            ...(value.includes("T")
-                ? {
-                      timeStyle:
-                          "short" as const,
-                  }
-                : {}),
-        },
-    ).format(date);
 }
 
 function formatCpf(value: string) {
@@ -207,15 +180,16 @@ export function EditPersonalDataModal({
             </header>
 
             <div className="mx-5 mt-5 grid gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-100/10 p-4 sm:grid-cols-2 md:mx-8 md:mt-6">
-                <ReadOnlyItem
+                <ReadOnlyField
                     label="CPF"
                     value={formatCpf(
                         personalData.cpf,
                     )}
                     icon={ShieldCheck}
+                    variant="summary"
                 />
 
-                <ReadOnlyItem
+                <ReadOnlyField
                     label="Status"
                     value={
                         statusLabels[
@@ -223,6 +197,7 @@ export function EditPersonalDataModal({
                         ]
                     }
                     icon={ShieldCheck}
+                    variant="summary"
                 />
 
                 
@@ -383,37 +358,6 @@ export function EditPersonalDataModal({
                     </Button>
                 </div>
             </Form>
-        </div>
-    );
-}
-
-interface ReadOnlyItemProps {
-    label: string;
-    value: string;
-    icon: ElementType;
-}
-
-function ReadOnlyItem({
-    label,
-    value,
-    icon: Icon,
-}: ReadOnlyItemProps) {
-    return (
-        <div className="flex items-center gap-3 rounded-xl bg-j-white/80 px-3 py-2.5">
-            <Icon
-                size={17}
-                className="shrink-0 text-j-blue-600"
-            />
-
-            <div className="min-w-0">
-                <span className="block text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                    {label}
-                </span>
-
-                <span className="block truncate text-sm font-semibold text-j-gray-700">
-                    {value}
-                </span>
-            </div>
         </div>
     );
 }

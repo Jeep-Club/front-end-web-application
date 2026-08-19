@@ -5,4 +5,5 @@ export * from "./input-email";
 export * from "./input-cpf";
 export * from "./input-date";
 export * from "./input-password";
+export * from "./input-search";
 export * from "./file";

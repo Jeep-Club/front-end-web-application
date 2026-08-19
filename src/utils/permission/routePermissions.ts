@@ -50,6 +50,13 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         ],
     },
 
+    "/admin/users": [
+        {
+            module: "AUTHENTICATION",
+            actions: ["USER_READ"],
+        },
+    ],
+
     "/admin/medical-profile": [
         {
             module: "HEALTH",

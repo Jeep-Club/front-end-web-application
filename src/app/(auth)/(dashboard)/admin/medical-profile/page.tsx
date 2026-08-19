@@ -3,7 +3,6 @@ import { getAllMedicalProfilesResponseSchema } from "@/schemas/admin/medical-pro
 import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
 import { HttpAPIRoutes } from "@/utils/http/api";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
-import SimpleTable from "@/components/common/table/simple";
 import z from "zod";
 
 interface Props {
@@ -24,6 +23,7 @@ export default async function Page({ searchParams }: Props) {
         method: "GET",
         schema: getAllMedicalProfilesResponseSchema
     });
+
 
     return <MedicalProfilesListPage data={response.data} currentPage={currentPage} />;
 }

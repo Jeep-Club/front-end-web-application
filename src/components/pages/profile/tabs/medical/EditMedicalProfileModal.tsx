@@ -77,7 +77,7 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
                     </span>
                     <div>
                         <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {medicalProfile ? "Editar perfil médico" : "Cadastrar perfil médico"}
+                            {medicalProfile ? "Editar dados médicos" : "Incluir dados médicos"}
                         </h2>
                         <p className="mt-1 text-xs leading-relaxed text-j-gray-500 md:text-sm">
                             Mantenha estes dados atualizados para situações de emergência.
