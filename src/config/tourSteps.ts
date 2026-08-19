@@ -1,14 +1,6 @@
 import type { DriveStep } from "driver.js";
 
-/* ==========================================================================
-   HELPER DE TÍTULOS PROFISSIONAIS COM ÍCONES VETORIAIS SVG
-   ========================================================================== */
-
-function createStepHeader(
-    title: string,
-    svgPath: string,
-    badge?: string
-): string {
+function createStepHeader(title: string, svgPath: string, badge?: string): string {
     const badgeHtml = badge
         ? `<span style="margin-left:auto; background:#e0e7ff; color:#1e3a8a; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em;">${badge}</span>`
         : "";
@@ -26,7 +18,7 @@ function createStepHeader(
     `;
 }
 
-// Ícones SVG Vetoriais (Padrão Lucide)
+// Ícones Lucide como paths SVG inline
 const ICONS = {
     compass: `<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>`,
     sidebar: `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>`,
@@ -52,10 +44,7 @@ const ICONS = {
     mapPin: `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`,
 };
 
-/* ==========================================================================
-   0. TOUR DA TELA INICIAL (Home / Landing Page)
-   ========================================================================== */
-
+// Tour da tela inicial (Home / Landing Page)
 export function getHomeTourSteps(): DriveStep[] {
     return [
         {
@@ -81,11 +70,7 @@ export function getHomeTourSteps(): DriveStep[] {
 
 export const homeTourSteps = getHomeTourSteps();
 
-
-/* ==========================================================================
-   1. TOUR GERAL / FEED (Layout Principal - Suporte a Mobile Real & Desktop)
-   ========================================================================== */
-
+// Tour geral do feed / layout principal
 export const welcomeStep: DriveStep = {
     popover: {
         title: createStepHeader("Visão Geral da Plataforma", ICONS.compass),
@@ -159,15 +144,12 @@ export function getTourSteps(
     isMobile: boolean = false,
     setMobileMenuOpen?: (open: boolean) => void
 ): DriveStep[] {
-    const steps: DriveStep[] = [
-        welcomeStep,
-    ];
+    const steps: DriveStep[] = [welcomeStep];
 
     if (isMobile) {
         steps.push({
             ...mobileMenuStep,
             onDeselected: () => {
-                // Ao sair do botão do menu, abre a gaveta da sidebar para mostrar os itens internos
                 setMobileMenuOpen?.(true);
             },
         });
@@ -178,9 +160,7 @@ export function getTourSteps(
     steps.push({
         ...feedStep,
         onHighlightStarted: () => {
-            if (isMobile) {
-                setMobileMenuOpen?.(true);
-            }
+            if (isMobile) setMobileMenuOpen?.(true);
         },
     });
 
@@ -188,9 +168,7 @@ export function getTourSteps(
         steps.push({
             ...adminStep,
             onHighlightStarted: () => {
-                if (isMobile) {
-                    setMobileMenuOpen?.(true);
-                }
+                if (isMobile) setMobileMenuOpen?.(true);
             },
         });
     }
@@ -204,10 +182,7 @@ export function getTourSteps(
             align: isMobile ? "center" : "end",
         },
         onHighlightStarted: () => {
-            // Fecha o menu lateral caso esteja no mobile e abre o dropdown do avatar
-            if (isMobile) {
-                setMobileMenuOpen?.(false);
-            }
+            if (isMobile) setMobileMenuOpen?.(false);
             if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent('tour:open-avatar-menu'));
             }
@@ -222,9 +197,7 @@ export function getTourSteps(
     steps.push({
         ...completionStep,
         onHighlightStarted: () => {
-            if (isMobile) {
-                setMobileMenuOpen?.(false);
-            }
+            if (isMobile) setMobileMenuOpen?.(false);
             if (typeof window !== "undefined") {
                 window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
             }
@@ -234,11 +207,7 @@ export function getTourSteps(
     return steps;
 }
 
-
-/* ==========================================================================
-   2. TOUR DA TELA DE LOGIN (Ajuda de Acesso Sob Demanda)
-   ========================================================================== */
-
+// Tour da tela de login
 export function getLoginTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
         {
@@ -291,11 +260,7 @@ export function getLoginTourSteps(isMobile: boolean = false): DriveStep[] {
 
 export const loginTourSteps = getLoginTourSteps(false);
 
-
-/* ==========================================================================
-   3. TOUR DO GERENCIAMENTO DE CONTA / PERFIL (/profile)
-   ========================================================================== */
-
+// Tour da tela de perfil (/profile)
 export function getProfileTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
         {
@@ -312,7 +277,7 @@ export function getProfileTourSteps(isMobile: boolean = false): DriveStep[] {
             popover: {
                 title: createStepHeader("Seções do Perfil", ICONS.layers),
                 description: "Navegue entre as abas para manter seu cadastro completo e atualizado junto ao clube.",
-                side: isMobile ? "bottom" : "bottom",
+                side: "bottom",
                 align: "center",
             },
         },
@@ -375,11 +340,7 @@ export function getProfileTourSteps(isMobile: boolean = false): DriveStep[] {
 
 export const profileTourSteps = getProfileTourSteps(false);
 
-
-/* ==========================================================================
-   4. TOUR DO PAINEL ADMINISTRATIVO (/admin)
-   ========================================================================== */
-
+// Tour do painel administrativo (/admin)
 export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
         {
@@ -423,11 +384,7 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
 
 export const adminPanelTourSteps = getAdminPanelTourSteps(false);
 
-
-/* ==========================================================================
-   5. TOUR DE ROLES E PERMISSÕES (/admin/roles-permissoes)
-   ========================================================================== */
-
+// Tour da tela de cargos e permissões (/admin/roles-permissoes)
 export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
         {

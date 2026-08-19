@@ -10,10 +10,6 @@ export function getTourStorageKey(canAccessAdmin: boolean): string {
     return canAccessAdmin ? "tour_completed_admin" : "tour_completed_member";
 }
 
-/**
- * Remove todas as chaves de tour do localStorage e sessionStorage,
- * fazendo com que o app se comporte como se fosse o primeiro acesso do usuário em todas as telas.
- */
 export function resetAllTours() {
     if (typeof window === "undefined") return;
     const keysToRemove: string[] = [];
@@ -37,9 +33,6 @@ export interface PageTourOptions {
     onCompleted?: () => void;
 }
 
-/**
- * Hook flexível para tours guiados em páginas ou seções específicas com suporte a mobile e desktop.
- */
 export function usePageTour({
     storageKey,
     steps,
@@ -57,7 +50,6 @@ export function usePageTour({
     const driverRef = useRef<Driver | null>(null);
     const hasAutoStartedRef = useRef<boolean>(false);
 
-    // Carrega o estado salvo no localStorage
     useEffect(() => {
         if (typeof window !== "undefined" && storageKey) {
             const completed = localStorage.getItem(storageKey) === "true";
@@ -73,7 +65,6 @@ export function usePageTour({
         onCompleted?.();
     }, [storageKey, onCompleted]);
 
-    // Listener para destruição e divergência limpa quando o usuário clica em links durante o tour
     useEffect(() => {
         const handleDiverge = () => {
             if (driverRef.current) {
@@ -101,7 +92,6 @@ export function usePageTour({
             driverRef.current = null;
         }
 
-        // Limpeza de resíduos de overlay anteriores no DOM
         document.querySelectorAll('.driver-overlay, .driver-popover').forEach((el) => el.remove());
 
         const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -153,7 +143,6 @@ export function usePageTour({
             driverObj.drive();
         };
 
-        // Se o primeiro elemento ainda não estiver no DOM, aguarda até 2 segundos para o React montar
         if (firstElementSelector && !document.querySelector(firstElementSelector)) {
             let attempts = 0;
             const interval = setInterval(() => {
@@ -185,17 +174,14 @@ export function usePageTour({
         }, 100);
     }, [storageKey, startTour]);
 
-    // ─── Divergência: lê force_branch_tour independentemente de `enabled` ────
-    // CRÍTICO: este efeito NUNCA deve depender de `enabled` porque as permissões
-    // chegam de forma assíncrona (Zustand) e podem ainda ser [] quando a tela monta.
-    // A flag force_branch_tour precisa ser consumida logo que o componente monta.
+    // Lê force_branch_tour na montagem para iniciar o tour de uma rota específica.
+    // Esse efeito não depende de `enabled` porque as permissões chegam de forma assíncrona.
     useEffect(() => {
         if (typeof window === "undefined") return;
 
         const isBranchTour = sessionStorage.getItem('force_branch_tour') === 'true';
         if (!isBranchTour) return;
 
-        // Consome a flag imediatamente para não ser reaproveitada
         sessionStorage.removeItem('force_branch_tour');
 
         if (storageKey) {
@@ -203,7 +189,6 @@ export function usePageTour({
         }
         hasAutoStartedRef.current = true;
 
-        // Aguarda as permissões do Zustand serem preenchidas (até 3s) antes de iniciar
         let attempts = 0;
         const interval = setInterval(() => {
             attempts++;
@@ -219,9 +204,8 @@ export function usePageTour({
 
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Intencionalmente vazio: deve rodar APENAS na montagem do componente
+    }, []);
 
-    // ─── Auto-start na primeira visita (só quando enabled e nunca visitado) ──
     useEffect(() => {
         if (typeof window === "undefined" || !enabled) return;
         if (!autoStartOnFirstVisit || hasAutoStartedRef.current) return;
@@ -243,9 +227,6 @@ export function usePageTour({
     };
 }
 
-/**
- * Hook global do layout / feed (compatibilidade total com o sistema anterior e controle do menu mobile).
- */
 export function useTour(setMobileMenuOpen?: (open: boolean) => void) {
     const permissions = useUserStore((state) => state.permissions);
     const canAccessAdmin = hasAnyAdminAccess(permissions);
