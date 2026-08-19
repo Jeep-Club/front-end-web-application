@@ -83,10 +83,10 @@ export default function HomeClient() {
               id="tour-home-help-btn"
               onClick={handleHomeTour}
               title="Como navegar nesta página?"
-              className="flex items-center gap-1.5 text-white/60 hover:text-yellow-400 text-xs transition-colors"
+              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 shadow-md shadow-yellow-500/10"
             >
-              <FaQuestionCircle size={13} />
-              <span className="hidden sm:inline">Como funciona?</span>
+              <FaQuestionCircle size={15} />
+              <span>Como funciona?</span>
             </button>
 
             <button

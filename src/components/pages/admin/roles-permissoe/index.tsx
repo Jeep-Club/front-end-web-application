@@ -82,6 +82,17 @@ export default function RolesPermissions() {
         enabled: permissions.length > 0,
     });
 
+    const handleRestartTour = () => {
+        if (activeTab !== "roles") {
+            setActiveTab("roles");
+            setTimeout(() => {
+                restartTour();
+            }, 100);
+        } else {
+            restartTour();
+        }
+    };
+
     useEffect(() => {
         if (!isTabVisible(activeTab)) {
             setActiveTab(visibleTabs[0]?.key ?? TABS[0].key);
@@ -166,11 +177,13 @@ export default function RolesPermissions() {
                         { label: activeTabLabel ?? "" },
                     ]}
                     actions={
-                        <TourHelpButton
-                            id="tour-roles-help-btn"
-                            onClick={restartTour}
-                            label="Como gerenciar cargos?"
-                        />
+                        activeTab === "roles" ? (
+                            <TourHelpButton
+                                id="tour-roles-help-btn"
+                                onClick={handleRestartTour}
+                                label="Como gerenciar cargos?"
+                            />
+                        ) : undefined
                     }
                 />
 

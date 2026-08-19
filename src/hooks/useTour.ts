@@ -121,7 +121,7 @@ export function usePageTour({
                 nextBtnText: "Próximo →",
                 prevBtnText: "← Anterior",
                 doneBtnText: "Concluir ✓",
-                skipMissingElement: false,
+                skipMissingElement: true,
                 steps: resolvedSteps,
                 onCloseClick: (_element, _step, { driver: d }) => {
                     if (confirmOnExit && !d.isLastStep()) {
