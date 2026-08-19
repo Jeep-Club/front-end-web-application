@@ -22,7 +22,7 @@ const roleAssignmentSchema = z.object({
 type RoleAssignmentForm = z.infer<typeof roleAssignmentSchema>;
 
 interface UserRolesModalProps {
-    user: AdminUser;
+    user: UserListItem;
     onLoadRoles: () => Promise<AdminRole[]>;
     onSaveRoles: (userId: number, roleIds: number[]) => Promise<AdminRole[]>;
     onSuccess: (userId: number, roles: AdminRole[]) => void;
@@ -102,7 +102,7 @@ function RoleAssignmentFormContent({
     onConfirmRemoval,
 }: {
     roles: AdminRole[];
-    user: AdminUser;
+    user: UserListItem;
     isSaving: boolean;
     errorMessage?: string;
     pendingRoleIds?: number[];
@@ -112,7 +112,7 @@ function RoleAssignmentFormContent({
 }) {
     const { setClose } = useModal();
     const removedRoles = pendingRoleIds
-        ? useModaler.roles.filter((role) => !pendingRoleIds.includes(role.id))
+        ? roles.filter((role) => !pendingRoleIds.includes(role.id))
         : [];
 
     return (
