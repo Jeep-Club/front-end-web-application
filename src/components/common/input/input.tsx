@@ -36,7 +36,7 @@ export function Input({label, error, name, value, className, labelClassName, typ
                     aria-describedby={isError ? error : undefined}
                     className={twMerge(
                         `
-                        w-full border-2 border-transparent py-2 px-2.5 rounded-lg font-light text-sm md:text-base
+                        w-full border-2 border-transparent py-2 px-2.5 rounded-lg font-light text-base
                         placeholder:text-j-transparent-white
                         transition-colors
                         duration-300

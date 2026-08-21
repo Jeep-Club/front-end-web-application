@@ -20,7 +20,7 @@ export default function FormLogin() {
             router.push("/feed");
             toast.success('Login realizado com sucesso!');
         }, 
-        onError: (error) => toast.error(error.message || 'Erro ao realizar login. Verifique suas credenciais e tente novamente.') 
+      //  onError: (error) => toast.error(error.message || 'Erro ao realizar login. Verifique suas credenciais e tente novamente.') 
     });
 
     const isLoading = mutation.isPending;
@@ -42,7 +42,7 @@ export default function FormLogin() {
 
                 <div className="w-full pb-5">
                     <div id="tour-login-password" className="relative w-full">
-                        <InputPassword required />
+                        <InputPassword required autoComplete="current-password" />
                         <span 
                             id="tour-login-forgot"
                             className="text-xs md:text-sm text-j-transparent-white absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
