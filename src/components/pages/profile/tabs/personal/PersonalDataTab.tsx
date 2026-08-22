@@ -112,9 +112,6 @@ export function PersonalDataTab() {
                 memberSince={
                     personalData.createdAt
                 }
-                issuedAt={
-                    personalData.createdAt
-                }
                 phoneNumber={
                     personalData.phoneNumber
                 }
@@ -122,8 +119,6 @@ export function PersonalDataTab() {
                 registrationNumber={String(
                     personalData.id,
                 )}
-                cityState={null}
-                driverLicense={null}
                 bloodType={
                     medicalProfile?.bloodType
                         ? BLOOD_TYPE_LABELS[medicalProfile.bloodType]
