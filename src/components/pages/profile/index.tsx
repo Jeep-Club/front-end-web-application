@@ -8,6 +8,7 @@ import { VehiclesTabContent } from "@/components/pages/profile/tabs/vehicles/Veh
 import { ToolsTabContent } from "@/components/pages/profile/tabs/tools/ToolsTabContent";
 import { PersonalDataTab } from "@/components/pages/profile/tabs/personal/PersonalDataTab";
 import { MedicalProfileTab } from "@/components/pages/profile/tabs/medical/MedicalProfileTab";
+import { DependentsTabContent } from "@/components/pages/profile/tabs/dependents/DependentsTabContent";
 import { usePageTour } from "@/hooks/useTour";
 import { getProfileTourSteps } from "@/config/tourSteps";
 import TourHelpButton from "@/components/common/tour/TourHelpButton";
@@ -84,6 +85,8 @@ export default function Profile() {
                         <PersonalDataTab />
                     ) : activeTab === "medical" ? (
                         <MedicalProfileTab />
+                    ) : activeTab === "dependents" ? (
+                        <DependentsTabContent />
                     ) : activeTab === "vehicles" ? (
                         <VehiclesTabContent />
                     ) : activeTab === "tools" ? (
