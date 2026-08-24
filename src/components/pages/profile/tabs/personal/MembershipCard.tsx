@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Globe, UserRound } from "lucide-react";
+import { Globe, ShieldCheck, UserRound } from "lucide-react";
 
 import {
     CardExportActions,
@@ -20,12 +20,9 @@ interface MembershipCardProps {
     fullName?: string | null;
     birthDate?: string | null;
     memberSince?: string | null;
-    issuedAt?: string | null;
     phoneNumber?: string | null;
     roleLabel?: string | null;
     registrationNumber?: string | null;
-    cityState?: string | null;
-    driverLicense?: string | null;
     bloodType?: string | null;
     exportFileName?: string;
 }
@@ -67,9 +64,9 @@ interface CardFieldProps {
 
 function CardField({ label, value }: CardFieldProps) {
     return (
-        <div className="min-w-0 border-b border-j-blue-100 pb-[clamp(3px,0.8cqw,6px)]">
-            <p className="text-[clamp(5px,1.05cqw,8px)] font-extrabold uppercase tracking-[0.13em] text-j-blue-500">{label}</p>
-            <p className="mt-[clamp(2px,0.45cqw,3px)] truncate text-[clamp(8px,1.8cqw,13px)] font-bold leading-tight text-j-blue-950">{displayValue(value)}</p>
+        <div className="min-w-0 border-b border-j-blue-100 pb-[clamp(5px,1.1cqw,8px)]">
+            <p className="text-[clamp(5px,0.95cqw,7px)] font-bold uppercase tracking-[0.14em] text-j-blue-500">{label}</p>
+            <p className="mt-[clamp(2px,0.4cqw,3px)] truncate text-[clamp(9px,2cqw,15px)] font-extrabold leading-tight text-j-blue-950">{displayValue(value)}</p>
         </div>
     );
 }
@@ -79,12 +76,9 @@ interface MembershipCardFaceProps {
     fullName?: string | null;
     birthDate?: string | null;
     memberSince?: string | null;
-    issuedAt?: string | null;
     phoneNumber?: string | null;
     roleLabel?: string | null;
     registrationNumber?: string | null;
-    cityState?: string | null;
-    driverLicense?: string | null;
     bloodType?: string | null;
 }
 
@@ -93,53 +87,54 @@ function MembershipCardFront({
     fullName,
     birthDate,
     memberSince,
-    issuedAt,
     phoneNumber,
     roleLabel,
     registrationNumber,
-    cityState,
-    driverLicense,
     bloodType,
 }: MembershipCardFaceProps) {
     return (
         <div
             id="membership-card-front"
             data-card-side="front"
-            className="flex aspect-[856/540] w-full flex-col overflow-hidden rounded-[clamp(10px,2.4cqw,18px)] border border-j-blue-100 bg-j-white shadow-[0_12px_32px_rgba(6,30,80,0.18)] [container-type:inline-size]"
+            className="relative flex aspect-[856/540] w-full flex-col overflow-hidden rounded-[clamp(9px,2cqw,15px)] border border-j-blue-950 bg-j-white shadow-[0_10px_24px_rgba(6,30,80,0.16)] [container-type:inline-size] [print-color-adjust:exact] [-webkit-print-color-adjust:exact] print:rounded-none print:shadow-none"
         >
-            <div className="flex h-[clamp(12px,4cqw,26px)] w-full shrink-0 items-center justify-end bg-j-blue-800 px-[clamp(7px,2.6cqw,17px)]">
-                <span className="truncate text-[clamp(5px,1.15cqw,8px)] font-bold uppercase tracking-[0.08em] text-j-white/90">
-                    Expedida em {maskDate(issuedAt, { includeTime: false })}
-                </span>
-            </div>
-            <div className="h-[clamp(2px,0.65cqw,4px)] w-full shrink-0 bg-j-yellow-300" />
-
-            <header className="grid h-[clamp(30px,10cqw,64px)] shrink-0 grid-cols-[18%_1fr] items-center px-[clamp(8px,3cqw,20px)]">
-                <div className="flex justify-center">
-                    <div className="relative h-[clamp(26px,8cqw,52px)] w-[clamp(26px,8cqw,52px)] overflow-hidden">
-                        <Image
-                            src="/images/logo_grande.jpg"
-                            alt="Jeep Clube Tamoios"
-                            fill
-                            className="object-contain mix-blend-multiply"
-                            priority
-                        />
-                    </div>
+            <header className="flex h-[26%] shrink-0 items-center bg-j-blue-950 px-[clamp(16px,4.8cqw,33px)] text-j-white">
+                <div className="relative h-[clamp(42px,11.5cqw,78px)] w-[clamp(42px,11.5cqw,78px)] shrink-0 overflow-hidden rounded-full border-[clamp(2px,0.45cqw,3px)] border-j-yellow-300 bg-j-white">
+                    <Image
+                        src="/images/logo_grande.jpg"
+                        alt="Jeep Clube Tamoios"
+                        fill
+                        className="object-contain"
+                        priority
+                    />
                 </div>
 
-                <div className="min-w-0 text-center">
-                    <h3 className="whitespace-nowrap text-[clamp(10px,3.3cqw,24px)] font-black uppercase leading-none tracking-tight text-j-blue-800">
+                <div className="ml-[clamp(11px,3.2cqw,22px)] min-w-0 flex-1">
+                    <p className="text-[clamp(5px,1.15cqw,9px)] font-bold uppercase tracking-[0.2em] text-j-yellow-300">
                         Jeep Clube Tamoios
-                    </h3>
-                    <p className="mt-[clamp(2px,0.6cqw,4px)] truncate text-[clamp(5px,1.45cqw,11px)] font-bold uppercase tracking-[0.1em] text-j-blue-300">
-                        Caraguatatuba • Fundado em 09/09/1999
                     </p>
+                    <h3 className="mt-[clamp(2px,0.45cqw,3px)] truncate text-[clamp(14px,3.7cqw,27px)] font-black uppercase leading-none tracking-[-0.02em]">
+                        Carteira de associado
+                    </h3>
+                    <p className="mt-[clamp(3px,0.7cqw,5px)] text-[clamp(5px,1cqw,8px)] font-semibold uppercase tracking-[0.09em] text-j-blue-200">
+                        Documento de identificação do clube
+                    </p>
+                </div>
+
+                <div className="ml-[clamp(8px,2cqw,14px)] flex shrink-0 items-center gap-[clamp(4px,0.9cqw,6px)] border-l border-j-blue-700 pl-[clamp(8px,2.2cqw,15px)]">
+                    <ShieldCheck className="h-[clamp(12px,2.8cqw,20px)] w-[clamp(12px,2.8cqw,20px)] text-j-yellow-300" />
+                    <div>
+                        <p className="text-[clamp(4px,0.8cqw,6px)] font-bold uppercase tracking-wider text-j-blue-300">Situação</p>
+                        <p className="text-[clamp(6px,1.25cqw,9px)] font-extrabold uppercase text-j-white">Associado</p>
+                    </div>
                 </div>
             </header>
 
-            <div className="grid min-h-0 flex-1 grid-cols-[26%_1fr] gap-[clamp(5px,1.7cqw,11px)] px-[clamp(7px,2.6cqw,17px)] pb-[clamp(9px,2.8cqw,18px)] @[480px]:grid-cols-[30%_1fr]">
-                <div className="flex min-h-0 flex-col gap-[clamp(3px,0.8cqw,6px)] rounded-[clamp(6px,1.5cqw,12px)] bg-j-blue-800 p-[clamp(3px,1cqw,7px)]">
-                    <div className="min-h-0 flex-1 overflow-hidden rounded-[clamp(4px,1.1cqw,9px)] border-[clamp(2px,0.4cqw,3px)] border-j-yellow-300 bg-j-white">
+            <div className="h-[clamp(3px,0.75cqw,5px)] shrink-0 bg-j-yellow-300" />
+
+            <main className="grid min-h-0 flex-1 grid-cols-[27%_1fr] gap-[clamp(14px,4cqw,27px)] px-[clamp(17px,5cqw,34px)] py-[clamp(13px,3.8cqw,26px)]">
+                <div className="flex min-h-0 flex-col">
+                    <div className="min-h-0 flex-1 overflow-hidden rounded-[clamp(5px,1.1cqw,8px)] border-[clamp(2px,0.45cqw,3px)] border-j-blue-950 bg-j-blue-50">
                         {profilePhotoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -148,59 +143,45 @@ function MembershipCardFront({
                                 className="h-full w-full object-cover"
                             />
                         ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-j-blue-900">
-                                <UserRound className="h-[clamp(22px,7cqw,46px)] w-[clamp(22px,7cqw,46px)] text-j-blue-100" />
+                            <div className="flex h-full w-full items-center justify-center">
+                                <UserRound className="h-[clamp(34px,9cqw,62px)] w-[clamp(34px,9cqw,62px)] text-j-blue-400" strokeWidth={1.6} />
                             </div>
                         )}
                     </div>
 
-                    <p className="truncate rounded-[clamp(3px,0.7cqw,6px)] bg-j-yellow-300 px-[clamp(3px,0.8cqw,6px)] py-[clamp(2px,0.45cqw,4px)] text-center text-[clamp(9px,3cqw,20px)] font-black leading-none tracking-wide text-j-blue-950">
-                        {formatMembershipId(registrationNumber)}
-                    </p>
+                    <div className="mt-[clamp(5px,1.2cqw,8px)] flex items-end justify-between border-t-2 border-j-yellow-300 pt-[clamp(4px,0.8cqw,6px)]">
+                        <span className="text-[clamp(5px,0.95cqw,7px)] font-bold uppercase tracking-[0.13em] text-j-blue-500">Registro</span>
+                        <span className="text-[clamp(10px,2.5cqw,18px)] font-black leading-none tracking-wide text-j-blue-950">{formatMembershipId(registrationNumber)}</span>
+                    </div>
                 </div>
 
-                <div className="flex min-h-0 flex-col justify-between gap-[clamp(2px,0.65cqw,4px)]">
-                    <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[clamp(3px,1cqw,7px)]">
-                        <CardField
-                            label="Nome e sobrenome"
-                            value={fullName}
-                        />
-                        <CardField
-                            label="Nascimento"
-                            value={maskDate(birthDate, { includeTime: false })}
-                        />
+                <div className="flex min-h-0 flex-col">
+                    <div className="border-b-2 border-j-blue-950 pb-[clamp(6px,1.5cqw,10px)]">
+                        <p className="text-[clamp(5px,1cqw,8px)] font-bold uppercase tracking-[0.16em] text-j-blue-500">Nome do associado</p>
+                        <p className="mt-[clamp(2px,0.45cqw,3px)] truncate text-[clamp(13px,3.3cqw,24px)] font-black leading-tight tracking-tight text-j-blue-950">{displayValue(fullName)}</p>
                     </div>
 
-                    <CardField label="UF e cidade" value={cityState} />
-
-                    <div className="grid grid-cols-2 gap-[clamp(3px,1cqw,7px)]">
-                        <CardField
-                            label="Habilitação"
-                            value={driverLicense}
-                        />
-                        <CardField
-                            label="Membro desde"
-                            value={maskDate(memberSince, { includeTime: false })}
-                        />
+                    <div className="mt-[clamp(8px,2cqw,14px)] grid grid-cols-2 gap-x-[clamp(13px,3.5cqw,24px)] gap-y-[clamp(8px,2cqw,14px)]">
+                        <CardField label="Nascimento" value={maskDate(birthDate, { includeTime: false })} />
+                        <CardField label="Telefone" value={phoneNumber} />
+                        <CardField label="Categoria" value={roleLabel} />
+                        <CardField label="Membro desde" value={maskDate(memberSince, { includeTime: false })} />
                     </div>
 
-                    <CardField label="Telefone" value={phoneNumber} />
-
-                    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.55fr)_auto] items-end gap-[clamp(3px,1cqw,7px)]">
-                        <CardField label="Função" value={roleLabel} />
-                        <CardField label="T sanguíneo" value={bloodType} />
-
-                        <div
-                            aria-label="Espaço reservado para QR Code"
-                            className="flex aspect-square w-[clamp(22px,7cqw,46px)] shrink-0 items-center justify-center rounded-[clamp(3px,0.8cqw,7px)] border-[clamp(1px,0.3cqw,2px)] border-dashed border-j-blue-200 bg-j-blue-100/10"
-                        >
-                            <span className="text-center text-[clamp(4px,0.7cqw,6px)] font-bold uppercase leading-tight tracking-wide text-j-blue-200">
-                                QR Code
-                            </span>
+                    <div className="mt-auto flex items-center justify-end border-t border-j-blue-100 pt-[clamp(7px,1.7cqw,12px)]">
+                        <div className="shrink-0 rounded-[clamp(5px,1cqw,8px)] border-2 border-j-yellow-300 bg-j-yellow-50 px-[clamp(10px,2.4cqw,17px)] py-[clamp(5px,1.1cqw,8px)]">
+                            <div>
+                                <p className="text-[clamp(4px,0.85cqw,6px)] font-bold uppercase tracking-[0.1em] text-j-blue-600">Tipo sanguíneo</p>
+                                <p className="text-[clamp(12px,2.9cqw,21px)] font-black leading-none text-j-blue-950">{displayValue(bloodType)}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
+
+            <footer className="flex h-[clamp(12px,3cqw,20px)] shrink-0 items-center justify-center bg-j-blue-950 px-4 text-[clamp(4px,0.8cqw,6px)] font-semibold uppercase tracking-[0.18em] text-j-blue-200">
+                Uso pessoal e intransferível
+            </footer>
         </div>
     );
 }
@@ -217,7 +198,7 @@ function MembershipCardBack() {
                         src="/images/logo_grande.jpg"
                         alt="Jeep Clube Tamoios"
                         fill
-                        className="rounded-full object-contain mix-blend-multiply"
+                        className="rounded-full object-contain"
                     />
                 </div>
                 <div className="min-w-0">
@@ -261,12 +242,9 @@ export function MembershipCard({
     fullName,
     birthDate,
     memberSince,
-    issuedAt,
     phoneNumber,
     roleLabel,
     registrationNumber,
-    cityState,
-    driverLicense,
     bloodType,
     exportFileName,
 }: MembershipCardProps) {
@@ -390,12 +368,9 @@ export function MembershipCard({
                         fullName={fullName}
                         birthDate={birthDate}
                         memberSince={memberSince}
-                        issuedAt={issuedAt}
                         phoneNumber={phoneNumber}
                         roleLabel={roleLabel}
                         registrationNumber={registrationNumber}
-                        cityState={cityState}
-                        driverLicense={driverLicense}
                         bloodType={bloodType}
                     />
                 ) : (
