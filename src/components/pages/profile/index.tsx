@@ -36,7 +36,7 @@ export default function Profile() {
     });
 
     return (
-        <div className="h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-5">
                 <PageHeader
                     id="tour-profile-header"
@@ -51,6 +51,7 @@ export default function Profile() {
                             id="tour-profile-help-btn"
                             onClick={restartTour}
                             label="Como gerenciar meu perfil?"
+                            className="w-full justify-center sm:w-auto"
                         />
                     }
                 />

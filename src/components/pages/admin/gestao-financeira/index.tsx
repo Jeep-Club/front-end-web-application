@@ -6,13 +6,13 @@ import { PageHeader } from "@/components/common/page-header";
 
 export default function FinancialManagement() {
     return (
-        <div className="h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
                     title="Gestão financeira"
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
-                        { label: "Painel admin", href: "/admin" },
+                        { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Gestão financeira" },
                     ]}
                 />
