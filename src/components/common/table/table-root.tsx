@@ -18,6 +18,11 @@ export interface TableRootProps<TData extends RowData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     children: ReactNode;
+    /**
+     * Conteúdo renderizado fora do card da listagem (ex.: Table.Pagination),
+     * mas ainda dentro do contexto da tabela.
+     */
+    footer?: ReactNode;
     getRowId?: TableOptions<TData>["getRowId"];
     pagination?: TablePaginationConfig;
     isLoading?: boolean;
@@ -31,6 +36,7 @@ export function TableRoot<TData extends RowData, TValue>({
     columns,
     data,
     children,
+    footer,
     getRowId,
     pagination,
     isLoading = false,
@@ -93,14 +99,18 @@ export function TableRoot<TData extends RowData, TValue>({
                 pagination,
             }}
         >
-            <section
-                className={twMerge(
-                    "relative w-full overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm",
-                    className,
-                )}
-            >
-                {children}
-            </section>
+            <div className="flex w-full flex-col gap-3">
+                <section
+                    className={twMerge(
+                        "relative w-full overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm",
+                        className,
+                    )}
+                >
+                    {children}
+                </section>
+
+                {footer}
+            </div>
         </TableProvider>
     );
 }

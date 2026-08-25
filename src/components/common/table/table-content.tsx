@@ -1,9 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
-import type { RowData } from "@tanstack/react-table";
+import { useState, type ReactNode } from "react";
+import type { Cell, Row, RowData } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
-import { AlertCircle, Database } from "lucide-react";
+import { AlertCircle, ChevronDown, Database } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { useTableContext } from "./table-context";
@@ -12,6 +12,15 @@ import { TableSkeleton } from "./table-skeleton";
 export interface TableContentProps {
     loadingRows?: number;
     className?: string;
+}
+
+function getColumnLabel<TData extends RowData>(cell: Cell<TData, unknown>): string {
+    const { meta, header } = cell.column.columnDef;
+
+    if (meta?.label) return meta.label;
+    if (typeof header === "string") return header;
+
+    return cell.column.id;
 }
 
 function StateMessage({
@@ -32,6 +41,72 @@ function StateMessage({
         >
             {icon}
             {children}
+        </div>
+    );
+}
+
+function MobileAccordionRow<TData extends RowData>({ row }: { row: Row<TData> }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [headerCellA, headerCellB, ...restCells] = row.getVisibleCells();
+
+    return (
+        <div>
+            <button
+                type="button"
+                onClick={() => setIsOpen((prev) => !prev)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-j-gray-100/60"
+            >
+                <div className="flex min-w-0 flex-1 items-start gap-4">
+                    {headerCellA && (
+                        <div className="flex min-w-0 shrink-0 flex-col gap-1">
+                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
+                                {getColumnLabel(headerCellA)}
+                            </span>
+                            <span className="truncate text-sm font-bold text-j-gray-700">
+                                {flexRender(headerCellA.column.columnDef.cell, headerCellA.getContext())}
+                            </span>
+                        </div>
+                    )}
+                    {headerCellB && (
+                        <div className="flex min-w-0 flex-1 flex-col gap-1 border-l border-j-gray-200 pl-4">
+                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
+                                {getColumnLabel(headerCellB)}
+                            </span>
+                            <span className="truncate text-sm font-bold text-j-gray-700">
+                                {flexRender(headerCellB.column.columnDef.cell, headerCellB.getContext())}
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                <ChevronDown
+                    aria-hidden="true"
+                    size={18}
+                    className={twMerge(
+                        "shrink-0 text-j-gray-400 transition-transform duration-200",
+                        isOpen && "rotate-180",
+                    )}
+                />
+            </button>
+
+            {isOpen && (
+                <div className="flex flex-col gap-3 border-t border-j-gray-100 bg-j-gray-100/40 px-4 py-4">
+                    {restCells.map((cell) => (
+                        <div
+                            key={cell.id}
+                            className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1"
+                        >
+                            <span className="shrink-0 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-500">
+                                {getColumnLabel(cell)}:
+                            </span>
+                            <div className="min-w-0 text-sm text-j-gray-700">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -83,7 +158,7 @@ export function TableContent<TData extends RowData>({
                 </div>
             )}
 
-            <table className="min-w-full text-left text-sm text-j-gray-600">
+            <table className="hidden min-w-full text-left text-sm text-j-gray-600 lg:table">
                 <thead className="border-b border-j-gray-200 bg-j-gray-100 text-xs uppercase tracking-wide text-j-blue-800">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
@@ -125,6 +200,12 @@ export function TableContent<TData extends RowData>({
                     ))}
                 </tbody>
             </table>
+
+            <div className="divide-y divide-j-gray-100 lg:hidden">
+                {rows.map((row) => (
+                    <MobileAccordionRow key={row.id} row={row} />
+                ))}
+            </div>
         </div>
     );
 }

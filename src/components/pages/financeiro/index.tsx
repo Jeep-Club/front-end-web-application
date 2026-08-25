@@ -1,18 +1,16 @@
 import { PageHeader } from "@/components/common/page-header";
 
-export default function Feed() {
+export default function Financeiro() {
     return (
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4">
                 <PageHeader
-                    title="Feed"
+                    title="Gestão financeira"
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
-                        { label: "Feed" },
+                        { label: "Gestão financeira" },
                     ]}
                 />
-
-                <p>vem ai</p>
             </div>
         </div>
     );

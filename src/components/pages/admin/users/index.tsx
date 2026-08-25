@@ -8,7 +8,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
-import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
@@ -179,22 +178,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         setOpen();
     }, [setContent, setOpen]);
 
-    // const handleManageRoles = useCallback((user: AdminUser) => {
-    //     setContent(
-    //         <UserRolesModal
-    //             user={user}
-    //             onLoadRoles={dataSource.listRoles}
-    //             onSaveRoles={dataSource.replaceUserRoles}
-    //             onSuccess={updateRolesInCache}
-    //         />,
-    //     );
-    //     setOpen();
-    // }, [dataSource, setContent, setOpen, updateRolesInCache]);
-
-    const handleManageRoles = useCallback((user: AdminUser) => {
-        router.push(`/admin/users/${user.id}#roles`);
-    }, [router]);
-
     function replaceSearchParams(
         patch: Partial<AdminUserSearchParams>,
         { resetPage = false }: { resetPage?: boolean } = {},
@@ -269,13 +252,13 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
     if (!permissions.canReadUsers) {
         return (
-            <div className="h-full w-full p-3 md:p-4">
+            <div className="min-h-full w-full p-3 md:p-4">
                 <div className="flex w-full flex-col gap-6">
                     <PageHeader
                         title="Gestão de usuários"
                         breadcrumbs={[
                             { label: "Início", href: "/feed" },
-                            { label: "Painel admin", href: "/admin" },
+                            { label: "Gestão Administrativa", href: "/admin" },
                             { label: "Usuários" },
                         ]}
                     />
@@ -293,25 +276,23 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
 
     return (
-        <div className="h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
-                    title="Gestão de usuários"
+                    title={
+                        <>
+                            Gestão de usuários
+                            <span className="ml-2 align-middle text-sm font-normal text-j-gray-400 md:text-base">
+                                {users.totalElements} usuário(s) cadastrado(s)
+                            </span>
+                        </>
+                    }
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
-                        { label: "Painel admin", href: "/admin" },
+                        { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Usuários" },
                     ]}
                 />
-                {permissions.canAssignRoles &&
-                    <Button
-                    className="w-fit"
-                    onClick={() => router.push("/admin/users/new")}
-                    disabled={isPending}
-                >
-                    Cadastrar novo usuário
-                </Button>
-                }
 
                 <UserManagementView
                     users={users.content}
@@ -343,7 +324,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     onSortChange={handleSortChange}
                     onViewUser={handleViewUser}
                     onChangeUserStatus={handleChangeUserStatus}
-                    onManageRoles={handleManageRoles}
+                    onCreateUser={() => router.push("/admin/users/new")}
                     setSearchType={updateSearchType}
                 />
             </div>

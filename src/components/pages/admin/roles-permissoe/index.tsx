@@ -21,6 +21,7 @@ import { DeleteRoleModal } from "./DeleteRoleModal";
 import { RolePermissionsModal } from "./RolePermissionsModal";
 import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
 import { getModuleLabel, getPermissionName } from "./permissionLabels";
+import { UserRoleAssignmentsTab } from "./UserRoleAssignmentsTab";
 import { usePageTour } from "@/hooks/useTour";
 import { getRolesTourSteps } from "@/config/tourSteps";
 import TourHelpButton from "@/components/common/tour/TourHelpButton";
@@ -165,15 +166,14 @@ export default function RolesPermissions() {
     };
 
     return (
-        <div className="h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
                     id="tour-roles-header"
                     title="Cargos e permissões"
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
-                        { label: "Painel admin", href: "/admin" },
-                        { label: "Gestão" },
+                        { label: "Gestão Administrativa", href: "/admin" },
                         { label: activeTabLabel ?? "" },
                     ]}
                     actions={
@@ -182,6 +182,7 @@ export default function RolesPermissions() {
                                 id="tour-roles-help-btn"
                                 onClick={handleRestartTour}
                                 label="Como gerenciar cargos?"
+                                className="w-full justify-center sm:w-auto"
                             />
                         ) : undefined
                     }
@@ -432,30 +433,7 @@ export default function RolesPermissions() {
                 )}
 
                 {activeTab === "users" && isTabVisible("users") && (
-                    <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                        <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                            <div>
-                                <h2 className="font-black text-j-blue-800">Permissões</h2>
-                                <p className="text-sm text-j-gray-600">
-                                    Veja e gerencie o cargo de cada usuário administrativo.
-                                </p>
-                            </div>
-
-                            <Users size={24} className="text-j-gray-400" />
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
-                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
-                                <Users size={31} />
-                            </div>
-
-                            <h3 className="text-lg font-black text-j-blue-800">Em construção</h3>
-
-                            <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                A lista de usuários e seus cargos vai aparecer aqui.
-                            </p>
-                        </div>
-                    </section>
+                    <UserRoleAssignmentsTab />
                 )}
             </div>
         </div>

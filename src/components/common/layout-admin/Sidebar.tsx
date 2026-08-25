@@ -7,7 +7,6 @@ import {
     CalendarDays,
     Newspaper,
     ShieldCheck,
-    UserRound,
     X,
 } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -56,16 +55,9 @@ export default function Sidebar({
     );
 
     const canAccessAdmin = hasAnyAdminAccess(permissions);
-    const isAdminPanel = pathname.startsWith("/admin");
 
-    const panelHref = isAdminPanel ? "/feed" : "/admin";
-    const panelLabel = isAdminPanel
-        ? "Painel do sócio"
-        : "Painel administrativo";
-
-    const PanelIcon = isAdminPanel
-        ? UserRound
-        : ShieldCheck;
+    const panelHref = "/admin";
+    const panelLabel = "Gestão Administrativa";
 
     return (
         <>
@@ -91,7 +83,7 @@ export default function Sidebar({
                         : "-translate-x-full",
                     isCollapsed
                         ? "md:w-20"
-                        : "md:w-64",
+                        : "md:w-60",
                 )}
             >
                 <div className="relative flex flex-col items-center gap-1 border-b border-j-blue-700 p-6">
@@ -198,14 +190,19 @@ export default function Sidebar({
                                     "md:px-0",
                             )}
                         >
-                            <PanelIcon size={18} />
+                            <ShieldCheck
+                                size={18}
+                                className={twMerge(
+                                    "hidden",
+                                    isCollapsed && "md:block",
+                                )}
+                            />
 
                             <span
-                                className={
-                                    isCollapsed
-                                        ? "md:hidden"
-                                        : ""
-                                }
+                                className={twMerge(
+                                    "text-center",
+                                    isCollapsed && "md:hidden",
+                                )}
                             >
                                 {panelLabel}
                             </span>

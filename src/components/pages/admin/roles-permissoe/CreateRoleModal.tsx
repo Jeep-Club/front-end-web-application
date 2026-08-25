@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { X, KeyRound } from "lucide-react";
+import { X } from "lucide-react";
 import { Form } from "@/components/common/form";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { InputRegister } from "@/components/common/input/input-register";
@@ -47,19 +47,12 @@ export function CreateRoleModal() {
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
-                        <KeyRound size={20} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            Criar cargo
-                        </h2>
-                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Um cargo define o que os administradores com ele podem acessar e fazer.
-                        </p>
-                    </div>
-                </div>
+                <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                    Criar cargo
+                </h2>
+                <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                    Um cargo define o que os administradores com ele podem acessar e fazer.
+                </p>
             </header>
 
             <Form<CreateRoleRequest>

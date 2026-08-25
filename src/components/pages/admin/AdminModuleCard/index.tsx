@@ -26,7 +26,7 @@ export default function Admin() {
     });
 
     return (
-        <div className="h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-6">
                 <PageHeader
                     id="tour-admin-header"
@@ -37,7 +37,7 @@ export default function Admin() {
                             href: "/feed",
                         },
                         {
-                            label: "Painel admin",
+                            label: "Gestão Administrativa",
                         },
                     ]}
                     actions={
@@ -46,6 +46,7 @@ export default function Admin() {
                                 id="tour-admin-help-btn"
                                 onClick={restartTour}
                                 label="Como usar o painel?"
+                                className="w-full justify-center sm:w-auto"
                             />
                         ) : undefined
                     }

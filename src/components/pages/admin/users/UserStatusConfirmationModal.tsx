@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, LoaderCircle, Power, PowerOff, X } from "lucide-react";
-import toast from "react-hot-toast";
+import { LoaderCircle, Power, PowerOff, X } from "lucide-react";
 
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { useModalFocusRestoration } from "./useModalFocusRestoration";
 
 interface UserStatusConfirmationModalProps {
@@ -18,31 +16,15 @@ interface UserStatusConfirmationModalProps {
 export function UserStatusConfirmationModal({
     user,
     onConfirm,
-    onSuccess,
 }: UserStatusConfirmationModalProps) {
     useModalFocusRestoration();
     const { setClose } = useModal();
     const [isPending, setIsPending] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string>();
     const isEnabling = user.accountStatus === "DISABLED";
     const actionLabel = isEnabling ? "Reativar" : "Desativar";
 
     async function handleConfirm() {
         setIsPending(true);
-        // setErrorMessage(undefined);
-
-        // // try {
-        // //     const updatedUser = await onConfirm(user.id, isEnabling ? "enable" : "disable");
-        // //     onSuccess(updatedUser);
-        // //     toast.success(`Usuário ${isEnabling ? "reativado" : "desativado"} com sucesso!`);
-        // //     setClose();
-        // // } catch (error) {
-        // //     const message = extractApiErrorMessage(error, `Não foi possível ${actionLabel.toLowerCase()} o usuário.`);
-        // //     setErrorMessage(message);
-        // //     toast.error(message);
-        // // } finally {
-        // //     setIsPending(false);
-        // // }
         try {
             await onConfirm(user.id, isEnabling ? "enable" : "disable");
             setIsPending(false);
@@ -57,44 +39,53 @@ export function UserStatusConfirmationModal({
             aria-modal="true"
             aria-labelledby="status-confirmation-title"
             aria-describedby="status-confirmation-description"
-            className="relative flex w-full max-w-md flex-col gap-6 rounded-2xl bg-j-blue-800 p-6 text-j-white shadow-[-1px_16px_23px_1px_rgba(0,0,0,0.35)] md:p-8"
+            className={`
+                relative flex max-h-[92dvh] w-full max-w-125
+                flex-col overflow-y-auto overflow-x-hidden
+                rounded-3xl bg-j-white shadow-2xl
+            `}
         >
             <ButtonIcon
                 onClick={setClose}
                 disabled={isPending}
                 aria-label="Fechar confirmação"
-                className="absolute right-4 top-4 text-j-transparent-white hover:text-j-yellow-300"
+                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
-                <X size={22} />
+                <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
             </ButtonIcon>
 
-            <div className="flex flex-col items-center gap-3 text-center">
-                <span className={`flex h-14 w-14 items-center justify-center rounded-full ${isEnabling ? "bg-j-green-500/20 text-j-green-200" : "bg-j-red-500/20 text-j-red-200"}`}>
-                    <AlertTriangle size={28} />
-                </span>
-                <h2 id="status-confirmation-title" className="text-xl font-extrabold md:text-2xl">
-                    {actionLabel} usuário?
-                </h2>
-                <p id="status-confirmation-description" className="text-sm text-j-transparent-white">
-                    Você está prestes a {actionLabel.toLowerCase()} <span className="font-bold text-j-white">{user.name}</span>.
-                    {isEnabling
-                        ? " O acesso voltará a seguir o status retornado pelo sistema."
-                        : " O usuário perderá o acesso ao sistema até que seja reativado."}
-                </p>
-            </div>
+            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+                <div className="flex items-start gap-4">
+                    <span
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm ${
+                            isEnabling
+                                ? "bg-j-green-100 text-j-green-700"
+                                : "bg-red-500/10 text-red-500"
+                        }`}
+                    >
+                        {isEnabling ? <Power size={20} /> : <PowerOff size={20} />}
+                    </span>
+                    <div>
+                        <h2 id="status-confirmation-title" className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                            {actionLabel} usuário?
+                        </h2>
+                        <p id="status-confirmation-description" className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                            Você está prestes a {actionLabel.toLowerCase()}{" "}
+                            <span className="font-bold text-j-blue-800">{user.name}</span>.
+                            {isEnabling
+                                ? " O acesso voltará a seguir o status retornado pelo sistema."
+                                : " O usuário perderá o acesso ao sistema até que seja reativado."}
+                        </p>
+                    </div>
+                </div>
+            </header>
 
-            {errorMessage && (
-                <p role="alert" className="rounded-lg bg-j-red-500/20 p-3 text-center text-sm text-j-red-100">
-                    {errorMessage}
-                </p>
-            )}
-
-            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            <div className="flex w-full gap-3 px-5 py-5 md:px-8 md:py-6">
                 <Button
                     type="button"
                     onClick={setClose}
                     disabled={isPending}
-                    className="flex-1 border-2 border-j-transparent-white bg-transparent text-j-white hover:bg-j-transparent-white/10 hover:text-j-white"
+                    className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
                 >
                     Cancelar
                 </Button>
@@ -103,7 +94,11 @@ export function UserStatusConfirmationModal({
                     autoFocus
                     onClick={() => void handleConfirm()}
                     disabled={isPending}
-                    className={`flex-1 text-white hover:text-white ${isEnabling ? "bg-j-green-600 hover:bg-j-green-700" : "bg-j-red-500 hover:bg-j-red-600"}`}
+                    className={`flex-1 text-white hover:text-white ${
+                        isEnabling
+                            ? "bg-j-green-600 hover:bg-j-green-700"
+                            : "bg-red-500 hover:bg-red-600"
+                    }`}
                 >
                     {isPending ? (
                         <><LoaderCircle size={16} className="animate-spin" /> Processando...</>
