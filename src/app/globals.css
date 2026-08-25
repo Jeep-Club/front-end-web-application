@@ -390,4 +390,19 @@ body {
 .driver-popover-close-btn:hover {
   color: var(--red-500) !important;
 }
+@media (max-width: 767px) {
+  .membership-card-mobile-landscape {
+    display: flex;
+    height: calc((100vw - 3rem) * 856 / 540);
+    align-items: center;
+    justify-content: center;
+  }
 
+  .membership-card-mobile-landscape > [data-card-side] {
+    width: calc((100vw - 3rem) * 856 / 540);
+    max-width: none;
+    flex: none;
+    transform: rotate(90deg);
+    transform-origin: center;
+  }
+}

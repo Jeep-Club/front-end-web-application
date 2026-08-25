@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import {
     CalendarDays,
     Camera,
@@ -10,6 +12,7 @@ import {
     X,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { updatePersonalDataAction } from "@/actions/profile/update-personal-data";
 
 import {
     Button,
@@ -102,6 +105,7 @@ export function EditPersonalDataModal({
     onSave,
 }: EditPersonalDataModalProps) {
     const { setClose } = useModal();
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSubmit = async (
         data: EditPersonalDataFormData,
@@ -117,20 +121,16 @@ export function EditPersonalDataModal({
                       )
                     : personalData.profilePhotoUrl;
 
-            onSave({
-                ...personalData,
+            setIsSaving(true);
+            const savedPersonalData = await updatePersonalDataAction(personalData.id, {
                 name: data.name.trim(),
-                birthDate:
-                    data.birthDate || null,
+                birthData: data.birthDate || null,
                 email: data.email.trim(),
-                rg:
-                    data.rg.trim() ||
-                    null,
-                phoneNumber:
-                    data.phoneNumber.trim() ||
-                    null,
-                profilePhotoUrl,
+                rg: data.rg.trim() || null,
+                phoneNumber: data.phoneNumber.replace(/\D/g, "") || null,
             });
+
+            onSave({ ...savedPersonalData, profilePhotoUrl });
 
             toast.success(
                 "Dados atualizados com sucesso!",
@@ -144,6 +144,8 @@ export function EditPersonalDataModal({
                     : "Erro ao atualizar os dados";
 
             toast.error(message);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -152,6 +154,7 @@ export function EditPersonalDataModal({
             <ButtonIcon
                 type="button"
                 onClick={setClose}
+                disabled={isSaving}
                 title="Fechar"
                 className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
@@ -351,10 +354,11 @@ export function EditPersonalDataModal({
 
                     <Button
                         type="submit"
+                        disabled={isSaving}
                         className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white"
                     >
                         <Save size={16} />
-                        Salvar alterações
+                        {isSaving ? "Salvando..." : "Salvar alterações"}
                     </Button>
                 </div>
             </Form>

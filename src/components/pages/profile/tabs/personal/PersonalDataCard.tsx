@@ -31,7 +31,7 @@ export function PersonalDataCard({
     onEdit,
 }: PersonalDataCardProps) {
     return (
-        <section className="mx-auto flex w-full max-w-[360px] flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+        <section className="mx-auto flex w-full max-w-[720px] xl:max-w-[360px] flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
             <header className="flex items-center justify-between gap-3 border-b border-j-gray-200 px-4 py-3">
                 <div className="min-w-0">
                     <h2 className="text-sm font-extrabold text-j-gray-700">
@@ -99,9 +99,9 @@ export function PersonalDataCard({
                     </div>
                 </div>
 
-                <div className="rounded-xl border-l-4 border-j-yellow-400 bg-j-gray-100 px-4 py-3">
+                <div className="rounded-xl bg-j-gray-100 px-4 py-3">
                     <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                        Identificação
+                        Matrícula
                     </span>
 
                     <p className="mt-1 text-base font-extrabold text-j-blue-800">
