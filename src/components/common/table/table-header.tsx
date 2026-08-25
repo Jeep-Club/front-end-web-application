@@ -34,7 +34,7 @@ export function TableHeader({
             )}
 
             {children && (
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-end lg:w-auto">
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-end">
                     {children}
                 </div>
             )}

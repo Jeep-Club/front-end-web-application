@@ -4,7 +4,7 @@ import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "../button";
 
 export interface TableFiltersProps {
-    children: ReactNode;
+    children?: ReactNode;
     onClear?: () => void;
     hasActiveFilters?: boolean;
     clearLabel?: string;
