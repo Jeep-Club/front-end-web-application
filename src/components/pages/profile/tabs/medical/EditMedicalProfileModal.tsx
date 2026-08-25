@@ -2,14 +2,15 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HeartPulse, LoaderCircle, Save, X } from "lucide-react";
+import { useController, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import { saveMedicalProfileAction } from "@/actions/profile/medical-profile";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { InputRegister } from "@/components/common/input/input-register";
-import { Select } from "@/components/common/select";
-import { Textarea } from "@/components/common/textarea";
+import { SelectRegister } from "@/components/common/select/select-register";
+import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
 import { medicalProfileFormSchema } from "@/schemas/profile/medical-profile";
 import { maskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
@@ -19,7 +20,6 @@ interface EditMedicalProfileModalProps {
 }
 
 const BLOOD_TYPES: Array<{ value: MedicalProfileBloodType; label: string }> = [
-    { value: "UNKNOWN", label: "Não informado" },
     { value: "A_POSITIVE", label: "A+" },
     { value: "A_NEGATIVE", label: "A-" },
     { value: "B_POSITIVE", label: "B+" },
@@ -32,6 +32,73 @@ const BLOOD_TYPES: Array<{ value: MedicalProfileBloodType; label: string }> = [
 
 const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
 
+
+const NOT_APPLICABLE = "Não se aplica";
+
+function MedicalConditionalField({ name, question, label, placeholder }: {
+    name: "allergies" | "chronicConditions" | "continuousMedications" | "observations";
+    question: string;
+    label: string;
+    placeholder: string;
+}) {
+    const { control } = useFormContext<MedicalProfileFormData>();
+    const { field, fieldState } = useController({ name, control });
+    const hasCondition = field.value !== NOT_APPLICABLE;
+
+    const selectAnswer = (answer: "yes" | "no") => {
+        field.onChange(answer === "no" ? NOT_APPLICABLE : "");
+    };
+
+    return (
+        <div className="flex flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-white p-4">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <span className="text-sm font-bold text-j-gray-700">{question}</span>
+                <div className="grid grid-cols-2 gap-1 rounded-lg bg-j-gray-100 p-1">
+                    {([['yes', 'Sim'], ['no', 'Não']] as const).map(([value, text]) => {
+                        const active = value === 'yes' ? hasCondition : !hasCondition;
+                        return <button key={value} type="button" onClick={() => selectAnswer(value)} className={`cursor-pointer rounded-md px-4 py-1.5 text-xs font-extrabold transition-colors ${active ? 'bg-j-blue-800 text-j-white shadow-sm' : 'text-j-gray-500 hover:bg-j-white'}`}>{text}</button>;
+                    })}
+                </div>
+            </div>
+            {hasCondition && (
+                <TextareaRegister name={name} label={label} placeholder={placeholder} maxLength={2000} className={fieldClassName} />
+            )}
+            {!hasCondition && <p className="text-xs font-semibold text-j-green-600">Marcado como “Não se aplica”.</p>}
+            {fieldState.error && !hasCondition && <p className="text-sm text-j-red-400">{fieldState.error.message}</p>}
+        </div>
+    );
+}
+function HealthInsuranceConditionalField() {
+    const { control, setValue } = useFormContext<MedicalProfileFormData>();
+    const provider = useController({ name: 'healthInsuranceProvider', control }).field.value;
+    const plan = useController({ name: 'healthInsurancePlan', control }).field.value;
+    const number = useController({ name: 'healthInsuranceNumber', control }).field.value;
+    const hasHealthPlan = [provider, plan, number].some((value) => value !== NOT_APPLICABLE);
+
+    const selectAnswer = (answer: 'yes' | 'no') => {
+        const value = answer === 'no' ? NOT_APPLICABLE : '';
+        setValue('healthInsuranceProvider', value, { shouldValidate: true });
+        setValue('healthInsurancePlan', value, { shouldValidate: true });
+        setValue('healthInsuranceNumber', value, { shouldValidate: true });
+    };
+
+    return (
+        <FormSection title="Plano de saúde">
+            <div className="flex flex-col justify-between gap-3 rounded-xl border border-j-gray-200 bg-j-white p-4 sm:flex-row sm:items-center">
+                <span className="text-sm font-bold text-j-gray-700">Possui plano de saúde?</span>
+                <div className="grid grid-cols-2 gap-1 rounded-lg bg-j-gray-100 p-1">
+                    <button type="button" onClick={() => selectAnswer('yes')} className={`cursor-pointer rounded-md px-4 py-1.5 text-xs font-extrabold ${hasHealthPlan ? 'bg-j-blue-800 text-j-white shadow-sm' : 'text-j-gray-500'}`}>Sim</button>
+                    <button type="button" onClick={() => selectAnswer('no')} className={`cursor-pointer rounded-md px-4 py-1.5 text-xs font-extrabold ${!hasHealthPlan ? 'bg-j-blue-800 text-j-white shadow-sm' : 'text-j-gray-500'}`}>Não</button>
+                </div>
+            </div>
+            {hasHealthPlan ? <div className="grid gap-4 sm:grid-cols-2">
+                <InputRegister name="healthInsuranceProvider" label="Operadora" placeholder="Ex.: Unimed" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} required />
+                <InputRegister name="healthInsurancePlan" label="Plano" placeholder="Ex.: Nacional" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} required />
+                <InputRegister name="healthInsuranceNumber" label="Número da carteirinha" placeholder="Número de identificação" maxLength={80} labelClassName="text-j-gray-700" className={fieldClassName} required />
+            </div> : <p className="text-xs font-semibold text-j-green-600">Marcado como “Não se aplica”.</p>}
+        </FormSection>
+    );
+}
 export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
@@ -47,16 +114,16 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
 
     const defaultValues: MedicalProfileFormData = {
         bloodType: medicalProfile?.bloodType ?? "UNKNOWN",
-        allergies: medicalProfile?.allergies ?? "",
-        chronicConditions: medicalProfile?.chronicConditions ?? "",
-        continuousMedications: medicalProfile?.continuousMedications ?? "",
-        healthInsuranceProvider: medicalProfile?.healthInsuranceProvider ?? "",
-        healthInsurancePlan: medicalProfile?.healthInsurancePlan ?? "",
-        healthInsuranceNumber: medicalProfile?.healthInsuranceNumber ?? "",
+        allergies: medicalProfile?.allergies?.trim() || NOT_APPLICABLE,
+        chronicConditions: medicalProfile?.chronicConditions?.trim() || NOT_APPLICABLE,
+        continuousMedications: medicalProfile?.continuousMedications?.trim() || NOT_APPLICABLE,
+        healthInsuranceProvider: medicalProfile?.healthInsuranceProvider?.trim() || NOT_APPLICABLE,
+        healthInsurancePlan: medicalProfile?.healthInsurancePlan?.trim() || NOT_APPLICABLE,
+        healthInsuranceNumber: medicalProfile?.healthInsuranceNumber?.trim() || NOT_APPLICABLE,
         emergencyContactName: medicalProfile?.emergencyContactName ?? "",
         emergencyContactPhone: medicalProfile?.emergencyContactPhone ?? "",
         emergencyContactRelationship: medicalProfile?.emergencyContactRelationship ?? "",
-        observations: medicalProfile?.observations ?? "",
+        observations: medicalProfile?.observations?.trim() || NOT_APPLICABLE,
     };
 
     return (
@@ -94,57 +161,30 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
                 className="items-stretch gap-5 px-5 pt-5 md:px-8 md:pt-6"
             >
                 <FormSection title="Informações médicas">
-                    <Select
+                    <SelectRegister
                         name="bloodType"
                         label="Tipo sanguíneo"
+                        required
                         className={fieldClassName}
                     >
+                        <option value="UNKNOWN" disabled>Selecione o tipo sanguíneo</option>
                         {BLOOD_TYPES.map((type) => (
                             <option key={type.value} value={type.value}>{type.label}</option>
                         ))}
-                    </Select>
-                    <Textarea
-                        name="allergies"
-                        label="Alergias"
-                        placeholder="Ex.: dipirona, amendoim"
-                        maxLength={2000}
-                        className={fieldClassName}
-                    />
-                    <Textarea
-                        name="chronicConditions"
-                        label="Condições crônicas"
-                        placeholder="Ex.: asma, diabetes"
-                        maxLength={2000}
-                        className={fieldClassName}
-                    />
-                    <Textarea
-                        name="continuousMedications"
-                        label="Medicamentos de uso contínuo"
-                        placeholder="Informe medicamento, dose e frequência"
-                        maxLength={2000}
-                        className={fieldClassName}
-                    />
+                    </SelectRegister>
+                    <MedicalConditionalField name="allergies" question="Possui alguma alergia?" label="Quais alergias?" placeholder="Ex.: dipirona, amendoim" />
+                    <MedicalConditionalField name="chronicConditions" question="Possui alguma condição crônica?" label="Quais condições?" placeholder="Ex.: asma, diabetes" />
+                    <MedicalConditionalField name="continuousMedications" question="Usa medicamento contínuo?" label="Quais medicamentos?" placeholder="Informe medicamento, dose e frequência" />
                 </FormSection>
 
-                <FormSection title="Plano de saúde" columns>
-                    <InputRegister name="healthInsuranceProvider" label="Operadora" placeholder="Ex.: Unimed" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} />
-                    <InputRegister name="healthInsurancePlan" label="Plano" placeholder="Ex.: Nacional" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} />
-                    <InputRegister name="healthInsuranceNumber" label="Número da carteirinha" placeholder="Número de identificação" maxLength={80} labelClassName="text-j-gray-700" className={fieldClassName} />
-                </FormSection>
+                <HealthInsuranceConditionalField />
 
                 <FormSection title="Contato de emergência" columns>
-                    <InputRegister name="emergencyContactName" label="Nome" placeholder="Nome do contato" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} />
-                    <InputRegister name="emergencyContactPhone" label="Telefone" placeholder="(12) 99999-9999" maxLength={20} mask={maskPhoneNumber} labelClassName="text-j-gray-700" className={fieldClassName} />
-                    <InputRegister name="emergencyContactRelationship" label="Parentesco" placeholder="Ex.: mãe, cônjuge" maxLength={80} labelClassName="text-j-gray-700" className={fieldClassName} />
+                    <InputRegister name="emergencyContactName" label="Nome" required placeholder="Nome do contato" maxLength={120} labelClassName="text-j-gray-700" className={fieldClassName} />
+                    <InputRegister name="emergencyContactPhone" label="Telefone" required placeholder="(12) 99999-9999" maxLength={20} mask={maskPhoneNumber} labelClassName="text-j-gray-700" className={fieldClassName} />
+                    <InputRegister name="emergencyContactRelationship" label="Parentesco" required placeholder="Ex.: mãe, cônjuge" maxLength={80} labelClassName="text-j-gray-700" className={fieldClassName} />
                 </FormSection>
-
-                <Textarea
-                    name="observations"
-                    label="Observações"
-                    placeholder="Outras informações importantes"
-                    maxLength={2000}
-                    className={fieldClassName}
-                />
+                <MedicalConditionalField name="observations" question="Possui alguma observação médica adicional?" label="Observações" placeholder="Outras informações importantes" />
 
                 <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-j-blue-100 bg-j-blue-100/10 px-5 py-5 sm:flex-row sm:justify-end md:-mx-8 md:px-8">
                     <Button type="button" onClick={setClose} disabled={mutation.isPending} className="border-2 border-j-gray-200 bg-j-white px-5 text-j-gray-600 hover:bg-j-gray-100 hover:text-j-gray-700">

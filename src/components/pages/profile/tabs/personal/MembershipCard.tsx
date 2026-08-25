@@ -250,7 +250,6 @@ export function MembershipCard({
 }: MembershipCardProps) {
     const [currentSide, setCurrentSide] = useState<CardSide>("front");
     const cardContainerRef = useRef<HTMLDivElement>(null);
-
     const handleExport = async ({ format, scope }: CardExportRequest) => {
         const previousSide = currentSide;
 
@@ -360,7 +359,7 @@ export function MembershipCard({
 
             <div
                 ref={cardContainerRef}
-                className="w-full min-w-0 [container-type:inline-size]"
+                className="membership-card-mobile-landscape w-full min-w-0 [container-type:inline-size]"
             >
                 {currentSide === "front" ? (
                     <MembershipCardFront

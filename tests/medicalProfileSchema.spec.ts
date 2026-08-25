@@ -24,25 +24,29 @@ describe('medicalProfileFormSchema', () => {
         expect(result.success).toBe(true);
     });
 
-    it('aceita todos os campos opcionais vazios', () => {
+    it('aceita plano, observações e informações médicas opcionais vazios', () => {
         const result = medicalProfileFormSchema.safeParse({
             ...validFormData,
-            bloodType: 'UNKNOWN',
             allergies: '',
             chronicConditions: '',
             continuousMedications: '',
             healthInsuranceProvider: '',
             healthInsurancePlan: '',
             healthInsuranceNumber: '',
-            emergencyContactName: '',
-            emergencyContactPhone: '',
-            emergencyContactRelationship: '',
             observations: '',
         });
 
         expect(result.success).toBe(true);
     });
 
+    it.each([
+        ['bloodType', 'UNKNOWN'],
+        ['emergencyContactName', ''],
+        ['emergencyContactPhone', ''],
+        ['emergencyContactRelationship', ''],
+    ])('rejeita o campo obrigatório %s vazio', (field, value) => {
+        expect(medicalProfileFormSchema.safeParse({ ...validFormData, [field]: value }).success).toBe(false);
+    });
     it('rejeita um tipo sanguíneo inválido', () => {
         const result = medicalProfileFormSchema.safeParse({
             ...validFormData,
