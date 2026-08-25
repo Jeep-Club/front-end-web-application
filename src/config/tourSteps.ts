@@ -94,7 +94,7 @@ export const mobileMenuStep: DriveStep = {
     element: "#tour-mobile-menu-btn",
     popover: {
         title: createStepHeader("Menu de Navegação", ICONS.smartphone),
-        description: "Toque para abrir a navegação lateral e acessar o feed, avisos e o painel administrativo.",
+        description: "Toque para abrir a navegação lateral e acessar o feed, avisos e a gestão administrativa.",
         side: "bottom",
         align: "start",
     },
@@ -123,7 +123,7 @@ export const avatarMenuStep: DriveStep = {
 export const adminStep: DriveStep = {
     element: "#tour-admin-link",
     popover: {
-        title: createStepHeader("Painel Administrativo", ICONS.shield, "Admin"),
+        title: createStepHeader("Gestão Administrativa", ICONS.shield, "Admin"),
         description: "Acesso exclusivo da diretoria para governança e controle de cargos. Clique no link para acessar o painel agora ou avance para continuar o tour.",
         side: "right",
         align: "center",
