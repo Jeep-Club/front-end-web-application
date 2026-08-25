@@ -7,7 +7,7 @@ export interface Breadcrumb {
 }
 
 export interface PageHeaderProps {
-    title: string;
+    title: React.ReactNode;
     breadcrumbs: Breadcrumb[];
     actions?: React.ReactNode;
     id?: string;
@@ -40,7 +40,7 @@ export function PageHeader({ title, breadcrumbs, actions, id }: PageHeaderProps)
             </div>
 
             {actions && (
-                <div className="flex items-center gap-2 self-start sm:self-auto">
+                <div className="flex w-full items-center gap-2 sm:w-auto sm:self-auto">
                     {actions}
                 </div>
             )}
