@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { User, Settings, LogOut, LoaderCircle, HelpCircle } from "lucide-react";
+import { User, Settings, LogOut, LoaderCircle, HelpCircle, WalletCards } from "lucide-react";
 import { Avatar } from "@/components/common/avatar";
 import logoutAction from "@/actions/auth/logout";
 import { TourContext } from "@/components/common/tour/TourContext";
@@ -87,6 +87,19 @@ export function AvatarMenu({ src }: AvatarMenuProps) {
                     >
                         <User size={16} />
                         Gerenciar conta
+                    </button>
+
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                            setIsOpen(false);
+                            router.push('/financeiro');
+                        }}
+                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-j-gray-600 transition-colors hover:bg-j-gray-100 cursor-pointer"
+                    >
+                        <WalletCards size={16} />
+                        Gestão financeira
                     </button>
 
                     {tourContext && (
