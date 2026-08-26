@@ -10,7 +10,7 @@ import { getUserProfileAction } from "@/actions/profile/get";
 import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { maskDate } from "@/utils/masks";
+import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
@@ -85,7 +85,7 @@ export function PersonalDataTab() {
     };
 
     return (
-        <div className="mx-auto grid w-full max-w-[1104px] items-start justify-center gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,720px)]">
+        <div className="grid w-full items-stretch gap-6 xl:grid-cols-2">
             <PersonalDataCard
                 photoUrl={
                     personalData.profilePhotoUrl
@@ -98,6 +98,17 @@ export function PersonalDataTab() {
                     includeTime: false,
                 })}
                 registrationNumber={`ID#${personalData.id}`}
+                email={personalData.email}
+                cpf={maskCPF(personalData.cpf)}
+                rg={personalData.rg}
+                phoneNumber={
+                    personalData.phoneNumber
+                        ? maskPhoneNumber(personalData.phoneNumber)
+                        : null
+                }
+                birthDate={maskDate(personalData.birthDate, {
+                    includeTime: false,
+                })}
                 onEdit={handleOpenEdit}
             />
 
