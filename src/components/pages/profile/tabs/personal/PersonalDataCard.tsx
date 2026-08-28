@@ -1,9 +1,11 @@
 "use client";
 
 import {
+    ChevronDown,
     Edit3,
     UserRound,
 } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/common/button";
 
@@ -59,6 +61,8 @@ export function PersonalDataCard({
     birthDate,
     onEdit,
 }: PersonalDataCardProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
     return (
         <section className="flex w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
             <header className="flex items-center justify-between gap-3 border-b border-j-gray-200 px-4 py-3">
@@ -87,9 +91,9 @@ export function PersonalDataCard({
                 </Button>
             </header>
 
-            <div className="flex flex-1 flex-col justify-between gap-5 p-4 sm:p-5">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="relative h-48 w-full shrink-0 overflow-hidden rounded-2xl bg-j-gray-100 sm:h-40 sm:w-40">
+            <div className="p-4 sm:p-5">
+                <div className="flex items-center gap-4">
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-j-gray-100 sm:h-24 sm:w-24">
                         {photoUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -103,20 +107,20 @@ export function PersonalDataCard({
                         ) : (
                             <div className="flex h-full w-full items-center justify-center">
                                 <UserRound
-                                    size={64}
+                                    size={42}
                                     className="text-j-gray-300"
                                 />
                             </div>
                         )}
                     </div>
 
-                    <div className="flex flex-col items-start gap-3">
+                    <div className="min-w-0 flex-1">
                         <span className="rounded-full bg-j-yellow-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-j-blue-800">
                             {displayValue(roleLabel)}
                         </span>
 
-                        <div className="w-full min-w-0">
-                            <h3 className="break-words text-xl font-extrabold leading-tight text-j-gray-700 sm:text-2xl">
+                        <div className="mt-2 min-w-0">
+                            <h3 className="truncate text-lg font-extrabold leading-tight text-j-gray-700 sm:text-xl">
                                 {displayValue(fullName)}
                             </h3>
 
@@ -130,7 +134,19 @@ export function PersonalDataCard({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <button
+                    type="button"
+                    onClick={() => setIsExpanded((current) => !current)}
+                    aria-expanded={isExpanded}
+                    aria-controls="personal-data-details"
+                    className="mt-4 flex w-full cursor-pointer items-center justify-between border-t border-j-gray-200 pt-4 text-left text-sm font-bold text-j-blue-800 transition-colors hover:text-j-blue-600"
+                >
+                    <span>{isExpanded ? "Ocultar dados pessoais" : "Ver dados pessoais"}</span>
+                    <ChevronDown size={20} aria-hidden="true" className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                </button>
+
+                {isExpanded && (
+                <div id="personal-data-details" className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <InfoField label="Matrícula" value={registrationNumber} />
                     <InfoField label="E-mail" value={email} />
                     <InfoField label="CPF" value={cpf} />
@@ -138,6 +154,7 @@ export function PersonalDataCard({
                     <InfoField label="Telefone" value={phoneNumber} />
                     <InfoField label="Nascimento" value={birthDate} />
                 </div>
+                )}
             </div>
         </section>
     );
