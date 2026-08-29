@@ -62,8 +62,8 @@ export const adminModules: AdminModuleConfig[] = [
         href: "/admin/gestao-financeira",
         icon: WalletCards,
         visibilityPermission: {
-            module: "FINANCE",
-            action: "FINANCE_READ",
+            module: "BILLING",
+            action: "CHARGE_DEFINITION_READ",
         },
     },
 ];
