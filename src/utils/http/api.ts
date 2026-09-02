@@ -22,7 +22,10 @@ export enum HttpAPIRoutes {
     VEHICLES_EDIT_MEMBER = "vehicles/edit/member",
     VEHICLES_DETAIL_FOR_EDIT_MEMBER = "vehicles/detail-for-edit/member",
     VEHICLES_DELETE_MEMBER = "vehicles/delete/member",
-    VEHICLES_DETAIL_MEMBER = "vehicles/detail/member"
+    VEHICLES_DETAIL_MEMBER = "vehicles/detail/member",
+
+    BILLING_CHARGE_DEFINITIONS = "billing/charge-definitions",
+    BILLING_CHARGE_ASSIGNMENTS = "billing/charge-assignments",
 }
 
 export enum HttpPublicAPIRoutes {}
