@@ -5,7 +5,7 @@ import { X, Wrench, LoaderCircle } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { getToolDetailAction } from "@/actions/admin/tools/detail";
+import { getAdminToolDetailAction } from "@/actions/admin/tools/detail";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
@@ -30,16 +30,16 @@ function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode
     );
 }
 
-interface ViewToolModalProps {
+interface ViewAdminToolModalProps {
     toolId: number;
 }
 
-export function ViewToolModal({ toolId }: ViewToolModalProps) {
+export function ViewAdminToolModal({ toolId }: ViewAdminToolModalProps) {
     const { setClose } = useModal();
 
     const { data: tool, isLoading } = useQuery({
-        queryKey: ["tools", "detail", toolId],
-        queryFn: () => getToolDetailAction(toolId),
+        queryKey: ["admin", "tools", "detail", toolId],
+        queryFn: () => getAdminToolDetailAction(toolId),
     });
 
     return (
@@ -65,7 +65,7 @@ export function ViewToolModal({ toolId }: ViewToolModalProps) {
                     <div>
                         <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">Detalhes da ferramenta</h2>
                         <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Informações completas da ferramenta. Campos somente leitura.
+                            Visão administrativa. Campos somente leitura.
                         </p>
                     </div>
                 </div>
@@ -81,6 +81,7 @@ export function ViewToolModal({ toolId }: ViewToolModalProps) {
                     <div className="flex w-full flex-col gap-4">
                         <ReadOnlyField label="Nome" value={tool.name} />
                         <ReadOnlyField label="Descrição" value={tool.description} />
+                        <ReadOnlyField label="Usuário dono" value={`Usuário #${tool.userId}`} />
 
                         <div className="flex w-full flex-col gap-1.5">
                             <span className="text-xs font-bold text-j-gray-700 md:text-sm">Status</span>
@@ -96,4 +97,4 @@ export function ViewToolModal({ toolId }: ViewToolModalProps) {
     );
 }
 
-export default ViewToolModal;
+export default ViewAdminToolModal;

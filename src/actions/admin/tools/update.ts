@@ -5,10 +5,10 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { updateToolResponseSchema } from "@/schemas/tools/update";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 
-export async function updateToolAction(toolId: number, data: UpdateToolRequest) {
+export async function updateAdminToolAction(toolId: number, data: UpdateToolRequest) {
     try {
         const response = await actionFetchWrapper<UpdateToolResponse>({
-            url: `${HttpAPIRoutes.TOOLS}/${toolId}`,
+            url: `${HttpAPIRoutes.TOOLS}/admin/${toolId}`,
             method: 'PUT',
             schema: updateToolResponseSchema,
             body: JSON.stringify(data),

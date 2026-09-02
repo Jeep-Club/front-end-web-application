@@ -8,40 +8,33 @@ import { Button, ButtonIcon } from "@/components/common/button";
 import { InputRegister } from "@/components/common/input/input-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
-import { createToolFormSchema } from "@/schemas/tools/create";
-import { createToolAction } from "@/actions/tools/create";
 import { editToolFormSchema } from "@/schemas/tools/update";
-import { updateToolAction } from "@/actions/tools/update";
-import { getToolDetailAction } from "@/actions/admin/tools/detail";
+import { getAdminToolDetailAction } from "@/actions/admin/tools/detail";
+import { updateAdminToolAction } from "@/actions/admin/tools/update";
 
 const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
 
-interface IncludeToolModalProps {
-    toolId?: number;
+interface EditAdminToolModalProps {
+    toolId: number;
 }
 
-export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
+export function EditAdminToolModal({ toolId }: EditAdminToolModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
-    const isEditMode = !!toolId;
 
     const { data: tool, isLoading: isLoadingTool } = useQuery({
-        queryKey: ["tools", "detail", toolId],
-        queryFn: () => getToolDetailAction(toolId!),
-        enabled: isEditMode,
+        queryKey: ["admin", "tools", "detail", toolId],
+        queryFn: () => getAdminToolDetailAction(toolId),
     });
 
     const mutation = useMutation({
-        mutationFn: (data: CreateToolFormData | UpdateToolFormData) =>
-            isEditMode && toolId
-                ? updateToolAction(toolId, data)
-                : createToolAction(data as CreateToolRequest),
+        mutationFn: (data: UpdateToolFormData) => updateAdminToolAction(toolId, data),
         onSuccess: () => {
-            toast.success(isEditMode ? "Ferramenta atualizada com sucesso!" : "Ferramenta cadastrada com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ["tools", "list"] });
+            toast.success("Ferramenta atualizada com sucesso!");
+            queryClient.invalidateQueries({ queryKey: ["admin", "tools"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || (isEditMode ? "Erro ao editar ferramenta." : "Erro ao cadastrar ferramenta.")),
+        onError: (error) => toast.error(error.message || "Erro ao editar ferramenta."),
     });
 
     return (
@@ -65,30 +58,33 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                         <Wrench size={20} />
                     </span>
                     <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {isEditMode ? "Editar ferramenta" : "Incluir ferramenta"}
-                        </h2>
+                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">Editar ferramenta</h2>
                         <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            {isEditMode
-                                ? "Atualize o nome ou a descrição da ferramenta."
-                                : "Cadastre uma ferramenta ou equipamento vinculado ao seu perfil."}
+                            Alteração administrativa — vale para qualquer usuário.
                         </p>
                     </div>
                 </div>
             </header>
 
-            {isEditMode && isLoadingTool ? (
+            {isLoadingTool ? (
                 <div className="flex items-center justify-center gap-2 px-5 py-16 text-j-gray-500 md:px-8">
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados da ferramenta...
                 </div>
             ) : (
-                <Form<CreateToolFormData | UpdateToolFormData>
-                    schema={isEditMode ? editToolFormSchema : createToolFormSchema}
+                <Form<UpdateToolFormData>
+                    schema={editToolFormSchema}
                     onSubmit={(data) => mutation.mutateAsync(data)}
                     onError={(errors) => console.log(errors)}
                     className="gap-4 px-5 py-5 md:px-8 md:py-6"
                 >
+                    <div className="flex w-full flex-col gap-1.5">
+                        <span className="text-xs font-bold text-j-gray-700 md:text-sm">Usuário dono</span>
+                        <div className="w-full rounded-lg border-2 border-j-gray-200 bg-j-gray-100 px-2.5 py-2 text-sm font-light text-j-gray-500 md:text-base">
+                            Usuário #{tool?.userId}
+                        </div>
+                    </div>
+
                     <InputRegister
                         label="Nome"
                         name="name"
@@ -113,9 +109,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                             disabled={mutation.isPending}
                             className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
                         >
-                            {mutation.isPending
-                                ? (isEditMode ? "Salvando..." : "Cadastrando...")
-                                : (isEditMode ? "Salvar alterações" : "Cadastrar ferramenta")}
+                            {mutation.isPending ? "Salvando..." : "Salvar alterações"}
                         </Button>
                     </div>
                 </Form>
@@ -124,4 +118,4 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
     );
 }
 
-export default IncludeToolModal;
+export default EditAdminToolModal;

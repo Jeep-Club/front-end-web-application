@@ -5,10 +5,10 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { deleteToolResponseSchema } from "@/schemas/tools/delete";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 
-export async function deleteToolAction(toolId: number) {
+export async function deleteAdminToolAction(toolId: number) {
     try {
         await actionFetchWrapper({
-            url: `${HttpAPIRoutes.TOOLS}/${toolId}`,
+            url: `${HttpAPIRoutes.TOOLS}/admin/${toolId}`,
             method: 'DELETE',
             schema: deleteToolResponseSchema,
         });

@@ -2,6 +2,7 @@ import {
     CalendarDays,
     KeyRound,
     Users,
+    Wrench,
     WalletCards,
     type LucideIcon,
 } from "lucide-react";
@@ -54,6 +55,17 @@ export const adminModules: AdminModuleConfig[] = [
             action: "ROLE_READ",
         },
     },
+    {
+    key: "tools",
+    title: "Ferramentas",
+    description: "Gerencie as ferramentas e equipamentos cadastrados pelos sócios.",
+    href: "/admin/tools",
+    icon: Wrench,
+    visibilityPermission: {
+        module: "TOOLS",
+        action: "TOOL_READ",
+    },
+},
     {
         key: "financial-management",
         title: "Gestão financeira",

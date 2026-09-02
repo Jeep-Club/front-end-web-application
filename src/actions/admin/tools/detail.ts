@@ -5,10 +5,10 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { toolDetailResponseSchema } from "@/schemas/tools/detail";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 
-export async function getToolDetailAction(toolId: number) {
+export async function getAdminToolDetailAction(toolId: number) {
     try {
         const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.TOOLS}/${toolId}`,
+            url: `${HttpAPIRoutes.TOOLS}/admin/${toolId}`,
             method: 'GET',
             schema: toolDetailResponseSchema,
         });

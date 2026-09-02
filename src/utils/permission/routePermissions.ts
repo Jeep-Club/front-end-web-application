@@ -78,6 +78,14 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["FINANCE_READ"],
         },
     ],
+
+    "/admin/tools": [
+    {
+        module: "TOOLS",
+        actions: ["TOOL_READ"],
+    },
+],
+
 };
 
 function normalizeRule(config: RoutePermissionsConfig): RoutePermissionRule {
