@@ -122,11 +122,13 @@ export function AvatarMenu({ src }: AvatarMenuProps) {
                         </button>
                     )}
 
-                    {/* TODO: liga pra rota de configuracoes quando ela existir */}
                     <button
                         type="button"
                         role="menuitem"
-                        onClick={() => setIsOpen(false)}
+                        onClick={() => {
+                            setIsOpen(false);
+                            router.push("/configuracoes");
+                        }}
                         className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-j-gray-600 transition-colors hover:bg-j-gray-100 cursor-pointer"
                     >
                         <Settings size={16} />
