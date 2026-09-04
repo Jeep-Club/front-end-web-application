@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect } from "react";
+import { twMerge } from "tailwind-merge";
 export interface ModalRootProps {
     children: React.ReactNode;
     onClose: () => void;
     isOpen: boolean;
     ref?: React.RefObject<HTMLDivElement | null>;
     isEscapable?: boolean;
+    contentClassName?: string;
 }
 
-export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true }: ModalRootProps) {
+export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true, contentClassName }: ModalRootProps) {
     useEffect(() => {
         if (!isEscapable) return;
         if (!isOpen) return;
@@ -35,7 +37,7 @@ export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true }
         >
             <div
                 ref={ref}
-                className="flex w-full max-w-3xl justify-center"
+                className={twMerge("flex w-full max-w-3xl justify-center", contentClassName)}
                 onClick={ref ? undefined : (event) => event.stopPropagation()}
             >
                 {children}

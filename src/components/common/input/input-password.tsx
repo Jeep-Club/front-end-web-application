@@ -55,6 +55,8 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                 <KeyRound size={20} className="absolute left-2.5 text-j-blue-800"/>
                 <ButtonIcon
                     disabled={notSeePassword}
+                    aria-label={isVisible ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-pressed={isVisible}
                     onClick={()=>{setIsVisible((prev)=>!prev)}}
 
                     className="absolute right-2.5"
