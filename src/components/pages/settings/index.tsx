@@ -7,19 +7,24 @@ import {
     Check,
     ChevronRight,
     CircleAlert,
+    Compass,
     Eye,
     HelpCircle,
     History,
+    KeyRound,
     ListChecks,
     LockKeyhole,
     Monitor,
     Moon,
     Palette,
+    RotateCcw,
     Save,
     ShieldCheck,
     Smartphone,
     Sun,
     UserRound,
+    Users,
+    Wallet,
     WalletCards,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -31,6 +36,9 @@ import { twMerge } from "tailwind-merge";
 import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
 import { resetAllTours } from "@/hooks/useTour";
+import { useUserStore } from "@/stores/userStore";
+import { hasPermission } from "@/utils/permission/hasPermission";
+import { hasAnyAdminAccess } from "@/config/adminModules";
 
 type SectionKey = "account" | "activity" | "notifications" | "privacy" | "preferences" | "help";
 type OptionKey =
@@ -172,6 +180,9 @@ function Toggle({
 
 export default function SettingsPage() {
     const router = useRouter();
+    const permissions = useUserStore((state) => state.permissions);
+    const canAccessAdmin = hasAnyAdminAccess(permissions);
+
     const [sectionKey, setSectionKey] = useState<SectionKey>("account");
     const [optionKey, setOptionKey] = useState<OptionKey>("personal-data");
     const [mobileLevel, setMobileLevel] = useState<MobileLevel>("sections");
@@ -396,8 +407,175 @@ export default function SettingsPage() {
                 );
             case "tips":
                 return <div className="px-5"><Toggle checked={preferences.tips} onChange={() => toggle("tips")} label="Mostrar dicas de uso" description="Exibir sugestões rápidas durante a navegação." /></div>;
-            case "tutorial":
-                return <div className="p-5"><p className="text-sm text-j-gray-500">Reinicie o passo a passo para rever as principais áreas do sistema.</p><Button type="button" onClick={() => { resetAllTours(); router.push("/feed"); }} className="mt-5">Refazer tutorial</Button></div>;
+            case "tutorial": {
+                const tutorials = [
+                    {
+                        id: "feed",
+                        title: "Visão Geral do Clube",
+                        category: "Geral",
+                        description: "Explore o feed principal de publicações, mural de avisos, menu lateral e os atalhos rápidos da plataforma.",
+                        route: "/feed",
+                        storageKey: canAccessAdmin ? "tour_completed_admin" : "tour_completed_member",
+                        icon: Compass,
+                        visible: true,
+                    },
+                    {
+                        id: "profile",
+                        title: "Gerenciamento de Conta",
+                        category: "Geral",
+                        description: "Aprenda a consultar e atualizar dados cadastrais, ficha médica de emergência, dependentes, veículos e ferramentas.",
+                        route: "/profile",
+                        storageKey: "tour_completed_profile",
+                        icon: UserRound,
+                        visible: true,
+                    },
+                    {
+                        id: "admin-panel",
+                        title: "Painel do Administrador",
+                        category: "Administrativo",
+                        description: "Conheça a central administrativa, atalhos rápidos para os módulos de gestão e o resumo das permissões do clube.",
+                        route: "/admin",
+                        storageKey: "tour_completed_admin_panel",
+                        icon: ShieldCheck,
+                        visible: canAccessAdmin,
+                    },
+                    {
+                        id: "users",
+                        title: "Gestão de Usuários",
+                        category: "Administrativo",
+                        description: "Aprenda a pesquisar associados com filtros inteligentes (nome, CPF, e-mail), ordenar colunas e gerenciar contas.",
+                        route: "/admin/users",
+                        storageKey: "tour_completed_admin_users",
+                        icon: Users,
+                        visible: hasPermission(permissions, "AUTHENTICATION", "USER_READ"),
+                    },
+                    {
+                        id: "roles",
+                        title: "Cargos e Permissões",
+                        category: "Administrativo",
+                        description: "Entenda o catálogo de funções, estrutura hierárquica de permissões e a atribuição de papéis aos membros do clube.",
+                        route: "/admin/roles",
+                        storageKey: "tour_completed_admin_roles",
+                        icon: KeyRound,
+                        visible:
+                            hasPermission(permissions, "AUTHORIZATION", "ROLE_READ") ||
+                            hasPermission(permissions, "AUTHORIZATION", "PERMISSION_READ") ||
+                            hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ"),
+                    },
+                    {
+                        id: "finance",
+                        title: "Gestão Financeira",
+                        category: "Administrativo",
+                        description: "Veja como acompanhar modelos de cobrança (anuidades/mensalidades), tabela de cobranças e os 4 botões de ação.",
+                        route: "/admin/gestao-financeira",
+                        storageKey: "tour_completed_financial_management",
+                        icon: Wallet,
+                        visible: hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_READ"),
+                    },
+                ];
+
+                const visibleTutorials = tutorials.filter((t) => t.visible);
+
+                const handleReplayTour = (route: string, storageKey: string) => {
+                    if (typeof window === "undefined") return;
+                    sessionStorage.setItem("force_branch_tour", "true");
+                    if (storageKey) {
+                        localStorage.removeItem(storageKey);
+                    }
+                    window.location.href = route;
+                };
+
+                const handleResetAll = () => {
+                    resetAllTours();
+                    toast.success("Todos os tutoriais foram reiniciados!");
+                    setTimeout(() => {
+                        window.location.href = "/feed";
+                    }, 500);
+                };
+
+                return (
+                    <div className="p-4 md:p-6">
+                        <div className="mb-5 rounded-2xl border border-j-blue-100 bg-j-blue-50/60 p-4 md:p-5">
+                            <h3 className="text-sm font-extrabold text-j-blue-800 md:text-base">
+                                Central de Tutoriais Guiados
+                            </h3>
+                            <p className="mt-1 text-xs leading-relaxed text-j-gray-600 md:text-sm">
+                                Escolha uma das áreas abaixo para refazer o tutorial interativo. Ao clicar em <strong>Refazer tutorial</strong>, você será levado para a tela correspondente com o passo a passo iniciando automaticamente.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            {visibleTutorials.map((tut) => {
+                                const Icon = tut.icon;
+                                const isAdm = tut.category === "Administrativo";
+                                return (
+                                    <div
+                                        key={tut.id}
+                                        className="group flex flex-col justify-between gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 transition-all duration-200 hover:border-j-blue-300 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
+                                    >
+                                        <div className="flex items-start gap-3.5">
+                                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300 shadow-sm transition-transform duration-200 group-hover:scale-105">
+                                                <Icon size={20} />
+                                            </span>
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <h4 className="text-sm font-extrabold text-j-blue-800 md:text-base">
+                                                        {tut.title}
+                                                    </h4>
+                                                    <span
+                                                        className={twMerge(
+                                                            "rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide",
+                                                            isAdm
+                                                                ? "bg-purple-100 text-purple-700"
+                                                                : "bg-j-blue-50 text-j-blue-700",
+                                                        )}
+                                                    >
+                                                        {tut.category}
+                                                    </span>
+                                                </div>
+                                                <p className="mt-1 text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                                                    {tut.description}
+                                                </p>
+                                                <span className="mt-1.5 inline-block text-[11px] font-medium text-j-gray-400">
+                                                    Rota: {tut.route}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleReplayTour(tut.route, tut.storageKey)}
+                                            className="w-full shrink-0 gap-1.5 self-end text-xs sm:w-auto sm:self-center sm:text-sm"
+                                        >
+                                            <RotateCcw size={14} />
+                                            Refazer tutorial
+                                        </Button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-2xl border border-dashed border-j-gray-300 bg-j-gray-50/80 p-4 sm:flex-row sm:items-center sm:p-5">
+                            <div>
+                                <p className="text-xs font-black uppercase tracking-wider text-j-gray-600">
+                                    Reinício Completo
+                                </p>
+                                <p className="mt-0.5 text-xs text-j-gray-500">
+                                    Deseja limpar todo o progresso e rever todos os tutoriais do sistema como se fosse seu primeiro acesso?
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={handleResetAll}
+                                className="w-full shrink-0 gap-2 border border-j-gray-300 bg-j-white text-xs text-j-gray-700 hover:border-red-300 hover:bg-red-50 hover:text-red-600 sm:w-auto sm:text-sm"
+                            >
+                                <RotateCcw size={14} />
+                                Reiniciar todos os tutoriais
+                            </Button>
+                        </div>
+                    </div>
+                );
+            }
             case "support":
                 return <div className="p-5"><p className="text-sm text-j-gray-500">O canal de atendimento será definido pela administração do clube.</p><Button type="button" onClick={() => toast("Canal de suporte ainda não configurado.")} className="mt-5">Falar com a administração</Button></div>;
             case "legal":

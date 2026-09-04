@@ -362,10 +362,28 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
             },
         },
         {
+            element: "#tour-admin-module-users",
+            popover: {
+                title: createStepHeader("Gestão de Usuários", ICONS.users, "Ativo"),
+                description: "Visualize, ative e desative usuários do sistema. Gerencie o acesso dos associados à plataforma.",
+                side: isMobile ? "bottom" : "left",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
             element: "#tour-admin-module-roles-permissions",
             popover: {
                 title: createStepHeader("Cargos e Permissões", ICONS.sliders, "Ativo"),
                 description: "Módulo principal de governança: crie cargos personalizados e defina permissões granulares de acesso.",
+                side: isMobile ? "bottom" : "left",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-admin-module-financial-management",
+            popover: {
+                title: createStepHeader("Gestão Financeira", ICONS.wallet, "Ativo"),
+                description: "Acompanhe mensalidades, faturas e a saúde financeira do clube. Controle cobranças e pagamentos dos associados.",
                 side: isMobile ? "bottom" : "left",
                 align: isMobile ? "center" : "start",
             },
@@ -436,3 +454,198 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
 }
 
 export const rolesTourSteps = getRolesTourSteps(false);
+
+// Tour da tela de gestão de usuários (/admin/users)
+export function getUsersTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-users-header",
+            popover: {
+                title: createStepHeader("Gestão de Usuários", ICONS.users, "Admin"),
+                description: "Painel central para visualizar e gerenciar todos os associados cadastrados no sistema.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-search",
+            popover: {
+                title: createStepHeader("Busca Inteligente", ICONS.compass),
+                description: "Pesquise usuários por <strong>nome, CPF, e-mail ou telefone</strong>. Use o seletor ao lado do campo para escolher o tipo de busca e pressione <strong>Enter</strong> para filtrar.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-status-filter",
+            popover: {
+                title: createStepHeader("Filtro de Status", ICONS.sliders),
+                description: "Filtre os resultados por status do usuário: <strong>Ativo</strong> ou <strong>Desativado</strong>. Ideal para localizar rapidamente contas que precisam de atenção.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-table",
+            popover: {
+                title: createStepHeader("Tabela de Usuários", ICONS.layers),
+                description: "Lista completa com matrícula, nome, e-mail, CPF, telefone e status. <strong>Clique nos cabeçalhos</strong> das colunas para ordenar os resultados.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-users-actions",
+            popover: {
+                title: createStepHeader("Ações por Usuário", ICONS.sliders),
+                description: "Cada linha possui botões de ação: o <strong>ícone de olho</strong> abre os detalhes do usuário, e o <strong>ícone de energia</strong> permite ativar ou desativar a conta.",
+                side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-users-pagination",
+            popover: {
+                title: createStepHeader("Paginação", ICONS.layers),
+                description: "Navegue entre as páginas de resultados e ajuste a quantidade de usuários exibidos por página.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-users-help-btn",
+            popover: {
+                title: createStepHeader("Ajuda Sempre à Mão", ICONS.helpCircle),
+                description: "Você pode rever este guia a qualquer momento clicando neste botão.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+    ];
+}
+
+export const usersTourSteps = getUsersTourSteps(false);
+
+// Tour da tela de gestão financeira (/admin/gestao-financeira)
+export function getFinancialManagementTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-finance-header",
+            popover: {
+                title: createStepHeader("Gestão Financeira", ICONS.wallet, "Admin"),
+                description: "Painel para gerenciar as receitas e modelos de cobrança do clube, como anuidades, taxas de passeios e mensalidades.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-finance-create-btn",
+            popover: {
+                title: createStepHeader("Criar Definição", ICONS.plus),
+                description: "Clique para configurar um novo modelo de cobrança. Você define valores base, periodicidade e regras antes de atribuir aos membros.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-finance-table",
+            popover: {
+                title: createStepHeader("Modelos de Cobrança", ICONS.layers),
+                description: "Tabela com todas as definições cadastradas. Acompanhe nome, valor padrão, tipo de recorrência, se é obrigatória e o status atual. Clique nos títulos para ordenar.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-finance-actions",
+            popover: {
+                title: createStepHeader("Ações por Cobrança", ICONS.sliders),
+                description: "Cada linha possui 4 ações: 👥 <strong>Atribuições</strong> (ver ou vincular quais membros pagam essa cobrança), ⚡ <strong>Ativar/Desativar</strong>, ✏️ <strong>Editar</strong> e 📦 <strong>Arquivar</strong>.",
+                side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-finance-pagination",
+            popover: {
+                title: createStepHeader("Paginação", ICONS.layers),
+                description: "Navegue entre as páginas de cobranças e ajuste a quantidade de itens exibidos simultaneamente.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-finance-help-btn",
+            popover: {
+                title: createStepHeader("Ajuda Sempre à Mão", ICONS.helpCircle),
+                description: "Dúvidas sobre o funcionamento da tela financeira? Clique aqui a qualquer momento para rever este guia.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+    ];
+}
+
+export const financialManagementTourSteps = getFinancialManagementTourSteps(false);
+
+// Tour do modal Criar Definição de Cobrança
+export function getCreateChargeDefinitionTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-charge-modal-header",
+            popover: {
+                title: createStepHeader("Nova Definição de Cobrança", ICONS.wallet, "Modelo"),
+                description: "Aqui você cria a <strong>regra matriz</strong> de uma cobrança. A definição padroniza valor, recorrência e políticas para posterior atribuição aos associados.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-charge-field-name-desc",
+            popover: {
+                title: createStepHeader("Nome e Descrição", ICONS.layers),
+                description: "Informe um <strong>Nome claro</strong> (ex.: Anuidade 2026, Taxa de Adesão) e uma <strong>Descrição</strong> detalhando a finalidade da cobrança para os associados.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-charge-field-amount-recurrence",
+            popover: {
+                title: createStepHeader("Valor e Recorrência", ICONS.sliders),
+                description: "Defina o <strong>Valor padrão</strong> e a <strong>Frequência</strong>: <em>Única</em> (eventos ou taxas pontuais), <em>Mensal</em> (mensalidades) ou <em>Anual</em> (anuidades).",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-charge-field-policy",
+            popover: {
+                title: createStepHeader("Política de Vencimento", ICONS.checkCircle),
+                description: "Estabeleça a regra de aceite: se pode pagar apenas até o vencimento, após o vencimento ou com <strong>dias de tolerância</strong> específicos.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-charge-field-required",
+            popover: {
+                title: createStepHeader("Cobrança Obrigatória", ICONS.users),
+                description: "Se marcada como <strong>Obrigatória</strong>, ela é exigida de todos os membros do clube. Se desmarcada, funciona como taxa opcional/por adesão individual.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-charge-btn-submit",
+            popover: {
+                title: createStepHeader("Concluir e Salvar", ICONS.checkCircle),
+                description: "Após salvar, a cobrança estará disponível na listagem para você gerenciar ou atribuir aos associados pelo botão de atribuições 👥.",
+                side: "top",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const createChargeDefinitionTourSteps = getCreateChargeDefinitionTourSteps(false);

@@ -12,6 +12,9 @@ import { PageHeader } from "@/components/common/page-header";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
+import { usePageTour } from "@/hooks/useTour";
+import { getUsersTourSteps } from "@/config/tourSteps";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { isValidCPF } from "@/utils/validate";
 import { UserManagementView } from "./UserManagementView";
@@ -73,6 +76,14 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const [selectedSearchType, setSelectedSearchType] = useState<SearchType>(() =>
         SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? "q",
     );
+
+    // Tour da tela de gestão de usuários
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_admin_users",
+        steps: getUsersTourSteps,
+        autoStartOnFirstVisit: true,
+        enabled: permissionsFromStore.length > 0,
+    });
     const searchType = SEARCH_PARAMS.find((param) => Boolean(query[param]))
         ?? selectedSearchType;
 
@@ -279,6 +290,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
+                    id="tour-users-header"
                     title={
                         <>
                             Gestão de usuários
@@ -292,6 +304,14 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Usuários" },
                     ]}
+                    actions={
+                        <TourHelpButton
+                            id="tour-users-help-btn"
+                            onClick={restartTour}
+                            label="Como gerenciar usuários?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    }
                 />
 
                 <UserManagementView

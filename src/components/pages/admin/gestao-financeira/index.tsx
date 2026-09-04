@@ -9,6 +9,9 @@ import { twMerge } from "tailwind-merge";
 import { PageHeader } from "@/components/common/page-header";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { Table } from "@/components/common/table";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { usePageTour } from "@/hooks/useTour";
+import { getFinancialManagementTourSteps } from "@/config/tourSteps";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -35,6 +38,13 @@ export default function FinancialManagement() {
     const canCreate = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_CREATE");
     const canUpdate = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_UPDATE");
     const canReadAssignments = hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_READ");
+
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_financial_management",
+        steps: getFinancialManagementTourSteps,
+        autoStartOnFirstVisit: true,
+        enabled: canRead,
+    });
 
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
@@ -164,9 +174,13 @@ export default function FinancialManagement() {
             cell: ({ row }) => {
                 const definition = row.original;
                 const isArchived = definition.status === "ARCHIVED";
+                const isFirstRow = row.index === 0;
 
                 return (
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div
+                        id={isFirstRow ? "tour-finance-actions" : undefined}
+                        className="flex items-center justify-end gap-1.5"
+                    >
                         {canReadAssignments && (
                             <ButtonIcon
                                 type="button"
@@ -230,12 +244,21 @@ export default function FinancialManagement() {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
+                    id="tour-finance-header"
                     title="Gestão financeira"
                     breadcrumbs={[
                         { label: "Início", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Gestão financeira" },
                     ]}
+                    actions={
+                        <TourHelpButton
+                            id="tour-finance-help-btn"
+                            onClick={restartTour}
+                            label="Como usar a gestão financeira?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    }
                 />
 
                 {!canRead ? (
@@ -247,41 +270,52 @@ export default function FinancialManagement() {
                         </p>
                     </section>
                 ) : (
-                    <Table.Root
-                        data={data?.content ?? []}
-                        columns={columns}
-                        getRowId={(definition) => String(definition.id)}
-                        pagination={{
-                            pageIndex: page,
-                            pageSize,
-                            pageCount: data?.totalPages ?? 0,
-                            rowCount: data?.totalElements,
-                            pageSizeOptions: [5, 10, 20, 50, 100],
-                            onChange: (next) => {
-                                setPage(next.pageIndex);
-                                setPageSize(next.pageSize);
-                            },
-                        }}
-                        footer={<Table.Pagination itemLabel="definição" showCount={false} />}
-                        isLoading={isLoading}
-                        isFetching={isFetching}
-                        error={error ? error.message : undefined}
-                        emptyState="Nenhuma definição de cobrança cadastrada."
-                    >
-                        <Table.Header
-                            title="Definições de cobrança"
-                            description={isLoading ? "Carregando..." : `${data?.totalElements ?? 0} cadastrada(s)`}
+                    <div id="tour-finance-table">
+                        <Table.Root
+                            data={data?.content ?? []}
+                            columns={columns}
+                            getRowId={(definition) => String(definition.id)}
+                            pagination={{
+                                pageIndex: page,
+                                pageSize,
+                                pageCount: data?.totalPages ?? 0,
+                                rowCount: data?.totalElements,
+                                pageSizeOptions: [5, 10, 20, 50, 100],
+                                onChange: (next) => {
+                                    setPage(next.pageIndex);
+                                    setPageSize(next.pageSize);
+                                },
+                            }}
+                            footer={
+                                <div id="tour-finance-pagination">
+                                    <Table.Pagination itemLabel="definição" showCount={false} />
+                                </div>
+                            }
+                            isLoading={isLoading}
+                            isFetching={isFetching}
+                            error={error ? error.message : undefined}
+                            emptyState="Nenhuma definição de cobrança cadastrada."
                         >
-                            {canCreate && (
-                                <Button type="button" onClick={handleOpenCreate} className="w-full shrink-0 sm:w-auto">
-                                    <Plus size={16} strokeWidth={3} />
-                                    Criar definição
-                                </Button>
-                            )}
-                        </Table.Header>
+                            <Table.Header
+                                title="Definições de cobrança"
+                                description={isLoading ? "Carregando..." : `${data?.totalElements ?? 0} cadastrada(s)`}
+                            >
+                                {canCreate && (
+                                    <Button
+                                        id="tour-finance-create-btn"
+                                        type="button"
+                                        onClick={handleOpenCreate}
+                                        className="w-full shrink-0 sm:w-auto"
+                                    >
+                                        <Plus size={16} strokeWidth={3} />
+                                        Criar definição
+                                    </Button>
+                                )}
+                            </Table.Header>
 
-                        <Table.Content loadingRows={pageSize} />
-                    </Table.Root>
+                            <Table.Content loadingRows={pageSize} />
+                        </Table.Root>
+                    </div>
                 )}
             </div>
         </div>

@@ -220,6 +220,15 @@ export function usePageTour({
         }
     }, [autoStartOnFirstVisit, enabled, storageKey, startTour]);
 
+    useEffect(() => {
+        return () => {
+            if (driverRef.current) {
+                driverRef.current.destroy();
+                driverRef.current = null;
+            }
+        };
+    }, []);
+
     return {
         isTourCompleted,
         startTour,

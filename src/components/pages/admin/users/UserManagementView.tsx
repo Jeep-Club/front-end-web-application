@@ -192,8 +192,13 @@ export function UserManagementView({
                         ? permissions.canEnableUsers
                         : permissions.canDisableUsers;
 
+                    const isFirstRow = row.index === 0;
+
                     return (
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div
+                            className="flex items-center justify-end gap-1.5"
+                            {...(isFirstRow ? { id: "tour-users-actions" } : {})}
+                        >
                             {canChangeStatus && (
                                 <ButtonIcon
                                     type="button"
@@ -230,6 +235,7 @@ export function UserManagementView({
     }, [onChangeUserStatus, onSortChange, onViewUser, permissions, query.sort]);
 
     return (
+        <div id="tour-users-table">
         <Table.Root
             data={users}
             columns={columns}
@@ -242,7 +248,7 @@ export function UserManagementView({
                 pageSizeOptions: [5, 10, 20, 50, 100],
                 onChange: onPaginationChange,
             }}
-            footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
+            footer={<div id="tour-users-pagination"><Table.Pagination itemLabel="usuário" showCount={false} /></div>}
             isLoading={isLoading}
             isFetching={isFetching}
             error={error}
@@ -254,7 +260,7 @@ export function UserManagementView({
         >
             <Table.Header className="items-stretch border-b-0">
                 <div className="flex w-full flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-                    <div className="flex w-full lg:min-w-64 lg:flex-1">
+                    <div id="tour-users-search" className="flex w-full lg:min-w-64 lg:flex-1">
                         <Table.Search
                             value={searchType === "cpf"
                                 ? maskCPF(query.cpf ?? "")
@@ -292,7 +298,7 @@ export function UserManagementView({
                         </div>
                     </div>
 
-                    <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
+                    <div id="tour-users-status-filter" className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
                         <Select.Unregister
                             label="Status"
                             labelClassName="sr-only"
@@ -350,5 +356,6 @@ export function UserManagementView({
 
             <Table.Content loadingRows={pageSize} />
         </Table.Root>
+        </div>
     );
 }
