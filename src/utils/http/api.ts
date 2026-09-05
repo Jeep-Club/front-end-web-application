@@ -24,6 +24,13 @@ export enum HttpAPIRoutes {
     VEHICLES_DELETE_MEMBER = "vehicles/delete/member",
     VEHICLES_DETAIL_MEMBER = "vehicles/detail/member",
 
+    VEHICLES_LIST_ADMIN = "vehicles/list/admin",
+    VEHICLES_DETAIL_ADMIN = "vehicles/detail/admin",
+    VEHICLES_DETAIL_FOR_EDIT_ADMIN = "vehicles/detail-for-edit/admin",
+    VEHICLES_EDIT_ADMIN = "vehicles/edit/admin",
+    VEHICLES_INCLUDE_ADMIN = "vehicles/include/admin",
+    VEHICLES_DELETE_ADMIN = "vehicles/delete/admin",
+
     BILLING_CHARGE_DEFINITIONS = "billing/charge-definitions",
     BILLING_CHARGE_ASSIGNMENTS = "billing/charge-assignments",
 }

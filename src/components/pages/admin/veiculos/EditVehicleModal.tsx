@@ -12,26 +12,16 @@ import { InputRegister } from "@/components/common/input/input-register";
 import { SelectRegister } from "@/components/common/select/select-register";
 import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputFile } from "@/components/common/input/file";
-import { includeVehicleMemberFormSchema } from "@/schemas/vehicles/include";
-import { includeVehicleMemberAction } from "@/actions/vehicles/include-member";
 import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
-import { editVehicleMemberAction } from "@/actions/vehicles/edit-member";
-import { getVehicleDetailForEditAction } from "@/actions/vehicles/detail-for-edit-member";
+import { editVehicleAdminAction } from "@/actions/admin/vehicles/edit";
+import { getVehicleDetailForEditAdminAction } from "@/actions/admin/vehicles/detail-for-edit";
 import { uploadVehicleImageAction } from "@/actions/vehicles/upload-image";
 import { useModal } from "@/providers/ModalProvider";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
 import { maskYear } from "@/utils/masks/maskYear";
 import { maskDecimal } from "@/utils/masks/maskDecimal";
-
-const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
-    { value: "GASOLINE", label: "Gasolina" },
-    { value: "ETHANOL", label: "Etanol" },
-    { value: "FLEX", label: "Flex" },
-    { value: "DIESEL", label: "Diesel" },
-    { value: "ELECTRIC", label: "Elétrico" },
-    { value: "HYBRID", label: "Híbrido" },
-];
+import { FUEL_TYPE_OPTIONS } from "./vehicleDisplay";
 
 const STEPS = [
     { step: 1, label: "Identificação", fields: ["plate", "renavam", "brand", "nickname"] as const },
@@ -47,15 +37,14 @@ const LIGHT_FIELDS_CLASS = `
     [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
 `;
 
-interface VehicleStepsFieldsProps {
+interface EditVehicleStepsProps {
     currentStep: number;
     onNext: () => void;
     onBack: () => void;
-    isEditMode: boolean;
-    vehicle?: VehicleDetailForEdit;
+    vehicle: VehicleDetailForEdit;
 }
 
-function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }: VehicleStepsFieldsProps) {
+function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleStepsProps) {
     const { trigger, formState: { errors } } = useFormContext();
 
     const handleNext = async () => {
@@ -108,92 +97,92 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
 
             <div className="min-h-[360px] w-full">
                 <div className={currentStep === 1 ? twMerge("grid w-full gap-4 sm:grid-cols-2", LIGHT_FIELDS_CLASS) : "hidden"}>
-                    <InputRegister label="Placa" name="plate" placeholder="ESC-1B23" mask={maskPlate} value={vehicle?.plate} required />
-                    <InputRegister label="Renavam" name="renavam" placeholder="00000000000" mask={maskRenavam} value={vehicle?.renavam} required />
-                    <InputRegister label="Marca" name="brand" placeholder="Ex: Jeep" value={vehicle?.brand} required />
-                    <InputRegister label="Apelido" name="nickname" placeholder="Ex: Marruá" value={vehicle?.nickname ?? undefined} />
+                    <InputRegister label="Placa" name="plate" placeholder="ESC-1B23" mask={maskPlate} value={vehicle.plate} required />
+                    <InputRegister label="Renavam" name="renavam" placeholder="00000000000" mask={maskRenavam} value={vehicle.renavam} required />
+                    <InputRegister label="Marca" name="brand" placeholder="Ex: Jeep" value={vehicle.brand} required />
+                    <InputRegister label="Apelido" name="nickname" placeholder="Ex: Marruá" value={vehicle.nickname ?? undefined} />
                 </div>
 
-            <div className={currentStep === 2 ? twMerge("flex w-full flex-col gap-4", LIGHT_FIELDS_CLASS) : "hidden"}>
-                <div className="grid w-full gap-4 sm:grid-cols-2">
-                    <InputRegister label="Modelo" name="model" placeholder="Ex: Wrangler" value={vehicle?.model} required />
-                    <InputRegister label="Cor" name="color" placeholder="Ex: Preto" value={vehicle?.color} required />
-                </div>
+                <div className={currentStep === 2 ? twMerge("flex w-full flex-col gap-4", LIGHT_FIELDS_CLASS) : "hidden"}>
+                    <div className="grid w-full gap-4 sm:grid-cols-2">
+                        <InputRegister label="Modelo" name="model" placeholder="Ex: Wrangler" value={vehicle.model} required />
+                        <InputRegister label="Cor" name="color" placeholder="Ex: Preto" value={vehicle.color} required />
+                    </div>
 
-                <div className="grid w-full gap-4 sm:grid-cols-2">
-                    <InputRegister
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={4}
-                        label="Ano de fabricação"
-                        name="manufacturingYear"
-                        placeholder="2020"
-                        mask={maskYear}
-                        value={vehicle ? String(vehicle.manufacturingYear) : undefined}
-                        required
+                    <div className="grid w-full gap-4 sm:grid-cols-2">
+                        <InputRegister
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={4}
+                            label="Ano de fabricação"
+                            name="manufacturingYear"
+                            placeholder="2020"
+                            mask={maskYear}
+                            value={String(vehicle.manufacturingYear)}
+                            required
+                        />
+                        <InputRegister
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={4}
+                            label="Ano/modelo"
+                            name="modelYear"
+                            placeholder="2020"
+                            mask={maskYear}
+                            value={String(vehicle.modelYear)}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid w-full gap-4 sm:grid-cols-2">
+                        <InputRegister
+                            type="number"
+                            label="Assentos"
+                            name="seatingCapacity"
+                            placeholder="5"
+                            value={String(vehicle.seatingCapacity)}
+                            required
+                        />
+                        <InputRegister
+                            type="text"
+                            inputMode="decimal"
+                            label="Cilindrada"
+                            name="engineDisplacement"
+                            placeholder="2.0"
+                            mask={maskDecimal}
+                            value={vehicle.engineDisplacement.toFixed(1)}
+                            required
+                        />
+                    </div>
+
+                    <SelectRegister label="Combustível" name="fuelType" value={vehicle.fuelType} required>
+                        <option value="" disabled>Selecione</option>
+                        {FUEL_TYPE_OPTIONS.map(({ value, label }) => (
+                            <option key={value} value={value}>{label}</option>
+                        ))}
+                    </SelectRegister>
+
+                    <InputCheckbox
+                        label="Possui guincho/reboque"
+                        name="towing"
+                        value={vehicle.towing ?? undefined}
+                        className="rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 [&>span:last-child]:!text-j-gray-700 [&>span:first-of-type]:!border-j-gray-300 [&>span:first-of-type]:!bg-j-white"
                     />
-                    <InputRegister
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={4}
-                        label="Ano/modelo"
-                        name="modelYear"
-                        placeholder="2020"
-                        mask={maskYear}
-                        value={vehicle ? String(vehicle.modelYear) : undefined}
-                        required
-                    />
                 </div>
 
-                <div className="grid w-full gap-4 sm:grid-cols-2">
-                    <InputRegister
-                        type="number"
-                        label="Assentos"
-                        name="seatingCapacity"
-                        placeholder="5"
-                        value={vehicle ? String(vehicle.seatingCapacity) : undefined}
-                        required
+                <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
+                    <InputFile.Image
+                        name="photo"
+                        label="Foto do veículo"
+                        maxFiles={1}
+                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                     />
-                    <InputRegister
-                        type="text"
-                        inputMode="decimal"
-                        label="Cilindrada"
-                        name="engineDisplacement"
-                        placeholder="2.0"
-                        mask={maskDecimal}
-                        value={vehicle ? vehicle.engineDisplacement.toFixed(1) : undefined}
-                        required
-                    />
+                    {vehicle.photo && (
+                        <p className="text-xs text-j-gray-500">
+                            Já existe uma foto cadastrada. Envie uma nova apenas se quiser substituí-la.
+                        </p>
+                    )}
                 </div>
-
-                <SelectRegister label="Combustível" name="fuelType" value={vehicle?.fuelType} required>
-                    <option value="" disabled>Selecione</option>
-                    {FUEL_TYPE_OPTIONS.map(({ value, label }) => (
-                        <option key={value} value={value}>{label}</option>
-                    ))}
-                </SelectRegister>
-
-                <InputCheckbox
-                    label="Possui guincho/reboque"
-                    name="towing"
-                    value={vehicle?.towing ?? undefined}
-                    className="rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 [&>span:last-child]:!text-j-gray-700 [&>span:first-of-type]:!border-j-gray-300 [&>span:first-of-type]:!bg-j-white"
-                />
-                </div>
-
-            <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
-                <InputFile.Image
-                    name="photo"
-                    label="Foto do veículo"
-                    maxFiles={1}
-                    className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
-                />
-                {isEditMode && vehicle?.photo && (
-                    <p className="text-xs text-j-gray-500">
-                        Já existe uma foto cadastrada. Envie uma nova apenas se quiser substituí-la.
-                    </p>
-                )}
-            </div>
             </div>
 
             <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
@@ -214,50 +203,44 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                         <ArrowRight size={16} />
                     </Button>
                 ) : (
-                    <SubmitButton isEditMode={isEditMode} />
+                    <SubmitButton />
                 )}
             </div>
         </div>
     );
 }
 
-function SubmitButton({ isEditMode }: { isEditMode: boolean }) {
+function SubmitButton() {
     const { formState } = useFormContext();
-    const label = isEditMode
-        ? (formState.isSubmitting ? "Salvando..." : "Salvar")
-        : (formState.isSubmitting ? "Cadastrando..." : "Cadastrar veículo");
-
     return (
         <Button
             type="submit"
             disabled={formState.isSubmitting}
             className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
         >
-            {label}
+            {formState.isSubmitting ? "Salvando..." : "Salvar alterações"}
         </Button>
     );
 }
 
-interface IncludeVehicleModalProps {
-    vehicleId?: number;
+interface EditVehicleModalProps {
+    vehicleId: number;
 }
 
-export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
+export function EditVehicleModal({ vehicleId }: EditVehicleModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
     const [currentStep, setCurrentStep] = useState(1);
-    const isEditMode = !!vehicleId;
 
-    const { data: vehicle, isLoading: isLoadingVehicle } = useQuery({
-        queryKey: ["vehicles", "detail-for-edit", vehicleId],
-        queryFn: () => getVehicleDetailForEditAction(vehicleId!),
-        enabled: isEditMode,
+    const { data: vehicle, isLoading } = useQuery({
+        queryKey: ["admin", "vehicles", "detail-for-edit", vehicleId],
+        queryFn: () => getVehicleDetailForEditAdminAction(vehicleId),
     });
 
     const mutation = useMutation({
-        mutationFn: async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {
+        mutationFn: async (data: EditVehicleMemberFormData) => {
             const photoFile = data.photo?.[0];
-            let photo = isEditMode ? (vehicle?.photo ?? undefined) : undefined;
+            let photo = vehicle?.photo ?? undefined;
 
             if (photoFile instanceof File) {
                 const formData = new FormData();
@@ -265,37 +248,33 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                 photo = await uploadVehicleImageAction(formData);
             }
 
-            if (isEditMode && vehicleId) {
-                const payload: EditVehicleMemberRequest = {
-                    nickname: data.nickname,
-                    photo,
-                    plate: data.plate,
-                    renavam: data.renavam,
-                    brand: data.brand,
-                    model: data.model,
-                    manufacturingYear: data.manufacturingYear,
-                    modelYear: data.modelYear,
-                    color: data.color,
-                    seatingCapacity: data.seatingCapacity,
-                    fuelType: data.fuelType,
-                    engineDisplacement: data.engineDisplacement,
-                    towing: data.towing,
-                };
-                return editVehicleMemberAction(vehicleId, payload);
-            }
+            const payload: EditVehicleMemberRequest = {
+                nickname: data.nickname,
+                photo,
+                plate: data.plate,
+                renavam: data.renavam,
+                brand: data.brand,
+                model: data.model,
+                manufacturingYear: data.manufacturingYear,
+                modelYear: data.modelYear,
+                color: data.color,
+                seatingCapacity: data.seatingCapacity,
+                fuelType: data.fuelType,
+                engineDisplacement: data.engineDisplacement,
+                towing: data.towing,
+            };
 
-            const payload: IncludeVehicleMemberRequest = { ...(data as IncludeVehicleMemberFormData), photo };
-            return includeVehicleMemberAction(payload);
+            return editVehicleAdminAction(vehicleId, payload);
         },
         onSuccess: () => {
-            toast.success(isEditMode ? "Veículo atualizado com sucesso!" : "Veículo cadastrado com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ["vehicles", "list-member"] });
+            toast.success("Veículo atualizado com sucesso!");
+            queryClient.invalidateQueries({ queryKey: ["admin", "vehicles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || (isEditMode ? "Erro ao editar veículo." : "Erro ao cadastrar veículo.")),
+        onError: (error) => toast.error(error.message || "Erro ao editar veículo."),
     });
 
-    const handleSubmit = async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {
+    const handleSubmit = async (data: EditVehicleMemberFormData) => {
         mutation.mutateAsync(data);
     };
 
@@ -321,34 +300,31 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                     </span>
                     <div>
                         <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            {isEditMode ? "Editar veículo" : "Incluir veículo"}
+                            Editar veículo
                         </h2>
                         <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            {isEditMode
-                                ? "Atualize os dados do seu jipe."
-                                : "Cadastre o seu jipe pra ele ficar vinculado ao seu perfil no clube."}
+                            Atualize os dados e características do veículo.
                         </p>
                     </div>
                 </div>
             </header>
 
-            {isEditMode && isLoadingVehicle ? (
+            {isLoading || !vehicle ? (
                 <div className="flex items-center justify-center gap-2 px-5 py-16 text-j-gray-500 md:px-8">
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados do veículo...
                 </div>
             ) : (
-                <Form<IncludeVehicleMemberFormData | EditVehicleMemberFormData>
-                    schema={isEditMode ? editVehicleMemberFormSchema : includeVehicleMemberFormSchema}
+                <Form<EditVehicleMemberFormData>
+                    schema={editVehicleMemberFormSchema}
                     onSubmit={handleSubmit}
                     onError={(errors) => console.log(errors)}
                     className="gap-5 px-5 py-5 md:px-8 md:py-6"
                 >
-                    <VehicleStepsFields
+                    <EditVehicleSteps
                         currentStep={currentStep}
                         onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
                         onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
-                        isEditMode={isEditMode}
                         vehicle={vehicle}
                     />
                 </Form>
@@ -357,4 +333,4 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
     );
 }
 
-export default IncludeVehicleModal;
+export default EditVehicleModal;
