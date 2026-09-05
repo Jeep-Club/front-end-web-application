@@ -14,7 +14,8 @@ export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' |
 
 export function Input({label, error, name, value, className, labelClassName, type="text", children, required, ...props}: InputProps) {
     const id = useId();
-    const isError = error !== 'undefined' && error !== undefined && error !== null;
+    const isError = Boolean(error && error !== 'undefined');
+    const errorId = id + '-error';
     
     return (
         <div className="w-full flex flex-col gap-1.5">
@@ -32,8 +33,8 @@ export function Input({label, error, name, value, className, labelClassName, typ
                     name={name}
                     value={value}
                     required={required}
-                    aria-invalid={!!error}
-                    aria-describedby={isError ? error : undefined}
+                    aria-invalid={isError}
+                    aria-describedby={[props['aria-describedby'], isError ? errorId : undefined].filter(Boolean).join(' ') || undefined}
                     className={twMerge(
                         `
                         w-full border-2 border-transparent py-2 px-2.5 rounded-lg font-light text-base
@@ -55,7 +56,7 @@ export function Input({label, error, name, value, className, labelClassName, typ
                 {children}
             </div>
 
-            {isError ? <p className="text-j-red-300 text-sm">{error}</p> : null}
+            {isError ? <p id={errorId} className="text-j-red-300 text-sm">{error}</p> : null}
         </div>
     );
 }
