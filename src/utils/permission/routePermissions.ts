@@ -32,6 +32,11 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/avisos": [],
     "/financeiro": [],
 
+    // O módulo de publicações ainda não possui permissões próprias
+    // disponibilizadas pelo backend. Por enquanto, o acesso é liberado para
+    // qualquer usuário autenticado, inclusive nas rotas filhas.
+    "/admin/publications": [],
+
 
     "/admin/roles-permissoes": {
         match: "any",
