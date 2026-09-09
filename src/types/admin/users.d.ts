@@ -8,14 +8,15 @@ type UserStatus =
 interface AdminUser {
     id: number;
     name: string;
+    birthDate: string | null;
     cpf: string;
     email: string | null;
-    phone: string | null;
-    accountStatus: UserStatus;
-    authenticationStatus: string;
-    passwordChangeRequired: boolean;
-    credentialStatus: string;
+    rg: string | null;
+    phoneNumber: string | null;
+    profilePhotoUrl: string | null;
+    status: "ACTIVE" | "DISABLED";
     createdAt: string;
+    disabledAt: string | null;
     updatedAt: string | null;
 }
 
@@ -65,18 +66,13 @@ interface AdminUsersDataSource {
 interface AdminUserSearchParams {
     id?: string;
     name?: string;
+    birthDate?: string;
     cpf?: string;
+    rg?: string;
     email?: string;
     phoneNumber?: string;
 
-    accountStatus?: "ACTIVE" | "DISABLED";
-    authenticationStatus?: "ENABLED" | "LOCKED";
-    credentialStatus?:
-        | "PERMANENT"
-        | "PENDING_FIRST_ACCESS"
-        | "CHANGE_REQUIRED";
-
-    passwordChangeRequired?: string;
+    status?: "ACTIVE" | "DISABLED";
 
     createdFrom?: string;
     createdTo?: string;
@@ -85,7 +81,6 @@ interface AdminUserSearchParams {
 
     q?: string;
 
-    fields?: string;
     page?: string;
     size?: string;
     sort?: string;

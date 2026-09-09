@@ -60,7 +60,7 @@ export function NewAdminUserPage({}: Props) {
                     </div>
 
                     {/* Linha 2 */}
-                    <InputDate name="birthData" label="Data de Nascimento" required />
+                    <InputDate name="birthDate" label="Data de Nascimento" required />
                     <InputEmail name="email" label="E-mail" placeholder="lucas.alves@email.com" required />
 
                     {/* Linha 3 */}

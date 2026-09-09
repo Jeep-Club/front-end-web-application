@@ -3,7 +3,11 @@ import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { loginResponseSchema } from "@/schemas/auth/login/loginResponse";
 import { login } from '@/utils/auth/login';
 import { HttpAPIRoutes } from '@/utils/http/api';
-import { meResponseSchema } from '@/schemas/auth/me/me';
+import {
+    authorizationMeResponseSchema,
+    identityMeResponseSchema,
+    meResponseSchema,
+} from '@/schemas/auth/me/me';
 import { me } from '@/utils/auth/me';
 import { logout } from '@/utils/auth/logout';
 import { unMaskCPF } from '@/utils/masks/maskCPF';
@@ -34,13 +38,25 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
                 new Date(Date.now() + data.expiresInSeconds * 1000).toISOString(),
             );
 
-            const responseMe = await actionFetchWrapper<MeResponse>({
-                url: HttpAPIRoutes.ME,
-                method: 'GET',
-                schema: meResponseSchema
-            });
+            const [sessionResponse, identityResponse, authorizationResponse] = await Promise.all([
+                actionFetchWrapper<MeResponse>({
+                    url: HttpAPIRoutes.AUTHENTICATION_ME,
+                    method: 'GET',
+                    schema: meResponseSchema
+                }),
+                actionFetchWrapper<IdentityMeResponse>({
+                    url: HttpAPIRoutes.IDENTITY_ME,
+                    method: 'GET',
+                    schema: identityMeResponseSchema
+                }),
+                actionFetchWrapper<AuthorizationMeResponse>({
+                    url: HttpAPIRoutes.AUTHORIZATION_ME,
+                    method: 'GET',
+                    schema: authorizationMeResponseSchema
+                }),
+            ]);
 
-            await me(responseMe.data);
+            await me(sessionResponse.data, identityResponse.data, authorizationResponse.data);
         } else {
             throw new Error('É necessário trocar a senha para acessar o sistema');
         }

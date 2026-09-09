@@ -20,7 +20,7 @@ export function UserStatusConfirmationModal({
     useModalFocusRestoration();
     const { setClose } = useModal();
     const [isPending, setIsPending] = useState(false);
-    const isEnabling = user.accountStatus === "DISABLED";
+    const isEnabling = user.status === "DISABLED";
     const actionLabel = isEnabling ? "Reativar" : "Desativar";
 
     async function handleConfirm() {

@@ -23,15 +23,16 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
 });
 
 export const meProfileResponseSchema: z.ZodType<MeProfileResponse> = z.object({
-    userId: z.number(),
-    userName: z.string(),
+    id: z.number(),
+    name: z.string(),
     birthDate: z.string().nullable(),
     email: z.string(),
     cpf: z.string(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),
     profilePhotoUrl: z.string().nullable(),
-    accountStatus: userStatusSchema,
+    status: z.enum(['ACTIVE', 'DISABLED']),
     createdAt: z.string(),
-    updatedAt: z.string(),
+    disabledAt: z.string().nullable(),
+    updatedAt: z.string().nullable(),
 });

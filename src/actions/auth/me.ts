@@ -9,7 +9,7 @@ import { extractApiErrorMessage } from '@/utils/http/apiError';
 export async function meAction() {
     try {
             const response = await actionFetchWrapper<MeResponse>({
-                url: HttpAPIRoutes.ME,
+                url: HttpAPIRoutes.AUTHENTICATION_ME,
                 method: 'GET',
                 schema: meResponseSchema
             });

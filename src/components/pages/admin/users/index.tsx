@@ -24,15 +24,11 @@ const PHONE_SEARCH_PATTERN = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
 const FILTER_PARAMS: (keyof AdminUserSearchParams)[] = [
     ...SEARCH_PARAMS,
     "id",
-    "accountStatus",
-    "authenticationStatus",
-    "credentialStatus",
-    "passwordChangeRequired",
+    "status",
     "createdFrom",
     "createdTo",
     "updatedFrom",
     "updatedTo",
-    "fields",
 ];
 
 function normalizeSearchValue(value: string, type: SearchType) {
@@ -154,7 +150,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,
         onSuccess: (updatedUser) => {
-            toast.success(`Usuário ${updatedUser.accountStatus === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
+            toast.success(`Usuário ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
             updateUserInCache(updatedUser);
         }
     });
@@ -164,7 +160,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     }, []);
 
     const handleChangeUserStatus = useCallback((user: AdminUser) => {
-        // const onConfirm = user.accountStatus === "DISABLED"
+        // const onConfirm = user.status === "DISABLED"
         //     ? dataSource.enableUser
         //     : dataSource.disableUser;
 
@@ -311,8 +307,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     //     : undefined}
                     onSearchChange={updateSearch}
 
-                    onStatusChange={(accountStatus) => replaceSearchParams(
-                        { accountStatus },
+                    onStatusChange={(status) => replaceSearchParams(
+                        { status },
                         { resetPage: true },
                     )}
 
