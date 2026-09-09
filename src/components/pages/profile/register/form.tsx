@@ -40,7 +40,7 @@ export default function FormRegister() {
             >
                 <InputRegister name="name" label="Nome Completo" placeholder="Nome e sobrenome" type="text" required className="pl-10 pr-10"><User className="absolute left-2.5 text-j-transparent-white"/></InputRegister>
                 <InputEmail required/>
-                <InputDate required/>
+                <InputDate name="birthDate" required/>
                 <InputCPF required/>
                 <InputPhoneNumber required/>
                 <InputPassword required name="password" stepErrors/>

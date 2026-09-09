@@ -79,7 +79,7 @@ export function NewAdminUserPage() {
                                     <InputRegister {...fieldStyle} name="name" label="Nome completo" placeholder="Digite o nome completo" autoComplete="name" required />
                                 </div>
                                 <InputCPF {...fieldStyle} name="cpf" label="CPF" autoComplete="off" required />
-                                <InputDate {...fieldStyle} name="birthData" label="Data de nascimento" autoComplete="bday" required />
+                                <InputDate {...fieldStyle} name="birthDate" label="Data de nascimento" autoComplete="bday" required />
                                 <InputEmail {...fieldStyle} name="email" label="E-mail" placeholder="nome@exemplo.com" autoComplete="email" required />
                                 <InputPhoneNumber {...fieldStyle} name="phoneNumber" label="Telefone" placeholder="(00) 00000-0000" autoComplete="tel-national" required />
                             </div>

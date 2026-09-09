@@ -40,7 +40,7 @@ export function UserRoleAssignmentsTab() {
     const searchParams: AdminUserSearchParams = {
         page: String(page),
         size: String(pageSize),
-        accountStatus: "ACTIVE",
+        status: "ACTIVE",
         ...(searchValue ? { [searchType]: searchValue } : {}),
     };
 
@@ -83,11 +83,11 @@ export function UserRoleAssignmentsTab() {
             cell: ({ row }) => maskCPF(row.original.cpf),
         },
         {
-            accessorKey: "phone",
+            accessorKey: "phoneNumber",
             header: "Telefone",
             meta: { label: "Telefone" },
-            cell: ({ row }) => row.original.phone
-                ? maskPhoneNumber(row.original.phone)
+            cell: ({ row }) => row.original.phoneNumber
+                ? maskPhoneNumber(row.original.phoneNumber)
                 : "—",
         },
         {

@@ -8,7 +8,7 @@ import { HttpAPIRoutes } from '@/utils/http/api';
 export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
     try {
         const response = await actionFetchWrapper({
-            url: HttpAPIRoutes.ME,
+            url: HttpAPIRoutes.IDENTITY_ME,
             method: 'GET',
             schema: meProfileResponseSchema,
         });
@@ -16,15 +16,15 @@ export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
         const user = response.data;
 
         return {
-            id: user.userId,
-            name: user.userName,
+            id: user.id,
+            name: user.name,
             birthDate: user.birthDate,
             email: user.email,
             cpf: user.cpf,
             rg: user.rg,
             phoneNumber: user.phoneNumber,
             profilePhotoUrl: user.profilePhotoUrl,
-            status: user.accountStatus,
+            status: user.status,
             createdAt: user.createdAt,
             lastLoginAt: null,
         };

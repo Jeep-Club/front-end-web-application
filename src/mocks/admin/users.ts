@@ -58,34 +58,33 @@ const roles: AdminRole[] = [
     },
 ];
 
-type SeedUser = Omit<UserListItem, "accountStatus" | "authenticationStatus" | "credentialStatus"> & {
-    status: UserStatus;
-};
+type SeedUser = Omit<UserListItem, "birthDate" | "rg" | "profilePhotoUrl" | "disabledAt">;
 
 const seedUsers: UserListItem[] = ([
-    { id: 1001, name: "Ana Carolina Martins", cpf: "52998224725", email: "ana.martins@exemplo.com", phone: "11987654321", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2024-01-12T13:45:00.000Z", updatedAt: "2026-06-15T16:20:00.000Z", roles: [roles[0], roles[2]] },
-    { id: 1002, name: "Bruno Henrique Souza", cpf: "16899535009", email: "bruno.souza@exemplo.com", phone: "21976543210", status: "LOCKED", passwordChangeRequired: false, createdAt: "2024-02-18T10:10:00.000Z", updatedAt: "2026-07-01T12:00:00.000Z", roles: [roles[1]] },
-    { id: 1003, name: "Camila Ribeiro Lima", cpf: "11144477735", email: "camila.lima@exemplo.com", phone: "31965432109", status: "DISABLED", passwordChangeRequired: false, createdAt: "2024-03-22T17:30:00.000Z", updatedAt: "2026-05-19T09:40:00.000Z", roles: [] },
-    { id: 1004, name: "Daniel Oliveira Costa", cpf: "12345678909", email: "daniel.costa@exemplo.com", phone: null, status: "PENDING_FIRST_ACCESS", passwordChangeRequired: false, createdAt: "2024-04-05T11:25:00.000Z", updatedAt: null, roles: [roles[1]] },
-    { id: 1005, name: "Eduarda Almeida Rocha", cpf: "98765432100", email: null, phone: "11944556677", status: "CHANGE_PASSWORD_REQUIRED", passwordChangeRequired: true, createdAt: "2024-05-14T14:00:00.000Z", updatedAt: "2026-04-22T18:12:00.000Z", roles: [roles[2]] },
-    { id: 1006, name: "Felipe Santos Nogueira", cpf: "39053344705", email: "felipe.nogueira@exemplo.com", phone: "13933445566", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2024-06-07T08:35:00.000Z", updatedAt: null, roles: [roles[1], roles[3]] },
-    { id: 1007, name: "Gabriela Fernandes", cpf: "01234567890", email: "gabriela.fernandes@exemplo.com", phone: "21922334455", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2024-07-19T15:42:00.000Z", updatedAt: "2026-03-10T10:05:00.000Z", roles: [roles[0], roles[1], roles[2]] },
-    { id: 1008, name: "Henrique Moreira Alves", cpf: "34567890123", email: "henrique.alves@exemplo.com", phone: null, status: "DISABLED", passwordChangeRequired: false, createdAt: "2024-08-25T12:18:00.000Z", updatedAt: "2026-02-28T09:30:00.000Z", roles: [roles[4]] },
-    { id: 1009, name: "Isabela Monteiro", cpf: "45678901234", email: "isabela.monteiro@exemplo.com", phone: "31911223344", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2024-09-11T09:50:00.000Z", updatedAt: null, roles: [] },
-    { id: 1010, name: "João Pedro Barros", cpf: "56789012345", email: "joao.barros@exemplo.com", phone: "11900112233", status: "LOCKED", passwordChangeRequired: false, createdAt: "2024-10-03T16:05:00.000Z", updatedAt: "2026-01-14T13:20:00.000Z", roles: [roles[1]] },
-    { id: 1011, name: "Karen Cristina Melo", cpf: "67890123456", email: null, phone: "21999001122", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2024-11-16T13:15:00.000Z", updatedAt: null, roles: [roles[2]] },
-    { id: 1012, name: "Lucas Vieira Campos", cpf: "78901234567", email: "lucas.campos@exemplo.com", phone: "31988990011", status: "PENDING_FIRST_ACCESS", passwordChangeRequired: false, createdAt: "2024-12-09T10:45:00.000Z", updatedAt: null, roles: [] },
-    { id: 1013, name: "Mariana Freitas Dias", cpf: "89012345678", email: "mariana.dias@exemplo.com", phone: "11977889900", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2025-01-21T11:30:00.000Z", updatedAt: "2026-07-18T15:45:00.000Z", roles: [roles[0]] },
-    { id: 1014, name: "Nicolas Araújo Pinto", cpf: "90123456789", email: "nicolas.pinto@exemplo.com", phone: null, status: "CHANGE_PASSWORD_REQUIRED", passwordChangeRequired: true, createdAt: "2025-02-13T14:55:00.000Z", updatedAt: null, roles: [roles[1]] },
-    { id: 1015, name: "Olívia Cardoso Reis", cpf: "10234567890", email: "olivia.reis@exemplo.com", phone: "21966778899", status: "DISABLED", passwordChangeRequired: false, createdAt: "2025-03-08T08:20:00.000Z", updatedAt: "2026-06-30T17:10:00.000Z", roles: [roles[3]] },
-    { id: 1016, name: "Paulo César Teixeira", cpf: "21345678901", email: "paulo.teixeira@exemplo.com", phone: "31955667788", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2025-04-17T16:40:00.000Z", updatedAt: null, roles: [roles[2]] },
-    { id: 1017, name: "Renata Gomes Batista", cpf: "32456789012", email: "renata.batista@exemplo.com", phone: "11944557788", status: "ACTIVE", passwordChangeRequired: false, createdAt: "2025-05-29T12:05:00.000Z", updatedAt: null, roles: [roles[1], roles[2]] },
-    { id: 1018, name: "Samuel Lopes Moraes", cpf: "43567890123", email: "samuel.moraes@exemplo.com", phone: "21933446677", status: "LOCKED", passwordChangeRequired: false, createdAt: "2025-06-20T09:25:00.000Z", updatedAt: "2026-05-08T10:30:00.000Z", roles: [] },
-] as SeedUser[]).map(({ status, ...user }): UserListItem => ({
+    { id: 1001, name: "Ana Carolina Martins", cpf: "52998224725", email: "ana.martins@exemplo.com", phoneNumber: "11987654321", status: "ACTIVE", createdAt: "2024-01-12T13:45:00.000Z", updatedAt: "2026-06-15T16:20:00.000Z", roles: [roles[0], roles[2]] },
+    { id: 1002, name: "Bruno Henrique Souza", cpf: "16899535009", email: "bruno.souza@exemplo.com", phoneNumber: "21976543210", status: "ACTIVE", createdAt: "2024-02-18T10:10:00.000Z", updatedAt: "2026-07-01T12:00:00.000Z", roles: [roles[1]] },
+    { id: 1003, name: "Camila Ribeiro Lima", cpf: "11144477735", email: "camila.lima@exemplo.com", phoneNumber: "31965432109", status: "DISABLED", createdAt: "2024-03-22T17:30:00.000Z", updatedAt: "2026-05-19T09:40:00.000Z", roles: [] },
+    { id: 1004, name: "Daniel Oliveira Costa", cpf: "12345678909", email: "daniel.costa@exemplo.com", phoneNumber: null, status: "ACTIVE", createdAt: "2024-04-05T11:25:00.000Z", updatedAt: null, roles: [roles[1]] },
+    { id: 1005, name: "Eduarda Almeida Rocha", cpf: "98765432100", email: null, phoneNumber: "11944556677", status: "ACTIVE", createdAt: "2024-05-14T14:00:00.000Z", updatedAt: "2026-04-22T18:12:00.000Z", roles: [roles[2]] },
+    { id: 1006, name: "Felipe Santos Nogueira", cpf: "39053344705", email: "felipe.nogueira@exemplo.com", phoneNumber: "13933445566", status: "ACTIVE", createdAt: "2024-06-07T08:35:00.000Z", updatedAt: null, roles: [roles[1], roles[3]] },
+    { id: 1007, name: "Gabriela Fernandes", cpf: "01234567890", email: "gabriela.fernandes@exemplo.com", phoneNumber: "21922334455", status: "ACTIVE", createdAt: "2024-07-19T15:42:00.000Z", updatedAt: "2026-03-10T10:05:00.000Z", roles: [roles[0], roles[1], roles[2]] },
+    { id: 1008, name: "Henrique Moreira Alves", cpf: "34567890123", email: "henrique.alves@exemplo.com", phoneNumber: null, status: "DISABLED", createdAt: "2024-08-25T12:18:00.000Z", updatedAt: "2026-02-28T09:30:00.000Z", roles: [roles[4]] },
+    { id: 1009, name: "Isabela Monteiro", cpf: "45678901234", email: "isabela.monteiro@exemplo.com", phoneNumber: "31911223344", status: "ACTIVE", createdAt: "2024-09-11T09:50:00.000Z", updatedAt: null, roles: [] },
+    { id: 1010, name: "João Pedro Barros", cpf: "56789012345", email: "joao.barros@exemplo.com", phoneNumber: "11900112233", status: "ACTIVE", createdAt: "2024-10-03T16:05:00.000Z", updatedAt: "2026-01-14T13:20:00.000Z", roles: [roles[1]] },
+    { id: 1011, name: "Karen Cristina Melo", cpf: "67890123456", email: null, phoneNumber: "21999001122", status: "ACTIVE", createdAt: "2024-11-16T13:15:00.000Z", updatedAt: null, roles: [roles[2]] },
+    { id: 1012, name: "Lucas Vieira Campos", cpf: "78901234567", email: "lucas.campos@exemplo.com", phoneNumber: "31988990011", status: "ACTIVE", createdAt: "2024-12-09T10:45:00.000Z", updatedAt: null, roles: [] },
+    { id: 1013, name: "Mariana Freitas Dias", cpf: "89012345678", email: "mariana.dias@exemplo.com", phoneNumber: "11977889900", status: "ACTIVE", createdAt: "2025-01-21T11:30:00.000Z", updatedAt: "2026-07-18T15:45:00.000Z", roles: [roles[0]] },
+    { id: 1014, name: "Nicolas Araújo Pinto", cpf: "90123456789", email: "nicolas.pinto@exemplo.com", phoneNumber: null, status: "ACTIVE", createdAt: "2025-02-13T14:55:00.000Z", updatedAt: null, roles: [roles[1]] },
+    { id: 1015, name: "Olívia Cardoso Reis", cpf: "10234567890", email: "olivia.reis@exemplo.com", phoneNumber: "21966778899", status: "DISABLED", createdAt: "2025-03-08T08:20:00.000Z", updatedAt: "2026-06-30T17:10:00.000Z", roles: [roles[3]] },
+    { id: 1016, name: "Paulo César Teixeira", cpf: "21345678901", email: "paulo.teixeira@exemplo.com", phoneNumber: "31955667788", status: "ACTIVE", createdAt: "2025-04-17T16:40:00.000Z", updatedAt: null, roles: [roles[2]] },
+    { id: 1017, name: "Renata Gomes Batista", cpf: "32456789012", email: "renata.batista@exemplo.com", phoneNumber: "11944557788", status: "ACTIVE", createdAt: "2025-05-29T12:05:00.000Z", updatedAt: null, roles: [roles[1], roles[2]] },
+    { id: 1018, name: "Samuel Lopes Moraes", cpf: "43567890123", email: "samuel.moraes@exemplo.com", phoneNumber: "21933446677", status: "ACTIVE", createdAt: "2025-06-20T09:25:00.000Z", updatedAt: "2026-05-08T10:30:00.000Z", roles: [] },
+] as SeedUser[]).map((user): UserListItem => ({
     ...user,
-    accountStatus: status,
-    authenticationStatus: "ENABLED",
-    credentialStatus: "PERMANENT",
+    birthDate: null,
+    rg: null,
+    profilePhotoUrl: null,
+    disabledAt: user.status === "DISABLED" ? user.updatedAt : null,
 }));
 
 function cloneRole(role: AdminRole): AdminRole {
@@ -141,9 +140,9 @@ export function createMockAdminUsersDataSource(
 
             const search = normalize(query.search?.trim() ?? "");
             let filtered = users.filter((user) => {
-                const matchesSearch = !search || [user.name, user.email, user.cpf, user.phone]
+                const matchesSearch = !search || [user.name, user.email, user.cpf, user.phoneNumber]
                     .some((value) => value && normalize(value).includes(search));
-                const matchesStatus = !query.statuses?.length || query.statuses.includes(user.accountStatus);
+                const matchesStatus = !query.statuses?.length || query.statuses.includes(user.status);
                 const matchesRole = !query.roleIds?.length || user.roles.some((role) => query.roleIds?.includes(role.id));
                 return matchesSearch && matchesStatus && matchesRole;
             });
@@ -191,10 +190,10 @@ export function createMockAdminUsersDataSource(
                 throw createProblem("ACCESS_DENIED", "Você não tem permissão para desativar este usuário.", 403);
             }
             const current = findUser(userId);
-            if (current.accountStatus === "DISABLED") {
+            if (current.status === "DISABLED") {
                 throw createProblem("USER_ALREADY_DISABLED", "O usuário já está desativado.", 409);
             }
-            const updated = { ...current, accountStatus: "DISABLED" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
+            const updated = { ...current, status: "DISABLED" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
             users = users.map((user) => user.id === userId ? updated : user);
             return cloneUser(updated);
         },
@@ -205,10 +204,10 @@ export function createMockAdminUsersDataSource(
                 throw createProblem("ACCESS_DENIED", "Você não tem permissão para reativar este usuário.", 403);
             }
             const current = findUser(userId);
-            if (current.accountStatus !== "DISABLED") {
+            if (current.status !== "DISABLED") {
                 throw createProblem("USER_NOT_DISABLED", "O usuário não está desativado.", 409);
             }
-            const updated = { ...current, accountStatus: "ACTIVE" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
+            const updated = { ...current, status: "ACTIVE" as const, updatedAt: "2026-08-08T12:00:00.000Z" };
             users = users.map((user) => user.id === userId ? updated : user);
             return cloneUser(updated);
         },

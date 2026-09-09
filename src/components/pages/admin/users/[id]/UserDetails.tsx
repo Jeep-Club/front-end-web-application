@@ -55,7 +55,7 @@ export function UserDetails({ user, roles }: UserDetailsModalProps) {
                         <p className="break-words text-base font-bold text-j-white">{user.name}</p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
                             <span className="text-xs text-j-white/70">Matrícula {user.id}</span>
-                            <span className={twMerge("rounded-full px-2 py-0.5 text-xs font-semibold", USER_STATUS_STYLE[user.accountStatus])}>{USER_STATUS_LABEL[user.accountStatus]}</span>
+                            <span className={twMerge("rounded-full px-2 py-0.5 text-xs font-semibold", USER_STATUS_STYLE[user.status])}>{USER_STATUS_LABEL[user.status]}</span>
                         </div>
                     </div>
                 </div>
@@ -69,18 +69,18 @@ export function UserDetails({ user, roles }: UserDetailsModalProps) {
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         <ReadOnlyField {...fieldStyle} label="CPF" value={maskCPF(user.cpf)} />
                         <ReadOnlyField {...fieldStyle} label="E-mail" value={user.email} />
-                        <ReadOnlyField {...fieldStyle} label="Telefone" value={user.phone ? maskPhoneNumber(user.phone) : null} />
+                        <ReadOnlyField {...fieldStyle} label="Telefone" value={user.phoneNumber ? maskPhoneNumber(user.phoneNumber) : null} />
                     </div>
                 </section>
                 <section hidden={selected !== "access"} aria-label="Conta e segurança">
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div className="flex flex-col items-start gap-2">
                             <span className="text-sm font-bold text-j-gray-600">Status da conta</span>
-                            <span className={twMerge("rounded-full px-3 py-1 text-xs font-bold", USER_STATUS_STYLE[user.accountStatus])}>
-                                {USER_STATUS_LABEL[user.accountStatus]}
+                            <span className={twMerge("rounded-full px-3 py-1 text-xs font-bold", USER_STATUS_STYLE[user.status])}>
+                                {USER_STATUS_LABEL[user.status]}
                             </span>
                         </div>
-                        <ReadOnlyField {...fieldStyle} label="Troca de senha pendente" value={user.passwordChangeRequired ? "Sim" : "Não"} />
+                        <ReadOnlyField {...fieldStyle} label="Data de desativação" value={maskDate(user.disabledAt)} />
                         <ReadOnlyField {...fieldStyle} label="Data de cadastro" value={maskDate(user.createdAt)} />
                         <ReadOnlyField {...fieldStyle} label="Última atualização" value={maskDate(user.updatedAt)} />
                     </div>
