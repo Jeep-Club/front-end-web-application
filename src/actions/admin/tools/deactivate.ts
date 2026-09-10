@@ -8,7 +8,7 @@ import { extractApiErrorMessage } from "@/utils/http/apiError";
 export async function deactivateAdminToolAction(toolId: number) {
     try {
         const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.TOOLS}/admin/${toolId}/deactivate`,
+            url: `${HttpAPIRoutes.ADMIN_TOOLS}/${toolId}/deactivate`,
             method: 'PATCH',
             schema: toolDetailResponseSchema,
         });

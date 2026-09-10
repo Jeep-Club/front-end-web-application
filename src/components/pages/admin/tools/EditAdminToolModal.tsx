@@ -22,16 +22,19 @@ export function EditAdminToolModal({ toolId }: EditAdminToolModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
 
-    const { data: tool, isLoading: isLoadingTool } = useQuery({
+    const { data: tool, isLoading: isLoadingTool, isError: isToolError, refetch } = useQuery({
         queryKey: ["admin", "tools", "detail", toolId],
         queryFn: () => getAdminToolDetailAction(toolId),
     });
 
     const mutation = useMutation({
         mutationFn: (data: UpdateToolFormData) => updateAdminToolAction(toolId, data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Ferramenta atualizada com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ["admin", "tools"] });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["admin", "tools"] }),
+                queryClient.invalidateQueries({ queryKey: ["tools"] }),
+            ]);
             setClose();
         },
         onError: (error) => toast.error(error.message || "Erro ao editar ferramenta."),
@@ -71,6 +74,13 @@ export function EditAdminToolModal({ toolId }: EditAdminToolModalProps) {
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados da ferramenta...
                 </div>
+            ) : isToolError || !tool ? (
+                <div className="flex flex-col items-center gap-3 px-5 py-16 text-center text-j-gray-500 md:px-8">
+                    <p>Não foi possível carregar os dados da ferramenta.</p>
+                    <button type="button" onClick={() => refetch()} className="font-bold text-j-blue-700 hover:underline">
+                        Tentar novamente
+                    </button>
+                </div>
             ) : (
                 <Form<UpdateToolFormData>
                     schema={editToolFormSchema}
@@ -98,7 +108,7 @@ export function EditAdminToolModal({ toolId }: EditAdminToolModalProps) {
                         label="Descrição"
                         name="description"
                         placeholder="Ex: Macaco tipo jacaré, 2 toneladas."
-                        value={tool?.description}
+                        value={tool?.description ?? undefined}
                         labelClassName="text-j-gray-700"
                         className={LIGHT_FIELD_CLASS}
                     />

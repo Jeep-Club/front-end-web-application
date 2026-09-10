@@ -12,7 +12,7 @@ import { createToolFormSchema } from "@/schemas/tools/create";
 import { createToolAction } from "@/actions/tools/create";
 import { editToolFormSchema } from "@/schemas/tools/update";
 import { updateToolAction } from "@/actions/tools/update";
-import { getToolDetailAction } from "@/actions/admin/tools/detail";
+import { getToolDetailAction } from "@/actions/tools/detail";
 
 const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
 
@@ -25,7 +25,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
     const queryClient = useQueryClient();
     const isEditMode = !!toolId;
 
-    const { data: tool, isLoading: isLoadingTool } = useQuery({
+    const { data: tool, isLoading: isLoadingTool, isError: isToolError, refetch } = useQuery({
         queryKey: ["tools", "detail", toolId],
         queryFn: () => getToolDetailAction(toolId!),
         enabled: isEditMode,
@@ -82,6 +82,13 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados da ferramenta...
                 </div>
+            ) : isEditMode && (isToolError || !tool) ? (
+                <div className="flex flex-col items-center gap-3 px-5 py-16 text-center text-j-gray-500 md:px-8">
+                    <p>Não foi possível carregar os dados da ferramenta.</p>
+                    <button type="button" onClick={() => refetch()} className="font-bold text-j-blue-700 hover:underline">
+                        Tentar novamente
+                    </button>
+                </div>
             ) : (
                 <Form<CreateToolFormData | UpdateToolFormData>
                     schema={isEditMode ? editToolFormSchema : createToolFormSchema}
@@ -102,7 +109,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                         label="Descrição"
                         name="description"
                         placeholder="Ex: Macaco tipo jacaré, 2 toneladas."
-                        value={tool?.description}
+                        value={tool?.description ?? undefined}
                         labelClassName="text-j-gray-700"
                         className={LIGHT_FIELD_CLASS}
                     />

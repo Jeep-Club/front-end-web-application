@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Wrench, Search, Eye, Pencil, Trash2, Power, ChevronLeft, ChevronRight } from "lucide-react";
+import { Wrench, Search, Eye, Pencil, Trash2, Power, ChevronLeft, ChevronRight, Plus, RefreshCw } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { PageHeader } from "@/components/common/page-header";
 import { Button, ButtonIcon } from "@/components/common/button";
@@ -14,6 +14,7 @@ import { ViewAdminToolModal } from "./ViewAdminToolModal";
 import { EditAdminToolModal } from "./EditAdminToolModal";
 import { ToggleAdminToolStatusModal } from "./ToggleAdminToolStatusModal";
 import { DeleteAdminToolModal } from "./DeleteAdminToolModal";
+import { CreateAdminToolModal } from "./CreateAdminToolModal";
 
 const STATUS_OPTIONS: { label: string; value: ToolStatus | "" }[] = [
     { label: "Todos os status", value: "" },
@@ -24,24 +25,23 @@ const STATUS_OPTIONS: { label: string; value: ToolStatus | "" }[] = [
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
     INACTIVE: "Inativa",
-    DELETED: "Excluída",
 };
 
 const STATUS_BADGE_CLASS: Record<ToolStatus, string> = {
     ACTIVE: "bg-j-green-100 text-j-green-700",
     INACTIVE: "bg-j-gray-200 text-j-gray-600",
-    DELETED: "bg-j-red-100 text-j-red-600",
 };
 
 const PAGE_SIZE = 12;
 
 export default function AdminTools() {
     const permissions = useUserStore((state) => state.permissions);
+    const canRead = hasPermission(permissions, "TOOLS", "TOOL_READ");
+    const canCreate = hasPermission(permissions, "TOOLS", "TOOL_CREATE");
     const canUpdate = hasPermission(permissions, "TOOLS", "TOOL_UPDATE");
     const canDelete = hasPermission(permissions, "TOOLS", "TOOL_DELETE");
-    const canToggleStatus =
-        hasPermission(permissions, "TOOLS", "TOOL_ACTIVATE") ||
-        hasPermission(permissions, "TOOLS", "TOOL_DEACTIVATE");
+    const canActivate = hasPermission(permissions, "TOOLS", "TOOL_ACTIVATE");
+    const canDeactivate = hasPermission(permissions, "TOOLS", "TOOL_DEACTIVATE");
 
     const { setContent, setOpen } = useModal();
     const [nameInput, setNameInput] = useState("");
@@ -49,8 +49,9 @@ export default function AdminTools() {
     const [status, setStatus] = useState<ToolStatus | "">("");
     const [page, setPage] = useState(0);
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isFetching, isError, refetch } = useQuery({
         queryKey: ["admin", "tools", "list", name, status, page],
+        enabled: canRead,
         queryFn: () =>
             listAdminToolsAction({
                 name: name || undefined,
@@ -66,6 +67,7 @@ export default function AdminTools() {
         setName(nameInput.trim());
     };
 
+    const openCreate = () => { setContent(<CreateAdminToolModal />); setOpen(); };
     const openView = (id: number) => { setContent(<ViewAdminToolModal toolId={id} />); setOpen(); };
     const openEdit = (id: number) => { setContent(<EditAdminToolModal toolId={id} />); setOpen(); };
     const openToggle = (tool: AdminToolListItem) => {
@@ -97,7 +99,7 @@ export default function AdminTools() {
 
                 <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                     <div className="flex flex-col gap-3 border-b border-j-gray-200 p-4 md:flex-row md:items-center md:justify-between md:px-6">
-                        <form onSubmit={handleSearch} className="flex flex-1 gap-2">
+                        <form onSubmit={handleSearch} className="flex flex-1 flex-col gap-2 sm:flex-row">
                             <div className="relative flex-1 max-w-sm">
                                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-j-gray-400" />
                                 <input
@@ -116,19 +118,32 @@ export default function AdminTools() {
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                                 ))}
                             </select>
-                            <Button type="submit">Buscar</Button>
+                            <Button type="submit" disabled={isFetching}>Buscar</Button>
+                            <Button type="button" onClick={() => refetch()} disabled={isFetching} className="bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200">
+                                <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
+                                Atualizar
+                            </Button>
                         </form>
+                        {canCreate && (
+                            <Button type="button" onClick={openCreate}>
+                                <Plus size={16} /> Nova ferramenta
+                            </Button>
+                        )}
                     </div>
 
-                    {isLoading && (
+                    {!canRead && (
+                        <p className="p-6 text-sm text-red-600">Você não tem permissão para visualizar ferramentas.</p>
+                    )}
+
+                    {canRead && isLoading && (
                         <p className="p-6 text-sm text-j-gray-400">Carregando ferramentas...</p>
                     )}
 
-                    {isError && (
+                    {canRead && isError && (
                         <p className="p-6 text-sm text-red-600">Não foi possível carregar as ferramentas.</p>
                     )}
 
-                    {!isLoading && !isError && data?.content.length === 0 && (
+                    {canRead && !isLoading && !isError && data?.content.length === 0 && (
                         <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
                                 <Wrench size={31} />
@@ -140,7 +155,7 @@ export default function AdminTools() {
                         </div>
                     )}
 
-                    {!isLoading && !isError && data && data.content.length > 0 && (
+                    {canRead && !isLoading && !isError && data && data.content.length > 0 && (
                         <>
                             <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 md:p-6">
                                 {data.content.map((tool) => (
@@ -171,7 +186,7 @@ export default function AdminTools() {
                                                 className="flex items-center gap-2.5 rounded-lg bg-blue-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 hover:bg-blue-100">
                                                 <Eye size={16} className="text-j-blue-800" /> Visualizar
                                             </button>
-                                            {canToggleStatus && (
+                                            {((tool.status === "ACTIVE" && canDeactivate) || (tool.status === "INACTIVE" && canActivate)) && (
                                                 <button type="button" onClick={() => openToggle(tool)}
                                                     className="flex items-center gap-2.5 rounded-lg bg-purple-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 hover:bg-purple-100">
                                                     <Power size={16} className="text-purple-500" />

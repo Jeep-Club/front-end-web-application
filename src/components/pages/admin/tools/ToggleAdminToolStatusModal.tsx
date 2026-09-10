@@ -21,9 +21,12 @@ export function ToggleAdminToolStatusModal({ toolId, toolName, nextStatus }: Tog
 
     const mutation = useMutation({
         mutationFn: () => (isDeactivating ? deactivateAdminToolAction(toolId) : activateAdminToolAction(toolId)),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success(isDeactivating ? "Ferramenta desativada com sucesso!" : "Ferramenta ativada com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ["admin", "tools"] });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["admin", "tools"] }),
+                queryClient.invalidateQueries({ queryKey: ["tools"] }),
+            ]);
             setClose();
         },
         onError: (error) => toast.error(error.message || "Erro ao alterar status da ferramenta."),

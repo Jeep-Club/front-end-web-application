@@ -17,13 +17,11 @@ const PAGE_SIZE = 10;
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
     INACTIVE: "Inativa",
-    DELETED: "Excluída",
 };
 
 const STATUS_BADGE_CLASS: Record<ToolStatus, string> = {
     ACTIVE: "bg-j-green-100 text-j-green-700",
     INACTIVE: "bg-j-gray-200 text-j-gray-600",
-    DELETED: "bg-j-red-100 text-j-red-600",
 };
 
 export function ToolsTabContent() {

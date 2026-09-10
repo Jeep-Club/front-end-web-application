@@ -8,9 +8,10 @@ import { extractApiErrorMessage } from "@/utils/http/apiError";
 export async function getAdminToolDetailAction(toolId: number) {
     try {
         const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.TOOLS}/admin/${toolId}`,
+            url: `${HttpAPIRoutes.ADMIN_TOOLS}/${toolId}`,
             method: 'GET',
             schema: toolDetailResponseSchema,
+            cache: 'no-store',
         });
         return response.data;
     } catch (error) {

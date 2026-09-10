@@ -5,18 +5,16 @@ import { X, Wrench, LoaderCircle } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { getToolDetailAction } from "@/actions/admin/tools/detail";
+import { getToolDetailAction } from "@/actions/tools/detail";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
     INACTIVE: "Inativa",
-    DELETED: "Excluída",
 };
 
 const STATUS_DOT_STYLE: Record<ToolStatus, string> = {
     ACTIVE: "bg-j-green-500",
     INACTIVE: "bg-j-gray-400",
-    DELETED: "bg-red-500",
 };
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -37,7 +35,7 @@ interface ViewToolModalProps {
 export function ViewToolModal({ toolId }: ViewToolModalProps) {
     const { setClose } = useModal();
 
-    const { data: tool, isLoading } = useQuery({
+    const { data: tool, isLoading, isError, refetch } = useQuery({
         queryKey: ["tools", "detail", toolId],
         queryFn: () => getToolDetailAction(toolId),
     });
@@ -72,10 +70,17 @@ export function ViewToolModal({ toolId }: ViewToolModalProps) {
             </header>
 
             <div className="px-5 py-5 md:px-8 md:py-6">
-                {isLoading || !tool ? (
+                {isLoading ? (
                     <div className="flex items-center justify-center gap-2 py-10 text-j-gray-500">
                         <LoaderCircle size={20} className="animate-spin" />
                         Carregando dados da ferramenta...
+                    </div>
+                ) : isError || !tool ? (
+                    <div className="flex flex-col items-center gap-3 py-10 text-center text-j-gray-500">
+                        <p>Não foi possível carregar os dados da ferramenta.</p>
+                        <button type="button" onClick={() => refetch()} className="font-bold text-j-blue-700 hover:underline">
+                            Tentar novamente
+                        </button>
                     </div>
                 ) : (
                     <div className="flex w-full flex-col gap-4">

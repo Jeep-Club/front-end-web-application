@@ -5,15 +5,16 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { toolDetailResponseSchema } from "@/schemas/tools/detail";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 
-export async function activateAdminToolAction(toolId: number) {
+export async function getToolDetailAction(toolId: number) {
     try {
         const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.ADMIN_TOOLS}/${toolId}/activate`,
-            method: 'PATCH',
+            url: `${HttpAPIRoutes.TOOLS}/${toolId}`,
+            method: 'GET',
             schema: toolDetailResponseSchema,
+            cache: 'no-store',
         });
         return response.data;
     } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao ativar ferramenta'), { cause: error });
+        throw new Error(extractApiErrorMessage(error, 'Erro ao carregar dados da ferramenta'), { cause: error });
     }
 }

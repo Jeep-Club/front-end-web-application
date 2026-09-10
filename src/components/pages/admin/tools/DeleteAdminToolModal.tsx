@@ -18,9 +18,12 @@ export function DeleteAdminToolModal({ toolId, toolLabel }: DeleteAdminToolModal
 
     const mutation = useMutation({
         mutationFn: () => deleteAdminToolAction(toolId),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Ferramenta excluída com sucesso!");
-            queryClient.invalidateQueries({ queryKey: ["admin", "tools"] });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["admin", "tools"] }),
+                queryClient.invalidateQueries({ queryKey: ["tools"] }),
+            ]);
             setClose();
         },
         onError: (error) => toast.error(error.message || "Erro ao excluir ferramenta."),

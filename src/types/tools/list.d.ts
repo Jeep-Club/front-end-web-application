@@ -1,4 +1,4 @@
-type ToolStatus = "ACTIVE" | "INACTIVE" | "DELETED";
+type ToolStatus = "ACTIVE" | "INACTIVE";
 
 interface ToolListItem {
     id: number;

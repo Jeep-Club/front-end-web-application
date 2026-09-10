@@ -5,10 +5,10 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { toolDetailResponseSchema } from "@/schemas/tools/detail";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 
-export async function activateAdminToolAction(toolId: number) {
+export async function activateToolAction(toolId: number) {
     try {
         const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.ADMIN_TOOLS}/${toolId}/activate`,
+            url: `${HttpAPIRoutes.TOOLS}/${toolId}/activate`,
             method: 'PATCH',
             schema: toolDetailResponseSchema,
         });
