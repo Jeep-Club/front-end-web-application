@@ -70,15 +70,11 @@ export function UserManagementView({
         || query.cpf
         || query.phoneNumber
         || query.id
-        || query.accountStatus
-        || query.authenticationStatus
-        || query.credentialStatus
-        || query.passwordChangeRequired
+        || query.status
         || query.createdFrom
         || query.createdTo
         || query.updatedFrom
-        || query.updatedTo
-        || query.fields,
+        || query.updatedTo,
     );
 
     const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => {
@@ -118,27 +114,27 @@ export function UserManagementView({
                 cell: ({ row }) => maskCPF(row.original.cpf),
             },
             {
-                accessorKey: "phone",
+                accessorKey: "phoneNumber",
                 header: () => (
                     <Table.Sortable field="phoneNumber" label="Telefone" sort={query.sort} onSortChange={onSortChange} />
                 ),
                 meta: { label: "Telefone" },
-                cell: ({ row }) => row.original.phone
-                    ? maskPhoneNumber(row.original.phone)
+                cell: ({ row }) => row.original.phoneNumber
+                    ? maskPhoneNumber(row.original.phoneNumber)
                     : "—",
             },
             {
-                accessorKey: "accountStatus",
+                accessorKey: "status",
                 header: "Status",
                 meta: { label: "Status" },
                 cell: ({ row }) => (
                     <span
                         className={twMerge(
                             "inline-flex rounded-full px-2.5 py-1 text-xs font-bold",
-                            USER_STATUS_STYLE[row.original.accountStatus],
+                            USER_STATUS_STYLE[row.original.status],
                         )}
                     >
-                        {USER_STATUS_LABEL[row.original.accountStatus]}
+                        {USER_STATUS_LABEL[row.original.status]}
                     </span>
                 ),
             },
@@ -188,7 +184,7 @@ export function UserManagementView({
                 meta: { label: "Ações" },
                 cell: ({ row }) => {
                     const user = row.original;
-                    const canChangeStatus = user.accountStatus === "DISABLED"
+                    const canChangeStatus = user.status === "DISABLED"
                         ? permissions.canEnableUsers
                         : permissions.canDisableUsers;
 
@@ -197,17 +193,17 @@ export function UserManagementView({
                             {canChangeStatus && (
                                 <ButtonIcon
                                     type="button"
-                                    title={user.accountStatus === "DISABLED" ? "Reativar usuário" : "Desativar usuário"}
-                                    aria-label={`${user.accountStatus === "DISABLED" ? "Reativar" : "Desativar"} ${user.name}`}
+                                    title={user.status === "DISABLED" ? "Reativar usuário" : "Desativar usuário"}
+                                    aria-label={`${user.status === "DISABLED" ? "Reativar" : "Desativar"} ${user.name}`}
                                     onClick={() => onChangeUserStatus(user)}
                                     className={twMerge(
                                         "rounded-lg p-2 text-white hover:text-white",
-                                        user.accountStatus === "DISABLED"
+                                        user.status === "DISABLED"
                                             ? "bg-j-green-600 hover:bg-j-green-700"
                                             : "bg-j-red-500 hover:bg-j-red-600",
                                     )}
                                 >
-                                    {user.accountStatus === "DISABLED" ? <Power size={18} /> : <PowerOff size={18} />}
+                                    {user.status === "DISABLED" ? <Power size={18} /> : <PowerOff size={18} />}
                                 </ButtonIcon>
                             )}
 
@@ -297,7 +293,7 @@ export function UserManagementView({
                             label="Status"
                             labelClassName="sr-only"
                             name="status"
-                            value={query.accountStatus ?? ""}
+                            value={query.status ?? ""}
                             onChange={(event) => onStatusChange(
                                 event.target.value
                                     ? event.target.value as "ACTIVE" | "DISABLED"
