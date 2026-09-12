@@ -28,6 +28,7 @@ export enum HttpAPIRoutes {
 
     BILLING_CHARGE_DEFINITIONS = "billing/charge-definitions",
     BILLING_CHARGE_ASSIGNMENTS = "billing/charge-assignments",
+    BILLING_MY_MEMBER_CHARGES = "billing/me/member-charges",
 }
 
 export enum HttpPublicAPIRoutes {}

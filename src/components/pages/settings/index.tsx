@@ -367,7 +367,9 @@ export default function SettingsPage() {
             case "financial-history":
                 return (
                     <div className="p-5">
-                        <p className="text-sm leading-relaxed text-j-gray-500">Cobranças, mensalidades, pagamentos e comprovantes ficam no módulo financeiro.</p>
+                        <p className="text-sm leading-relaxed text-j-gray-500">
+                            Consulte as cobranças, mensalidades, pagamentos e comprovantes vinculados à sua conta.
+                        </p>
                         <Button type="button" onClick={() => router.push("/financeiro")} className="mt-5 gap-2">Abrir histórico financeiro<ChevronRight size={16} /></Button>
                     </div>
                 );

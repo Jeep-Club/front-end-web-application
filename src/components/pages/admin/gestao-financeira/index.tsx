@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Archive, Pencil, Plus, Power, PowerOff, ShieldX, Users } from "lucide-react";
+import { Archive, CalendarPlus, Pencil, Plus, Power, PowerOff, ShieldX, Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -18,6 +18,7 @@ import { EditChargeDefinitionModal } from "./EditChargeDefinitionModal";
 import { ToggleChargeDefinitionStatusModal } from "./ToggleChargeDefinitionStatusModal";
 import { ArchiveChargeDefinitionModal } from "./ArchiveChargeDefinitionModal";
 import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
+import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
 import {
     CHARGE_DEFINITION_STATUS_LABEL,
     CHARGE_DEFINITION_STATUS_STYLE,
@@ -107,6 +108,16 @@ export default function FinancialManagement() {
         setOpen();
     };
 
+    const handleOpenGenerateCycle = (definition: ChargeDefinitionSummary) => {
+        setContent(
+            <GenerateChargeCycleModal
+                chargeDefinitionId={definition.id}
+                chargeDefinitionName={definition.name}
+            />,
+        );
+        setOpen();
+    };
+
     const columns = useMemo<ColumnDef<ChargeDefinitionSummary, unknown>[]>(() => [
         {
             accessorKey: "name",
@@ -179,6 +190,18 @@ export default function FinancialManagement() {
                             </ButtonIcon>
                         )}
 
+                        {canCreate && definition.status === "ACTIVE" && (
+                            <ButtonIcon
+                                type="button"
+                                title="Gerar cobrança"
+                                aria-label={`Gerar cobrança de ${definition.name}`}
+                                onClick={() => handleOpenGenerateCycle(definition)}
+                                className="rounded-lg bg-j-green-100 p-2 text-j-green-700 hover:bg-j-green-200"
+                            >
+                                <CalendarPlus size={18} />
+                            </ButtonIcon>
+                        )}
+
                         {canUpdate && !isArchived && (
                             <ButtonIcon
                                 type="button"
@@ -224,7 +247,7 @@ export default function FinancialManagement() {
             },
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], [sort, canUpdate, canReadAssignments]);
+    ], [sort, canCreate, canUpdate, canReadAssignments]);
 
     return (
         <div className="min-h-full w-full p-3 md:p-4">
