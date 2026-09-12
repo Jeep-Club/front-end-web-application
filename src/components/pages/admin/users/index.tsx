@@ -73,10 +73,10 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         ?? selectedSearchType;
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
-        canReadUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_READ"),
-        canDisableUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_DISABLE"),
-        canEnableUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_ENABLE"),
-        canReadRoleCatalog: hasPermission(permissionsFromStore, "AUTHORIZATION", "ROLE_READ"),
+        canReadUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_READ"),
+        canDisableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_DISABLE"),
+        canEnableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_ENABLE"),
+        canReadRoleCatalog: hasPermission(permissionsFromStore, "IDENTITY", "ROLE_READ"),
         canReadUserRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_READ"),
         canAssignRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_ASSIGN"),
         canRevokeRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_REVOKE"),
@@ -246,29 +246,29 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         replaceSearchParams({ sort: nextSort }, { resetPage: true });
     }
 
-    if (!permissions.canReadUsers) {
-        return (
-            <div className="min-h-full w-full p-3 md:p-4">
-                <div className="flex w-full flex-col gap-6">
-                    <PageHeader
-                        title="Gestão de usuários"
-                        breadcrumbs={[
-                            { label: "Início", href: "/feed" },
-                            { label: "Gestão Administrativa", href: "/admin" },
-                            { label: "Usuários" },
-                        ]}
-                    />
-                    <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
-                        <ShieldX size={42} className="mb-3 text-j-gray-400" />
-                        <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
-                        <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                            Seu usuário não possui permissão para visualizar a gestão de usuários.
-                        </p>
-                    </section>
-                </div>
-            </div>
-        );
-    }
+    // if (!permissions.canReadUsers) {
+    //     return (
+    //         <div className="min-h-full w-full p-3 md:p-4">
+    //             <div className="flex w-full flex-col gap-6">
+    //                 <PageHeader
+    //                     title="Gestão de usuários"
+    //                     breadcrumbs={[
+    //                         { label: "Início", href: "/feed" },
+    //                         { label: "Gestão Administrativa", href: "/admin" },
+    //                         { label: "Usuários" },
+    //                     ]}
+    //                 />
+    //                 <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
+    //                     <ShieldX size={42} className="mb-3 text-j-gray-400" />
+    //                     <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
+    //                     <p className="mt-1 max-w-md text-sm text-j-gray-600">
+    //                         Seu usuário não possui permissão para visualizar a gestão de usuários.
+    //                     </p>
+    //                 </section>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
 
     return (

@@ -38,7 +38,7 @@ export const adminModules: AdminModuleConfig[] = [
         href: "/admin/users",
         icon: Users,
         visibilityPermission: {
-            module: "AUTHENTICATION",
+            module: "IDENTITY",
             action: "USER_READ",
         },
     },
