@@ -10,11 +10,11 @@ export const adminUserSchema = z.object({
     email: z.string().nullable(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),
-    profilePhotoUrl: z.string().nullable(),
+    profilePhotoUrl: z.string().nullable().optional(),
     status: z.enum(["ACTIVE", "DISABLED"]),
     createdAt: z.string(),
-    disabledAt: z.string().nullable(),
-    updatedAt: z.string().nullable(),
+    disabledAt: z.string().nullable().optional(),
+    updatedAt: z.string().nullable().optional(),
 }) satisfies z.ZodType<AdminUser>;
 
 export const adminUserListResponseSchema = pageResponseSchema(adminUserSchema) satisfies z.ZodType<PageResponse<AdminUser>>;

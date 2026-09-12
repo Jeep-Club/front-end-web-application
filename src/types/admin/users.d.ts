@@ -13,11 +13,11 @@ interface AdminUser {
     email: string | null;
     rg: string | null;
     phoneNumber: string | null;
-    profilePhotoUrl: string | null;
+    profilePhotoUrl?: string | null;
     status: "ACTIVE" | "DISABLED";
     createdAt: string;
-    disabledAt: string | null;
-    updatedAt: string | null;
+    disabledAt?: string | null;
+    updatedAt?: string | null;
 }
 
 type RoleStatus = "ACTIVE" | "INACTIVE" | "DELETED";
