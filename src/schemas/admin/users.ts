@@ -5,16 +5,16 @@ import { pageResponseSchema } from "../page";
 export const adminUserSchema = z.object({
     id: z.number(),
     name: z.string(),
-    birthDate: z.string().nullable(),
+    birthDate: z.string().nullish().transform((value) => value ?? null),
     cpf: z.string(),
-    email: z.string().nullable(),
-    rg: z.string().nullable(),
-    phoneNumber: z.string().nullable(),
-    profilePhotoUrl: z.string().nullable(),
+    email: z.string().nullish().transform((value) => value ?? null),
+    rg: z.string().nullish().transform((value) => value ?? null),
+    phoneNumber: z.string().nullish().transform((value) => value ?? null),
+    profilePhotoUrl: z.string().nullish().transform((value) => value ?? null),
     status: z.enum(["ACTIVE", "DISABLED"]),
     createdAt: z.string(),
-    disabledAt: z.string().nullable(),
-    updatedAt: z.string().nullable(),
+    disabledAt: z.string().nullish().transform((value) => value ?? null),
+    updatedAt: z.string().nullish().transform((value) => value ?? null),
 }) satisfies z.ZodType<AdminUser>;
 
 export const adminUserListResponseSchema = pageResponseSchema(adminUserSchema) satisfies z.ZodType<PageResponse<AdminUser>>;

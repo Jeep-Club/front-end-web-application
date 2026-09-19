@@ -73,9 +73,9 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         ?? selectedSearchType;
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
-        canReadUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_READ"),
-        canDisableUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_DISABLE"),
-        canEnableUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_ENABLE"),
+        canReadUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_READ"),
+        canDisableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_DISABLE"),
+        canEnableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_ENABLE"),
         canReadRoleCatalog: hasPermission(permissionsFromStore, "AUTHORIZATION", "ROLE_READ"),
         canReadUserRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_READ"),
         canAssignRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_ASSIGN"),
