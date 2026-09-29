@@ -268,9 +268,9 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
             const photo = photoFile ? await fileToBase64(photoFile) : (vehicle?.photo ?? undefined);
 
             if (isEditMode && vehicleId) {
-                const payload: EditVehicleMemberRequest = {
-                    nickname: data.nickname,
-                    photo,
+                const changes: EditVehicleMemberRequest = {
+                    nickname: data.nickname?.trim() || null,
+                    ...(photoFile ? { photo } : {}),
                     plate: data.plate,
                     renavam: data.renavam,
                     brand: data.brand,
@@ -283,6 +283,12 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                     engineDisplacement: data.engineDisplacement,
                     towing: data.towing,
                 };
+                const payload: EditVehicleMemberRequest = {};
+                for (const [key, value] of Object.entries(changes)) {
+                    if (value !== vehicle?.[key as keyof VehicleDetailForEdit]) {
+                        Object.assign(payload, { [key]: value });
+                    }
+                }
                 return editVehicleMemberAction(vehicleId, payload);
             }
 

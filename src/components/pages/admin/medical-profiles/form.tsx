@@ -22,7 +22,7 @@ export default function FormPutMedicalProfile({ id, medicalProfile}: { id: numbe
     const isLoading = mutation.isPending;
 
     const handleSubmit = async (data: PutMedicalProfileDependentRequest) => {
-        mutation.mutateAsync({ id, data });
+        mutation.mutateAsync({ id: medicalProfile?.ownerId ?? id, ownerType: medicalProfile?.ownerType ?? 'USER', data });
     }
 
     const defaultValues: PutMedicalProfile | undefined = medicalProfile ? {

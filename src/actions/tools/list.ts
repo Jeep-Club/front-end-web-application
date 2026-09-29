@@ -11,6 +11,7 @@ interface Props {
 }
 
 export async function listToolsAction({ page = 0, size = 10 }: Props = {}) {
+    size = Math.min(Math.max(size, 1), 50);
     try {
         const response = await actionFetchWrapper<ListToolsResponse>({
             url: `${HttpAPIRoutes.TOOLS}?page=${page}&size=${size}`,

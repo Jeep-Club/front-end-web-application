@@ -11,6 +11,7 @@ interface Props {
 }
 
 export async function listVehiclesMemberAction({ page = 0, size = 10 }: Props = {}) {
+    size = Math.min(Math.max(size, 1), 50);
     try {
         const response = await actionFetchWrapper<ListVehicleMemberResponse>({
             url: `${HttpAPIRoutes.VEHICLES_LIST_MEMBER}?page=${page}&size=${size}`,

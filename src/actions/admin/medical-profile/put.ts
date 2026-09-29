@@ -7,13 +7,15 @@ import { extractApiErrorMessage } from '@/utils/http/apiError';
 
 interface Props {
     id: number;
+    ownerType: string;
     data: PutMedicalProfileUserRequest | PutMedicalProfileDependentRequest;
 }
 
-export async function putMedicalProfileAction({ id, data }: Props) {
+export async function putMedicalProfileAction({ id, ownerType, data }: Props) {
     try {
+            const ownerPath = ownerType === 'DEPENDENT' ? 'dependents' : 'users';
             const response = await actionFetchWrapper<PutMedicalProfileResponse>({
-                url: `${HttpAPIRoutes.ADMIN_MEDICAL_PROFILES}/users/${id}`,
+                url: HttpAPIRoutes.ADMIN_MEDICAL_PROFILES + '/' + ownerPath + '/' + id,
                 method: 'PUT',
                 schema: putMedicalProfileResponseSchema,
                 body: JSON.stringify(data)

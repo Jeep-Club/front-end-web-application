@@ -97,7 +97,7 @@ export function PersonalDataTab() {
                     fallback: "Não informado",
                     includeTime: false,
                 })}
-                registrationNumber={`ID#${personalData.id}`}
+                registrationNumber={String(personalData.id)}
                 email={personalData.email}
                 cpf={maskCPF(personalData.cpf)}
                 rg={personalData.rg}
