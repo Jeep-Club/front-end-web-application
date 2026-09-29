@@ -20,7 +20,7 @@ const FUEL_TYPE_LABELS: Record<FuelType, string> = {
     HYBRID: "Híbrido",
 };
 
-const STATUS_LABELS: Record<VehicleStatus, string> = {
+const STATUS_LABELS: Record<string, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
     PENDING: "Pendente",

@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-export const pageSortSchema: z.ZodType<PageSort> = z.object({
-    sorted: z.boolean(),
-    unsorted: z.boolean(),
-    empty: z.boolean(),
-});
-
 export const vehicleListItemSchema: z.ZodType<VehicleListItem> = z.object({
     id: z.number(),
     nickname: z.string().nullable(),
@@ -26,5 +20,4 @@ export const listVehicleMemberResponseSchema: z.ZodType<ListVehicleMemberRespons
     last: z.boolean(),
     numberOfElements: z.number(),
     empty: z.boolean(),
-    sort: pageSortSchema,
 });

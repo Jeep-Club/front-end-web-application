@@ -6,6 +6,7 @@ interface Props<T> {
     columns: (keyof T)[];
     data: T[];
     currentPage: number;
+    totalPages: number;
     onView?: (row: T) => void;
 }
 
@@ -13,6 +14,7 @@ export default function SimpleTable<T>({
     columns, 
     data, 
     currentPage, 
+    totalPages,
     onView 
 }: Props<T>) {
 
@@ -82,13 +84,14 @@ export default function SimpleTable<T>({
                 <div className="flex gap-2">
                     <button
                         disabled={currentPage <= 1}
-                        onClick={() => handlePageChange(currentPage - 1)}
+                        onClick={() => handlePageChange(currentPage - 2)}
                         className="px-4 py-2 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >
                         Anterior
                     </button>
                     <button
-                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage >= totalPages}
+                        onClick={() => handlePageChange(currentPage)}
                         className="px-4 py-2 border rounded text-sm hover:bg-gray-50"
                     >
                         Próxima
