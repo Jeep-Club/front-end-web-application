@@ -88,7 +88,7 @@ export const adminUserSearchParamsSchema = z.object({
         .number()
         .int()
         .min(1)
-        .max(100)
+        .max(50)
         .optional(),
 
     sort: z
@@ -102,7 +102,7 @@ export const adminUserSearchParamsSchema = z.object({
 
 // export const userRegisterSchema = z.object({
 //   name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
-//   birthData: z.string().min(1, "A data de nascimento é obrigatória"), // Pode aplicar um regex de data se necessário
+//   birthData: z.string().min(1, "A data de nascimento é obrigatória"),
 //   email: z.email("Formato de e-mail inválido"),
 //   cpf: z.string().min(11, "O CPF é obrigatório e deve ter 11 dígitos"),
 //   rg: z.string().min(1, "O RG é obrigatório"),
