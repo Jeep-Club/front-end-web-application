@@ -88,7 +88,7 @@ export const adminUserSearchParamsSchema = z.object({
         .number()
         .int()
         .min(1)
-        .max(100)
+        .max(50)
         .optional(),
 
     sort: z
