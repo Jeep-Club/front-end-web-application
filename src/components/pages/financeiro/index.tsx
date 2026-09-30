@@ -2,6 +2,14 @@ import { CalendarDays, CircleAlert, ReceiptText, WalletCards } from "lucide-reac
 
 import { listMyMemberChargesAction } from "@/actions/billing/memberCharges/listMine";
 import { PageHeader } from "@/components/common/page-header";
+import Link from "next/link";
+import { FinanceiroFilters } from "./FinanceiroFilters";
+
+type FinanceiroSearchParams = {
+    status?: string;
+    sort?: string;
+    page?: string;
+};
 
 const STATUS_LABEL: Record<MemberChargeEffectiveStatus, string> = {
     PENDING: "Pendente",
@@ -27,13 +35,31 @@ function formatDate(value: string) {
     return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
 }
 
-export default async function Financeiro() {
+export default async function Financeiro({
+    searchParams = Promise.resolve({}),
+}: {
+    searchParams?: Promise<FinanceiroSearchParams>;
+}) {
+    const params = await searchParams;
+    const status = ["PENDING", "PAID", "CANCELED"].includes(params.status ?? "")
+        ? params.status as MemberChargeStatus
+        : undefined;
+    const sort = params.sort === "dueDate,asc" ? "dueDate,asc" : "dueDate,desc";
+    const requestedPage = Number(params.page);
+    const pageNumber = Number.isInteger(requestedPage) && requestedPage >= 0 ? requestedPage : 0;
     let charges: MemberChargeSummary[] = [];
+    let totalPages = 0;
     let loadError = false;
 
     try {
-        const page = await listMyMemberChargesAction({ page: "0", size: "50", sort: "dueDate,desc" });
+        const page = await listMyMemberChargesAction({
+            ...(status ? { status } : {}),
+            page: String(pageNumber),
+            size: "10",
+            sort,
+        });
         charges = page.content;
+        totalPages = page.totalPages;
     } catch {
         loadError = true;
     }
@@ -63,6 +89,8 @@ export default async function Financeiro() {
                     </header>
 
                     <div className="p-5">
+                        <FinanceiroFilters initialStatus={status} initialSort={sort} />
+
                         {loadError ? (
                             <div className="flex min-h-52 flex-col items-center justify-center rounded-xl border border-dashed border-j-red-200 p-6 text-center">
                                 <CircleAlert size={30} className="text-j-red-400" />
@@ -107,6 +135,21 @@ export default async function Financeiro() {
                                     </article>
                                 ))}
                             </div>
+                        )}
+                        {!loadError && totalPages > 1 && (
+                            <nav aria-label="Paginação do histórico financeiro" className="mt-5 flex items-center justify-between border-t border-j-gray-200 pt-4">
+                                <Link
+                                    aria-disabled={pageNumber === 0}
+                                    href={pageNumber === 0 ? "#" : `?${new URLSearchParams({ ...(status ? { status } : {}), sort, page: String(pageNumber - 1) })}`}
+                                    className={`rounded-lg border border-j-gray-200 px-4 py-2 text-sm font-semibold ${pageNumber === 0 ? "pointer-events-none opacity-40" : "hover:bg-j-gray-50"}`}
+                                >Anterior</Link>
+                                <span className="text-sm text-j-gray-500">Página {pageNumber + 1} de {totalPages}</span>
+                                <Link
+                                    aria-disabled={pageNumber + 1 >= totalPages}
+                                    href={pageNumber + 1 >= totalPages ? "#" : `?${new URLSearchParams({ ...(status ? { status } : {}), sort, page: String(pageNumber + 1) })}`}
+                                    className={`rounded-lg border border-j-gray-200 px-4 py-2 text-sm font-semibold ${pageNumber + 1 >= totalPages ? "pointer-events-none opacity-40" : "hover:bg-j-gray-50"}`}
+                                >Próxima</Link>
+                            </nav>
                         )}
                     </div>
                 </section>
