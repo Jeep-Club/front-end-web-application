@@ -10,6 +10,7 @@ import { maskPlate } from "@/utils/masks/maskPlate";
 import { IncludeVehicleModal } from "./IncludeVehicleModal";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { ViewVehicleModal } from "./ViewVehicleModal";
+import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
 const PAGE_SIZE = 10;
 
@@ -82,7 +83,7 @@ export function VehiclesTabContent() {
                                     {vehicle.photo ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
-                                            src={vehicle.photo}
+                                            src={getMediaImageUrl(vehicle.photo)}
                                             alt={vehicle.nickname || vehicle.model}
                                             className="h-full w-full object-cover"
                                         />
