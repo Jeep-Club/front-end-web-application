@@ -20,4 +20,5 @@ interface VehicleDetail {
     ownerId: number;
     createdAt: string;
     updatedAt: string | null;
+    disabledAt?: string | null;
 }

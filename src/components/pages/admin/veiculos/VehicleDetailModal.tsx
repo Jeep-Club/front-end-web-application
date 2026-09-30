@@ -7,30 +7,16 @@ import { twMerge } from "tailwind-merge";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
-import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
+import { getVehicleDetailAdminAction } from "@/actions/admin/vehicles/detail";
 import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
+import { FUEL_TYPE_LABEL, VEHICLE_STATUS_LABEL, VEHICLE_STATUS_STYLE } from "./vehicleDisplay";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
-
-const FUEL_TYPE_LABELS: Record<FuelType, string> = {
-    GASOLINE: "Gasolina",
-    ETHANOL: "Etanol",
-    FLEX: "Flex",
-    DIESEL: "Diesel",
-    ELECTRIC: "Elétrico",
-    HYBRID: "Híbrido",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-    ACTIVE: "Ativo",
-    INACTIVE: "Inativo",
-    PENDING: "Pendente",
-};
 
 const STEPS = [
     { step: 1, label: "Identificação" },
     { step: 2, label: "Características" },
-    { step: 3, label: "Foto" },
+    { step: 3, label: "Status e Foto" },
 ];
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -43,6 +29,7 @@ function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode
         />
     );
 }
+
 interface ViewVehicleStepsProps {
     currentStep: number;
     onNext: () => void;
@@ -83,31 +70,38 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                 })}
             </div>
 
-            <div className="w-full min-h-[420px]">
+            <div className="w-full flex flex-col gap-4">
                 <div className={currentStep === 1 ? "w-full flex flex-col gap-4" : "hidden"}>
-                    <ReadOnlyField label="Placa" value={maskPlate(vehicle.plate)} />
-                    <ReadOnlyField label="Renavam" value={vehicle.renavam} />
-                    <ReadOnlyField label="Marca" value={vehicle.brand} />
-                    <ReadOnlyField label="Apelido" value={vehicle.nickname} />
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <ReadOnlyField label="Placa" value={maskPlate(vehicle.plate)} />
+                        <ReadOnlyField label="Renavam" value={vehicle.renavam} />
+                    </div>
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <ReadOnlyField label="Marca" value={vehicle.brand} />
+                        <ReadOnlyField label="Modelo" value={vehicle.model} />
+                    </div>
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <ReadOnlyField label="Apelido" value={vehicle.nickname || "—"} />
+                        <ReadOnlyField label="ID do Proprietário (Membro)" value={vehicle.ownerId} />
+                    </div>
                 </div>
 
                 <div className={currentStep === 2 ? "w-full flex flex-col gap-4" : "hidden"}>
-                    <div className="w-full grid grid-cols-2 gap-4">
-                        <ReadOnlyField label="Modelo" value={vehicle.model} />
-                        <ReadOnlyField label="Cor" value={vehicle.color} />
-                    </div>
-
                     <div className="w-full grid grid-cols-2 gap-4">
                         <ReadOnlyField label="Ano de fabricação" value={vehicle.manufacturingYear} />
                         <ReadOnlyField label="Ano/modelo" value={vehicle.modelYear} />
                     </div>
 
                     <div className="w-full grid grid-cols-2 gap-4">
+                        <ReadOnlyField label="Cor" value={vehicle.color} />
                         <ReadOnlyField label="Assentos" value={vehicle.seatingCapacity} />
-                        <ReadOnlyField label="Cilindrada" value={vehicle.engineDisplacement.toFixed(1)} />
                     </div>
 
-                    <ReadOnlyField label="Combustível" value={FUEL_TYPE_LABELS[vehicle.fuelType]} />
+                    <div className="w-full grid grid-cols-2 gap-4">
+                        <ReadOnlyField label="Cilindrada" value={`${vehicle.engineDisplacement.toFixed(1)} L`} />
+                        <ReadOnlyField label="Combustível" value={FUEL_TYPE_LABEL[vehicle.fuelType] ?? vehicle.fuelType} />
+                    </div>
+
                     <ReadOnlyField label="Guincho/reboque" value={vehicle.towing ? "Sim" : "Não"} />
                 </div>
 
@@ -117,20 +111,36 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                         <img
                             src={getMediaImageUrl(vehicle.photo)}
                             alt={vehicle.nickname || vehicle.model}
-                            className="w-full h-40 object-cover rounded-lg"
+                            className="w-full h-44 object-cover rounded-xl border border-j-gray-200"
                         />
                     ) : (
-                        <div className="w-full h-40 flex items-center justify-center rounded-lg bg-j-gray-100">
+                        <div className="w-full h-44 flex items-center justify-center rounded-xl bg-j-gray-100 border border-j-gray-200">
                             <Car size={40} className="text-j-gray-300" />
                         </div>
                     )}
 
-                    <ReadOnlyField label="Status" value={STATUS_LABELS[vehicle.status]} />
+                    <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-bold text-j-gray-700 md:text-sm">Status</span>
+                        <div className="min-h-10 w-full rounded-lg border-2 border-transparent bg-j-gray-100 px-2.5 py-2">
+                            <span
+                                className={twMerge(
+                                    "inline-block rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide",
+                                    VEHICLE_STATUS_STYLE[vehicle.status],
+                                )}
+                            >
+                                {VEHICLE_STATUS_LABEL[vehicle.status] ?? vehicle.status}
+                            </span>
+                        </div>
+                    </div>
 
                     <div className="w-full grid grid-cols-2 gap-4">
                         <ReadOnlyField label="Cadastrado em" value={maskDate(vehicle.createdAt)} />
-                        <ReadOnlyField label="Atualizado em" value={maskDate(vehicle.updatedAt)} />
+                        <ReadOnlyField label="Atualizado em" value={vehicle.updatedAt ? maskDate(vehicle.updatedAt) : "—"} />
                     </div>
+
+                    {vehicle.disabledAt && (
+                        <ReadOnlyField label="Desativado em" value={maskDate(vehicle.disabledAt)} />
+                    )}
                 </div>
             </div>
 
@@ -169,17 +179,17 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
     );
 }
 
-interface ViewVehicleModalProps {
+interface VehicleDetailModalProps {
     vehicleId: number;
 }
 
-export function ViewVehicleModal({ vehicleId }: ViewVehicleModalProps) {
+export function VehicleDetailModal({ vehicleId }: VehicleDetailModalProps) {
     const { setClose } = useModal();
     const [currentStep, setCurrentStep] = useState(1);
 
     const { data: vehicle, isLoading } = useQuery({
-        queryKey: ["vehicles", "detail", vehicleId],
-        queryFn: () => getVehicleDetailAction(vehicleId),
+        queryKey: ["admin", "vehicles", "detail", vehicleId],
+        queryFn: () => getVehicleDetailAdminAction(vehicleId),
     });
 
     return (
@@ -207,7 +217,7 @@ export function ViewVehicleModal({ vehicleId }: ViewVehicleModalProps) {
                             Detalhes do veículo
                         </h2>
                         <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            Informações completas do seu jipe. Campos somente leitura.
+                            Informações completas do veículo registrado. Campos somente leitura.
                         </p>
                     </div>
                 </div>
@@ -233,4 +243,4 @@ export function ViewVehicleModal({ vehicleId }: ViewVehicleModalProps) {
     );
 }
 
-export default ViewVehicleModal;
+export default VehicleDetailModal;

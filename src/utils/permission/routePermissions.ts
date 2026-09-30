@@ -78,6 +78,13 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["CHARGE_DEFINITION_READ"],
         },
     ],
+
+    "/admin/veiculos": [
+        {
+            module: "VEHICLES",
+            actions: ["VEHICLE_READ"],
+        },
+    ],
 };
 
 function normalizeRule(config: RoutePermissionsConfig): RoutePermissionRule {
