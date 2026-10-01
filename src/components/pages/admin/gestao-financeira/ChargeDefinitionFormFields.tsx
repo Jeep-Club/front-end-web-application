@@ -26,27 +26,29 @@ export function ChargeDefinitionFormFields() {
 
     return (
         <>
-            <InputRegister
-                label="Nome da cobrança"
-                name="name"
-                placeholder="Ex.: Anuidade"
-                maxLength={120}
-                required
-                labelClassName="text-j-gray-700"
-                className={LIGHT_FIELD_CLASS}
-            />
+            <div id="tour-charge-field-name-desc" className="flex flex-col gap-4">
+                <InputRegister
+                    label="Nome da cobrança"
+                    name="name"
+                    placeholder="Ex.: Anuidade"
+                    maxLength={120}
+                    required
+                    labelClassName="text-j-gray-700"
+                    className={LIGHT_FIELD_CLASS}
+                />
 
-            <TextareaRegister
-                label="Descrição"
-                name="description"
-                placeholder="Explique quando essa cobrança é aplicada."
-                maxLength={255}
-                rows={3}
-                labelClassName="text-j-gray-700"
-                className={LIGHT_FIELD_CLASS}
-            />
+                <TextareaRegister
+                    label="Descrição"
+                    name="description"
+                    placeholder="Explique quando essa cobrança é aplicada."
+                    maxLength={255}
+                    rows={3}
+                    labelClassName="text-j-gray-700"
+                    className={LIGHT_FIELD_CLASS}
+                />
+            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div id="tour-charge-field-amount-recurrence" className="grid gap-4 sm:grid-cols-2">
                 <InputRegister
                     type="number"
                     step="0.01"
@@ -75,40 +77,44 @@ export function ChargeDefinitionFormFields() {
                 </Select>
             </div>
 
-            <Select
-                label="Política de aceitação de pagamento"
-                name="paymentAcceptancePolicy"
-                required
-                labelClassName="text-j-gray-700"
-                className={LIGHT_FIELD_CLASS}
-            >
-                <option value="">Selecione</option>
-                {PAYMENT_POLICY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                        {PAYMENT_ACCEPTANCE_POLICY_LABEL[option]}
-                    </option>
-                ))}
-            </Select>
-
-            {paymentAcceptancePolicy === "UNTIL_DAYS_AFTER_DUE_DATE" && (
-                <InputRegister
-                    type="number"
-                    step="1"
-                    min="1"
-                    label="Dias de tolerância após o vencimento"
-                    name="latePaymentGraceDays"
-                    placeholder="15"
+            <div id="tour-charge-field-policy" className="flex flex-col gap-4">
+                <Select
+                    label="Política de aceitação de pagamento"
+                    name="paymentAcceptancePolicy"
                     required
                     labelClassName="text-j-gray-700"
                     className={LIGHT_FIELD_CLASS}
-                />
-            )}
+                >
+                    <option value="">Selecione</option>
+                    {PAYMENT_POLICY_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                            {PAYMENT_ACCEPTANCE_POLICY_LABEL[option]}
+                        </option>
+                    ))}
+                </Select>
 
-            <InputCheckbox
-                label="Cobrança obrigatória para o público-alvo"
-                name="required"
-                className="rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 [&>span:last-child]:!text-j-gray-700 [&>span:first-of-type]:!border-j-gray-300 [&>span:first-of-type]:!bg-j-white"
-            />
+                {paymentAcceptancePolicy === "UNTIL_DAYS_AFTER_DUE_DATE" && (
+                    <InputRegister
+                        type="number"
+                        step="1"
+                        min="1"
+                        label="Dias de tolerância após o vencimento"
+                        name="latePaymentGraceDays"
+                        placeholder="15"
+                        required
+                        labelClassName="text-j-gray-700"
+                        className={LIGHT_FIELD_CLASS}
+                    />
+                )}
+            </div>
+
+            <div id="tour-charge-field-required">
+                <InputCheckbox
+                    label="Cobrança obrigatória para o público-alvo"
+                    name="required"
+                    className="rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 [&>span:last-child]:!text-j-gray-700 [&>span:first-of-type]:!border-j-gray-300 [&>span:first-of-type]:!bg-j-white"
+                />
+            </div>
         </>
     );
 }

@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { X } from "lucide-react";
+import { HelpCircle, X } from "lucide-react";
 
 import { Form } from "@/components/common/form";
 import { Button, ButtonIcon } from "@/components/common/button";
+import { usePageTour } from "@/hooks/useTour";
+import { getCreateChargeDefinitionTourSteps } from "@/config/tourSteps";
 import { useModal } from "@/providers/ModalProvider";
 import { chargeDefinitionFormSchema } from "@/schemas/billing/chargeDefinition";
 import { createChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/create";
@@ -14,6 +16,13 @@ import { ChargeDefinitionFormFields } from "./ChargeDefinitionFormFields";
 export function CreateChargeDefinitionModal() {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
+
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_charge_create_modal",
+        steps: getCreateChargeDefinitionTourSteps,
+        autoStartOnFirstVisit: true,
+        enabled: true,
+    });
 
     const mutation = useMutation({
         mutationFn: (data: ChargeDefinitionFormData) => createChargeDefinitionAction(data),
@@ -37,14 +46,25 @@ export function CreateChargeDefinitionModal() {
                 rounded-3xl bg-j-white shadow-2xl
             `}
         >
-            <ButtonIcon
-                onClick={setClose}
-                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
-            >
-                <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
-            </ButtonIcon>
+            <div className="absolute right-4 top-4 z-10 flex items-center gap-2 md:right-6 md:top-6">
+                <ButtonIcon
+                    type="button"
+                    title="Ajuda sobre os campos"
+                    aria-label="Ajuda sobre os campos"
+                    onClick={restartTour}
+                    className="rounded-full bg-j-gray-100 p-2 text-j-blue-800 hover:bg-j-yellow-300 hover:text-j-blue-900 transition-colors"
+                >
+                    <HelpCircle className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+                </ButtonIcon>
+                <ButtonIcon
+                    onClick={setClose}
+                    className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800"
+                >
+                    <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
+                </ButtonIcon>
+            </div>
 
-            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+            <header id="tour-charge-modal-header" className="border-b border-j-gray-200 px-5 pb-5 pr-24 pt-6 md:px-8 md:pb-6 md:pr-28 md:pt-8">
                 <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
                     Criar definição de cobrança
                 </h2>
@@ -70,7 +90,7 @@ export function CreateChargeDefinitionModal() {
             >
                 <ChargeDefinitionFormFields />
 
-                <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
+                <div id="tour-charge-btn-submit" className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
                     <Button
                         type="submit"
                         disabled={mutation.isPending}
