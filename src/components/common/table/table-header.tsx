@@ -34,7 +34,12 @@ export function TableHeader({
             )}
 
             {children && (
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-end">
+                <div
+                    className={twMerge(
+                        "flex w-full flex-col gap-2 sm:flex-row sm:items-end sm:justify-end",
+                        (title || description) && "lg:w-auto",
+                    )}
+                >
                     {children}
                 </div>
             )}

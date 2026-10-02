@@ -1,18 +1,6 @@
 import { toPng } from "html-to-image";
-import { jsPDF } from "jspdf";
 
-import type {
-    CardExportFormat,
-    CardExportScope,
-} from "@/components/common/card-export/CardExportActions";
-
-interface ExportCardImagesParams {
-    format: CardExportFormat;
-    scope: CardExportScope;
-    frontImage: string;
-    backImage?: string;
-    fileName: string;
-}
+import type { CardExportScope } from "@/components/common/card-export/CardExportActions";
 
 interface ExportImageParams {
     scope: CardExportScope;
@@ -38,9 +26,6 @@ const CARD_EXPORT_HEIGHT_PX = Math.round(
         MILLIMETERS_PER_INCH) *
         CARD_EXPORT_DPI,
 );
-const PDF_BLEED_MM = 0.15;
-const PDF_FOOTER_HEIGHT_MM = 7;
-
 export async function captureCardElement(
     element: HTMLElement,
 ) {
@@ -181,115 +166,23 @@ async function waitForImages(
     );
 }
 
-export async function exportCardImages({
-    format,
+export async function exportCardAsPng({
     scope,
     frontImage,
     backImage,
     fileName,
-}: ExportCardImagesParams) {
+}: ExportImageParams) {
     const safeFileName =
         sanitizeFileName(fileName) ||
         "carteirinha";
 
-    if (format === "pdf") {
-        exportAsPdf({
-            scope,
-            frontImage,
-            backImage,
-            fileName: safeFileName,
-        });
-
-        return;
-    }
-
-    await exportAsPng({
-        scope,
-        frontImage,
-        backImage,
-        fileName: safeFileName,
-    });
-}
-
-function exportAsPdf({
-    scope,
-    frontImage,
-    backImage,
-    fileName,
-}: ExportImageParams) {
-    const pdf = createCardPdf();
-    const generatedAt = new Date();
-    const generatedDate = generatedAt.toISOString().slice(0, 10);
-
-    pdf.setCreationDate(generatedAt);
-    pdf.setProperties({
-        title: "Carteirinha Jeep Clube Tamoios",
-        subject: "Carteirinha digital de associado",
-        author: "Jeep Clube Tamoios",
-    });
-
-    addImageToCurrentPage(pdf, frontImage);
-    addPdfGenerationDate(pdf, generatedDate);
-
-    if (scope === "front-and-back" && backImage) {
-        pdf.addPage([CARD_WIDTH_MM, CARD_HEIGHT_MM + PDF_FOOTER_HEIGHT_MM], "landscape");
-        addImageToCurrentPage(pdf, backImage);
-        addPdfGenerationDate(pdf, generatedDate);
-    }
-
-    pdf.save(`${fileName}-emitida-${generatedDate}.pdf`);
-}
-
-function createCardPdf() {
-    return new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: [CARD_WIDTH_MM, CARD_HEIGHT_MM + PDF_FOOTER_HEIGHT_MM],
-        compress: true,
-    });
-}
-
-function addImageToCurrentPage(pdf: jsPDF, image: string) {
-    const pageWidth = pdf.internal.pageSize.getWidth();
-
-    pdf.addImage(
-        image,
-        "PNG",
-        -PDF_BLEED_MM,
-        -PDF_BLEED_MM,
-        pageWidth + PDF_BLEED_MM * 2,
-        CARD_HEIGHT_MM + PDF_BLEED_MM * 2,
-        undefined,
-        "FAST",
-    );
-}
-
-function addPdfGenerationDate(pdf: jsPDF, generatedDate: string) {
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    pdf.setFontSize(6);
-    pdf.setTextColor(71, 85, 105);
-    pdf.text(
-        `PDF gerado em ${generatedDate} - recorte na linha acima para imprimir a carteirinha.`,
-        pageWidth / 2,
-        pageHeight - 2.5,
-        { align: "center" },
-    );
-}
-async function exportAsPng({
-    scope,
-    frontImage,
-    backImage,
-    fileName,
-}: ExportImageParams) {
     if (
         scope === "front" ||
         !backImage
     ) {
         triggerDownload(
             frontImage,
-            `${fileName}-frente.png`,
+            `${safeFileName}-frente.png`,
         );
 
         return;
@@ -303,7 +196,7 @@ async function exportAsPng({
 
     triggerDownload(
         combinedImage,
-        `${fileName}-frente-verso.png`,
+        `${safeFileName}-frente-verso.png`,
     );
 }
 

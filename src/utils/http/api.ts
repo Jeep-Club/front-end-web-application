@@ -1,9 +1,11 @@
 export enum HttpAPIRoutes {
     LOGIN = "authentication/login",
     REFRESH = "authentication/refresh",
-    ME = "authentication/me",
-    ADMIN_USERS = "authentication/admin/users",
-    REGISTER = "authentication/register",
+    AUTHENTICATION_ME = "authentication/me",
+    IDENTITY_ME = "identity/me",
+    AUTHORIZATION_ME = "authorization/me",
+    ADMIN_USERS = "identity/admin/users",
+    REGISTER = "identity/register",
     LOGOUT = "authentication/logout",
     PERMISSIONS = "authorization/permissions",
     AUTHORIZATION_ROLES = "authorization/roles",
@@ -22,7 +24,20 @@ export enum HttpAPIRoutes {
     VEHICLES_EDIT_MEMBER = "vehicles/edit/member",
     VEHICLES_DETAIL_FOR_EDIT_MEMBER = "vehicles/detail-for-edit/member",
     VEHICLES_DELETE_MEMBER = "vehicles/delete/member",
-    VEHICLES_DETAIL_MEMBER = "vehicles/detail/member"
+    VEHICLES_DETAIL_MEMBER = "vehicles/detail/member",
+
+    VEHICLES_LIST_ADMIN = "vehicles/list/admin",
+    VEHICLES_DETAIL_ADMIN = "vehicles/detail/admin",
+    VEHICLES_DETAIL_FOR_EDIT_ADMIN = "vehicles/detail-for-edit/admin",
+    VEHICLES_EDIT_ADMIN = "vehicles/edit/admin",
+    VEHICLES_INCLUDE_ADMIN = "vehicles/include/admin",
+    VEHICLES_DELETE_ADMIN = "vehicles/delete/admin",
+
+    MEDIA_IMAGES = "media/images",
+
+    BILLING_CHARGE_DEFINITIONS = "billing/charge-definitions",
+    BILLING_CHARGE_ASSIGNMENTS = "billing/charge-assignments",
+    BILLING_MY_MEMBER_CHARGES = "billing/me/member-charges",
 }
 
 export enum HttpPublicAPIRoutes {}

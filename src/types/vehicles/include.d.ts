@@ -6,7 +6,7 @@ type FuelType =
     | 'ELECTRIC'
     | 'HYBRID';
 
-type VehicleStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
+type VehicleStatus = 'ACTIVE' | 'SOFT_DELETED' | 'INACTIVE' | 'PENDING';
 
 interface IncludeVehicleMemberRequest {
     nickname?: string;

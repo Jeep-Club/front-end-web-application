@@ -1,6 +1,6 @@
 'use server';
 
-import { adminUserSchema } from "@/schemas/admin/users";
+import { registerResponseSchema } from "@/schemas/auth/register/registerResponse";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from '@/utils/http/api';
 
@@ -9,11 +9,11 @@ interface Props {
 }
 
 export async function postUserAction({ user }: Props) {
-    const res = await actionFetchWrapper<AdminUser>({
+    const res = await actionFetchWrapper<RegisterResponse>({
         url: HttpAPIRoutes.REGISTER,
         method: "POST",
         body: JSON.stringify(user),
-        schema: adminUserSchema
+        schema: registerResponseSchema
     });
 
     return res.data;

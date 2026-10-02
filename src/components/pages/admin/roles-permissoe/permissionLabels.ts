@@ -2,6 +2,7 @@
 const MODULE_LABELS: Record<string, string> = {
     AUTHENTICATION: "Autenticação",
     AUTHORIZATION: "Autorização",
+    IDENTITY: "Usuários",
     HEALTH: "Saúde",
     MEMBERSHIP: "Associação",
 };
@@ -11,11 +12,11 @@ export function getModuleLabel(module: string): string {
 }
 
 const PERMISSION_NAME_LABELS: Record<string, string> = {
-    AUTHENTICATION_USER_READ: "Consultar usuários",
-    AUTHENTICATION_USER_CREATE: "Criar usuários",
-    AUTHENTICATION_USER_UPDATE: "Atualizar usuários",
-    AUTHENTICATION_USER_DISABLE: "Desativar usuários",
-    AUTHENTICATION_USER_ENABLE: "Reativar usuários",
+    IDENTITY_USER_READ: "Consultar usuários",
+    IDENTITY_USER_CREATE: "Criar usuários",
+    IDENTITY_USER_UPDATE: "Atualizar usuários",
+    IDENTITY_USER_DISABLE: "Desativar usuários",
+    IDENTITY_USER_ENABLE: "Reativar usuários",
     AUTHENTICATION_USER_PASSWORD_RESET_LINK_GENERATE: "Gerar link de redefinição de senha",
     AUTHENTICATION_USER_TEMPORARY_PASSWORD_GENERATE: "Gerar senha provisória",
 

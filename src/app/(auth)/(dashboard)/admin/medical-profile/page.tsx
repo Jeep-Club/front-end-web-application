@@ -16,7 +16,7 @@ export default async function Page({ searchParams }: Props) {
     const { size, page } = await searchParams;
     
     const currentPage = Number(page) || 0;
-    const currentSize = Number(size) || 10;
+    const currentSize = Math.min(Number(size) || 20, 50);
 
     const response = await serverFetchWrapper<GetListMedicalProfilesResponse>({
         url: `${HttpAPIRoutes.ADMIN_MEDICAL_PROFILES}?size=${currentSize}&page=${currentPage}`,

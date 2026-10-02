@@ -24,15 +24,11 @@ const PHONE_SEARCH_PATTERN = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
 const FILTER_PARAMS: (keyof AdminUserSearchParams)[] = [
     ...SEARCH_PARAMS,
     "id",
-    "accountStatus",
-    "authenticationStatus",
-    "credentialStatus",
-    "passwordChangeRequired",
+    "status",
     "createdFrom",
     "createdTo",
     "updatedFrom",
     "updatedTo",
-    "fields",
 ];
 
 function normalizeSearchValue(value: string, type: SearchType) {
@@ -77,9 +73,9 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         ?? selectedSearchType;
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
-        canReadUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_READ"),
-        canDisableUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_DISABLE"),
-        canEnableUsers: hasPermission(permissionsFromStore, "AUTHENTICATION", "USER_ENABLE"),
+        canReadUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_READ"),
+        canDisableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_DISABLE"),
+        canEnableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_ENABLE"),
         canReadRoleCatalog: hasPermission(permissionsFromStore, "AUTHORIZATION", "ROLE_READ"),
         canReadUserRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_READ"),
         canAssignRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_ASSIGN"),
@@ -154,7 +150,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,
         onSuccess: (updatedUser) => {
-            toast.success(`Usuário ${updatedUser.accountStatus === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
+            toast.success(`UsuÃ¡rio ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
             updateUserInCache(updatedUser);
         }
     });
@@ -164,7 +160,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     }, []);
 
     const handleChangeUserStatus = useCallback((user: AdminUser) => {
-        // const onConfirm = user.accountStatus === "DISABLED"
+        // const onConfirm = user.status === "DISABLED"
         //     ? dataSource.enableUser
         //     : dataSource.disableUser;
 
@@ -255,18 +251,18 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
             <div className="min-h-full w-full p-3 md:p-4">
                 <div className="flex w-full flex-col gap-6">
                     <PageHeader
-                        title="Gestão de usuários"
+                        title="GestÃ£o de usuÃ¡rios"
                         breadcrumbs={[
-                            { label: "Início", href: "/feed" },
-                            { label: "Gestão Administrativa", href: "/admin" },
-                            { label: "Usuários" },
+                            { label: "InÃ­cio", href: "/feed" },
+                            { label: "GestÃ£o Administrativa", href: "/admin" },
+                            { label: "UsuÃ¡rios" },
                         ]}
                     />
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
-                        <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
+                        <h2 className="text-lg font-black text-j-blue-800">Acesso nÃ£o permitido</h2>
                         <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                            Seu usuário não possui permissão para visualizar a gestão de usuários.
+                            Seu usuÃ¡rio nÃ£o possui permissÃ£o para visualizar a gestÃ£o de usuÃ¡rios.
                         </p>
                     </section>
                 </div>
@@ -281,16 +277,16 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                 <PageHeader
                     title={
                         <>
-                            Gestão de usuários
+                            GestÃ£o de usuÃ¡rios
                             <span className="ml-2 align-middle text-sm font-normal text-j-gray-400 md:text-base">
-                                {users.totalElements} usuário(s) cadastrado(s)
+                                {users.totalElements} usuÃ¡rio(s) cadastrado(s)
                             </span>
                         </>
                     }
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
-                        { label: "Gestão Administrativa", href: "/admin" },
-                        { label: "Usuários" },
+                        { label: "InÃ­cio", href: "/feed" },
+                        { label: "GestÃ£o Administrativa", href: "/admin" },
+                        { label: "UsuÃ¡rios" },
                     ]}
                 />
 
@@ -307,16 +303,16 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     isLoading={false}
                     isFetching={isPending}
                     // error={usersQuery.error
-                    //     ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
+                    //     ? extractApiErrorMessage(usersQuery.error, "NÃ£o foi possÃ­vel carregar os usuÃ¡rios. Tente novamente.")
                     //     : undefined}
                     onSearchChange={updateSearch}
 
-                    onStatusChange={(accountStatus) => replaceSearchParams(
-                        { accountStatus },
+                    onStatusChange={(status) => replaceSearchParams(
+                        { status },
                         { resetPage: true },
                     )}
 
-                    // onRoleChange não existe na nova tipagem explicitamente (a não ser que backend use Q ou fields)
+                    // onRoleChange nÃ£o existe na nova tipagem explicitamente (a nÃ£o ser que backend use Q ou fields)
                     // onRoleChange={(roleIds) => updateFilters({ roleIds })} // Reavalie se precisa manter
 
                     onClearFilters={clearFilters}

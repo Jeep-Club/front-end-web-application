@@ -11,8 +11,9 @@ import {
 } from "@/components/common/card-export/CardExportActions";
 import {
     captureCardElement,
-    exportCardImages,
+    exportCardAsPng,
 } from "@/utils/card-export/exportCard";
+import { buildAndSaveMembershipCardPdf } from "@/utils/card-export/buildMembershipCardPdf";
 import { maskDate } from "@/utils/masks";
 
 interface MembershipCardProps {
@@ -202,9 +203,9 @@ function MembershipCardBack() {
                     />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-[clamp(6px,1.3cqw,10px)] font-bold uppercase tracking-[0.2em] text-j-yellow-300">Clube de jipeiros</p>
+                    <p className="text-[clamp(6px,1.3cqw,10px)] font-bold uppercase tracking-[0.2em] text-j-yellow-300">Clube de Off-Road</p>
                     <h3 className="mt-[clamp(2px,0.5cqw,4px)] text-[clamp(17px,4.5cqw,32px)] font-black uppercase leading-none">Jeep Clube Tamoios</h3>
-                    <p className="mt-[clamp(4px,1cqw,7px)] text-[clamp(7px,1.5cqw,11px)] font-medium text-j-blue-100">Caraguatatuba - Sao Paulo</p>
+                    <p className="mt-[clamp(4px,1cqw,7px)] text-[clamp(7px,1.5cqw,11px)] font-medium text-j-blue-100">Caraguatatuba - São Paulo</p>
                 </div>
             </header>
             <div className="h-[clamp(4px,1cqw,7px)] shrink-0 bg-j-yellow-300" />
@@ -252,8 +253,38 @@ export function MembershipCard({
     const cardContainerRef = useRef<HTMLDivElement>(null);
     const handleExport = async ({ format, scope }: CardExportRequest) => {
         const previousSide = currentSide;
+        const safeFileName =
+            exportFileName ??
+            `carteirinha-${
+                registrationNumber ?? fullName ?? "associado"
+            }`;
 
         try {
+            if (format === "pdf") {
+                /*
+                 * O PDF e desenhado com texto/formas de verdade (ver
+                 * buildMembershipCardPdf.ts), nao e uma captura de tela do
+                 * card — por isso nome, CPF etc. saem selecionaveis.
+                 */
+                await buildAndSaveMembershipCardPdf({
+                    scope,
+                    fileName: safeFileName,
+                    data: {
+                        fullName,
+                        birthDate: maskDate(birthDate, { includeTime: false }),
+                        memberSince: maskDate(memberSince, { includeTime: false }),
+                        phoneNumber,
+                        roleLabel,
+                        registrationNumber: formatMembershipId(registrationNumber),
+                        bloodType,
+                        profilePhotoUrl,
+                    },
+                });
+
+                toast.success("PDF gerado com sucesso!");
+                return;
+            }
+
             setCurrentSide("front");
             await waitForRender();
 
@@ -289,21 +320,14 @@ export function MembershipCard({
                 backImage = await captureCardElement(backElement);
             }
 
-            await exportCardImages({
-                format,
+            await exportCardAsPng({
                 scope,
                 frontImage,
                 backImage,
-                fileName:
-                    exportFileName ??
-                    `carteirinha-${
-                        registrationNumber ?? fullName ?? "associado"
-                    }`,
-    });
+                fileName: safeFileName,
+            });
 
-            toast.success(
-                `${format === "pdf" ? "PDF" : "Imagem"} gerado com sucesso!`,
-            );
+            toast.success("Imagem gerada com sucesso!");
         } catch (error) {
             console.error("Erro ao exportar carteirinha:", error);
 
@@ -318,8 +342,8 @@ export function MembershipCard({
     };
 
     return (
-        <section className="mx-auto flex w-full max-w-[720px] min-w-0 flex-col gap-3">
-            <header className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <section className="flex w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+            <header className="flex flex-col items-center gap-2.5 border-b border-j-gray-200 px-4 py-3 text-center sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-left">
                 <div>
                     <h2 className="text-sm font-extrabold text-j-gray-700">
                         Carteirinha digital
@@ -357,27 +381,29 @@ export function MembershipCard({
                 </div>
             </header>
 
-            <div
-                ref={cardContainerRef}
-                className="membership-card-mobile-landscape w-full min-w-0 [container-type:inline-size]"
-            >
-                {currentSide === "front" ? (
-                    <MembershipCardFront
-                        profilePhotoUrl={profilePhotoUrl}
-                        fullName={fullName}
-                        birthDate={birthDate}
-                        memberSince={memberSince}
-                        phoneNumber={phoneNumber}
-                        roleLabel={roleLabel}
-                        registrationNumber={registrationNumber}
-                        bloodType={bloodType}
-                    />
-                ) : (
-                    <MembershipCardBack />
-                )}
-            </div>
+            <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
+                <div
+                    ref={cardContainerRef}
+                    className="membership-card-mobile-landscape mx-auto w-full max-w-[720px] min-w-0 [container-type:inline-size]"
+                >
+                    {currentSide === "front" ? (
+                        <MembershipCardFront
+                            profilePhotoUrl={profilePhotoUrl}
+                            fullName={fullName}
+                            birthDate={birthDate}
+                            memberSince={memberSince}
+                            phoneNumber={phoneNumber}
+                            roleLabel={roleLabel}
+                            registrationNumber={registrationNumber}
+                            bloodType={bloodType}
+                        />
+                    ) : (
+                        <MembershipCardBack />
+                    )}
+                </div>
 
-            <CardExportActions onExport={handleExport} />
+                <CardExportActions onExport={handleExport} className="mx-auto w-full max-w-[720px]" />
+            </div>
         </section>
     );
 }

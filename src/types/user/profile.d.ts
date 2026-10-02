@@ -27,3 +27,22 @@ interface UserProfile {
 }
 
 type GetUserProfileResponse = UserProfile;
+
+/**
+ * Espelha com.jeepclub.backend.authentication.api.http.dto.session.MeResponseDTO
+ * (campos de dados pessoais retornados por GET /authentication/me).
+ */
+interface MeProfileResponse {
+    id: number;
+    name: string;
+    birthDate: string | null;
+    email: string;
+    cpf: string;
+    rg: string | null;
+    phoneNumber: string | null;
+    profilePhotoUrl: string | null;
+    status: 'ACTIVE' | 'DISABLED';
+    createdAt: string;
+    disabledAt: string | null;
+    updatedAt: string | null;
+}

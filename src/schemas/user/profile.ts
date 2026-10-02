@@ -22,24 +22,17 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
     lastLoginAt: z.string().nullable(),
 });
 
-export const backendUserProfileResponseSchema = z.object({
+export const meProfileResponseSchema: z.ZodType<MeProfileResponse> = z.object({
     id: z.number(),
     name: z.string(),
-    birthDate: z.string().nullable().optional(),
-    birthData: z.string().nullable().optional(),
-    birthdate: z.string().nullable().optional(),
-    birth_date: z.string().nullable().optional(),
-    dateOfBirth: z.string().nullable().optional(),
+    birthDate: z.string().nullable(),
+    email: z.string(),
     cpf: z.string(),
-    email: z.string().nullable().optional(),
-    phone: z.string().nullable().optional(),
-    phoneNumber: z.string().nullable().optional(),
-    rg: z.string().nullable().optional(),
-    profilePhotoUrl: z.string().nullable().optional(),
-    accountStatus: z.string(),
-    authenticationStatus: z.string(),
-    credentialStatus: z.string(),
-    passwordChangeRequired: z.boolean(),
+    rg: z.string().nullable(),
+    phoneNumber: z.string().nullable(),
+    profilePhotoUrl: z.string().nullable(),
+    status: z.enum(['ACTIVE', 'DISABLED']),
     createdAt: z.string(),
-    updatedAt: z.string().nullable().optional(),
+    disabledAt: z.string().nullable(),
+    updatedAt: z.string().nullable(),
 });
