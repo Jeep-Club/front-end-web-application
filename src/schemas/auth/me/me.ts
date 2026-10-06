@@ -7,7 +7,7 @@ export const meResponseSchema: z.ZodType<MeResponse> = z.object({
     expiresInSeconds: z.number()
 });
 
-export const identityMeResponseSchema: z.ZodType<IdentityMeResponse> = z.object({
+export const identityMeResponseSchema = z.object({
     id: z.number(),
     name: z.string(),
     birthDate: z.string().nullable(),
@@ -15,12 +15,12 @@ export const identityMeResponseSchema: z.ZodType<IdentityMeResponse> = z.object(
     cpf: z.string(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),
-    profilePhotoUrl: z.string().nullable(),
+    profilePhotoStorageKey: z.string().nullable(),
     status: z.enum(['ACTIVE', 'DISABLED']),
     createdAt: z.string(),
     disabledAt: z.string().nullable(),
     updatedAt: z.string().nullable()
-});
+}) satisfies z.ZodType<IdentityMeResponse>; 
 
 export const authorizationMeResponseSchema: z.ZodType<AuthorizationMeResponse> = z.object({
     userId: z.number(),

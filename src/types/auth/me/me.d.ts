@@ -13,7 +13,7 @@ interface IdentityMeResponse {
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;
-    profilePhotoUrl: string | null;
+    profilePhotoStorageKey: string | null;
     status: 'ACTIVE' | 'DISABLED';
     createdAt: string;
     disabledAt: string | null;
