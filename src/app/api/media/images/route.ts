@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthCookies } from "@/utils/auth/get";
+import { frontendHeaders } from '@/services/fetchWrapper/frontendHeaders';
 import fetchRefreshToken from "@/utils/auth/refresh";
 import { login } from "@/utils/auth/login";
 
@@ -43,9 +44,9 @@ export async function GET(request: NextRequest) {
     try {
         const backendUrl = `${apiURL}/media/images?key=${encodeURIComponent(key)}`;
         const res = await fetch(backendUrl, {
-            headers: {
+            headers: frontendHeaders({
                 Authorization: `Bearer ${token}`,
-            },
+            }),
         });
 
         if (!res.ok) {
