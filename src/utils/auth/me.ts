@@ -1,6 +1,7 @@
 import { sign } from "@/services/token/sign";
 import { cookies } from "next/headers";
 import { mapMePermissionToModule } from "../permission/userPermission";
+import { authCookieOptions } from './cookieOptions';
 
 export async function me(
     me: MeResponse,
@@ -17,6 +18,6 @@ export async function me(
         expires: new Date(Date.now() + me.expiresInSeconds * 1000).toISOString(),
     }
     const meToken = await sign(meToSign);
-    cookieStore.set('Me', meToken, { path: '/', httpOnly: true, secure: process.env.NODE_SECURE === 'HTTPS', sameSite: "lax" });
-    cookieStore.set('Permissions', permissionsToken, { path: '/', httpOnly: true, secure: process.env.NODE_SECURE === 'HTTPS', sameSite: "lax" });
+    cookieStore.set('Me', meToken, authCookieOptions(true));
+    cookieStore.set('Permissions', permissionsToken, authCookieOptions(true));
 }
