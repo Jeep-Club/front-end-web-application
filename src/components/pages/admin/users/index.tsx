@@ -150,8 +150,9 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,
         onSuccess: (updatedUser) => {
-            toast.success(`UsuÃ¡rio ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
-            updateUserInCache(updatedUser);
+
+            toast.success(`Usuário ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
+
         }
     });
 

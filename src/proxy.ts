@@ -13,6 +13,7 @@ import { HttpAPIRoutes } from "./utils/http/api";
 import { sign } from "./services/token/sign";
 import { mapMePermissionToModule } from "./utils/permission/userPermission";
 import { fetchWrapper } from "./services/fetchWrapper/fetchWrapper";
+import { authCookieOptions } from './utils/auth/cookieOptions';
 
 export async function proxy(request: NextRequest) {
 
@@ -31,9 +32,9 @@ export async function proxy(request: NextRequest) {
         request.cookies.set('AuthRefreshToken', authRefreshToken);
         request.cookies.set('AccessTokenExpiration', accessExpiration);
 
-        response.cookies.set('AuthAccessToken', authAccessToken, { path: '/' });
-        response.cookies.set('AuthRefreshToken', authRefreshToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
-        response.cookies.set('AccessTokenExpiration', accessExpiration, { path: '/' });
+        response.cookies.set('AuthAccessToken', authAccessToken, authCookieOptions());
+        response.cookies.set('AuthRefreshToken', authRefreshToken, authCookieOptions(true));
+        response.cookies.set('AccessTokenExpiration', accessExpiration, authCookieOptions());
     }
 
     async function setMeCookies(
@@ -58,8 +59,8 @@ export async function proxy(request: NextRequest) {
         const meToken = await sign(meToSign);
         request.cookies.set('Me', meToken);
         request.cookies.set('Permissions', permissionsToken);
-        response.cookies.set('Me', meToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
-        response.cookies.set('Permissions', permissionsToken, { path: '/', httpOnly: true, secure: false, sameSite: "lax" });
+        response.cookies.set('Me', meToken, authCookieOptions(true));
+        response.cookies.set('Permissions', permissionsToken, authCookieOptions(true));
     }
 
     async function logout() {

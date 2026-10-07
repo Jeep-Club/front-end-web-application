@@ -100,7 +100,46 @@ export function UserDetailsModal({ user, roles }: UserDetailsModalProps) {
                 <ButtonIcon autoFocus onClick={() => router.back()} aria-label="Fechar detalhes do usuário" className="absolute right-4 top-3 z-10 rounded-full bg-j-white p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800">
                     <X size={20} />
                 </ButtonIcon>
-                <UserDetails user={user} roles={roles} />
+                <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+                    <div className="flex items-start gap-4">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                            <UserRound size={20} />
+                        </span>
+                        <div>
+                            <h2 id="user-details-title" className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                                Detalhes do usuário
+                            </h2>
+                            <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                                Informações administrativas somente para consulta.
+                            </p>
+                        </div>
+                    </div>
+                </header>
+
+                <div className="grid grid-cols-1 gap-4 px-5 py-5 sm:grid-cols-2 md:px-8 md:py-6">
+                    <ReadOnlyField label="Matrícula" value={user.id} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+                    <ReadOnlyField label="Nome" value={user.name} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+                    <ReadOnlyField label="E-mail" value={user.email} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+                    <ReadOnlyField label="CPF" value={maskCPF(user.cpf)} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+                    <ReadOnlyField label="Telefone" value={user.phoneNumber ? maskPhoneNumber(user.phoneNumber) : null} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+
+                    <div className="flex flex-col gap-1.5">
+                        <span className="text-xs font-bold text-j-gray-700 md:text-sm">Status</span>
+                        <span
+                            className={twMerge(
+                                "w-fit rounded-full px-3 py-1 text-xs font-bold",
+                                USER_STATUS_STYLE[user.status],
+                            )}
+                        >
+                            {USER_STATUS_LABEL[user.status]}
+                        </span>
+                    </div>
+                    <ReadOnlyField label="Data de cadastro" value={maskDate(user.createdAt)} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+                    <ReadOnlyField label="Última atualização" value={maskDate(user.updatedAt)} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+
+                    <UserRoles roles={roles} id={user.id} />
+                </div>
+
             </div>
         </ModalRoot>
     );

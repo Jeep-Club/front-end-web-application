@@ -1,13 +1,9 @@
 import * as jose from 'jose';
 import z from 'zod';
+import { getSigningSecret } from './secret';
 
 export async function verify(token: string){
-    const access = process.env.ACCESS || "secret-key-jeep-clube-dev-token";
-    if (!access) {
-        throw new Error('ACCESS is not defined in environment variables');
-    }   
-
-    const secretKey = new TextEncoder().encode(access);
+    const secretKey = getSigningSecret();
     const { payload } = await jose.jwtVerify(token, secretKey);
     return payload;
 }   

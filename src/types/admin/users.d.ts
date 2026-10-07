@@ -18,6 +18,7 @@ interface AdminUser {
     createdAt: string;
     disabledAt?: string | null;
     updatedAt?: string | null;
+
 }
 
 type RoleStatus = "ACTIVE" | "INACTIVE" | "DELETED";
