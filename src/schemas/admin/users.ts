@@ -1,5 +1,6 @@
 import z from "zod";
 import { pageResponseSchema } from "../page";
+import { getMediaImageUrl } from '@/utils/media/imageUrl';
 
 
 export const adminUserSchema = z.object({
@@ -10,12 +11,15 @@ export const adminUserSchema = z.object({
     email: z.string().nullable(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),
-    profilePhotoUrl: z.string().nullable(),
+    profilePhotoStorageKey: z.string().nullable(),
     status: z.enum(["ACTIVE", "DISABLED"]),
     createdAt: z.string(),
     disabledAt: z.string().nullable(),
     updatedAt: z.string().nullable(),
-}) satisfies z.ZodType<AdminUser>;
+}).transform(({ profilePhotoStorageKey, ...user }) => ({
+    ...user,
+    profilePhotoUrl: getMediaImageUrl(profilePhotoStorageKey) || null,
+})) satisfies z.ZodType<AdminUser>;
 
 export const adminUserListResponseSchema = pageResponseSchema(adminUserSchema) satisfies z.ZodType<PageResponse<AdminUser>>;
 
