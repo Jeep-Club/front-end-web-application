@@ -1,5 +1,6 @@
 import {
     CalendarDays,
+    Car,
     KeyRound,
     Users,
     WalletCards,
@@ -38,7 +39,7 @@ export const adminModules: AdminModuleConfig[] = [
         href: "/admin/users",
         icon: Users,
         visibilityPermission: {
-            module: "AUTHENTICATION",
+            module: "IDENTITY",
             action: "USER_READ",
         },
     },
@@ -62,8 +63,20 @@ export const adminModules: AdminModuleConfig[] = [
         href: "/admin/gestao-financeira",
         icon: WalletCards,
         visibilityPermission: {
-            module: "FINANCE",
-            action: "FINANCE_READ",
+            module: "BILLING",
+            action: "CHARGE_DEFINITION_READ",
+        },
+    },
+    {
+        key: "vehicles",
+        title: "Administração de veículos",
+        description:
+            "Visualize, cadastre e gerencie os veículos de todos os membros.",
+        href: "/admin/veiculos",
+        icon: Car,
+        visibilityPermission: {
+            module: "VEHICLES",
+            action: "VEHICLE_READ",
         },
     },
 ];

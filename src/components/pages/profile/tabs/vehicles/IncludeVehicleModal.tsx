@@ -46,14 +46,8 @@ const LIGHT_FIELDS_CLASS = `
     [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
 `;
 
-function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+import { uploadVehicleImageAction } from "@/actions/vehicles/upload-image";
+import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
 interface VehicleStepsFieldsProps {
     currentStep: number;
@@ -197,9 +191,20 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                     className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                 />
                 {isEditMode && vehicle?.photo && (
-                    <p className="text-xs text-j-gray-500">
-                        Já existe uma foto cadastrada. Envie uma nova apenas se quiser substituí-la.
-                    </p>
+                    <div className="flex items-center gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={getMediaImageUrl(vehicle.photo)}
+                            alt="Foto atual"
+                            className="h-16 w-24 rounded-lg object-cover border border-j-gray-200"
+                        />
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-j-gray-700">Foto atual cadastrada</span>
+                            <span className="text-[11px] text-j-gray-500">
+                                Envie uma nova imagem acima apenas se desejar substituí-la.
+                            </span>
+                        </div>
+                    </div>
                 )}
             </div>
             </div>
@@ -265,12 +270,18 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
     const mutation = useMutation({
         mutationFn: async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {
             const photoFile = data.photo?.[0];
-            const photo = photoFile ? await fileToBase64(photoFile) : (vehicle?.photo ?? undefined);
+            let photo = isEditMode ? (vehicle?.photo ?? undefined) : undefined;
+
+            if (photoFile instanceof File) {
+                const formData = new FormData();
+                formData.append("file", photoFile);
+                photo = await uploadVehicleImageAction(formData);
+            }
 
             if (isEditMode && vehicleId) {
-                const payload: EditVehicleMemberRequest = {
-                    nickname: data.nickname,
-                    photo,
+                const changes: EditVehicleMemberRequest = {
+                    nickname: data.nickname?.trim() || null,
+                    ...(photoFile ? { photo } : {}),
                     plate: data.plate,
                     renavam: data.renavam,
                     brand: data.brand,
@@ -283,6 +294,12 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                     engineDisplacement: data.engineDisplacement,
                     towing: data.towing,
                 };
+                const payload: EditVehicleMemberRequest = {};
+                for (const [key, value] of Object.entries(changes)) {
+                    if (value !== vehicle?.[key as keyof VehicleDetailForEdit]) {
+                        Object.assign(payload, { [key]: value });
+                    }
+                }
                 return editVehicleMemberAction(vehicleId, payload);
             }
 

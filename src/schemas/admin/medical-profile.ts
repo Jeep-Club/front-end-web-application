@@ -12,15 +12,14 @@ export enum BloodType {
   UNKNOWN = 'UNKNOWN'
 }
 
-export const getAllMedicalProfilesResponseSchema: z.ZodType<GetListMedicalProfilesResponse> = z.array(
-  z.object({
+const medicalProfileSummarySchema: z.ZodType<MedicalProfileSummary> = z.object({
     id: z.number(),
     ownerType: z.string(),
     ownerId: z.number(),
-    bloodType: z.string(),
     updatedAt: z.string(),
-  })
-);
+});
+
+export const getAllMedicalProfilesResponseSchema = pageResponseSchema(medicalProfileSummarySchema);
 
 export const getMedicalProfileResponseSchema: z.ZodType<GetMedicalProfileResponse> = z.object({
   id: z.number(),
@@ -55,4 +54,10 @@ export const putMedicalProfileRequestSchema: z.ZodType<PutMedicalProfileUserRequ
   observations: z.string().trim().min(1, 'Campo obrigatório'),
 });
 
-export const putMedicalProfileResponseSchema: z.ZodType<PutMedicalProfileResponse> = getMedicalProfileResponseSchema;
+export const putMedicalProfileResponseSchema: z.ZodType<PutMedicalProfileResponse> = z.object({
+  id: z.number(),
+  ownerType: z.string(),
+  ownerId: z.number(),
+  updatedAt: z.string(),
+});
+import { pageResponseSchema } from '../page';

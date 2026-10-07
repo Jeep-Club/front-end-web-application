@@ -20,5 +20,5 @@ export const vehicleDetailResponseSchema: z.ZodType<VehicleDetail> = z.object({
     ownerId: z.number(),
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
-    disabledAt: z.string().nullable(),
+    disabledAt: z.string().nullable().optional(),
 });

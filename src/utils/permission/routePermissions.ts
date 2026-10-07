@@ -74,8 +74,15 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
 
     "/admin/gestao-financeira": [
         {
-            module: "FINANCE",
-            actions: ["FINANCE_READ"],
+            module: "BILLING",
+            actions: ["CHARGE_DEFINITION_READ"],
+        },
+    ],
+
+    "/admin/veiculos": [
+        {
+            module: "VEHICLES",
+            actions: ["VEHICLE_READ"],
         },
     ],
 };

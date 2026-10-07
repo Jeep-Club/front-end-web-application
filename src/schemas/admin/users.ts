@@ -6,20 +6,17 @@ import { getMediaImageUrl } from '@/utils/media/imageUrl';
 export const adminUserSchema = z.object({
     id: z.number(),
     name: z.string(),
-    birthDate: z.string().nullable(),
+    birthDate: z.string().nullish().transform((value) => value ?? null),
     cpf: z.string(),
-    email: z.string().nullable(),
-    rg: z.string().nullable(),
-    phoneNumber: z.string().nullable(),
-    profilePhotoStorageKey: z.string().nullable(),
+    email: z.string().nullish().transform((value) => value ?? null),
+    rg: z.string().nullish().transform((value) => value ?? null),
+    phoneNumber: z.string().nullish().transform((value) => value ?? null),
+    profilePhotoUrl: z.string().nullish().transform((value) => value ?? null),
     status: z.enum(["ACTIVE", "DISABLED"]),
     createdAt: z.string(),
-    disabledAt: z.string().nullable(),
-    updatedAt: z.string().nullable(),
-}).transform(({ profilePhotoStorageKey, ...user }) => ({
-    ...user,
-    profilePhotoUrl: getMediaImageUrl(profilePhotoStorageKey) || null,
-})) satisfies z.ZodType<AdminUser>;
+    disabledAt: z.string().nullish().transform((value) => value ?? null),
+    updatedAt: z.string().nullish().transform((value) => value ?? null),
+}) satisfies z.ZodType<AdminUser>;
 
 export const adminUserListResponseSchema = pageResponseSchema(adminUserSchema) satisfies z.ZodType<PageResponse<AdminUser>>;
 
@@ -92,7 +89,7 @@ export const adminUserSearchParamsSchema = z.object({
         .number()
         .int()
         .min(1)
-        .max(100)
+        .max(50)
         .optional(),
 
     sort: z
@@ -106,7 +103,7 @@ export const adminUserSearchParamsSchema = z.object({
 
 // export const userRegisterSchema = z.object({
 //   name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
-//   birthData: z.string().min(1, "A data de nascimento é obrigatória"), // Pode aplicar um regex de data se necessário
+//   birthData: z.string().min(1, "A data de nascimento é obrigatória"),
 //   email: z.email("Formato de e-mail inválido"),
 //   cpf: z.string().min(11, "O CPF é obrigatório e deve ter 11 dígitos"),
 //   rg: z.string().min(1, "O RG é obrigatório"),

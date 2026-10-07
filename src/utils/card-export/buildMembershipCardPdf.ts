@@ -64,6 +64,130 @@ function loadImageElement(
     });
 }
 
+function prepareTransparentLogo(image: HTMLImageElement) {
+    const sourceCanvas = document.createElement("canvas");
+    const sourceWidth = image.naturalWidth || image.width;
+    const sourceHeight = image.naturalHeight || image.height;
+
+    sourceCanvas.width = sourceWidth;
+    sourceCanvas.height = sourceHeight;
+
+    const context = sourceCanvas.getContext("2d", {
+        willReadFrequently: true,
+    });
+
+    if (!context) {
+        return sourceCanvas;
+    }
+
+    context.drawImage(image, 0, 0);
+
+    const imageData = context.getImageData(
+        0,
+        0,
+        sourceWidth,
+        sourceHeight,
+    );
+    const { data } = imageData;
+    const visited = new Uint8Array(sourceWidth * sourceHeight);
+    const queue: number[] = [];
+
+    const isBackground = (pixel: number) => {
+        const offset = pixel * 4;
+        const red = data[offset];
+        const green = data[offset + 1];
+        const blue = data[offset + 2];
+        const max = Math.max(red, green, blue);
+        const min = Math.min(red, green, blue);
+
+        return min > 205 && max - min < 28;
+    };
+
+    const enqueue = (pixel: number) => {
+        if (!visited[pixel] && isBackground(pixel)) {
+            visited[pixel] = 1;
+            queue.push(pixel);
+        }
+    };
+
+    for (let x = 0; x < sourceWidth; x += 1) {
+        enqueue(x);
+        enqueue((sourceHeight - 1) * sourceWidth + x);
+    }
+
+    for (let y = 0; y < sourceHeight; y += 1) {
+        enqueue(y * sourceWidth);
+        enqueue(y * sourceWidth + sourceWidth - 1);
+    }
+
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+        const pixel = queue[cursor];
+        const x = pixel % sourceWidth;
+        const y = Math.floor(pixel / sourceWidth);
+
+        data[pixel * 4 + 3] = 0;
+
+        if (x > 0) enqueue(pixel - 1);
+        if (x + 1 < sourceWidth) enqueue(pixel + 1);
+        if (y > 0) enqueue(pixel - sourceWidth);
+        if (y + 1 < sourceHeight) enqueue(pixel + sourceWidth);
+    }
+
+    context.putImageData(imageData, 0, 0);
+
+    let minX = sourceWidth;
+    let minY = sourceHeight;
+    let maxX = 0;
+    let maxY = 0;
+
+    for (let y = 0; y < sourceHeight; y += 1) {
+        for (let x = 0; x < sourceWidth; x += 1) {
+            if (data[(y * sourceWidth + x) * 4 + 3] > 12) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            }
+        }
+    }
+
+    if (minX > maxX || minY > maxY) {
+        return sourceCanvas;
+    }
+
+    const padding = Math.max(
+        2,
+        Math.round(Math.max(sourceWidth, sourceHeight) * 0.015),
+    );
+    const cropX = Math.max(0, minX - padding);
+    const cropY = Math.max(0, minY - padding);
+    const cropWidth = Math.min(
+        sourceWidth - cropX,
+        maxX - minX + 1 + padding * 2,
+    );
+    const cropHeight = Math.min(
+        sourceHeight - cropY,
+        maxY - minY + 1 + padding * 2,
+    );
+    const outputCanvas = document.createElement("canvas");
+
+    outputCanvas.width = cropWidth;
+    outputCanvas.height = cropHeight;
+    outputCanvas.getContext("2d")?.drawImage(
+        sourceCanvas,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        cropWidth,
+        cropHeight,
+    );
+
+    return outputCanvas;
+}
+
 function drawCardBorder(pdf: jsPDF) {
     pdf.setDrawColor(COLOR.blue950);
     pdf.setLineWidth(0.3);
@@ -85,20 +209,28 @@ function drawLogo(
 ) {
     if (!image) {
         pdf.setFillColor(COLOR.white);
-        pdf.rect(cx - radius, cy - radius, radius * 2, radius * 2, "F");
+        pdf.circle(cx, cy, radius, "F");
         return;
     }
 
     try {
-        const imageSize = radius * 2;
+        const logo = prepareTransparentLogo(image);
+        const imageSize = radius * 2.15;
+        const aspect = logo.width / logo.height;
+        const drawWidth = aspect >= 1
+            ? imageSize
+            : imageSize * aspect;
+        const drawHeight = aspect >= 1
+            ? imageSize / aspect
+            : imageSize;
 
         pdf.addImage(
-            image,
+            logo,
             "PNG",
-            cx - imageSize / 2,
-            cy - imageSize / 2,
-            imageSize,
-            imageSize,
+            cx - drawWidth / 2,
+            cy - drawHeight / 2,
+            drawWidth,
+            drawHeight,
         );
     } catch {
         // mantem o espaco vazio se o navegador nao conseguir ler a
@@ -125,12 +257,12 @@ function drawPersonPlaceholder(
     pdf.setDrawColor(COLOR.blue300);
     pdf.setLineWidth(size * 0.06);
 
-    const headCy = y + h * 0.36;
-    const headR = size * 0.16;
+    const headCy = y + h * 0.34;
+    const headR = size * 0.14;
     pdf.ellipse(cx, headCy, headR, headR, "S");
 
-    const shoulderCy = y + h * 0.92;
-    pdf.ellipse(cx, shoulderCy, size * 0.3, size * 0.26, "S");
+    const shoulderCy = y + h * 0.82;
+    pdf.ellipse(cx, shoulderCy, size * 0.27, size * 0.21, "S");
 
     pdf.restoreGraphicsState();
 }
@@ -203,9 +335,7 @@ function drawFrontFace(
     const rightWidth = CARD_WIDTH_MM - rightX - 4;
     const photoHeight = 23;
 
-    pdf.setFillColor("#eef2f8");
-    pdf.setDrawColor(COLOR.blue950);
-    pdf.setLineWidth(0.35);
+    pdf.setFillColor("#f5f7fb");
     pdf.roundedRect(
         leftX,
         contentTop,
@@ -213,19 +343,38 @@ function drawFrontFace(
         photoHeight,
         1.2,
         1.2,
-        "FD",
+        "F",
     );
 
     if (photo) {
         try {
+            const inset = 0.45;
+            const frameX = leftX + inset;
+            const frameY = contentTop + inset;
+            const frameWidth = leftWidth - inset * 2;
+            const frameHeight = photoHeight - inset * 2;
+            const imageAspect = photo.naturalWidth / photo.naturalHeight;
+            const frameAspect = frameWidth / frameHeight;
+            let drawWidth = frameWidth;
+            let drawHeight = frameHeight;
+
+            if (imageAspect > frameAspect) {
+                drawWidth = frameHeight * imageAspect;
+            } else {
+                drawHeight = frameWidth / imageAspect;
+            }
+
+            const drawX = frameX + (frameWidth - drawWidth) / 2;
+            const drawY = frameY + (frameHeight - drawHeight) / 2;
+
             pdf.saveGraphicsState();
             pdf.roundedRect(
-                leftX + 0.4,
-                contentTop + 0.4,
-                leftWidth - 0.8,
-                photoHeight - 0.8,
-                1,
-                1,
+                frameX,
+                frameY,
+                frameWidth,
+                frameHeight,
+                1.35,
+                1.35,
                 null,
             );
             pdf.clip();
@@ -233,10 +382,10 @@ function drawFrontFace(
             pdf.addImage(
                 photo,
                 "JPEG",
-                leftX,
-                contentTop,
-                leftWidth,
-                photoHeight,
+                drawX,
+                drawY,
+                drawWidth,
+                drawHeight,
             );
             pdf.restoreGraphicsState();
         } catch {
@@ -251,6 +400,18 @@ function drawFrontFace(
             photoHeight,
         );
     }
+
+    pdf.setDrawColor(COLOR.blue100);
+    pdf.setLineWidth(0.18);
+    pdf.roundedRect(
+        leftX,
+        contentTop,
+        leftWidth,
+        photoHeight,
+        1.4,
+        1.4,
+        "S",
+    );
 
     const photoBottom = contentTop + photoHeight;
 

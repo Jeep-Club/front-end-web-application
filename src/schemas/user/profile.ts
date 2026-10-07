@@ -24,7 +24,9 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
     lastLoginAt: z.string().nullable(),
 });
 
+
 export const meProfileResponseSchema: z.ZodType<MeProfileResponse> = identityMeResponseSchema.transform(user => ({
     ...user,
     profilePhotoUrl: getMediaImageUrl(user.profilePhotoStorageKey) || null,
 }));
+

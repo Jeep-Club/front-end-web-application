@@ -10,6 +10,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
 import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
+import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
 const FUEL_TYPE_LABELS: Record<FuelType, string> = {
     GASOLINE: "Gasolina",
@@ -20,7 +21,7 @@ const FUEL_TYPE_LABELS: Record<FuelType, string> = {
     HYBRID: "Híbrido",
 };
 
-const STATUS_LABELS: Record<VehicleStatus, string> = {
+const STATUS_LABELS: Record<string, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
     PENDING: "Pendente",
@@ -114,7 +115,7 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                     {vehicle.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                            src={vehicle.photo}
+                            src={getMediaImageUrl(vehicle.photo)}
                             alt={vehicle.nickname || vehicle.model}
                             className="w-full h-40 object-cover rounded-lg"
                         />

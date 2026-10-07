@@ -11,9 +11,10 @@ interface Props {
 export default function AdminMedicalProfilesListPage({ data, currentPage }: Props) {
     const router = useRouter();
     
-    const tableColumns: (keyof GetListMedicalProfilesResponse[0])[] = Object.keys(data[0] || {}) as (keyof GetListMedicalProfilesResponse[0])[];
+    const rows = data.content;
+    const tableColumns: (keyof MedicalProfileSummary)[] = ['id', 'ownerType', 'ownerId', 'updatedAt'];
 
-    function onView(row: GetListMedicalProfilesResponse[0]) {
+    function onView(row: MedicalProfileSummary) {
         router.push(`/admin/medical-profile/${row.id}`);
     }
     return (
@@ -21,10 +22,11 @@ export default function AdminMedicalProfilesListPage({ data, currentPage }: Prop
                 <h1 className="text-2xl font-bold">Perfil Médico</h1>
                 <p className="text-gray-600">Listagem de perfis médicos dos usuários.</p>
                 
-                <SimpleTable<GetListMedicalProfilesResponse[0]>
+                <SimpleTable<MedicalProfileSummary>
                     columns={tableColumns}
-                    data={data || []}
-                    currentPage={currentPage}
+                    data={rows}
+                    currentPage={currentPage + 1}
+                    totalPages={data.totalPages}
                     onView={onView}
                 />
             </div>
