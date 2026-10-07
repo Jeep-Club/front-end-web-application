@@ -33,15 +33,16 @@ type GetUserProfileResponse = UserProfile;
  * (campos de dados pessoais retornados por GET /authentication/me).
  */
 interface MeProfileResponse {
-    userId: number;
-    userName: string;
+    id: number;
+    name: string;
     birthDate: string | null;
     email: string;
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;
     profilePhotoUrl: string | null;
-    accountStatus: UserStatus;
+    status: 'ACTIVE' | 'DISABLED';
     createdAt: string;
-    updatedAt: string;
+    disabledAt: string | null;
+    updatedAt: string | null;
 }

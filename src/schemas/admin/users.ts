@@ -5,15 +5,16 @@ import { pageResponseSchema } from "../page";
 export const adminUserSchema = z.object({
     id: z.number(),
     name: z.string(),
+    birthDate: z.string().nullable(),
     cpf: z.string(),
     email: z.string().nullable(),
-    phone: z.string().nullable(),
-    accountStatus: z.enum(["ACTIVE", "LOCKED", "DISABLED", "PENDING_FIRST_ACCESS", "CHANGE_PASSWORD_REQUIRED"]),
-    passwordChangeRequired: z.boolean(),
+    rg: z.string().nullable(),
+    phoneNumber: z.string().nullable(),
+    profilePhotoUrl: z.string().nullable(),
+    status: z.enum(["ACTIVE", "DISABLED"]),
     createdAt: z.string(),
+    disabledAt: z.string().nullable(),
     updatedAt: z.string().nullable(),
-    authenticationStatus: z.string(),
-    credentialStatus: z.string(),
 }) satisfies z.ZodType<AdminUser>;
 
 export const adminUserListResponseSchema = pageResponseSchema(adminUserSchema) satisfies z.ZodType<PageResponse<AdminUser>>;
@@ -50,24 +51,16 @@ export const adminUserSearchParamsSchema = z.object({
         .regex(/^\d{10,11}$/)
         .optional(),
 
-    accountStatus: z
+    birthDate: z.iso.date().optional(),
+
+    rg: z
+        .string()
+        .trim()
+        .max(20)
+        .optional(),
+
+    status: z
         .enum(["ACTIVE", "DISABLED"])
-        .optional(),
-
-    authenticationStatus: z
-        .enum(["ENABLED", "LOCKED"])
-        .optional(),
-
-    credentialStatus: z
-        .enum([
-            "PERMANENT",
-            "PENDING_FIRST_ACCESS",
-            "CHANGE_REQUIRED",
-        ])
-        .optional(),
-
-    passwordChangeRequired: z
-        .enum(["true", "false"])
         .optional(),
 
     createdFrom: z.iso.datetime().optional(),
@@ -83,11 +76,6 @@ export const adminUserSearchParamsSchema = z.object({
         .trim()
         .min(1)
         .max(100)
-        .optional(),
-
-    fields: z
-        .string()
-        .max(500)
         .optional(),
 
     page: z.coerce

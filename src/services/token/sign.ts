@@ -1,11 +1,7 @@
 import * as jose from 'jose';
+import { getSigningSecret } from './secret';
 
 export async function sign(data: object, expiration?: string): Promise<string> {
-    const access = process.env.ACCESS || "secret-key-jeep-clube-dev-token";
-    if (!access) {
-        throw new Error('ACCESS is not defined in environment variables');
-    }
-    
-    const secretKey = new TextEncoder().encode(access);
+    const secretKey = getSigningSecret();
     return await new jose.SignJWT({data}).setProtectedHeader({ alg: 'HS256' }).setExpirationTime(expiration??'7d').sign(secretKey);
 }   

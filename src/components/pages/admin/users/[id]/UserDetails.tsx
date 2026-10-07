@@ -61,25 +61,19 @@ export function UserDetails({ user, roles }: UserDetailsModalProps) {
                 <ReadOnlyField label="Nome" value={user.name} valueClassName="bg-j-gray-500 font-normal text-j-white" />
                 <ReadOnlyField label="E-mail" value={user.email} valueClassName="bg-j-gray-500 font-normal text-j-white" />
                 <ReadOnlyField label="CPF" value={maskCPF(user.cpf)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
-                <ReadOnlyField label="Telefone" value={user.phone ? maskPhoneNumber(user.phone) : null} valueClassName="bg-j-gray-500 font-normal text-j-white" />
+                <ReadOnlyField label="Telefone" value={user.phoneNumber ? maskPhoneNumber(user.phoneNumber) : null} valueClassName="bg-j-gray-500 font-normal text-j-white" />
 
                 <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-bold text-j-white md:text-sm">Status</span>
                     <span
                         className={twMerge(
                             "w-fit rounded-full px-3 py-1 text-xs font-bold",
-                            USER_STATUS_STYLE[user.accountStatus],
+                            USER_STATUS_STYLE[user.status],
                         )}
                     >
-                        {USER_STATUS_LABEL[user.accountStatus]}
+                        {USER_STATUS_LABEL[user.status]}
                     </span>
                 </div>
-
-                <ReadOnlyField
-                    label="Troca de senha pendente"
-                    value={user.passwordChangeRequired ? "Sim" : "Não"}
-                    valueClassName="bg-j-gray-500 font-normal text-j-white"
-                />
                 <ReadOnlyField label="Data de cadastro" value={maskDate(user.createdAt)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
                 <ReadOnlyField label="Última atualização" value={maskDate(user.updatedAt)} valueClassName="bg-j-gray-500 font-normal text-j-white" />
 
@@ -135,26 +129,19 @@ export function UserDetailsModal({
                     <ReadOnlyField label="Nome" value={user.name} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
                     <ReadOnlyField label="E-mail" value={user.email} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
                     <ReadOnlyField label="CPF" value={maskCPF(user.cpf)} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
-                    <ReadOnlyField label="Telefone" value={user.phone ? maskPhoneNumber(user.phone) : null} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
+                    <ReadOnlyField label="Telefone" value={user.phoneNumber ? maskPhoneNumber(user.phoneNumber) : null} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
 
                     <div className="flex flex-col gap-1.5">
                         <span className="text-xs font-bold text-j-gray-700 md:text-sm">Status</span>
                         <span
                             className={twMerge(
                                 "w-fit rounded-full px-3 py-1 text-xs font-bold",
-                                USER_STATUS_STYLE[user.accountStatus],
+                                USER_STATUS_STYLE[user.status],
                             )}
                         >
-                            {USER_STATUS_LABEL[user.accountStatus]}
+                            {USER_STATUS_LABEL[user.status]}
                         </span>
                     </div>
-
-                    <ReadOnlyField
-                        label="Troca de senha pendente"
-                        value={user.passwordChangeRequired ? "Sim" : "Não"}
-                        labelClassName="text-j-gray-700"
-                        valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700"
-                    />
                     <ReadOnlyField label="Data de cadastro" value={maskDate(user.createdAt)} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
                     <ReadOnlyField label="Última atualização" value={maskDate(user.updatedAt)} labelClassName="text-j-gray-700" valueClassName="border-2 border-j-gray-200 bg-j-gray-100 font-normal text-j-gray-700" />
 

@@ -18,7 +18,7 @@ type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
 export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/register": [
         {
-            module: "AUTHENTICATION",
+            module: "IDENTITY",
             actions: ["USER_CREATE"],
         },
     ],
@@ -53,7 +53,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
 
     "/admin/users": [
         {
-            module: "AUTHENTICATION",
+            module: "IDENTITY",
             actions: ["USER_READ"],
         },
     ],

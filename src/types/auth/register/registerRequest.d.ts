@@ -12,7 +12,7 @@ interface RegisterFormData {
 
 interface RegisterRequest {
     name: string;
-    birthData: string;
+    birthDate: string;
     email: string;
     cpf: string;
     password: string;
