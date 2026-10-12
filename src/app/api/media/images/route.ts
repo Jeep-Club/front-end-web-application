@@ -62,14 +62,21 @@ export async function GET(request: NextRequest) {
                 headers: { "Cache-Control": "private, no-store" },
             });
         }
-        const buffer = await res.arrayBuffer();
+        const headers = new Headers({
+            "Content-Type": contentType,
+            // Storage keys are immutable; keep a short private browser cache to
+            // avoid downloading the same avatar again on every navigation.
+            "Cache-Control": "private, max-age=300",
+            "Vary": "Cookie",
+        });
+        const contentLength = res.headers.get("Content-Length");
+        if (contentLength) headers.set("Content-Length", contentLength);
+        const etag = res.headers.get("ETag");
+        if (etag) headers.set("ETag", etag);
 
-        return new NextResponse(buffer, {
+        return new NextResponse(res.body, {
             status: 200,
-            headers: {
-                "Content-Type": contentType,
-                "Cache-Control": "private, no-store",
-            },
+            headers,
         });
     } catch {
         return new NextResponse("Erro ao resolver imagem do storage", { status: 500 });

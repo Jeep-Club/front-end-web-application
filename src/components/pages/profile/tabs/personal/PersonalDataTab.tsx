@@ -38,6 +38,8 @@ export function PersonalDataTab() {
     } = useQuery({
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
     });
     const { data: medicalProfile } = useQuery({
         queryKey: ["medical-profile", "me"],

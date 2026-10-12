@@ -6,6 +6,8 @@ import { getTourSteps } from "@/config/tourSteps";
 import { useUserStore } from "@/stores/userStore";
 import { hasAnyAdminAccess } from "@/config/adminModules";
 
+const INITIAL_TOUR_SEEN_KEY = "tour_initial_seen_v1";
+
 export function getTourStorageKey(canAccessAdmin: boolean): string {
     return canAccessAdmin ? "tour_completed_admin" : "tour_completed_member";
 }
@@ -20,6 +22,7 @@ export function resetAllTours() {
         }
     }
     keysToRemove.forEach((key) => localStorage.removeItem(key));
+    localStorage.removeItem(INITIAL_TOUR_SEEN_KEY);
     sessionStorage.removeItem("force_branch_tour");
 }
 
@@ -86,6 +89,9 @@ export function usePageTour({
 
     const startTour = useCallback(() => {
         if (typeof window === "undefined") return;
+
+        // Qualquer tutorial já exibido consome a apresentação automática inicial.
+        localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
 
         if (driverRef.current) {
             driverRef.current.destroy();
@@ -184,8 +190,19 @@ export function usePageTour({
 
         sessionStorage.removeItem('force_branch_tour');
 
+        // Tutoriais de rota só podem iniciar automaticamente na primeira visita.
+        // O atalho explícito "Reiniciar tutorial" continua disponível.
+        const alreadySeen = localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true";
+        const legacyCompletion = storageKey && localStorage.getItem(storageKey) === "true";
+        if (alreadySeen || legacyCompletion) {
+            localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
+            return;
+        }
+
+        localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
+
         if (storageKey) {
-            localStorage.removeItem(storageKey);
+            localStorage.setItem(storageKey, "true");
         }
         hasAutoStartedRef.current = true;
 
@@ -210,13 +227,20 @@ export function usePageTour({
         if (typeof window === "undefined" || !enabled) return;
         if (!autoStartOnFirstVisit || hasAutoStartedRef.current) return;
 
-        const completed = storageKey ? localStorage.getItem(storageKey) === "true" : false;
-        if (!completed) {
-            hasAutoStartedRef.current = true;
+        const alreadySeen = localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true";
+        const legacyCompletion = storageKey && localStorage.getItem(storageKey) === "true";
+        if (!alreadySeen && !legacyCompletion) {
             const timer = setTimeout(() => {
+                // Revalida no momento de abrir para evitar dois tours em áreas simultâneas.
+                if (localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true") return;
+                hasAutoStartedRef.current = true;
+                localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
                 startTour();
             }, 350);
             return () => clearTimeout(timer);
+        }
+        if (legacyCompletion) {
+            localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
         }
     }, [autoStartOnFirstVisit, enabled, storageKey, startTour]);
 
