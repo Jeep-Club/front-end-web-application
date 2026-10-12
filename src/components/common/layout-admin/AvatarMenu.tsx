@@ -12,14 +12,16 @@ import { resetAllTours } from "@/hooks/useTour";
 import { useContext } from "react";
 
 interface AvatarMenuProps {
-    src: string;
+    src?: string | null;
+    fullName: string;
 }
 
-export function AvatarMenu({ src }: AvatarMenuProps) {
+export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const tourContext = useContext(TourContext);
+    const initials = fullName.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("pt-BR") || "?";
 
     const logoutMutation = useMutation({
         mutationFn: logoutAction,
@@ -59,17 +61,31 @@ export function AvatarMenu({ src }: AvatarMenuProps) {
                 onClick={() => setIsOpen((prev) => !prev)}
                 aria-haspopup="menu"
                 aria-expanded={isOpen}
-                className="cursor-pointer rounded-full transition-opacity hover:opacity-80"
+                title="Abrir menu da conta"
+                className="cursor-pointer rounded-full ring-2 ring-white/40 transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-j-yellow-300"
             >
-                <Avatar src={src} />
+                {src ? (
+                    <Avatar src={src} alt={`Foto de ${fullName}`} className="h-9 w-9 bg-j-blue-700" />
+                ) : (
+                    <span aria-label={fullName} className="flex h-9 w-9 items-center justify-center rounded-full bg-j-yellow-300 text-xs font-extrabold text-j-blue-900">
+                        {initials}
+                    </span>
+                )}
             </button>
 
             {isOpen && (
-                <div
-                    id="tour-avatar-dropdown"
-                    role="menu"
-                    className="absolute right-0 top-full mt-2 w-48 flex flex-col gap-1 rounded-lg border border-j-gray-200 bg-j-white p-2 shadow-lg z-50"
-                >
+                <>
+                    <button
+                        type="button"
+                        aria-label="Fechar menu da conta"
+                        onClick={() => setIsOpen(false)}
+                        className="fixed inset-0 z-40 bg-j-black/30 backdrop-blur-[1px] md:hidden"
+                    />
+                    <div
+                        id="tour-avatar-dropdown"
+                        role="menu"
+                        className="absolute right-0 top-full z-50 mt-3 flex w-[min(18rem,calc(100vw-1.5rem))] flex-col gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-2.5 text-j-gray-700 shadow-2xl shadow-j-black/25 ring-1 ring-j-black/5"
+                    >
                     <button
                         type="button"
                         role="menuitem"
@@ -145,7 +161,8 @@ export function AvatarMenu({ src }: AvatarMenuProps) {
                         {logoutMutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <LogOut size={16} />}
                         Sair
                     </button>
-                </div>
+                    </div>
+                </>
             )}
         </div>
     );

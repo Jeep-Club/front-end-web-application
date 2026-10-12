@@ -15,7 +15,7 @@ interface UploadResponse {
 /** Upload autenticado compartilhado. Retorna somente a chave persistente do arquivo. */
 export async function uploadImageAction(formData: FormData): Promise<string> {
     const file = formData.get('file');
-    if (!(file instanceof File) || file.size === 0) {
+    if (typeof File === "undefined" || !(file instanceof File) || file.size === 0) {
         throw new Error('Selecione uma imagem para enviar.');
     }
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {

@@ -19,9 +19,12 @@ export async function proxy(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
 
-    const response = NextResponse.next();
-    response.headers.set('x-route-pathname', path);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-route-pathname', path);
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
 
+    // Prefetch requests also need the route header and fresh auth cookies;
+    // skipping proxy work can cache an unauthorized RSC payload until reload.
     if (request.method !== 'GET') {
         return response;
     }
@@ -138,5 +141,4 @@ export const config = {
          */
         '/((?!api|_next/static|_next/image|favicon.ico|images/).*)',
     ],
-    missing: [{ type: "header", key: "purpose", value: "prefetch" }],
 }

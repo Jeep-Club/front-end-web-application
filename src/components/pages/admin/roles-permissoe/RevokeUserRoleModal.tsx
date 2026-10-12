@@ -6,7 +6,7 @@ import { AlertTriangle, X } from "lucide-react";
 
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { putUserRoleAction } from "@/actions/admin/users/putRole";
+import { revokeRoleFromUserAction } from "@/actions/authorization/revoke-role-from-user";
 import { UserRolesViewModal } from "./UserRolesViewModal";
 
 interface RevokeUserRoleModalProps {
@@ -14,7 +14,6 @@ interface RevokeUserRoleModalProps {
     userName: string;
     roleId: number;
     roleName: string;
-    currentRoleIds: number[];
 }
 
 export function RevokeUserRoleModal({
@@ -22,7 +21,6 @@ export function RevokeUserRoleModal({
     userName,
     roleId,
     roleName,
-    currentRoleIds,
 }: RevokeUserRoleModalProps) {
     const { setContent, setClose } = useModal();
     const queryClient = useQueryClient();
@@ -32,10 +30,7 @@ export function RevokeUserRoleModal({
     };
 
     const mutation = useMutation({
-        mutationFn: () => putUserRoleAction({
-            id: userId,
-            roles: { roleIds: currentRoleIds.filter((id) => id !== roleId) },
-        }),
+        mutationFn: () => revokeRoleFromUserAction(userId, roleId),
         onSuccess: () => {
             toast.success(`Cargo "${roleName}" revogado com sucesso!`);
             queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });

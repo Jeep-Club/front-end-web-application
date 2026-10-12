@@ -67,6 +67,16 @@ export async function captureCardElement(
     });
 
     exportElement.removeAttribute("id");
+    exportElement.querySelectorAll("img").forEach((image) => {
+        const source = image.currentSrc || image.src;
+        image.loading = "eager";
+        image.decoding = "sync";
+        image.removeAttribute("srcset");
+        image.removeAttribute("sizes");
+        if (source) {
+            image.src = source;
+        }
+    });
     Object.assign(exportElement.style, {
         width: `${CARD_RENDER_WIDTH_PX}px`,
         height: `${CARD_RENDER_HEIGHT_PX}px`,
@@ -145,19 +155,38 @@ async function waitForImages(
     await Promise.all(
         images.map((image) => {
             if (image.complete) {
-                return Promise.resolve();
+                return image.naturalWidth > 0
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("Uma imagem da carteirinha não carregou. Tente novamente."));
             }
 
             return new Promise<void>(
-                (resolve) => {
+                (resolve, reject) => {
+                    const timeout = window.setTimeout(() => {
+                        cleanup();
+                        reject(new Error("Uma imagem da carteirinha demorou para carregar. Tente novamente."));
+                    }, 12_000);
+                    const cleanup = () => {
+                        window.clearTimeout(timeout);
+                        image.removeEventListener("load", handleLoad);
+                        image.removeEventListener("error", handleError);
+                    };
+                    const handleLoad = () => {
+                        cleanup();
+                        resolve();
+                    };
+                    const handleError = () => {
+                        cleanup();
+                        reject(new Error("Uma imagem da carteirinha não carregou. Tente novamente."));
+                    };
                     image.addEventListener(
                         "load",
-                        () => resolve(),
+                        handleLoad,
                         { once: true },
                     );
                     image.addEventListener(
                         "error",
-                        () => resolve(),
+                        handleError,
                         { once: true },
                     );
                 },
@@ -197,6 +226,7 @@ export async function exportCardAsPng({
     await triggerDownload(
         combinedImage,
         `${safeFileName}-frente-verso.png`,
+        true,
     );
 }
 
@@ -270,10 +300,15 @@ async function combineCardImages(
         frontImage.height + gap,
     );
 
-    return canvas.toDataURL(
-        "image/png",
-        1,
-    );
+    return new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (blob) {
+                resolve(blob);
+            } else {
+                reject(new Error("Não foi possível preparar o PNG da frente e do verso."));
+            }
+        }, "image/png");
+    });
 }
 
 function loadImage(
@@ -301,11 +336,34 @@ function loadImage(
 }
 
 async function triggerDownload(
-    source: string,
+    source: string | Blob,
     fileName: string,
+    preferNativeShare = false,
 ) {
-    const response = await fetch(source);
-    const file = await response.blob();
+    const file = source instanceof Blob
+        ? source
+        : await fetch(source).then(async (response) => {
+            if (!response.ok) {
+                throw new Error("Não foi possível preparar o arquivo PNG.");
+            }
+            return response.blob();
+        });
+
+    if (preferNativeShare && navigator.share && navigator.canShare) {
+        const imageFile = new File([file], fileName, { type: "image/png" });
+        if (navigator.canShare({ files: [imageFile] })) {
+            try {
+                await navigator.share({ files: [imageFile], title: fileName });
+                return;
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    return;
+                }
+                // If native sharing is unavailable or rejected, fall back to download.
+            }
+        }
+    }
+
     const objectUrl = URL.createObjectURL(file);
     const link =
         document.createElement("a");

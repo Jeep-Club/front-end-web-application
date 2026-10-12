@@ -47,6 +47,7 @@ interface UserListQuery {
 }
 interface UserManagementPermissions {
     canReadUsers: boolean;
+    canCreateUsers: boolean;
     canDisableUsers: boolean;
     canEnableUsers: boolean;
     canReadRoleCatalog: boolean;

@@ -34,7 +34,7 @@ export const createVehicleAdminFormSchema = z.object({
         .transform((value) => Number(value))
         .pipe(z.number().int().gt(0, { message: "ID do membro deve ser maior que zero" })),
     nickname: z.string().max(100, { message: "O apelido deve ter no máximo 100 caracteres" }).optional(),
-    photo: z.array(z.instanceof(File)).max(1, { message: "Envie apenas uma foto" }).optional(),
+    photo: z.array(z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, { message: "Invalid image file" })).max(1, { message: "Envie apenas uma foto" }).optional(),
     plate: z.string()
         .min(1, { message: "A placa é obrigatória" })
         .transform((value) => value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
@@ -343,7 +343,7 @@ export function CreateVehicleModal() {
             const photoFile = data.photo?.[0];
             let photo: string | undefined = undefined;
 
-            if (photoFile instanceof File) {
+            if (typeof File !== "undefined" && photoFile instanceof File) {
                 const formData = new FormData();
                 formData.append("file", photoFile);
                 photo = await uploadImageAction(formData);

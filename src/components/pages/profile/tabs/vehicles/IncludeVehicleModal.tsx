@@ -272,7 +272,7 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
             const photoFile = data.photo?.[0];
             let photo = isEditMode ? (vehicle?.photo ?? undefined) : undefined;
 
-            if (photoFile instanceof File) {
+            if (typeof File !== "undefined" && photoFile instanceof File) {
                 const formData = new FormData();
                 formData.append("file", photoFile);
                 photo = await uploadImageAction(formData);

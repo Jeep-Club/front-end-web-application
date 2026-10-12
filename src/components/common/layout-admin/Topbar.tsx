@@ -1,11 +1,10 @@
-'use client';
+"use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { getUserProfileAction } from "@/actions/profile/get";
 import { AvatarMenu } from "@/components/common/layout-admin/AvatarMenu";
 import { NotificationBell } from "@/components/common/layout-admin/NotificationBell";
-
-// TODO: mock temporário até termos a foto de perfil real vindo do usuário logado
-const MOCK_AVATAR_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYHFJZjyPYTtCbPoDLmFzwEl5rJTLrQHSlD_JsJReVg987HYXmzltLFpc&s=10";
 
 interface TopbarProps {
     isSidebarCollapsed: boolean;
@@ -15,8 +14,16 @@ interface TopbarProps {
 }
 
 export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobileMenu, fullName }: TopbarProps) {
+    const { data: profile } = useQuery({
+        queryKey: ["profile", "me"],
+        queryFn: getUserProfileAction,
+        staleTime: 60_000,
+        retry: false,
+    });
+    const displayName = profile?.name ?? fullName;
+
     return (
-        <header className="sticky top-0 z-10 flex h-14 w-full items-center justify-between bg-j-blue-800 pl-2 pr-4 md:pl-4 md:pr-8 text-j-white shadow-md">
+        <header className="sticky top-0 z-10 flex h-14 w-full items-center justify-between bg-j-blue-800 pl-2 pr-4 text-j-white shadow-md md:pl-4 md:pr-8">
             <button
                 type="button"
                 id="tour-mobile-menu-btn"
@@ -41,12 +48,9 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
 
             <div id="tour-avatar-menu" className="flex items-center gap-3">
                 <NotificationBell />
-
                 <span className="h-8 w-px bg-j-transparent-white" />
-
-                <span className="hidden text-sm font-bold text-j-white md:inline">{fullName}</span>
-
-                <AvatarMenu src={MOCK_AVATAR_URL} />
+                <span className="hidden text-sm font-bold text-j-white md:inline">{displayName}</span>
+                <AvatarMenu src={profile?.profilePhotoUrl} fullName={displayName} />
             </div>
         </header>
     );
