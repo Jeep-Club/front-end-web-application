@@ -31,9 +31,9 @@ export function RevokeUserRoleModal({
 
     const mutation = useMutation({
         mutationFn: () => revokeRoleFromUserAction(userId, roleId),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success(`Cargo "${roleName}" revogado com sucesso!`);
-            queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
+            await queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
             backToRolesView();
         },
         onError: (error) => toast.error(error.message || "Erro ao revogar cargo."),
