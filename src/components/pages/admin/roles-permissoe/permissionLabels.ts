@@ -5,12 +5,19 @@ const MODULE_LABELS: Record<string, string> = {
     IDENTITY: "Usuários",
     HEALTH: "Saúde",
     MEMBERSHIP: "Associação",
+    BILLING: "Cobranças",
+    DEPENDENTS: "Dependentes",
+    PUBLICATIONS: "Publicações",
+    TOOLS: "Ferramentas",
+    VEHICLES: "Veículos",
 };
 
 export function getModuleLabel(module: string): string {
-    return MODULE_LABELS[module] ?? module;
+    return MODULE_LABELS[module] ?? module
+        .replaceAll("_", " ")
+        .toLocaleLowerCase("pt-BR")
+        .replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase("pt-BR"));
 }
-
 const PERMISSION_NAME_LABELS: Record<string, string> = {
     IDENTITY_USER_READ: "Consultar usuários",
     IDENTITY_USER_CREATE: "Criar usuários",

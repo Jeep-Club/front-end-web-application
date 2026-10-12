@@ -47,11 +47,15 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
   const { data: rolePermissions, isLoading: isLoadingRolePermissions, isError: isRolePermissionsError, refetch: reloadRolePermissions } = useQuery({ queryKey: rolePermissionsQueryKey, queryFn: () => listRolePermissionsAction(roleId) });
   const assignedIds = new Set((rolePermissions ?? []).map((permission) => permission.id));
   const selectedIds = draftIds ?? assignedIds;
-  const modules = useMemo(() => [...new Set((catalog ?? []).map((permission) => permission.module))].sort(), [catalog]);
+  const modules = useMemo(
+    () => [...new Set((catalog ?? []).map((permission) => permission.module))]
+      .sort((left, right) => getModuleLabel(left).localeCompare(getModuleLabel(right), "pt-BR")),
+    [catalog],
+  );
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return (catalog ?? []).filter((permission) => (moduleFilter === 'all' || permission.module === moduleFilter)
-      && (!query || `${getPermissionName(permission)} ${permission.description} ${permission.module}`.toLocaleLowerCase().includes(query)));
+      && (!query || `${getPermissionName(permission)} ${permission.description} ${getModuleLabel(permission.module)}`.toLocaleLowerCase().includes(query)));
   }, [catalog, moduleFilter, search]);
   const grouped = useMemo(() => filtered.reduce<Record<string, PermissionResponse[]>>((groups, permission) => {
     (groups[permission.module] ??= []).push(permission);
@@ -78,7 +82,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     let cursor = 0;
     const succeeded: PermissionResponse[] = [];
     const failed: PermissionResponse[] = [];
-    await Promise.all(Array.from({ length: Math.min(6, changes.length) }, async () => {
+    await Promise.all(Array.from({ length: Math.min(16, changes.length) }, async () => {
       while (cursor < changes.length) {
         const permission = changes[cursor++];
         try {
@@ -93,7 +97,8 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     const actualIds = new Set(assignedIds);
     succeeded.forEach((permission) => desired.has(permission.id) ? actualIds.add(permission.id) : actualIds.delete(permission.id));
     if (catalog) queryClient.setQueryData(rolePermissionsQueryKey, catalog.filter((permission) => actualIds.has(permission.id)));
-    await queryClient.invalidateQueries({ queryKey: rolePermissionsQueryKey });
+    void queryClient.invalidateQueries({ queryKey: rolePermissionsQueryKey });
+    setPendingCount(0);
     if (failed.length) {
       toast.error(`${succeeded.length} salva(s); ${failed.length} falhou(ram). Confira suas permissões e tente novamente.`);
       setDraftIds(desired);

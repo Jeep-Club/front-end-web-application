@@ -41,9 +41,9 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
 
     const mutation = useMutation({
         mutationFn: (role: RoleResponse) => assignRoleToUserAction(userId, role.id),
-        onSuccess: (_, role) => {
+        onSuccess: async (_, role) => {
             toast.success(`Cargo "${role.name}" atribuído com sucesso!`);
-            queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
+            await queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
             backToRolesView();
         },
         onError: (error) => toast.error(error.message || "Erro ao atribuir cargo."),
