@@ -12,6 +12,8 @@ import { me } from '@/utils/auth/me';
 import { logout } from '@/utils/auth/logout';
 import { unMaskCPF } from '@/utils/masks/maskCPF';
 import { extractApiErrorMessage } from '@/utils/http/apiError';
+import { cookies } from "next/headers";
+import { authCookieOptions } from "@/utils/auth/cookieOptions";
 
 export default async function loginAction({ cpf, senha }: LoginRequest) {
     if (!senha || !cpf) {
@@ -22,6 +24,9 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
 
 
     try {
+        const cookieStore = await cookies();
+        cookieStore.delete("FirstAccessPasswordChangeToken");
+        cookieStore.delete("FirstAccessPasswordChangePending");
         const response = await actionFetchWrapper<LoginResponse>({
             url: HttpAPIRoutes.LOGIN,
             method: 'POST',
@@ -30,6 +35,19 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
         });
 
         const { data } = response;
+
+        if ('passwordChangeToken' in data) {
+            const expires = new Date(data.passwordChangeTokenExpiresAt);
+            cookieStore.set("FirstAccessPasswordChangeToken", data.passwordChangeToken, {
+                ...authCookieOptions(true),
+                expires,
+            });
+            cookieStore.set("FirstAccessPasswordChangePending", String(data.status === "FIRST_ACCESS_PASSWORD_CHANGE_REQUIRED"), {
+                ...authCookieOptions(true),
+                expires,
+            });
+            return { status: data.status };
+        }
 
         if ('accessToken' in data) {
             await login(

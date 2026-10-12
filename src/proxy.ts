@@ -19,6 +19,13 @@ export async function proxy(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
 
+    if (
+        request.cookies.get("FirstAccessPasswordChangeToken")?.value
+        && path !== "/first-access/password"
+    ) {
+        return NextResponse.redirect(new URL("/first-access/password", request.url));
+    }
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-route-pathname', path);
     const response = NextResponse.next({ request: { headers: requestHeaders } });

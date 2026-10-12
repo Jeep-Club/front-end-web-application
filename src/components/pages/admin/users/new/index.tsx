@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
 import toast from "react-hot-toast";
-import { ArrowRight, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
+import { ArrowRight, Check, Copy, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
 import { useState } from "react";
 import { UserWorkspace } from "../UserWorkspace";
 
@@ -13,10 +13,9 @@ import { InputRegister } from "@/components/common/input/input-register";
 import InputEmail from "@/components/common/input/input-email";
 import InputCPF from "@/components/common/input/input-cpf";
 import InputDate from "@/components/common/input/input-date";
-import InputPassword from "@/components/common/input/input-password";
 import InputPhoneNumber from "@/components/common/input/input-phonenumber";
-import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
-import { postUserAction } from "@/actions/admin/users/postUser";
+import { adminFirstAccessUserSchema } from "@/schemas/admin/first-access-user";
+import { createFirstAccessUserAction } from "@/actions/admin/users/create-first-access";
 
 const fieldStyle = {
     labelClassName: "text-j-gray-600 [&>span]:text-j-red-500",
@@ -26,10 +25,12 @@ const fieldStyle = {
 export function NewAdminUserPage() {
     const router = useRouter();
     const [selected, setSelected] = useState("personal");
+    const [createdUser, setCreatedUser] = useState<AdminFirstAccessUserResponse | null>(null);
+    const [copied, setCopied] = useState(false);
     const mutation = useMutation({
-        mutationFn: postUserAction,
-        onSuccess: () => {
-            router.push("/admin/users");
+        mutationFn: createFirstAccessUserAction,
+        onSuccess: (result) => {
+            setCreatedUser(result);
             toast.success('Usuário cadastrado com sucesso!');
         },
         onError: (error) => {
@@ -38,9 +39,36 @@ export function NewAdminUserPage() {
     });
 
     const isLoading = mutation.isPending;
-    const handleSubmit = (data: RegisterRequest) => {
-        if (!isLoading) mutation.mutate({ user: data });
+    const handleSubmit = (data: AdminFirstAccessUserRequest) => {
+        if (!isLoading) mutation.mutate(data);
     };
+
+    if (createdUser) {
+        return (
+            <div className="mx-auto w-full max-w-2xl p-4 sm:p-6">
+                <div className="rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm sm:p-8">
+                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-j-green-100 text-j-green-700"><Check size={24} /></div>
+                    <h1 className="text-2xl font-extrabold text-j-blue-800">Usuário criado</h1>
+                    <p className="mt-2 text-sm leading-6 text-j-gray-600">Entregue a senha temporária abaixo ao usuário. No primeiro acesso, ele criará e confirmará uma nova senha antes de continuar.</p>
+                    <div className="mt-6 rounded-xl border border-j-yellow-300 bg-j-yellow-50 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-j-gray-600">Senha temporária · usuário #{createdUser.userId}</p>
+                        <p className="mt-2 break-all font-mono text-lg font-bold text-j-blue-800">{createdUser.temporaryPassword}</p>
+                    </div>
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                        <Button type="button" onClick={async () => {
+                            await navigator.clipboard.writeText(createdUser.temporaryPassword);
+                            setCopied(true);
+                        }} className="min-h-11 flex-1 gap-2">
+                            {copied ? <Check size={16} /> : <Copy size={16} />}
+                            {copied ? "Senha copiada" : "Copiar senha temporária"}
+                        </Button>
+                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
+                    </div>
+                    <p className="mt-4 text-xs text-j-gray-500">Por segurança, esta senha será exibida somente agora.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <UserWorkspace
@@ -48,20 +76,20 @@ export function NewAdminUserPage() {
             description="Preencha os dados para criar a conta."
             options={[
                 { key: "personal", label: "Dados pessoais", description: "Identificação e contato", icon: UserRound },
-                { key: "access", label: "Acesso", description: "Defina a senha de acesso", icon: LockKeyhole },
+                { key: "access", label: "Acesso", description: "Senha temporária", icon: LockKeyhole },
             ]}
             selected={selected}
             onSelect={setSelected}
             onBack={() => router.push("/admin/users")}
             disabled={isLoading}
         >
-                <Form<RegisterRequest>
-                    schema={registerRequestSchema}
+                <Form<AdminFirstAccessUserRequest>
+                    schema={adminFirstAccessUserSchema}
                     onSubmit={handleSubmit}
                     formOptions={{ shouldFocusError: false }}
                     onError={(errors) => {
                         const firstField = Object.keys(errors)[0];
-                        setSelected(firstField === "password" ? "access" : "personal");
+                        setSelected("personal");
                         requestAnimationFrame(() => {
                             document.getElementsByName(firstField)[0]?.focus();
                         });
@@ -88,8 +116,10 @@ export function NewAdminUserPage() {
                         <section hidden={selected !== "access"} aria-labelledby="access-data-title">
                             <h2 id="access-data-title" className="sr-only">Dados de acesso</h2>
                             <div className="grid grid-cols-1 gap-3">
-                                <InputPassword {...fieldStyle} name="password" label="Senha" aria-describedby="password-guidance" required />
-                                <p id="password-guidance" className="text-xs leading-5 text-j-gray-500">Use pelo menos 8 caracteres, incluindo letras maiúsculas e minúsculas, um número e um caractere especial.</p>
+                                <div className="rounded-xl border border-j-blue-100 bg-j-blue-50 p-4">
+                                    <h3 className="font-bold text-j-blue-800">Senha definida pelo usuário</h3>
+                                    <p className="mt-1 text-sm leading-6 text-j-gray-600">O sistema gera uma senha temporária para este cadastro. No primeiro login, o usuário cria a própria senha e depois completa os dados do veículo e de saúde.</p>
+                                </div>
                             </div>
                         </section>
                     </fieldset>
@@ -101,7 +131,7 @@ export function NewAdminUserPage() {
                             className="min-h-12 rounded-xl bg-transparent px-3 text-j-gray-500 hover:bg-j-gray-100 hover:text-j-gray-700"
                         >Cancelar</Button>
                         <Button type="submit" disabled={isLoading} aria-busy={isLoading} className={selected === "access" ? "min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6" : "hidden"}>
-                            {isLoading ? <>Cadastrando… <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /></> : <>Cadastrar usuário <ArrowRight size={18} aria-hidden="true" /></>}
+                            {isLoading ? <>Criando… <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /></> : <>Criar usuário <ArrowRight size={18} aria-hidden="true" /></>}
                         </Button>
                         {selected === "personal" && (
                             <Button type="button" disabled={isLoading} onClick={() => setSelected("access")} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">

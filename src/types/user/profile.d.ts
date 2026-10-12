@@ -40,6 +40,7 @@ interface MeProfileResponse {
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;
+    profilePhotoStorageKey: string | null;
     profilePhotoUrl: string | null;
     status: 'ACTIVE' | 'DISABLED';
     createdAt: string;
