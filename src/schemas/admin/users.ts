@@ -11,12 +11,17 @@ export const adminUserSchema = z.object({
     email: z.string().nullish().transform((value) => value ?? null),
     rg: z.string().nullish().transform((value) => value ?? null),
     phoneNumber: z.string().nullish().transform((value) => value ?? null),
-    profilePhotoUrl: z.string().nullish().transform((value) => value ?? null),
+    profilePhotoStorageKey: z.string().nullish(),
+    profilePhotoUrl: z.string().nullish(),
     status: z.enum(["ACTIVE", "DISABLED"]),
     createdAt: z.string(),
     disabledAt: z.string().nullish().transform((value) => value ?? null),
     updatedAt: z.string().nullish().transform((value) => value ?? null),
-}) satisfies z.ZodType<AdminUser>;
+}).transform(({ profilePhotoStorageKey, profilePhotoUrl, ...user }) => ({
+    ...user,
+    // API nova retorna storageKey; profilePhotoUrl cobre respostas antigas durante rollout.
+    profilePhotoUrl: getMediaImageUrl(profilePhotoStorageKey ?? profilePhotoUrl) || null,
+})) satisfies z.ZodType<AdminUser>;
 
 export const adminUserListResponseSchema = pageResponseSchema(adminUserSchema) satisfies z.ZodType<PageResponse<AdminUser>>;
 

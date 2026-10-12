@@ -180,7 +180,7 @@ export async function exportCardAsPng({
         scope === "front" ||
         !backImage
     ) {
-        triggerDownload(
+        await triggerDownload(
             frontImage,
             `${safeFileName}-frente.png`,
         );
@@ -194,7 +194,7 @@ export async function exportCardAsPng({
             backImage,
         );
 
-    triggerDownload(
+    await triggerDownload(
         combinedImage,
         `${safeFileName}-frente-verso.png`,
     );
@@ -300,20 +300,26 @@ function loadImage(
     );
 }
 
-function triggerDownload(
+async function triggerDownload(
     source: string,
     fileName: string,
 ) {
+    const response = await fetch(source);
+    const file = await response.blob();
+    const objectUrl = URL.createObjectURL(file);
     const link =
         document.createElement("a");
 
-    link.href = source;
+    link.href = objectUrl;
     link.download = fileName;
 
     document.body.appendChild(link);
 
     link.click();
     link.remove();
+    // Keep the object URL alive long enough for mobile browsers to start
+    // the download before releasing its memory.
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }
 
 function sanitizeFileName(

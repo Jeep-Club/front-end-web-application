@@ -6,6 +6,7 @@ import { Eye, Plus, Power, PowerOff } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { Button, ButtonIcon } from "@/components/common/button";
+import { Avatar } from "@/components/common/avatar";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
 import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
@@ -94,7 +95,16 @@ export function UserManagementView({
                 ),
                 meta: { label: "Nome completo" },
                 cell: ({ row }) => (
-                    <span className="font-bold text-j-gray-700">{row.original.name}</span>
+                    <div className="flex min-w-44 items-center gap-3">
+                        {row.original.profilePhotoUrl ? (
+                            <Avatar src={row.original.profilePhotoUrl} alt={`Foto de ${row.original.name}`} className="h-10 w-10 shrink-0 bg-j-gray-200" />
+                        ) : (
+                            <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-j-blue-100 text-sm font-bold text-j-blue-800">
+                                {row.original.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("pt-BR")}
+                            </span>
+                        )}
+                        <span className="font-bold text-j-gray-700">{row.original.name}</span>
+                    </div>
                 ),
             },
             {

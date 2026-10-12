@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { twMerge } from 'tailwind-merge';
 
 interface AvatarProps {
@@ -13,12 +12,13 @@ export function Avatar({ src, alt = 'Foto de perfil', className }: AvatarProps) 
       `w-9 h-9 rounded-full overflow-hidden relative bg-j-blue-700`,
       className
     )}>
-      <Image
+      {/* O navegador precisa anexar o cookie ao proxy autenticado; o otimizador do Next
+          busca a imagem sem a sessão do usuário. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={src}
         alt={alt}
-        fill
-        sizes="36px"
-        className="object-cover"
+        className="h-full w-full object-cover"
       />
     </div>
   );
