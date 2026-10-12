@@ -30,8 +30,22 @@ export function PasswordForm() {
             className="w-full"
         >
             <div className="flex flex-col gap-4">
-                <InputPassword name="password" label="Nova senha" autoComplete="new-password" required />
-                <InputPassword name="confirmPassword" label="Confirmar nova senha" autoComplete="new-password" required />
+                <InputPassword
+                    name="password"
+                    label="Nova senha"
+                    labelClassName="text-j-gray-700"
+                    className="h-12 rounded-xl border-j-gray-300 bg-j-white text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:outline-j-yellow-400"
+                    autoComplete="new-password"
+                    required
+                />
+                <InputPassword
+                    name="confirmPassword"
+                    label="Confirmar senha"
+                    labelClassName="text-j-gray-700"
+                    className="h-12 rounded-xl border-j-gray-300 bg-j-white text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:outline-j-yellow-400"
+                    autoComplete="new-password"
+                    required
+                />
                 <p className="text-xs leading-5 text-j-gray-500">Use pelo menos 8 caracteres, com letras maiúsculas e minúsculas, um número e um caractere especial.</p>
                 <Button type="submit" disabled={mutation.isPending} className="mt-2 min-h-12 w-full gap-2">
                     {mutation.isPending ? <><LoaderCircle size={18} className="animate-spin" /> Salvando senha...</> : <>Criar senha e continuar <ArrowRight size={18} /></>}

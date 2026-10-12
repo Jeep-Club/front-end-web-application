@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
 import { Eye, Plus, Power, PowerOff } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -316,14 +315,13 @@ export function UserManagementView({
                         </Select.Unregister>
 
                         {permissions.canCreateUsers && (
-                            <Link
+                            <a
                                 href="/admin/users/new"
-                                prefetch
                                 className="flex w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg p-2.5 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
                             >
                                 Novo usuário
                                 <Plus size={16} strokeWidth={3} />
-                            </Link>
+                            </a>
                         )}
                     </div>
                 </div>
