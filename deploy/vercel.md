@@ -19,7 +19,7 @@ Configure em Production e Preview:
 | Variável | Valor |
 | --- | --- |
 | `API_URL` | `https://144.91.73.3` |
-| `NEXT_PUBLIC_API_URL` | `https://144.91.73.3` |
+| `API_FRONTEND_KEY` | Credencial privada para autenticar o servidor Next.js na API |
 | `NODE_SECURE` | `HTTPS` |
 | `ACCESS` | Chave aleatória privada, gerada uma vez por ambiente |
 
@@ -36,16 +36,33 @@ o Next.js usa `production` ao executar o build e `development` em `next dev`.
 Depois de mudar variáveis, faça um novo deploy para aplicar os valores ao
 servidor e ao bundle do navegador.
 
-Para desenvolvimento local, copie `env.example` para `.env.local`, preencha
+Para desenvolvimento local, copie `.env.example` para `.env.local`, preencha
 `ACCESS`, execute `npm ci` e `npm run dev`.
 
 ## Integração
 
 Login, consultas autenticadas e outras Server Actions chamam a API a partir
-do servidor Next.js, usando `API_URL`. Essas chamadas não exigem CORS do
-navegador. Os wrappers de chamadas diretas do navegador usam
-`NEXT_PUBLIC_API_URL`; se utilizados, a origem pública exata do frontend
-deve ser permitida pelo CORS do backend.
+do servidor Next.js, usando `API_URL` e o header privado `X-Frontend-Key`.
+Refresh, uploads e leitura de imagens também passam pelo servidor Next.js.
+Essas chamadas não exigem CORS do navegador. Chamadas diretas do navegador
+à API são bloqueadas, mesmo com um JWT de usuário ou com o Origin correto.
+Os wrappers antigos e sem consumidores que faziam chamadas diretas foram removidos.
+
+Defina `API_FRONTEND_KEY` em Production e Preview como variável privada,
+criptografada, sem o prefixo `NEXT_PUBLIC_`. O módulo `server-only` impede
+importar a credencial em componentes do navegador. A chave não substitui
+o JWT e as permissões de cada usuário. Em produção, sua ausência interrompe
+as chamadas à API em vez de liberar acesso sem autenticação do frontend.
+
+O backend aceita uma chave independente `SECURITY_FRONTEND_ACCESS_SECRET`.
+Na implantação atual, usa uma credencial derivada por HMAC do segredo existente
+de JWT, com finalidade própria. Consulte `deploy/FRONTEND-ACCESS.md` no
+repositório do backend para a fórmula e o procedimento de rotação.
+Publique o frontend preparado antes de ativar o bloqueio no backend.
+Nunca envie o segredo que assina JWT para a Vercel.
+
+Em desenvolvimento local, a credencial pode ficar vazia quando o backend
+local estiver com `SECURITY_FRONTEND_ACCESS_ENABLED=false`.
 
 O certificado da API precisa estar válido e renovado na VPS; não desative a
 validação TLS na Vercel. Cookies de sessão em builds publicados usam HTTPS,

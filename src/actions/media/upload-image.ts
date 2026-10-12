@@ -4,6 +4,7 @@ import { getAuthCookies } from '@/utils/auth/get';
 import fetchRefreshToken from '@/utils/auth/refresh';
 import { login } from '@/utils/auth/login';
 import { extractApiErrorMessage, SESSION_EXPIRED_MESSAGE } from '@/utils/http/apiError';
+import { frontendHeaders } from '@/services/fetchWrapper/frontendHeaders';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -48,7 +49,7 @@ export async function uploadImageAction(formData: FormData): Promise<string> {
     upload.set('file', file, file.name);
     const response = await fetch(`${apiURL}/media/images`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: frontendHeaders({ Authorization: `Bearer ${token}`, Accept: 'application/json' }),
         body: upload,
         cache: 'no-store',
     });

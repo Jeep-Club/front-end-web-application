@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthCookies } from "@/utils/auth/get";
+import { frontendHeaders } from "@/services/fetchWrapper/frontendHeaders";
 import fetchRefreshToken from "@/utils/auth/refresh";
 import { login } from "@/utils/auth/login";
 
 export async function GET(request: NextRequest) {
     const key = request.nextUrl.searchParams.get("key");
     if (!key?.trim() || key.length > 512 || key.includes("\u0000")) {
-        return new NextResponse("O parâmetro 'key' é obrigatório", { status: 400 });
+        return new NextResponse("O parametro 'key' e obrigatorio", { status: 400 });
     }
 
     const apiURL = process.env.API_URL;
     if (!apiURL) {
-        return new NextResponse("API_URL não configurada", { status: 500 });
+        return new NextResponse("API_URL nao configurada", { status: 500 });
     }
 
     const authCookies = await getAuthCookies.SERVER();
     if (!authCookies?.AuthAccessToken) {
-        return new NextResponse("Não autorizado", { status: 401 });
+        return new NextResponse("Nao autorizado", { status: 401 });
     }
 
     let token = authCookies.AuthAccessToken;
@@ -36,19 +37,19 @@ export async function GET(request: NextRequest) {
                 new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(),
             );
         } catch {
-            return new NextResponse("Sessão expirada", { status: 401 });
+            return new NextResponse("Sessao expirada", { status: 401 });
         }
     }
 
     try {
         const backendUrl = `${apiURL}/media/images?key=${encodeURIComponent(key)}`;
         const res = await fetch(backendUrl, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: frontendHeaders({ Authorization: `Bearer ${token}` }),
             cache: "no-store",
         });
 
         if (!res.ok) {
-            return new NextResponse(await res.text() || "N?o foi poss?vel carregar a imagem.", {
+            return new NextResponse(await res.text() || "Nao foi possivel carregar a imagem.", {
                 status: res.status,
                 headers: { "Cache-Control": "private, no-store" },
             });
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 
         const contentType = res.headers.get("Content-Type") || "image/jpeg";
         if (!contentType.toLowerCase().startsWith("image/")) {
-            return new NextResponse("A API retornou um conte?do que n?o ? uma imagem.", {
+            return new NextResponse("A API retornou conteudo que nao e imagem.", {
                 status: 502,
                 headers: { "Cache-Control": "private, no-store" },
             });
