@@ -13,6 +13,10 @@ interface Props {
 export default async function Page({ params }: Props) {
     const { id } = await params;
 
+    // The intercepted dynamic route also matches the sibling /new route during client navigation.
+    // Let the regular create-user page render instead of trying to fetch a user with id "new".
+    if (!/^\d+$/.test(id)) return null;
+
     const [user, roles] = await Promise.all([serverFetchWrapper<AdminUser>({
             url: `${HttpAPIRoutes.ADMIN_USERS}/${id}`,
             method: "GET",

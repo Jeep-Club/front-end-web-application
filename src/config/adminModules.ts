@@ -1,7 +1,9 @@
 import {
     CalendarDays,
     Car,
+    HeartPulse,
     KeyRound,
+    UserRoundCheck,
     Users,
     WalletCards,
     type LucideIcon,
@@ -65,6 +67,28 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "BILLING",
             action: "CHARGE_DEFINITION_READ",
+        },
+    },
+    {
+        key: "member-dependents",
+        title: "Dependentes",
+        description: "Consulte e gerencie dependentes dos associados.",
+        href: "/admin/socios",
+        icon: UserRoundCheck,
+        visibilityPermission: {
+            module: "DEPENDENTS",
+            action: "DEPENDENT_READ",
+        },
+    },
+    {
+        key: "medical-profiles",
+        title: "Perfis médicos",
+        description: "Consulte os perfis médicos dos associados.",
+        href: "/admin/medical-profile",
+        icon: HeartPulse,
+        visibilityPermission: {
+            module: "HEALTH",
+            action: "MEDICAL_PROFILE_READ",
         },
     },
     {

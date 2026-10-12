@@ -192,10 +192,7 @@ export default function Sidebar({
                         >
                             <ShieldCheck
                                 size={18}
-                                className={twMerge(
-                                    "hidden",
-                                    isCollapsed && "md:block",
-                                )}
+                                className="shrink-0"
                             />
 
                             <span

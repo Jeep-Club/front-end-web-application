@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { updatePersonalDataAction } from "@/actions/profile/update-personal-data";
+import { uploadImageAction } from "@/actions/media/upload-image";
+import { updateProfilePhotoAction } from "@/actions/profile/update-photo";
+import { getUserProfileAction } from "@/actions/profile/get";
 
 import {
     Button,
@@ -48,44 +51,6 @@ const statusLabels: Record<
         "Primeiro acesso pendente",
 };
 
-function fileToBase64(
-    file: File,
-): Promise<string> {
-    return new Promise(
-        (resolve, reject) => {
-            const reader =
-                new FileReader();
-
-            reader.onload = () => {
-                if (
-                    typeof reader.result !==
-                    "string"
-                ) {
-                    reject(
-                        new Error(
-                            "Não foi possível processar a imagem",
-                        ),
-                    );
-
-                    return;
-                }
-
-                resolve(reader.result);
-            };
-
-            reader.onerror = () => {
-                reject(
-                    new Error(
-                        "Erro ao carregar imagem",
-                    ),
-                );
-            };
-
-            reader.readAsDataURL(file);
-        },
-    );
-}
-
 function formatCpf(value: string) {
     const digits =
         value.replace(/\D/g, "");
@@ -107,6 +72,20 @@ export function EditPersonalDataModal({
     const { setClose } = useModal();
     const [isSaving, setIsSaving] = useState(false);
 
+    const handleRemovePhoto = async () => {
+        setIsSaving(true);
+        try {
+            await updateProfilePhotoAction(null);
+            onSave(await getUserProfileAction());
+            toast.success("Foto de perfil removida.");
+            setClose();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Não foi possível remover a foto.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleSubmit = async (
         data: EditPersonalDataFormData,
     ) => {
@@ -114,23 +93,34 @@ export function EditPersonalDataModal({
             const selectedPhoto =
                 data.profilePhoto?.[0];
 
-            const profilePhotoUrl =
-                selectedPhoto
-                    ? await fileToBase64(
-                          selectedPhoto,
-                      )
-                    : personalData.profilePhotoUrl;
+            if (selectedPhoto && selectedPhoto.size > 5 * 1024 * 1024) {
+                toast.error("A foto excede o limite de 5 MiB. Escolha uma imagem menor e tente novamente.");
+                return;
+            }
+
+            if (selectedPhoto && !["image/jpeg", "image/png", "image/webp"].includes(selectedPhoto.type)) {
+                toast.error("Formato não aceito. Envie uma foto JPEG, PNG ou WebP.");
+                return;
+            }
 
             setIsSaving(true);
-            const savedPersonalData = await updatePersonalDataAction(personalData.id, {
+            await updatePersonalDataAction({
                 name: data.name.trim(),
-                birthData: data.birthDate || null,
+                birthDate: data.birthDate || null,
                 email: data.email.trim(),
                 rg: data.rg.trim() || null,
                 phoneNumber: data.phoneNumber.replace(/\D/g, "") || null,
             });
 
-            onSave({ ...savedPersonalData, profilePhotoUrl });
+            if (selectedPhoto) {
+                const uploadForm = new FormData();
+                uploadForm.set("file", selectedPhoto);
+                const storageKey = await uploadImageAction(uploadForm);
+                await updateProfilePhotoAction(storageKey);
+            }
+
+            const savedPersonalData = await getUserProfileAction();
+            onSave(savedPersonalData);
 
             toast.success(
                 "Dados atualizados com sucesso!",
@@ -286,6 +276,16 @@ export function EditPersonalDataModal({
                         maxFiles={1}
                         className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-j-white [&>div]:py-4"
                     />
+                    {personalData.profilePhotoUrl && (
+                        <button
+                            type="button"
+                            onClick={handleRemovePhoto}
+                            disabled={isSaving}
+                            className="text-left text-xs font-semibold text-j-red-500 hover:text-j-red-700 disabled:opacity-50"
+                        >
+                            Remover foto atual
+                        </button>
+                    )}
                 </section>
 
                 <div className="flex items-center gap-2 border-b border-j-gray-200 pb-3">

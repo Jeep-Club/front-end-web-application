@@ -20,6 +20,12 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     AUTHENTICATION_USER_PASSWORD_RESET_LINK_GENERATE: "Gerar link de redefinição de senha",
     AUTHENTICATION_USER_TEMPORARY_PASSWORD_GENERATE: "Gerar senha provisória",
 
+    AUTHENTICATION_SESSION_READ: "Consultar sessões",
+    AUTHENTICATION_SESSION_LOGOUT: "Encerrar sessões de usuários",
+    AUTHENTICATION_REFRESH_TOKEN_READ: "Consultar refresh tokens",
+    AUTHENTICATION_REFRESH_TOKEN_REVOKE: "Revogar refresh tokens",
+    AUTHENTICATION_PASSWORD_RECOVERY_READ: "Consultar pedidos de recuperação de senha",
+    AUTHENTICATION_PASSWORD_RECOVERY_CANCEL: "Cancelar pedidos de recuperação de senha",
     AUTHORIZATION_ROLE_READ: "Consultar cargos",
     AUTHORIZATION_ROLE_CREATE: "Criar cargos",
     AUTHORIZATION_ROLE_UPDATE: "Atualizar cargos",
