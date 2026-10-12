@@ -14,7 +14,7 @@ import { SelectRegister } from "@/components/common/select/select-register";
 import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputFile } from "@/components/common/input/file";
 import { includeVehicleAdminAction } from "@/actions/admin/vehicles/include";
-import { uploadVehicleImageAction } from "@/actions/vehicles/upload-image";
+import { uploadImageAction } from "@/actions/media/upload-image";
 import { useModal } from "@/providers/ModalProvider";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
@@ -346,7 +346,7 @@ export function CreateVehicleModal() {
             if (photoFile instanceof File) {
                 const formData = new FormData();
                 formData.append("file", photoFile);
-                photo = await uploadVehicleImageAction(formData);
+                photo = await uploadImageAction(formData);
             }
 
             const payload: IncludeVehicleMemberRequest = {

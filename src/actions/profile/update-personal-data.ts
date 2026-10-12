@@ -4,25 +4,30 @@ import { z } from 'zod';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { extractApiErrorMessage } from '@/utils/http/apiError';
 import { HttpAPIRoutes } from '@/utils/http/api';
-import { getUserProfileAction } from './get';
 
 interface UpdatePersonalDataRequest {
     name: string;
-    birthData: string | null;
+    birthDate: string | null;
     email: string;
     rg: string | null;
     phoneNumber: string | null;
 }
 
-export async function updatePersonalDataAction(userId: number, data: UpdatePersonalDataRequest): Promise<GetUserProfileResponse> {
+export async function updatePersonalDataAction(data: UpdatePersonalDataRequest): Promise<void> {
     try {
+        const { email, ...profile } = data;
         await actionFetchWrapper({
-            url: `${HttpAPIRoutes.ADMIN_USERS}/${userId}`,
-            method: 'PUT',
+            url: HttpAPIRoutes.IDENTITY_ME,
+            method: 'PATCH',
             schema: z.unknown(),
-            body: JSON.stringify(data),
+            body: JSON.stringify(profile),
         });
-        return await getUserProfileAction();
+        await actionFetchWrapper({
+            url: HttpAPIRoutes.IDENTITY_ME_EMAIL,
+            method: 'PATCH',
+            schema: z.unknown(),
+            body: JSON.stringify({ email }),
+        });
     } catch (error) {
         throw new Error(extractApiErrorMessage(error, 'Erro ao atualizar os dados pessoais'), { cause: error });
     }

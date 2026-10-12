@@ -21,7 +21,7 @@ export function InputFileImage({
     className,
     isFallback = false
 }: InputFileImageProps) {
-    const accept = { 'image/*': [] }
+    const accept = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
     const id = useId();
     const { control, setError, clearErrors } = useFormContext();
     const {
@@ -39,7 +39,7 @@ export function InputFileImage({
             if (rejection.errors[0].code === 'file-invalid-type') {
                  setError(name, { type: "manual", message: "Apenas imagens são aceitas." });
             } else if (rejection.errors[0].code === 'file-too-large') {
-                setError(name, { type: "manual", message: `A imagem excede o limite de ${maxSizeMB}MB.` });
+                setError(name, { type: "manual", message: `A imagem excede o limite de ${maxSizeMB} MiB. Escolha um arquivo menor.` });
             } else if (rejection.errors[0].code === 'too-many-files') {
                 setError(name, { type: "manual", message: `Limite excedido. O máximo é de ${maxFiles} imagem(ns).` });
             } else {
@@ -101,7 +101,7 @@ export function InputFileImage({
                         </p>
                         {!error && (
                             <p className="text-xs text-j-gray-400 mt-1">
-                                Máximo: {maxSizeMB}MB {maxFiles > 0 ? `| Limite: ${maxFiles} imagem(ns)` : ''}
+                                Máximo por imagem: {maxSizeMB} MiB {maxFiles > 0 ? `| Limite: ${maxFiles} imagem(ns)` : ''}
                             </p>
                         )}
                     </div>

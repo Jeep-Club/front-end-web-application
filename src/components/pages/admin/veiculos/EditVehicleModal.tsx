@@ -15,7 +15,7 @@ import { InputFile } from "@/components/common/input/file";
 import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
 import { editVehicleAdminAction } from "@/actions/admin/vehicles/edit";
 import { getVehicleDetailForEditAdminAction } from "@/actions/admin/vehicles/detail-for-edit";
-import { uploadVehicleImageAction } from "@/actions/vehicles/upload-image";
+import { uploadImageAction } from "@/actions/media/upload-image";
 import { useModal } from "@/providers/ModalProvider";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
@@ -306,7 +306,7 @@ export function EditVehicleModal({ vehicleId }: EditVehicleModalProps) {
             if (photoFile instanceof File) {
                 const formData = new FormData();
                 formData.append("file", photoFile);
-                photo = await uploadVehicleImageAction(formData);
+                photo = await uploadImageAction(formData);
             }
 
             const payload: EditVehicleMemberRequest = {

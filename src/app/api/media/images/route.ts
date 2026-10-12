@@ -5,7 +5,7 @@ import { login } from "@/utils/auth/login";
 
 export async function GET(request: NextRequest) {
     const key = request.nextUrl.searchParams.get("key");
-    if (!key) {
+    if (!key?.trim() || key.length > 512 || key.includes("\u0000")) {
         return new NextResponse("O parâmetro 'key' é obrigatório", { status: 400 });
     }
 
@@ -43,23 +43,31 @@ export async function GET(request: NextRequest) {
     try {
         const backendUrl = `${apiURL}/media/images?key=${encodeURIComponent(key)}`;
         const res = await fetch(backendUrl, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
         });
 
         if (!res.ok) {
-            return new NextResponse("Imagem não encontrada", { status: res.status });
+            return new NextResponse(await res.text() || "N?o foi poss?vel carregar a imagem.", {
+                status: res.status,
+                headers: { "Cache-Control": "private, no-store" },
+            });
         }
 
         const contentType = res.headers.get("Content-Type") || "image/jpeg";
+        if (!contentType.toLowerCase().startsWith("image/")) {
+            return new NextResponse("A API retornou um conte?do que n?o ? uma imagem.", {
+                status: 502,
+                headers: { "Cache-Control": "private, no-store" },
+            });
+        }
         const buffer = await res.arrayBuffer();
 
         return new NextResponse(buffer, {
             status: 200,
             headers: {
                 "Content-Type": contentType,
-                "Cache-Control": "private, max-age=86400, immutable",
+                "Cache-Control": "private, no-store",
             },
         });
     } catch {

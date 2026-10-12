@@ -46,7 +46,7 @@ const LIGHT_FIELDS_CLASS = `
     [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
 `;
 
-import { uploadVehicleImageAction } from "@/actions/vehicles/upload-image";
+import { uploadImageAction } from "@/actions/media/upload-image";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
 interface VehicleStepsFieldsProps {
@@ -275,7 +275,7 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
             if (photoFile instanceof File) {
                 const formData = new FormData();
                 formData.append("file", photoFile);
-                photo = await uploadVehicleImageAction(formData);
+                photo = await uploadImageAction(formData);
             }
 
             if (isEditMode && vehicleId) {

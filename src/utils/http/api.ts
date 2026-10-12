@@ -3,6 +3,7 @@ export enum HttpAPIRoutes {
     REFRESH = "authentication/refresh",
     AUTHENTICATION_ME = "authentication/me",
     IDENTITY_ME = "identity/me",
+    IDENTITY_ME_EMAIL = "identity/me/email",
     AUTHORIZATION_ME = "authorization/me",
     ADMIN_USERS = "identity/admin/users",
     REGISTER = "identity/register",

@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
 
   experimental: {
     serverActions: {
+      // O limite de arquivo continua em 5 MiB; a margem cobre o envelope multipart do Server Action.
+      bodySizeLimit: "8mb",
       allowedOrigins: [
         "localhost:3000",
         "127.0.0.1:3000",
