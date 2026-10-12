@@ -316,7 +316,7 @@ export function UserManagementView({
                             <option value="DISABLED">{USER_STATUS_LABEL.DISABLED}</option>
                         </Select.Unregister>
 
-                        {permissions.canAssignRoles && (
+                        {permissions.canCreateUsers && (
                             <Button
                                 type="button"
                                 onClick={onCreateUser}

@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AlertCircle, KeyRound, LoaderCircle, Plus, X } from "lucide-react";
+import { AlertCircle, KeyRound, LoaderCircle, Plus, Search, X } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listRolesAction } from "@/actions/authorization/list-roles";
-import { putUserRoleAction } from "@/actions/admin/users/putRole";
+import { assignRoleToUserAction } from "@/actions/authorization/assign-role-to-user";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { ROLE_STATUS_LABEL } from "../users/user-display";
 import { UserRolesViewModal } from "./UserRolesViewModal";
@@ -24,6 +24,7 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
     const { setContent, setClose } = useModal();
     const queryClient = useQueryClient();
     const [pendingRole, setPendingRole] = useState<RoleResponse | null>(null);
+    const [search, setSearch] = useState("");
 
     const backToRolesView = () => {
         setContent(<UserRolesViewModal userId={userId} userName={userName} />);
@@ -35,13 +36,11 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
         retry: false,
     });
 
-    const roles = allRoles?.filter((role) => !currentRoleIds.includes(role.id));
+    const roles = allRoles?.filter((role) => role.kind === "CUSTOM" && role.status === "ACTIVE" && !currentRoleIds.includes(role.id));
+    const filteredRoles = roles?.filter((role) => `${role.name} ${role.description ?? ""}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
 
     const mutation = useMutation({
-        mutationFn: (role: RoleResponse) => putUserRoleAction({
-            id: userId,
-            roles: { roleIds: [...currentRoleIds, role.id] },
-        }),
+        mutationFn: (role: RoleResponse) => assignRoleToUserAction(userId, role.id),
         onSuccess: (_, role) => {
             toast.success(`Cargo "${role.name}" atribuído com sucesso!`);
             queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
@@ -154,7 +153,9 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                             </div>
                         ) : (
                             <div className="flex flex-col gap-3">
-                                {roles.map((role) => (
+                                <label className="relative block"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-j-gray-400"/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar cargo por nome" aria-label="Buscar cargo" className="h-11 w-full rounded-xl border border-j-gray-200 bg-j-gray-100 pl-10 pr-3 text-sm text-j-gray-700 outline-none focus:border-j-blue-400 focus:bg-j-white"/></label>
+                                <p className="text-xs font-semibold text-j-gray-500">{filteredRoles?.length ?? 0} cargo(s) disponível(is)</p>
+                                {filteredRoles?.map((role) => (
                                     <div
                                         key={role.id}
                                         className="flex flex-col gap-4 rounded-xl border border-j-gray-200 bg-j-white p-4 shadow-sm transition-colors hover:bg-j-gray-100/60 sm:flex-row sm:items-center sm:justify-between"
@@ -191,6 +192,7 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                                         </Button>
                                     </div>
                                 ))}
+                                {filteredRoles?.length === 0 && <p className="rounded-xl border border-dashed border-j-gray-300 p-6 text-center text-sm text-j-gray-500">Nenhum cargo encontrado com esse nome.</p>}
                             </div>
                         )}
                     </div>

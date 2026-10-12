@@ -47,7 +47,6 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                 userName={userName}
                 roleId={role.id}
                 roleName={role.name}
-                currentRoleIds={currentRoleIds}
             />,
         );
         setOpen();
@@ -138,7 +137,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                                     {role.description}
                                 </span>
 
-                                {canRevoke && (
+                                {canRevoke && role.kind === "CUSTOM" && role.status !== "DELETED" && (
                                     <div className="mt-1 flex justify-end border-t border-j-gray-100 pt-2">
                                         <button
                                             type="button"

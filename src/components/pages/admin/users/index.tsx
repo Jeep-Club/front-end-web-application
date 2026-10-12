@@ -74,6 +74,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
         canReadUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_READ"),
+        canCreateUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_CREATE"),
         canDisableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_DISABLE"),
         canEnableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_ENABLE"),
         canReadRoleCatalog: hasPermission(permissionsFromStore, "AUTHORIZATION", "ROLE_READ"),
@@ -150,14 +151,12 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,
         onSuccess: (updatedUser) => {
-
             toast.success(`Usuário ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
-
-        }
+        },
     });
 
-    const updateUserStatus = useCallback(async (userId: number, status: "enable" | "disable"): Promise<void> => {
-        updateUserStatusMutation.mutateAsync({ userId, status });
+    const updateUserStatus = useCallback(async (userId: number, status: "enable" | "disable"): Promise<AdminUser> => {
+        return updateUserStatusMutation.mutateAsync({ userId, status });
     }, [updateUserStatusMutation]);
 
     const handleChangeUserStatus = useCallback((user: AdminUser) => {

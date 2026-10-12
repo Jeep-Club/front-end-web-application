@@ -57,7 +57,7 @@ export default function Sidebar({
     const canAccessAdmin = hasAnyAdminAccess(permissions);
 
     const panelHref = "/admin";
-    const panelLabel = "Gestão Administrativa";
+    const panelLabel = "Gest\u00e3o Administrativa";
 
     return (
         <>
@@ -72,7 +72,7 @@ export default function Sidebar({
                 id="tour-sidebar"
                 className={twMerge(
                     `
-                    fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col
+                    fixed inset-y-0 left-0 z-40 flex h-dvh min-h-0 w-64 flex-col
                     border-r border-j-yellow-300 bg-j-blue-800
                     transition-transform duration-300
                     md:sticky md:top-0 md:z-auto md:translate-x-0
@@ -121,7 +121,7 @@ export default function Sidebar({
                     </span>
                 </div>
 
-                <nav className="flex flex-1 flex-col gap-2 p-4">
+                <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-4">
                     {navItems.map(
                         ({
                             href,
@@ -162,14 +162,12 @@ export default function Sidebar({
                             );
                         },
                     )}
-                </nav>
-
-                {canAccessAdmin && (
-                    <div className="border-t border-j-blue-700 p-4">
+                    {canAccessAdmin && (
                         <Link
                             href={panelHref}
                             title={panelLabel}
                             id="tour-admin-link"
+                            aria-current={pathname.startsWith(panelHref) ? "page" : undefined}
                             onClick={() => {
                                 onCloseMobile();
                                 if (typeof window !== "undefined") {
@@ -178,34 +176,20 @@ export default function Sidebar({
                                 }
                             }}
                             className={twMerge(
-                                `
-                                flex items-center justify-center gap-3
-                                rounded-lg bg-j-yellow-300 px-4 py-3
-                                text-sm font-bold text-j-blue-800
-                                transition-all
-                                hover:bg-j-yellow-200
-                                active:scale-[0.98]
-                                `,
-                                isCollapsed &&
-                                    "md:px-0",
+                                "mt-3 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                                isCollapsed && "md:justify-center md:px-0",
+                                pathname.startsWith(panelHref)
+                                    ? "bg-j-yellow-300 font-bold text-j-blue-800 shadow-sm"
+                                    : "text-j-white/70 hover:bg-j-blue-700 hover:text-j-white",
                             )}
                         >
-                            <ShieldCheck
-                                size={18}
-                                className="shrink-0"
-                            />
-
-                            <span
-                                className={twMerge(
-                                    "text-center",
-                                    isCollapsed && "md:hidden",
-                                )}
-                            >
+                            <ShieldCheck size={18} />
+                            <span className={isCollapsed ? "md:hidden" : ""}>
                                 {panelLabel}
                             </span>
                         </Link>
-                    </div>
-                )}
+                    )}
+                </nav>
             </aside>
         </>
     );
