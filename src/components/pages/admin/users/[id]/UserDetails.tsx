@@ -1,21 +1,26 @@
 "use client";
 
-import { LockKeyhole, ShieldCheck, UserRound } from "lucide-react";
+import { AlertCircle, LoaderCircle, LockKeyhole, Plus, ShieldCheck, UserRound } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
+import { Button } from "@/components/common/button";
 import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { ModalRoot } from "@/components/common/modal/root";
+import { listUserRolesAction } from "@/actions/authorization/list-user-roles";
+import { AddUserRoleModal } from "@/components/pages/admin/roles-permissoe/AddUserRoleModal";
+import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
+import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { ROLE_STATUS_LABEL, USER_STATUS_LABEL, USER_STATUS_STYLE } from "../user-display";
 import { UserWorkspace, type UserWorkspaceOption } from "../UserWorkspace";
 import { hasAdminSecurityReadPermission, UserSecurityTab } from "./UserSecurityTab";
 
 interface UserDetailsModalProps {
-    roles: RoleListResponse;
     user: AdminUser;
     modal?: boolean;
 }
@@ -25,27 +30,27 @@ const fieldStyle = {
     valueClassName: "min-h-0 break-words rounded-none border-0 bg-transparent p-0 font-medium text-j-gray-700",
 };
 
-export function AdminUserDetailsPage({ user, roles, modal = false }: UserDetailsModalProps) {
-    return modal ? <UserDetailsModal user={user} roles={roles} /> : <UserDetails user={user} roles={roles} />;
+export function AdminUserDetailsPage({ user, modal = false }: UserDetailsModalProps) {
+    return modal ? <UserDetailsModal user={user} /> : <UserDetails user={user} />;
 }
 
-export function UserDetails({ user, roles }: UserDetailsModalProps) {
-    return <UserDetailsWorkspace user={user} roles={roles} />;
+export function UserDetails({ user }: UserDetailsModalProps) {
+    return <UserDetailsWorkspace user={user} />;
 }
 
-export function UserDetailsModal({ user, roles }: UserDetailsModalProps) {
+export function UserDetailsModal({ user }: UserDetailsModalProps) {
     const router = useRouter();
 
     return (
         <ModalRoot isOpen={true} onClose={() => router.back()} contentClassName="max-w-4xl">
             <div role="dialog" aria-modal="true" aria-label={`Detalhes do usuário ${user.name}`} className="max-h-[92dvh] w-full overflow-y-auto rounded-xl bg-j-gray-100 shadow-2xl">
-                <UserDetailsWorkspace user={user} roles={roles} />
+                <UserDetailsWorkspace user={user} />
             </div>
         </ModalRoot>
     );
 }
 
-function UserDetailsWorkspace({ user, roles }: UserDetailsModalProps) {
+function UserDetailsWorkspace({ user }: UserDetailsModalProps) {
     const router = useRouter();
     const permissions = useUserStore((state) => state.permissions);
     const canReadUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ");
@@ -106,10 +111,56 @@ function UserDetailsWorkspace({ user, roles }: UserDetailsModalProps) {
                         <ReadOnlyField {...fieldStyle} label="Última atualização" value={maskDate(user.updatedAt)} />
                     </section>
                 )}
-                {selected === "roles" && canReadUserRoles && <UserRoles roles={roles} />}
+                {selected === "roles" && canReadUserRoles && <UserRolesPanel userId={user.id} userName={user.name} />}
                 {selected === "security" && canReadSecurity && <UserSecurityTab userId={user.id} />}
             </div>
         </UserWorkspace>
+    );
+}
+
+function UserRolesPanel({ userId, userName }: { userId: number; userName: string }) {
+    const { setContent, setOpen } = useModal();
+    const permissions = useUserStore((state) => state.permissions);
+    const canAssign = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_ASSIGN");
+    const { data: roles, isLoading, error, refetch, isFetching } = useQuery({
+        queryKey: ["authorization", "users", userId, "roles"],
+        queryFn: () => listUserRolesAction(userId),
+        retry: false,
+    });
+
+    return (
+        <section className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-xs font-bold text-j-gray-700 md:text-sm">Cargos atribuídos</span>
+                {canAssign && (
+                    <Button
+                        type="button"
+                        disabled={isLoading || !roles}
+                        onClick={() => {
+                            setContent(<AddUserRoleModal userId={userId} userName={userName} currentRoleIds={roles?.map((role) => role.id) ?? []} />);
+                            setOpen();
+                        }}
+                        className="w-full sm:w-auto"
+                    >
+                        <Plus size={16} strokeWidth={3} />
+                        Adicionar cargo
+                    </Button>
+                )}
+            </div>
+            {isLoading ? (
+                <div className="flex items-center justify-center gap-2 py-10 text-j-gray-500"><LoaderCircle size={20} className="animate-spin" />Carregando cargos...</div>
+            ) : error || !roles ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                    <AlertCircle size={34} className="text-red-500" />
+                    <p className="max-w-md text-sm text-j-gray-600">{extractApiErrorMessage(error, "Não foi possível carregar os cargos do usuário.")}</p>
+                    <Button type="button" onClick={() => void refetch()} disabled={isFetching}>
+                        {isFetching ? "Tentando novamente..." : "Tentar novamente"}
+                    </Button>
+                </div>
+            ) : (
+                <UserRoles roles={roles} />
+            )}
+        </section>
     );
 }
 
@@ -123,7 +174,6 @@ export function UserRoles({ roles }: { roles: RoleListResponse }) {
 
     return (
         <div id="roles" className="flex scroll-mt-24 flex-col gap-2">
-            <span className="text-xs font-bold text-j-gray-700 md:text-sm">Cargos atribuídos</span>
             {roles.length > 0 ? (
                 <div className="flex flex-col gap-3">
                     {roles.map((role) => (
