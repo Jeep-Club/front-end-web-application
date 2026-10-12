@@ -57,7 +57,8 @@ export async function proxy(request: NextRequest) {
             sessionId: session.sessionId,
             sessionActive: session.sessionActive,
             expires: new Date(Date.now() + session.expiresInSeconds * 1000).toISOString(),
-            userName: identity.name
+            userName: identity.name,
+            profilePhotoStorageKey: identity.profilePhotoStorageKey,
         }
         const meToken = await sign(meToSign);
         request.cookies.set('Me', meToken);

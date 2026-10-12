@@ -4,9 +4,10 @@ interface AvatarProps {
   src: string;
   alt?: string;
   className?: string;
+  loading?: "eager" | "lazy";
 }
 
-export function Avatar({ src, alt = 'Foto de perfil', className }: AvatarProps) {
+export function Avatar({ src, alt = 'Foto de perfil', className, loading = "lazy" }: AvatarProps) {
   return (
     <div className={twMerge(
       `w-9 h-9 rounded-full overflow-hidden relative bg-j-blue-700`,
@@ -19,6 +20,8 @@ export function Avatar({ src, alt = 'Foto de perfil', className }: AvatarProps) 
         src={src}
         alt={alt}
         className="h-full w-full object-cover"
+        loading={loading}
+        decoding="async"
       />
     </div>
   );

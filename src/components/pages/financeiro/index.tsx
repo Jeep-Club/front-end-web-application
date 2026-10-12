@@ -65,7 +65,7 @@ export default async function Financeiro({
     }
 
     return (
-        <div className="min-h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-4">
                 <PageHeader
                     title="Histórico financeiro"
@@ -111,24 +111,25 @@ export default async function Financeiro({
                             <div className="space-y-3">
                                 {charges.map((charge) => (
                                     <article key={charge.id} className="grid grid-cols-1 gap-3 rounded-xl border border-j-gray-200 p-4 transition-colors hover:border-j-blue-200 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-5">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex min-w-0 items-center gap-3">
                                             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-j-gray-100 text-j-blue-800">
                                                 <ReceiptText size={19} />
                                             </span>
-                                            <div>
+                                            <div className="min-w-0">
                                                 <p className="text-sm font-extrabold text-j-gray-700">Cobrança #{charge.id}</p>
-                                                <p className="mt-0.5 text-xs text-j-gray-400">
-                                                    Ciclo #{charge.chargeCycleId}
-                                                </p>
+                                                <p className="mt-0.5 text-xs text-j-gray-400">Ciclo #{charge.chargeCycleId}</p>
                                             </div>
+                                            <span className={`ml-auto shrink-0 rounded-full px-2.5 py-1 text-xs font-bold sm:hidden ${STATUS_STYLE[charge.effectiveStatus]}`}>
+                                                {STATUS_LABEL[charge.effectiveStatus]}
+                                            </span>
                                         </div>
-                                        <div className="grid grid-cols-2 items-center gap-3 sm:flex sm:justify-end">
+                                        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-end">
                                             <div className="flex min-w-0 items-center gap-2 text-xs text-j-gray-500">
-                                                <CalendarDays size={15} />
-                                                <span>Vencimento <strong className="text-j-gray-700">{formatDate(charge.dueDate)}</strong></span>
+                                                <CalendarDays size={15} className="shrink-0" />
+                                                <span className="min-w-0"><span className="block">Vencimento</span><strong className="block text-j-gray-700">{formatDate(charge.dueDate)}</strong></span>
                                             </div>
-                                            <p className="text-right text-sm font-extrabold text-j-gray-700 sm:min-w-24">{formatCurrency(charge.finalAmount)}</p>
-                                            <span className={`justify-self-start rounded-full px-2.5 py-1 text-xs font-bold sm:justify-self-auto ${STATUS_STYLE[charge.effectiveStatus]}`}>
+                                            <p className="whitespace-nowrap text-right text-sm font-extrabold text-j-gray-700 sm:min-w-24">{formatCurrency(charge.finalAmount)}</p>
+                                            <span className={`hidden rounded-full px-2.5 py-1 text-xs font-bold sm:inline-flex ${STATUS_STYLE[charge.effectiveStatus]}`}>
                                                 {STATUS_LABEL[charge.effectiveStatus]}
                                             </span>
                                         </div>

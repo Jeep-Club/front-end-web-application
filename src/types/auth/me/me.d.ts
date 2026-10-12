@@ -28,6 +28,7 @@ interface AuthorizationMeResponse {
 interface MeCookie {
     userId: number;
     userName: string;
+    profilePhotoStorageKey?: string | null;
     sessionId: number;
     sessionActive: boolean;
     expires: string;

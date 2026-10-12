@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertCircle, LoaderCircle, LockKeyhole, Plus, ShieldCheck, UserRound } from "lucide-react";
+import { AlertCircle, LoaderCircle, LockKeyhole, Plus, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
+import { getAdminUserAction } from "@/actions/admin/users/detail";
 import { Button } from "@/components/common/button";
 import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { ModalRoot } from "@/components/common/modal/root";
@@ -23,6 +24,48 @@ import { hasAdminSecurityReadPermission, UserSecurityTab } from "./UserSecurityT
 interface UserDetailsModalProps {
     user: AdminUser;
     modal?: boolean;
+}
+
+export function AdminUserDetailsLoader({ userId, modal = false }: { userId: number; modal?: boolean }) {
+    const router = useRouter();
+    const { data: user, isLoading, error, refetch, isFetching } = useQuery({
+        queryKey: ["admin-users", "details", userId],
+        queryFn: () => getAdminUserAction(userId),
+        retry: false,
+    });
+
+    if (user) return <AdminUserDetailsPage user={user} modal={modal} />;
+
+    const content = isLoading ? (
+        <div className="flex min-h-64 items-center justify-center gap-3 text-j-gray-500">
+            <LoaderCircle size={22} className="animate-spin" />
+            <span>Carregando dados do usuário...</span>
+        </div>
+    ) : (
+        <div className="flex min-h-64 flex-col items-center justify-center gap-4 p-6 text-center">
+            <AlertCircle size={34} className="text-j-red-500" />
+            <div>
+                <h2 className="text-lg font-extrabold text-j-blue-800">Não foi possível carregar este usuário</h2>
+                <p role="alert" className="mt-2 text-sm text-j-gray-600">
+                    {error instanceof Error ? error.message : "Ocorreu uma falha ao carregar os dados."}
+                </p>
+            </div>
+            <Button type="button" onClick={() => void refetch()} disabled={isFetching}>
+                <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
+                {isFetching ? "Tentando novamente..." : "Tentar novamente"}
+            </Button>
+        </div>
+    );
+
+    if (modal) {
+        return (
+            <ModalRoot isOpen onClose={() => router.back()} contentClassName="max-w-4xl">
+                <div className="max-h-[92dvh] w-full overflow-y-auto rounded-xl bg-j-white shadow-2xl">{content}</div>
+            </ModalRoot>
+        );
+    }
+
+    return <main className="flex min-h-[70dvh] items-center justify-center p-4">{content}</main>;
 }
 
 const fieldStyle = {
