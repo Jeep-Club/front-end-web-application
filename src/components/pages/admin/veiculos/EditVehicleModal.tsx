@@ -303,7 +303,7 @@ export function EditVehicleModal({ vehicleId }: EditVehicleModalProps) {
             const photoFile = data.photo?.[0];
             let photo = vehicle?.photo ?? undefined;
 
-            if (photoFile instanceof File) {
+            if (typeof File !== "undefined" && photoFile instanceof File) {
                 const formData = new FormData();
                 formData.append("file", photoFile);
                 photo = await uploadImageAction(formData);

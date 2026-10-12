@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LoaderCircle, Power, PowerOff, X } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
@@ -9,13 +10,14 @@ import { useModalFocusRestoration } from "./useModalFocusRestoration";
 
 interface UserStatusConfirmationModalProps {
     user: AdminUser;
-    onConfirm: (userId: number, status: "enable" | "disable") => Promise<void>;
+    onConfirm: (userId: number, status: "enable" | "disable") => Promise<AdminUser>;
     onSuccess: (updatedUser: AdminUser) => void;
 }
 
 export function UserStatusConfirmationModal({
     user,
     onConfirm,
+    onSuccess,
 }: UserStatusConfirmationModalProps) {
     useModalFocusRestoration();
     const { setClose } = useModal();
@@ -26,10 +28,13 @@ export function UserStatusConfirmationModal({
     async function handleConfirm() {
         setIsPending(true);
         try {
-            await onConfirm(user.id, isEnabling ? "enable" : "disable");
-            setIsPending(false);
-        } finally {
+            const updatedUser = await onConfirm(user.id, isEnabling ? "enable" : "disable");
+            onSuccess(updatedUser);
             setClose();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Não foi possível atualizar o acesso do usuário.");
+        } finally {
+            setIsPending(false);
         }
     }
 
