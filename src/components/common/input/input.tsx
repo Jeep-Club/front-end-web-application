@@ -23,7 +23,7 @@ export function Input({label, error, name, value, className, labelClassName, typ
                 htmlFor={id}
                 className={twMerge("text-xs md:text-sm font-bold text-j-white", labelClassName)}
             >
-                {label} {required ? <span className="text-j-red-200">*</span> : null}
+                {label} {required ? <span className="text-j-red-500">*</span> : null}
             </label>
             <div className="w-full relative flex items-center">
                 <input
