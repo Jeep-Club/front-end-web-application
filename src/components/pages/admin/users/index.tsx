@@ -115,9 +115,9 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     //     refreshUsers();
     // }, [queryClient, refreshUsers]);
 
-    const updateUserInCache = useCallback((updatedUser: AdminUser) => {
-        users.content = users.content.map((user) => user.id === updatedUser.id ? updatedUser : user);
-    }, [users]);
+    const updateUserInCache = useCallback(() => {
+        router.refresh();
+    }, [router]);
 
     // const updateRolesInCache = useCallback((userId: number, roles: AdminRole[]) => {
     //     queryClient.setQueriesData<PageResponse<UserListItem>>(
@@ -158,7 +158,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
     const updateUserStatus = useCallback(async (userId: number, status: "enable" | "disable"): Promise<void> => {
         updateUserStatusMutation.mutateAsync({ userId, status });
-    }, []);
+    }, [updateUserStatusMutation]);
 
     const handleChangeUserStatus = useCallback((user: AdminUser) => {
         // const onConfirm = user.status === "DISABLED"
@@ -173,7 +173,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
             />,
         );
         setOpen();
-    }, [setContent, setOpen]);
+    }, [setContent, setOpen, updateUserInCache, updateUserStatus]);
 
     function replaceSearchParams(
         patch: Partial<AdminUserSearchParams>,
@@ -252,18 +252,18 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
             <div className="min-h-full w-full p-3 md:p-4">
                 <div className="flex w-full flex-col gap-6">
                     <PageHeader
-                        title="GestÃ£o de usuÃ¡rios"
+                        title="Gestão de usuários"
                         breadcrumbs={[
-                            { label: "InÃ­cio", href: "/feed" },
-                            { label: "GestÃ£o Administrativa", href: "/admin" },
-                            { label: "UsuÃ¡rios" },
+                            { label: "Início", href: "/feed" },
+                            { label: "Gestão Administrativa", href: "/admin" },
+                            { label: "Usuários" },
                         ]}
                     />
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
-                        <h2 className="text-lg font-black text-j-blue-800">Acesso nÃ£o permitido</h2>
+                        <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
                         <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                            Seu usuÃ¡rio nÃ£o possui permissÃ£o para visualizar a gestÃ£o de usuÃ¡rios.
+                            Seu usuário não possui permissão para visualizar a gestão de usuários.
                         </p>
                     </section>
                 </div>
@@ -278,16 +278,16 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                 <PageHeader
                     title={
                         <>
-                            GestÃ£o de usuÃ¡rios
+                            Gestão de usuários
                             <span className="ml-2 align-middle text-sm font-normal text-j-gray-400 md:text-base">
-                                {users.totalElements} usuÃ¡rio(s) cadastrado(s)
+                                {users.totalElements} usuário(s) cadastrado(s)
                             </span>
                         </>
                     }
                     breadcrumbs={[
-                        { label: "InÃ­cio", href: "/feed" },
-                        { label: "GestÃ£o Administrativa", href: "/admin" },
-                        { label: "UsuÃ¡rios" },
+                        { label: "Início", href: "/feed" },
+                        { label: "Gestão Administrativa", href: "/admin" },
+                        { label: "Usuários" },
                     ]}
                 />
 
@@ -304,7 +304,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     isLoading={false}
                     isFetching={isPending}
                     // error={usersQuery.error
-                    //     ? extractApiErrorMessage(usersQuery.error, "NÃ£o foi possÃ­vel carregar os usuÃ¡rios. Tente novamente.")
+                    //     ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
                     //     : undefined}
                     onSearchChange={updateSearch}
 
@@ -313,7 +313,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         { resetPage: true },
                     )}
 
-                    // onRoleChange nÃ£o existe na nova tipagem explicitamente (a nÃ£o ser que backend use Q ou fields)
+                    // onRoleChange não existe na nova tipagem explicitamente (a não ser que backend use Q ou fields)
                     // onRoleChange={(roleIds) => updateFilters({ roleIds })} // Reavalie se precisa manter
 
                     onClearFilters={clearFilters}
