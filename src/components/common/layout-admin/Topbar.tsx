@@ -11,19 +11,22 @@ interface TopbarProps {
     onToggleSidebar: () => void;
     onOpenMobileMenu: () => void;
     fullName: string;
+    initialProfilePhotoUrl?: string | null;
 }
 
-export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobileMenu, fullName }: TopbarProps) {
+export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobileMenu, fullName, initialProfilePhotoUrl }: TopbarProps) {
     const { data: profile } = useQuery({
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
-        staleTime: 60_000,
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
         retry: false,
     });
     const displayName = profile?.name ?? fullName;
+    const profilePhotoUrl = profile ? profile.profilePhotoUrl : initialProfilePhotoUrl;
 
     return (
-        <header className="sticky top-0 z-10 flex h-14 w-full items-center justify-between bg-j-blue-800 pl-2 pr-4 text-j-white shadow-md md:pl-4 md:pr-8">
+        <header className="sticky top-0 z-10 flex h-14 w-full shrink-0 items-center justify-between bg-j-blue-800 pl-2 pr-4 text-j-white shadow-md md:pl-4 md:pr-8">
             <button
                 type="button"
                 id="tour-mobile-menu-btn"
@@ -50,7 +53,7 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
                 <NotificationBell />
                 <span className="h-8 w-px bg-j-transparent-white" />
                 <span className="hidden text-sm font-bold text-j-white md:inline">{displayName}</span>
-                <AvatarMenu src={profile?.profilePhotoUrl} fullName={displayName} />
+                <AvatarMenu src={profilePhotoUrl} fullName={displayName} />
             </div>
         </header>
     );

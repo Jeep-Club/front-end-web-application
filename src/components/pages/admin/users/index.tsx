@@ -320,7 +320,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     onSortChange={handleSortChange}
                     onViewUser={handleViewUser}
                     onChangeUserStatus={handleChangeUserStatus}
-                    onCreateUser={() => router.push("/admin/users/new")}
                     setSearchType={updateSearchType}
                 />
             </div>

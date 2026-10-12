@@ -65,7 +65,7 @@ export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
                 className="cursor-pointer rounded-full ring-2 ring-white/40 transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-j-yellow-300"
             >
                 {src ? (
-                    <Avatar src={src} alt={`Foto de ${fullName}`} className="h-9 w-9 bg-j-blue-700" />
+                    <Avatar src={src} alt={`Foto de ${fullName}`} className="h-9 w-9 bg-j-blue-700" loading="eager" />
                 ) : (
                     <span aria-label={fullName} className="flex h-9 w-9 items-center justify-center rounded-full bg-j-yellow-300 text-xs font-extrabold text-j-blue-900">
                         {initials}

@@ -30,6 +30,7 @@ export const authorizationMeResponseSchema: z.ZodType<AuthorizationMeResponse> =
 export const meCookieSchema: z.ZodType<MeCookie> = z.object({
     userId: z.number(),
     userName: z.string(),
+    profilePhotoStorageKey: z.string().nullish(),
     sessionId: z.number(),
     sessionActive: z.boolean(),
     expires: z.string()

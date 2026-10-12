@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
 import { Eye, Plus, Power, PowerOff } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -35,7 +36,6 @@ interface UserManagementViewProps {
     onSortChange: (field: string) => void;
     onViewUser: (userId: number) => void;
     onChangeUserStatus: (user: AdminUser) => void;
-    onCreateUser: () => void;
     searchType: SearchType;
     setSearchType: (type: SearchType) => void;
 }
@@ -60,7 +60,6 @@ export function UserManagementView({
     onSortChange,
     onViewUser,
     onChangeUserStatus,
-    onCreateUser,
     searchType,
     setSearchType,
 }: UserManagementViewProps) {
@@ -317,15 +316,14 @@ export function UserManagementView({
                         </Select.Unregister>
 
                         {permissions.canCreateUsers && (
-                            <Button
-                                type="button"
-                                onClick={onCreateUser}
-                                disabled={isFetching}
-                                className="w-full shrink-0 whitespace-nowrap px-5 lg:w-auto"
+                            <Link
+                                href="/admin/users/new"
+                                prefetch
+                                className="flex w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg p-2.5 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
                             >
                                 Novo usuário
                                 <Plus size={16} strokeWidth={3} />
-                            </Button>
+                            </Link>
                         )}
                     </div>
                 </div>

@@ -4,6 +4,7 @@ import { meProfileResponseSchema } from '@/schemas/user/profile';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { extractApiErrorMessage } from '@/utils/http/apiError';
 import { HttpAPIRoutes } from '@/utils/http/api';
+import { cacheProfilePhotoStorageKey } from '@/utils/auth/me';
 
 export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
     try {
@@ -14,6 +15,7 @@ export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
         });
 
         const user = response.data;
+        await cacheProfilePhotoStorageKey(user.profilePhotoStorageKey);
 
         return {
             id: user.id,

@@ -1,7 +1,4 @@
-import { AdminUserDetailsPage } from "@/components/pages/admin/users/[id]/UserDetails";
-import { adminUserSchema } from "@/schemas/admin/users";
-import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
+import { AdminUserDetailsLoader } from "@/components/pages/admin/users/[id]/UserDetails";
 
 interface Props {
     params: Promise<{
@@ -16,11 +13,5 @@ export default async function Page({ params }: Props) {
     // Let the regular create-user page render instead of trying to fetch a user with id "new".
     if (!/^\d+$/.test(id)) return null;
 
-    const user = await serverFetchWrapper<AdminUser>({
-            url: `${HttpAPIRoutes.ADMIN_USERS}/${id}`,
-            method: "GET",
-            schema: adminUserSchema,
-        });
-
-    return <AdminUserDetailsPage user={user.data} modal={true} />;
+    return <AdminUserDetailsLoader userId={Number(id)} modal />;
 }
