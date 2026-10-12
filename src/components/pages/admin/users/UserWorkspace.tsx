@@ -28,9 +28,11 @@ export function UserWorkspace({ title, description, options, selected, onSelect,
 
     return (
         <div className="w-full min-w-0 px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
+            <div className="sticky top-0 z-20 -mx-3 -mt-3 mb-2 bg-j-gray-100/95 px-3 pt-3 backdrop-blur sm:-mx-4 sm:-mt-4 sm:px-4 sm:pt-4 lg:-mx-6 lg:-mt-6 lg:px-6 lg:pt-6">
             <button type="button" disabled={disabled} onClick={onBack} className="mb-1 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg pr-3 text-sm font-semibold text-j-blue-800 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
                 <ArrowLeft size={18} aria-hidden="true" /> Usuários
             </button>
+            </div>
             <header className="mb-4">
                 <h1 className="text-2xl font-extrabold tracking-tight text-j-blue-800">{title}</h1>
                 <p className="mt-1 text-sm text-j-gray-500">{description}</p>

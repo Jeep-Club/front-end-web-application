@@ -9,10 +9,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     const meToken = cookieStore.get("Me")?.value || '';
 
     const currentUser = await verifyWithSchema<MeCookie>(meToken, meCookieSchema).catch(() => null);
+    const onboardingUserId = cookieStore.get("FirstAccessOnboardingUserId")?.value;
+    const onboardingRequired = Boolean(currentUser && onboardingUserId === String(currentUser.userId));
     const fullName = currentUser?.userName ?? "Usuário";
     const initialProfilePhotoUrl = getMediaImageUrl(currentUser?.profilePhotoStorageKey) || null;
     return (
-        <DashboardShell fullName={fullName} initialProfilePhotoUrl={initialProfilePhotoUrl}>
+        <DashboardShell fullName={fullName} initialProfilePhotoUrl={initialProfilePhotoUrl} onboardingRequired={onboardingRequired}>
             {children}
         </DashboardShell>
     );

@@ -60,7 +60,7 @@ export function AdminUserDetailsLoader({ userId, modal = false }: { userId: numb
     if (modal) {
         return (
             <ModalRoot isOpen onClose={() => router.back()} contentClassName="max-w-4xl">
-                <div className="max-h-[92dvh] w-full overflow-y-auto rounded-xl bg-j-white shadow-2xl">{content}</div>
+                <div className="max-h-[calc(100dvh-2rem)] w-full overscroll-contain overflow-y-auto rounded-xl bg-j-white shadow-2xl [webkit-overflow-scrolling:touch]">{content}</div>
             </ModalRoot>
         );
     }
@@ -78,7 +78,7 @@ export function AdminUserDetailsPage({ user, modal = false }: UserDetailsModalPr
 }
 
 export function UserDetails({ user }: UserDetailsModalProps) {
-    return <UserDetailsWorkspace user={user} />;
+    return <UserDetailsWorkspace user={user} modal={false} />;
 }
 
 export function UserDetailsModal({ user }: UserDetailsModalProps) {
@@ -86,14 +86,14 @@ export function UserDetailsModal({ user }: UserDetailsModalProps) {
 
     return (
         <ModalRoot isOpen={true} onClose={() => router.back()} contentClassName="max-w-4xl">
-            <div role="dialog" aria-modal="true" aria-label={`Detalhes do usuário ${user.name}`} className="max-h-[92dvh] w-full overflow-y-auto rounded-xl bg-j-gray-100 shadow-2xl">
-                <UserDetailsWorkspace user={user} />
+            <div role="dialog" aria-modal="true" aria-label={`Detalhes do usuário ${user.name}`} className="max-h-[calc(100dvh-2rem)] w-full overscroll-contain overflow-y-auto rounded-xl bg-j-gray-100 shadow-2xl [webkit-overflow-scrolling:touch]">
+                <UserDetailsWorkspace user={user} modal />
             </div>
         </ModalRoot>
     );
 }
 
-function UserDetailsWorkspace({ user }: UserDetailsModalProps) {
+function UserDetailsWorkspace({ user, modal }: UserDetailsModalProps) {
     const router = useRouter();
     const permissions = useUserStore((state) => state.permissions);
     const canReadUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ");
@@ -131,7 +131,7 @@ function UserDetailsWorkspace({ user }: UserDetailsModalProps) {
                     </div>
                 </div>
             )}
-            onBack={() => router.push("/admin/users")}
+            onBack={() => modal ? router.back() : router.push("/admin/users")}
         >
             <div className="p-4 sm:p-6">
                 {selected === "personal" && (

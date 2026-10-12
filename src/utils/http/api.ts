@@ -7,6 +7,8 @@ export enum HttpAPIRoutes {
     AUTHORIZATION_ME = "authorization/me",
     ADMIN_USERS = "identity/admin/users",
     REGISTER = "identity/register",
+    ADMIN_FIRST_ACCESS_USER = "identity/admin/users/first-access",
+    COMPLETE_REQUIRED_PASSWORD_CHANGE = "authentication/login/password-change",
     LOGOUT = "authentication/logout",
     PERMISSIONS = "authorization/permissions",
     AUTHORIZATION_ROLES = "authorization/roles",

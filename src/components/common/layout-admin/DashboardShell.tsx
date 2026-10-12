@@ -4,16 +4,20 @@ import { useState } from "react";
 import Sidebar from "@/components/common/layout-admin/Sidebar";
 import Topbar from "@/components/common/layout-admin/Topbar";
 import GuidedTour from "@/components/common/tour/GuidedTour";
+import { FirstAccessOnboarding } from "@/components/pages/first-access/Onboarding";
 
 interface DashboardShellProps {
     fullName: string;
     initialProfilePhotoUrl?: string | null;
+    onboardingRequired?: boolean;
     children: React.ReactNode;
 }
 
-export default function DashboardShell({ fullName, initialProfilePhotoUrl, children }: DashboardShellProps) {
+export default function DashboardShell({ fullName, initialProfilePhotoUrl, onboardingRequired = false, children }: DashboardShellProps) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    if (onboardingRequired) return <FirstAccessOnboarding />;
 
     return (
         <GuidedTour setMobileMenuOpen={setIsMobileMenuOpen}>

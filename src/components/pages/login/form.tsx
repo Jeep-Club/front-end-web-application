@@ -16,7 +16,11 @@ export default function FormLogin() {
 
     const mutation = useMutation({ 
         mutationFn: loginAction, 
-        onSuccess: () => {
+        onSuccess: (result) => {
+            if ("passwordChangeToken" in result || result.status === "PASSWORD_CHANGE_REQUIRED" || result.status === "FIRST_ACCESS_PASSWORD_CHANGE_REQUIRED") {
+                router.push("/first-access/password");
+                return;
+            }
             router.push("/feed");
             toast.success('Login realizado com sucesso!');
         }, 

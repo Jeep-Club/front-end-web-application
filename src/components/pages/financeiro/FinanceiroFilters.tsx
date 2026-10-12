@@ -38,14 +38,14 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
     }
 
     return (
-        <div className="mb-5 grid min-w-0 gap-4 rounded-xl bg-j-gray-50 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
-            <label className="flex min-w-0 flex-col gap-2 text-xs font-bold text-j-gray-600">
+        <div className="mb-5 grid w-full min-w-0 max-w-full gap-4 rounded-xl bg-j-gray-50 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+            <label className="flex w-full min-w-0 max-w-full flex-col gap-2 text-xs font-bold text-j-gray-600">
                 Status da cobrança
                 <select
                     name="status"
                     value={status}
                     onChange={(event) => handleStatusChange(event.target.value)}
-                    className="h-11 w-full min-w-0 rounded-lg border border-j-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-j-gray-700 focus:border-j-blue-500 focus:outline-none"
+                    className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-j-gray-700 focus:border-j-blue-500 focus:outline-none"
                 >
                     <option value="">Todos os status</option>
                     <option value="PENDING">Em aberto (pendente, em atraso ou expirada)</option>
@@ -53,13 +53,13 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
                     <option value="CANCELED">Cancelada</option>
                 </select>
             </label>
-            <label className="flex min-w-0 flex-col gap-2 text-xs font-bold text-j-gray-600">
+            <label className="flex w-full min-w-0 max-w-full flex-col gap-2 text-xs font-bold text-j-gray-600">
                 Ordenar por vencimento
                 <select
                     name="sort"
                     value={sort}
                     onChange={(event) => handleSortChange(event.target.value)}
-                    className="h-11 w-full min-w-0 rounded-lg border border-j-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-j-gray-700 focus:border-j-blue-500 focus:outline-none"
+                    className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-j-gray-700 focus:border-j-blue-500 focus:outline-none"
                 >
                     <option value="dueDate,desc">Mais recentes primeiro</option>
                     <option value="dueDate,asc">Mais antigas primeiro</option>
