@@ -42,7 +42,8 @@ export default async function loginAction({ cpf, senha }: LoginRequest) {
                 ...authCookieOptions(true),
                 expires,
             });
-            cookieStore.set("FirstAccessPasswordChangePending", String(data.status === "FIRST_ACCESS_PASSWORD_CHANGE_REQUIRED"), {
+            const isFirstAccessChange = data.status === "PASSWORD_CHANGE_REQUIRED" || data.status === "FIRST_ACCESS_PASSWORD_CHANGE_REQUIRED";
+            cookieStore.set("FirstAccessPasswordChangePending", String(isFirstAccessChange), {
                 ...authCookieOptions(true),
                 expires,
             });
