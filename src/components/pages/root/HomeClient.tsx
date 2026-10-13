@@ -24,8 +24,8 @@ export default function HomeClient() {
   const router = useRouter();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
-  const handleWhatsApp = () => {
-    window.open("https://wa.me/NUMEROMATEHUS", "_blank");
+  const handleContact = () => {
+    router.push("/membership/apply");
   };
 
   const handleLogin = () => {
@@ -33,7 +33,7 @@ export default function HomeClient() {
   };
 
   const handleRegister = () => {
-    router.push("/register");
+    router.push("/membership/apply");
   };
 
   const handleHomeTour = useCallback(() => {
@@ -116,7 +116,7 @@ export default function HomeClient() {
           </div>
 
           <button
-            onClick={handleWhatsApp}
+            onClick={handleContact}
             className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
           >
             <FaWhatsapp size={20} />

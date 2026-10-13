@@ -20,6 +20,7 @@ import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { ROLE_STATUS_LABEL, USER_STATUS_LABEL, USER_STATUS_STYLE } from "../user-display";
 import { UserWorkspace, type UserWorkspaceOption } from "../UserWorkspace";
 import { hasAdminSecurityReadPermission, UserSecurityTab } from "./UserSecurityTab";
+import { UserActivationInvitation } from "./UserActivationInvitation";
 
 interface UserDetailsModalProps {
     user: AdminUser;
@@ -97,9 +98,12 @@ function UserDetailsWorkspace({ user, modal }: UserDetailsModalProps) {
     const router = useRouter();
     const permissions = useUserStore((state) => state.permissions);
     const canReadUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ");
+    const canManageInvitations = hasPermission(permissions, "IDENTITY", "USER_CREATE");
     const canReadSecurity = hasAdminSecurityReadPermission(permissions);
     const [selected, setSelected] = useState(() =>
-        typeof window !== "undefined" && window.location.hash === "#roles" && canReadUserRoles ? "roles" : "personal",
+        typeof window !== "undefined" && window.location.search.includes("invitation=1") && canManageInvitations
+            ? "access"
+            : typeof window !== "undefined" && window.location.hash === "#roles" && canReadUserRoles ? "roles" : "personal",
     );
 
     const options = useMemo<UserWorkspaceOption[]>(() => {
@@ -152,6 +156,7 @@ function UserDetailsWorkspace({ user, modal }: UserDetailsModalProps) {
                         <ReadOnlyField {...fieldStyle} label="Data de desativação" value={maskDate(user.disabledAt)} />
                         <ReadOnlyField {...fieldStyle} label="Data de cadastro" value={maskDate(user.createdAt)} />
                         <ReadOnlyField {...fieldStyle} label="Última atualização" value={maskDate(user.updatedAt)} />
+                        {canManageInvitations && user.email && <UserActivationInvitation userId={user.id} />}
                     </section>
                 )}
                 {selected === "roles" && canReadUserRoles && <UserRolesPanel userId={user.id} userName={user.name} />}
