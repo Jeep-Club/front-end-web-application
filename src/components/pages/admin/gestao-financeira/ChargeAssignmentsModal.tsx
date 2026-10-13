@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { AlertCircle, LoaderCircle, Plus, Power, PowerOff, X } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
@@ -17,6 +18,7 @@ import { ToggleChargeAssignmentStatusModal } from "./ToggleChargeAssignmentStatu
 interface ChargeAssignmentsModalProps {
     chargeDefinitionId: number;
     chargeDefinitionName: string;
+    chargeDefinitionStatus: ChargeDefinitionStatus;
 }
 
 function describeAssignment(assignment: ChargeAssignment): string {
@@ -35,16 +37,17 @@ function describeAssignment(assignment: ChargeAssignment): string {
     return CHARGE_AUDIENCE_TYPE_LABEL.ALL_MEMBERS;
 }
 
-export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionName }: ChargeAssignmentsModalProps) {
+export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionName, chargeDefinitionStatus }: ChargeAssignmentsModalProps) {
     const { setContent, setOpen, setClose } = useModal();
 
     const permissions = useUserStore((state) => state.permissions);
     const canCreate = hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_CREATE");
     const canUpdate = hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_UPDATE");
+    const [page, setPage] = useState(0);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ["billing", "charge-definitions", chargeDefinitionId, "assignments"],
-        queryFn: () => listChargeAssignmentsAction(chargeDefinitionId, { page: "0", size: "50" }),
+        queryKey: ["billing", "charge-definitions", chargeDefinitionId, "assignments", page],
+        queryFn: () => listChargeAssignmentsAction(chargeDefinitionId, { page: String(page), size: "20" }),
     });
 
     const assignments = data?.content ?? [];
@@ -54,6 +57,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
             <AddChargeAssignmentModal
                 chargeDefinitionId={chargeDefinitionId}
                 chargeDefinitionName={chargeDefinitionName}
+                chargeDefinitionStatus={chargeDefinitionStatus}
             />,
         );
         setOpen();
@@ -65,6 +69,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
                 assignmentId={assignment.id}
                 chargeDefinitionId={chargeDefinitionId}
                 chargeDefinitionName={chargeDefinitionName}
+                chargeDefinitionStatus={chargeDefinitionStatus}
                 audienceLabel={describeAssignment(assignment)}
                 nextStatus={assignment.active ? "DEACTIVATE" : "ACTIVATE"}
             />,
@@ -97,7 +102,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
             </header>
 
             <div className="flex flex-col gap-4 px-5 py-5 md:px-8 md:py-6">
-                {canCreate && (
+                {canCreate && chargeDefinitionStatus === "ACTIVE" && (
                     <Button
                         type="button"
                         onClick={handleAdd}
@@ -160,7 +165,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
                                     </span>
                                 </div>
 
-                                {canUpdate && (
+                                {canUpdate && chargeDefinitionStatus !== "ARCHIVED" && (assignment.active || chargeDefinitionStatus === "ACTIVE") && (
                                     <div className="mt-1 flex justify-end border-t border-j-gray-100 pt-2">
                                         <button
                                             type="button"
@@ -181,6 +186,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
                         ))}
                     </div>
                 )}
+                {data && data.totalPages > 1 && <footer className="flex items-center justify-between gap-3"><Button type="button" disabled={page === 0 || isFetching} onClick={() => setPage(page - 1)}>Anterior</Button><span className="text-xs">Página {page + 1} de {data.totalPages}</span><Button type="button" disabled={data.last || isFetching} onClick={() => setPage(page + 1)}>Próxima</Button></footer>}
             </div>
         </div>
     );

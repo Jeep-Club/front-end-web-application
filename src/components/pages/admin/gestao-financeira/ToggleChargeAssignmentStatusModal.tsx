@@ -14,6 +14,7 @@ interface ToggleChargeAssignmentStatusModalProps {
     assignmentId: number;
     chargeDefinitionId: number;
     chargeDefinitionName: string;
+    chargeDefinitionStatus: ChargeDefinitionStatus;
     audienceLabel: string;
     nextStatus: "ACTIVATE" | "DEACTIVATE";
 }
@@ -22,6 +23,7 @@ export function ToggleChargeAssignmentStatusModal({
     assignmentId,
     chargeDefinitionId,
     chargeDefinitionName,
+    chargeDefinitionStatus,
     audienceLabel,
     nextStatus,
 }: ToggleChargeAssignmentStatusModalProps) {
@@ -35,6 +37,7 @@ export function ToggleChargeAssignmentStatusModal({
             <ChargeAssignmentsModal
                 chargeDefinitionId={chargeDefinitionId}
                 chargeDefinitionName={chargeDefinitionName}
+                chargeDefinitionStatus={chargeDefinitionStatus}
             />,
         );
     };

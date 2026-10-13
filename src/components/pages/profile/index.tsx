@@ -43,7 +43,7 @@ export default function Profile() {
                     id="tour-profile-header"
                     title="Gerenciamento de conta"
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
+                        { label: "Home", href: "/feed" },
                         { label: "Gerenciamento de conta" },
                         { label: activeTabLabel ?? "" },
                     ]}

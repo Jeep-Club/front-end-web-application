@@ -22,6 +22,7 @@ import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
 interface AddChargeAssignmentModalProps {
     chargeDefinitionId: number;
     chargeDefinitionName: string;
+    chargeDefinitionStatus: ChargeDefinitionStatus;
 }
 
 const AUDIENCE_OPTIONS: Array<{ value: ChargeAudienceType; label: string }> = [
@@ -31,7 +32,7 @@ const AUDIENCE_OPTIONS: Array<{ value: ChargeAudienceType; label: string }> = [
     { value: "EVENT_PARTICIPANTS", label: "Participantes de evento" },
 ];
 
-export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionName }: AddChargeAssignmentModalProps) {
+export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionName, chargeDefinitionStatus }: AddChargeAssignmentModalProps) {
     const { setContent, setClose } = useModal();
     const queryClient = useQueryClient();
 
@@ -45,6 +46,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
             <ChargeAssignmentsModal
                 chargeDefinitionId={chargeDefinitionId}
                 chargeDefinitionName={chargeDefinitionName}
+                chargeDefinitionStatus={chargeDefinitionStatus}
             />,
         );
     };

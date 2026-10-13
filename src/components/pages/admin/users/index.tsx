@@ -253,7 +253,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     <PageHeader
                         title="Gestão de usuários"
                         breadcrumbs={[
-                            { label: "Início", href: "/feed" },
+                            { label: "Home", href: "/feed" },
                             { label: "Gestão Administrativa", href: "/admin" },
                             { label: "Usuários" },
                         ]}
@@ -275,16 +275,9 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
-                    title={
-                        <>
-                            Gestão de usuários
-                            <span className="ml-2 align-middle text-sm font-normal text-j-gray-400 md:text-base">
-                                {users.totalElements} usuário(s) cadastrado(s)
-                            </span>
-                        </>
-                    }
+                    title="Gestão de usuários"
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
+                        { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Usuários" },
                     ]}
