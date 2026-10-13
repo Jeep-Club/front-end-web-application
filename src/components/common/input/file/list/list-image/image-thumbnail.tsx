@@ -27,7 +27,7 @@ export function ImageThumbnail({ file, children }: { file: File, children?: Reac
                     alt={`Visualização do arquivo: ${file.name}`}
                     fill
                     unoptimized
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    className="object-contain p-1 transition-transform duration-300 group-hover:scale-105"
                 />
             ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-j-gray-400">

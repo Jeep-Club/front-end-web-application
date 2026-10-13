@@ -37,7 +37,7 @@ export function NewAdminUserPage() {
                 : "Cadastro criado. Confira o status do convite.");
         },
         onError: (error) => {
-            toast.error(error.message || 'Erro ao cadastrar usuÃ¡rio. Verifique os dados e tente novamente.');
+            toast.error(error.message || 'Erro ao cadastrar usuário. Verifique os dados e tente novamente.');
         },
     });
 
@@ -51,10 +51,10 @@ export function NewAdminUserPage() {
             <div className="mx-auto w-full max-w-2xl p-4 sm:p-6">
                 <div className="rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm sm:p-8">
                     <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-j-green-100 text-j-green-700"><Check size={24} /></div>
-                    <h1 className="text-2xl font-extrabold text-j-blue-800">UsuÃ¡rio criado</h1>
-                    <p className="mt-2 text-sm leading-6 text-j-gray-600">Entregue a senha provisÃ³ria ao usuÃ¡rio por um canal seguro. No primeiro login, ele precisarÃ¡ criar uma senha permanente.</p>
+                    <h1 className="text-2xl font-extrabold text-j-blue-800">Usuário criado</h1>
+                    <p className="mt-2 text-sm leading-6 text-j-gray-600">Entregue a senha provisória ao usuário por um canal seguro. No primeiro login, ele precisará criar uma senha permanente.</p>
                     <div className="mt-6 rounded-xl border border-j-yellow-300 bg-j-yellow-50 p-4">
-                        <p className="text-xs font-bold uppercase tracking-wide text-j-gray-600">Senha provisÃ³ria Â· usuÃ¡rio #{createdUser.userId}</p>
+                        <p className="text-xs font-bold uppercase tracking-wide text-j-gray-600">Senha provisória · usuário #{createdUser.userId}</p>
                         <p className="mt-2 break-all font-mono text-lg font-bold text-j-blue-800">{createdUser.temporaryPassword}</p>
                     </div>
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -65,9 +65,9 @@ export function NewAdminUserPage() {
                             {copied ? <Check size={16} /> : <Copy size={16} />}
                             {copied ? "Senha copiada" : "Copiar senha provisória"}
                         </Button>
-                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuÃ¡rios</Button>
+                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
                     </div>
-                    <p className="mt-4 text-xs text-j-gray-500">Por seguranÃ§a, esta senha serÃ¡ exibida somente agora.</p>
+                    <p className="mt-4 text-xs text-j-gray-500">Por segurança, esta senha será exibida somente agora.</p>
                 </div>
             </div>
         );
@@ -87,20 +87,20 @@ export function NewAdminUserPage() {
                         {createdUser.invitationStatus === "DELIVERY_FAILED" ? <Mail size={23} /> : <Check size={24} />}
                     </div>
                     <h1 className="text-2xl font-extrabold text-j-blue-800">Cadastro criado</h1>
-                    <p className="mt-2 text-sm leading-6 text-j-gray-600">O usuÃ¡rio receberÃ¡ um link para definir a prÃ³pria senha. O status abaixo informa o resultado do envio pelo serviÃ§o de e-mail.</p>
+                    <p className="mt-2 text-sm leading-6 text-j-gray-600">O usuário receberá um link para definir a própria senha. O status abaixo informa o resultado do envio pelo serviço de e-mail.</p>
                     <div className="mt-6 rounded-xl border border-j-gray-200 bg-j-gray-50 p-4">
                         <p className="text-xs font-bold uppercase tracking-wide text-j-gray-500">Status do convite</p>
                         <p className={`mt-2 font-bold ${createdUser.invitationStatus === "DELIVERY_FAILED" ? "text-j-red-600" : "text-j-blue-800"}`}>{invitationLabel}</p>
-                        <p className="mt-1 text-xs text-j-gray-500">UsuÃ¡rio #{createdUser.userId}</p>
+                        <p className="mt-1 text-xs text-j-gray-500">Usuário #{createdUser.userId}</p>
                     </div>
                     {createdUser.invitationStatus === "DELIVERY_FAILED" && (
-                        <p role="status" className="mt-3 text-sm text-j-red-600">O usuÃ¡rio foi criado, mas o convite nÃ£o foi entregue. VocÃª poderÃ¡ consultar e reenviar o convite nos detalhes do usuÃ¡rio.</p>
+                        <p role="status" className="mt-3 text-sm text-j-red-600">O usuário foi criado, mas o convite não foi entregue. Você poderá consultar e reenviar o convite nos detalhes do usuário.</p>
                     )}
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                         <Button type="button" onClick={() => router.push(`/admin/users/${createdUser.userId}?invitation=1`)} className="min-h-11 flex-1 gap-2">
                             Gerenciar convite <ArrowRight size={16} />
                         </Button>
-                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuÃ¡rios</Button>
+                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
                     </div>
                 </div>
             </div>
@@ -109,11 +109,11 @@ export function NewAdminUserPage() {
 
     return (
         <UserWorkspace
-            title="Novo usuÃ¡rio"
+            title="Novo usuário"
             description="Preencha os dados para criar a conta."
             options={[
-                { key: "personal", label: "Dados pessoais", description: "IdentificaÃ§Ã£o e contato", icon: UserRound },
-                { key: "access", label: "Acesso", description: "Como ativarÃ¡ a conta", icon: LockKeyhole },
+                { key: "personal", label: "Dados pessoais", description: "Identificação e contato", icon: UserRound },
+                { key: "access", label: "Acesso", description: "Como ativará a conta", icon: LockKeyhole },
             ]}
             selected={selected}
             onSelect={setSelected}
@@ -135,7 +135,7 @@ export function NewAdminUserPage() {
                     className="items-stretch gap-0"
                 >
                     <fieldset disabled={isLoading} className="flex min-w-0 flex-col gap-4 p-4 sm:p-6 [&_input+svg]:text-j-gray-400 [&_input~button]:text-j-gray-400">
-                        <p className="text-sm text-j-gray-500"><span className="font-bold text-j-red-500">*</span> Campos obrigatÃ³rios</p>
+                        <p className="text-sm text-j-gray-500"><span className="font-bold text-j-red-500">*</span> Campos obrigatórios</p>
 
                         <CreateUserFields selected={selected} />
                     </fieldset>
