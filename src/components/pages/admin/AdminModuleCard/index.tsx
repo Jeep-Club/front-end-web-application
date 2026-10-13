@@ -33,7 +33,7 @@ export default function Admin() {
                     title="Painel do Administrador"
                     breadcrumbs={[
                         {
-                            label: "Início",
+                            label: "Home",
                             href: "/feed",
                         },
                         {

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Archive, CalendarPlus, Pencil, Plus, Power, PowerOff, ShieldX, Users } from "lucide-react";
+import { Archive, CalendarPlus, Eye, Pencil, Plus, Power, PowerOff, ShieldX, Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -19,6 +19,11 @@ import { ToggleChargeDefinitionStatusModal } from "./ToggleChargeDefinitionStatu
 import { ArchiveChargeDefinitionModal } from "./ArchiveChargeDefinitionModal";
 import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
 import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
+import { BillingOperations } from "./BillingOperations";
+import { BillingExport } from "./BillingExport";
+import { ChargeDefinitionDetailsModal } from "./ChargeDefinitionDetailsModal";
+import { FinancialDashboard, type FinancialTab } from "./FinancialDashboard";
+import type { BillingResource } from "@/schemas/billing/management";
 import {
     CHARGE_DEFINITION_STATUS_LABEL,
     CHARGE_DEFINITION_STATUS_STYLE,
@@ -28,7 +33,7 @@ import {
 
 const PAGE_SIZE = 10;
 
-export default function FinancialManagement() {
+function ChargeDefinitions() {
     const { setContent, setOpen } = useModal();
     const permissions = useUserStore((state) => state.permissions);
 
@@ -36,6 +41,8 @@ export default function FinancialManagement() {
     const canCreate = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_CREATE");
     const canUpdate = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_UPDATE");
     const canReadAssignments = hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_READ");
+    const canGenerate = hasPermission(permissions, "BILLING", "CHARGE_CYCLE_GENERATE");
+    const canExport = hasPermission(permissions, "BILLING", "EXPORT");
 
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
@@ -103,6 +110,7 @@ export default function FinancialManagement() {
             <ChargeAssignmentsModal
                 chargeDefinitionId={definition.id}
                 chargeDefinitionName={definition.name}
+                chargeDefinitionStatus={definition.status}
             />,
         );
         setOpen();
@@ -178,6 +186,7 @@ export default function FinancialManagement() {
 
                 return (
                     <div className="flex items-center justify-end gap-1.5">
+                        <ButtonIcon type="button" title="Ver detalhes" aria-label={`Ver detalhes de ${definition.name}`} onClick={() => { setContent(<ChargeDefinitionDetailsModal id={definition.id} />); setOpen(); }} className="rounded-lg bg-j-gray-100 p-2 text-j-blue-800"><Eye size={18} /></ButtonIcon>
                         {canReadAssignments && (
                             <ButtonIcon
                                 type="button"
@@ -190,7 +199,7 @@ export default function FinancialManagement() {
                             </ButtonIcon>
                         )}
 
-                        {canCreate && definition.status === "ACTIVE" && (
+                        {canGenerate && definition.status === "ACTIVE" && (
                             <ButtonIcon
                                 type="button"
                                 title="Gerar cobrança"
@@ -219,7 +228,7 @@ export default function FinancialManagement() {
                             </ButtonIcon>
                         )}
 
-                        {canUpdate && (
+                        {canUpdate && !isArchived && (
                             <ButtonIcon
                                 type="button"
                                 title="Editar"
@@ -247,19 +256,11 @@ export default function FinancialManagement() {
             },
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], [sort, canCreate, canUpdate, canReadAssignments]);
+    ], [sort, canGenerate, canUpdate, canReadAssignments]);
 
     return (
-        <div className="min-h-full w-full p-3 md:p-4">
+        <div className="w-full">
             <div className="flex w-full flex-col gap-4 pb-6">
-                <PageHeader
-                    title="Gestão financeira"
-                    breadcrumbs={[
-                        { label: "Início", href: "/feed" },
-                        { label: "Gestão Administrativa", href: "/admin" },
-                        { label: "Gestão financeira" },
-                    ]}
-                />
 
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
@@ -279,7 +280,7 @@ export default function FinancialManagement() {
                             pageSize,
                             pageCount: data?.totalPages ?? 0,
                             rowCount: data?.totalElements,
-                            pageSizeOptions: [5, 10, 20, 50, 100],
+                            pageSizeOptions: [5, 10, 20, 50],
                             onChange: (next) => {
                                 setPage(next.pageIndex);
                                 setPageSize(next.pageSize);
@@ -293,10 +294,10 @@ export default function FinancialManagement() {
                     >
                         <Table.Header
                             title="Definições de cobrança"
-                            description={isLoading ? "Carregando..." : `${data?.totalElements ?? 0} cadastrada(s)`}
                         >
+                            {canExport && <BillingExport kind="definitions" />}
                             {canCreate && (
-                                <Button type="button" onClick={handleOpenCreate} className="w-full shrink-0 sm:w-auto">
+                                <Button type="button" onClick={handleOpenCreate} className="h-10 w-full shrink-0 px-4 py-0 text-sm sm:w-auto">
                                     <Plus size={16} strokeWidth={3} />
                                     Criar definição
                                 </Button>
@@ -309,4 +310,32 @@ export default function FinancialManagement() {
             </div>
         </div>
     );
+}
+
+export default function FinancialManagement() {
+    const permissions = useUserStore((state) => state.permissions);
+    const tabs: { key: "definitions" | BillingResource; title: string; permission: string }[] = [
+        { key: "definitions", title: "Definições e atribuições", permission: "CHARGE_DEFINITION_READ" },
+        { key: "cycles", title: "Ciclos", permission: "CHARGE_CYCLE_READ" },
+        { key: "member-charges", title: "Cobranças", permission: "MEMBER_CHARGE_READ" },
+        { key: "payments", title: "Pagamentos", permission: "PAYMENT_READ" },
+        { key: "refunds", title: "Reembolsos", permission: "REFUND_READ" },
+    ];
+    const visibleTabs = tabs.filter((tab) => hasPermission(permissions, "BILLING", tab.permission));
+    const [selected, setSelected] = useState<FinancialTab>("dashboard");
+    const active = visibleTabs.length ? selected === "dashboard" ? "dashboard" : visibleTabs.find((tab) => tab.key === selected)?.key ?? "dashboard" : undefined;
+    const breadcrumbLabels: Record<FinancialTab, string> = {
+        dashboard: "Dashboard",
+        definitions: "Definições de cobrança",
+        cycles: "Ciclos de cobrança",
+        "member-charges": "Cobranças",
+        payments: "Pagamentos",
+        refunds: "Reembolsos",
+    };
+    return <div className="min-h-full w-full p-3 md:p-4"><div className="flex flex-col gap-4 pb-6">
+        <PageHeader title="Gestão financeira" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Gestão financeira", ...(active ? { href: "/admin/gestao-financeira" } : {}) }, ...(active ? [{ label: breadcrumbLabels[active] }] : [])]} />
+        <p className="text-sm text-j-gray-600">Configure cobranças, acompanhe os ciclos e gerencie pagamentos e reembolsos dos associados.</p>
+        <nav aria-label="Áreas da gestão financeira" className="grid w-full grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-[repeat(var(--financial-tab-count),minmax(0,1fr))]" style={{ "--financial-tab-count": visibleTabs.length + 1 } as React.CSSProperties}>{(visibleTabs.length ? [{ key: "dashboard" as const, title: "Dashboard" }, ...visibleTabs] : []).map((tab) => <button key={tab.key} aria-current={active === tab.key ? "page" : undefined} onClick={() => setSelected(tab.key)} className={twMerge("flex min-h-14 w-full min-w-0 items-center justify-center rounded-xl border border-j-gray-200 bg-j-white px-3 py-3 text-center text-sm font-bold leading-tight text-j-blue-800", active === tab.key && "border-j-blue-800 bg-j-blue-800 text-j-yellow-300")}>{tab.title}</button>)}</nav>
+        {!active ? <p className="rounded-xl bg-j-white p-6">Seu usuário não possui permissão para consultar a gestão financeira.</p> : active === "dashboard" ? <FinancialDashboard onNavigate={setSelected} /> : active === "definitions" ? <ChargeDefinitions /> : <BillingOperations key={active} resource={active} />}
+    </div></div>;
 }

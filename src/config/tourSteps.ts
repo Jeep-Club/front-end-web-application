@@ -51,7 +51,7 @@ export function getHomeTourSteps(): DriveStep[] {
             element: "#tour-home-member-btn",
             popover: {
                 title: createStepHeader("Acesso ao Painel do Clube", ICONS.logIn),
-                description: "Já é membro do Jeep Club Tamoios? Clique em <strong>'Sou membro'</strong> para entrar no painel exclusivo com feed, eventos e gestão administrativa.",
+                description: "Já é membro do Jeep Club Tamoios? Clique em <strong>'Sou membro'</strong> para entrar no painel exclusivo com Home, eventos e gestão administrativa.",
                 side: "bottom",
                 align: "start",
             },
@@ -94,7 +94,7 @@ export const mobileMenuStep: DriveStep = {
     element: "#tour-mobile-menu-btn",
     popover: {
         title: createStepHeader("Menu de Navegação", ICONS.smartphone),
-        description: "Toque para abrir a navegação lateral e acessar o feed, avisos e a gestão administrativa.",
+        description: "Toque para abrir a navegação lateral e acessar a Home, avisos e a gestão administrativa.",
         side: "bottom",
         align: "start",
     },
@@ -103,7 +103,7 @@ export const mobileMenuStep: DriveStep = {
 export const feedStep: DriveStep = {
     element: "#tour-nav-feed",
     popover: {
-        title: createStepHeader("Feed de Associados", ICONS.feed),
+        title: createStepHeader("Home dos Associados", ICONS.feed),
         description: "Acompanhe comunicados oficiais, trilhas, notícias e avisos recentes do clube.",
         side: "right",
         align: "center",

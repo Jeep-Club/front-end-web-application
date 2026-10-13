@@ -412,7 +412,7 @@ export default function SettingsPage() {
     return (
         <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-6">
-                <PageHeader title="Configurações" breadcrumbs={[{ label: "Início", href: "/feed" }, { label: "Configurações" }]} />
+                <PageHeader title="Configurações" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Configurações" }]} />
 
                 <div className="grid min-h-[calc(100vh-10.5rem)] w-full items-stretch overflow-hidden rounded-xl border border-j-gray-200 bg-j-white shadow-sm lg:grid-cols-[240px_290px_minmax(0,1fr)]">
                     <aside className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>

@@ -185,7 +185,7 @@ export default function VehicleManagement() {
                 <PageHeader
                     title="Administração de veículos"
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
+                        { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Administração de veículos" },
                     ]}

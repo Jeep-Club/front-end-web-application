@@ -36,11 +36,11 @@ function displayValue(value?: string | null) {
 
 function InfoField({ label, value }: InfoFieldProps) {
     return (
-        <div className="min-w-0 border-b border-j-gray-200 px-3 py-3 last:border-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+        <div className="min-w-0 bg-j-white px-3 py-3">
             <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-j-gray-400">
                 {label}
             </span>
-            <p className="mt-1 truncate text-sm font-extrabold text-j-blue-800" title={displayValue(value)}>
+            <p className="mt-1 text-sm font-bold leading-relaxed text-j-blue-800 [overflow-wrap:anywhere]">
                 {displayValue(value)}
             </p>
         </div>
@@ -109,7 +109,7 @@ export function PersonalDataCard({
                 </div>
 
                 <div className="mt-3 min-w-0">
-                    <h3 className="truncate text-xl font-black leading-tight text-j-gray-700 sm:text-2xl">
+                    <h3 className="text-xl font-black leading-tight text-j-gray-700 [overflow-wrap:anywhere] sm:text-2xl">
                         {displayValue(fullName)}
                     </h3>
                     <p className="mt-1 text-xs text-j-gray-400">Associado do Jeep Clube Tamoios</p>
@@ -121,7 +121,7 @@ export function PersonalDataCard({
                     </span>
                     <div className="min-w-0">
                         <p className="text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400">Membro desde</p>
-                        <p className="truncate text-sm font-bold text-j-gray-700">{displayValue(memberSince)}</p>
+                        <p className="text-sm font-bold leading-relaxed text-j-gray-700 [overflow-wrap:anywhere]">{displayValue(memberSince)}</p>
                     </div>
                 </div>
 
@@ -143,12 +143,10 @@ export function PersonalDataCard({
 
                     {isExpanded && (
                         <div id="personal-data-details" className="border-t border-j-gray-200 bg-j-gray-100/50 p-3">
-                            <div className="grid overflow-hidden rounded-xl border border-j-gray-200 bg-j-white sm:grid-cols-3">
+                            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-px overflow-hidden rounded-xl border border-j-gray-200 bg-j-gray-200">
                                 <InfoField label="Matrícula" value={registrationNumber} />
                                 <InfoField label="E-mail" value={email} />
                                 <InfoField label="CPF" value={cpf} />
-                            </div>
-                            <div className="mt-2 grid overflow-hidden rounded-xl border border-j-gray-200 bg-j-white sm:grid-cols-3">
                                 <InfoField label="RG" value={rg} />
                                 <InfoField label="Telefone" value={phoneNumber} />
                                 <InfoField label="Nascimento" value={birthDate} />

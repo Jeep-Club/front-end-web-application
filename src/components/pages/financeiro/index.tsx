@@ -70,7 +70,7 @@ export default async function Financeiro({
                 <PageHeader
                     title="Histórico financeiro"
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
+                        { label: "Home", href: "/feed" },
                         { label: "Histórico financeiro" },
                     ]}
                 />
