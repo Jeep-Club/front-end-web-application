@@ -33,14 +33,15 @@ export default function ApplyForm() {
     });
 
     return (
-        <main className="min-h-dvh bg-[#0e0e0e] px-4 py-8 text-j-white sm:px-6">
+        <main className="min-h-dvh bg-gradient-to-b from-[#f4f7fc] via-[#f8f9fb] to-[#fff9e8] px-4 py-8 text-j-gray-800 sm:px-6 sm:py-12">
             <div className="mx-auto w-full max-w-2xl">
-                <button type="button" onClick={() => router.push('/')} className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-white/75 hover:text-j-yellow-300"><ArrowLeft size={17} /> Voltar para a página inicial</button>
-                <section className="overflow-hidden rounded-3xl border border-white/10 bg-j-white text-j-gray-800 shadow-2xl">
-                    <header className="bg-j-blue-800 px-5 py-6 text-white sm:px-8">
+                <button type="button" onClick={() => router.push('/')} className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-j-blue-800 transition-colors hover:bg-white/80"><ArrowLeft size={17} aria-hidden="true" /> Voltar para a página inicial</button>
+                <section className="overflow-hidden rounded-3xl border border-j-blue-900/10 bg-j-white text-j-gray-800 shadow-xl shadow-j-blue-900/10">
+                    <header className="relative overflow-hidden bg-j-blue-800 px-5 py-7 text-white sm:px-8 sm:py-8">
+                        <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full border-[24px] border-white/5" aria-hidden="true" />
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-j-yellow-300">Jeep Clube Tamoios</p>
-                        <h1 className="mt-2 text-2xl font-black sm:text-3xl">Quero ser sócio</h1>
-                        <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">Conte um pouco sobre você e deixe seus contatos. A diretoria vai analisar sua solicitação e entrar em contato.</p>
+                        <h1 className="mt-2 text-2xl font-black sm:text-3xl">Que bom ter você por aqui!</h1>
+                        <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">Conte um pouco sobre você e deixe seus contatos. A diretoria vai analisar sua solicitação com carinho e entrar em contato.</p>
                     </header>
                     {submitted !== null ? (
                         <div className="px-5 py-12 text-center sm:px-8">

@@ -81,7 +81,7 @@ export default function VehicleManagement() {
                         <img
                             src={getMediaImageUrl(row.original.photo)}
                             alt={row.original.nickname || row.original.model}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain bg-j-gray-50"
                         />
                     ) : (
                         <Car size={20} className="text-j-gray-400" />
