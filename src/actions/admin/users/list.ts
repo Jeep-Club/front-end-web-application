@@ -11,7 +11,7 @@ export async function listAdminUsersAction(
     const query = new URLSearchParams(
         Object.entries(searchParams).filter(
             (entry): entry is [string, string] => typeof entry[1] === "string",
-        ),
+        ).filter(([key, value]) => key !== "status" || value !== "ALL"),
     );
 
     try {

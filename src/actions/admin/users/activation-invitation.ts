@@ -4,6 +4,7 @@ import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { adminUserInvitationStatusResponseSchema } from '@/schemas/admin/create-user';
 import { HttpAPIRoutes } from '@/utils/http/api';
 import { extractApiErrorMessage } from '@/utils/http/apiError';
+import { z } from 'zod';
 
 function invitationUrl(userId: number) {
     return HttpAPIRoutes.ADMIN_USER_ACTIVATION_INVITATIONS.replace('{userId}', String(userId));
@@ -28,5 +29,15 @@ export async function resendUserActivationInvitationAction(userId: number): Prom
         return response.data;
     } catch (error) {
         throw new Error(extractApiErrorMessage(error, 'Não foi possível reenviar o convite.'), { cause: error });
+    }
+}
+
+export async function revokeUserActivationInvitationAction(userId: number): Promise<void> {
+    try {
+        await actionFetchWrapper<unknown>({
+            url: invitationUrl(userId), method: 'DELETE', schema: z.unknown(),
+        });
+    } catch (error) {
+        throw new Error(extractApiErrorMessage(error, 'Não foi possível revogar o convite.'), { cause: error });
     }
 }

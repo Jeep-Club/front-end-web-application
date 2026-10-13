@@ -75,7 +75,7 @@ interface AdminUserSearchParams {
     email?: string;
     phoneNumber?: string;
 
-    status?: "ACTIVE" | "DISABLED";
+    status?: "ACTIVE" | "DISABLED" | "ALL";
 
     createdFrom?: string;
     createdTo?: string;

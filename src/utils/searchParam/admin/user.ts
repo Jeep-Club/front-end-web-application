@@ -36,5 +36,9 @@ export function parseAdminUserSearchParams(
         validParams[key] = rawValue;
     }
 
+    // A listagem administrativa começa mostrando apenas contas ativas.
+    // "ALL" fica reservado ao seletor da interface para pedir todos os status.
+    if (!validParams.status) validParams.status = "ACTIVE";
+
     return validParams as AdminUserSearchParams;
 }

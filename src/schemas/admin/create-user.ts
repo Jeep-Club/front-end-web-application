@@ -44,11 +44,11 @@ export const adminCreateUserResponseSchema: z.ZodType<AdminCreateUserResponse> =
     z.object({
         userId: z.number(),
         activationMethod: z.literal("EMAIL_INVITATION"),
-        invitationStatus: z.enum(["QUEUED", "SENT", "DELIVERY_FAILED"]),
+        invitationStatus: z.enum(["QUEUED", "SENT", "DELIVERY_FAILED", "REVOKED"]),
     }),
 ]);
 
 export const adminUserInvitationStatusResponseSchema: z.ZodType<AdminUserInvitationStatusResponse> = z.object({
     userId: z.number(),
-    invitationStatus: z.enum(["QUEUED", "SENT", "DELIVERY_FAILED"]),
+    invitationStatus: z.enum(["QUEUED", "SENT", "DELIVERY_FAILED", "REVOKED"]),
 });
