@@ -1,5 +1,5 @@
 type AdminUserActivationMethod = "TEMPORARY_PASSWORD" | "EMAIL_INVITATION";
-type AdminInvitationStatus = "QUEUED" | "SENT" | "DELIVERY_FAILED";
+type AdminInvitationStatus = "QUEUED" | "SENT" | "DELIVERY_FAILED" | "REVOKED";
 
 interface AdminCreateUserForm {
     name: string;

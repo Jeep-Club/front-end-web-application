@@ -317,7 +317,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     onSearchChange={updateSearch}
 
                     onStatusChange={(status) => replaceSearchParams(
-                        { status },
+                        { status: status === "ACTIVE" ? undefined : status },
                         { resetPage: true },
                     )}
 

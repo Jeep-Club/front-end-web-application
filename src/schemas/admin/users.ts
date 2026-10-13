@@ -65,8 +65,9 @@ export const adminUserSearchParamsSchema = z.object({
         .max(20)
         .optional(),
 
+    // ALL é um filtro apenas da interface; é removido antes de chamar a API.
     status: z
-        .enum(["ACTIVE", "DISABLED"])
+        .enum(["ACTIVE", "DISABLED", "ALL"])
         .optional(),
 
     createdFrom: z.iso.datetime().optional(),
