@@ -28,7 +28,7 @@ interface UserManagementViewProps {
     isFetching: boolean;
     error?: string;
     onSearchChange: (value: string) => void;
-    onStatusChange: (status: "ACTIVE" | "DISABLED" | undefined) => void;
+    onStatusChange: (status: "ACTIVE" | "DISABLED" | "ALL") => void;
     // onRoleChange: (roleIds: number[]) => void;
     onClearFilters: () => void;
     onPaginationChange: (pagination: PaginationState) => void;
@@ -69,7 +69,7 @@ export function UserManagementView({
         || query.cpf
         || query.phoneNumber
         || query.id
-        || query.status
+        || (query.status && query.status !== "ACTIVE")
         || query.createdFrom
         || query.createdTo
         || query.updatedFrom
@@ -301,15 +301,13 @@ export function UserManagementView({
                             label="Status"
                             labelClassName="sr-only"
                             name="status"
-                            value={query.status ?? ""}
+                            value={query.status ?? "ACTIVE"}
                             onChange={(event) => onStatusChange(
-                                event.target.value
-                                    ? event.target.value as "ACTIVE" | "DISABLED"
-                                    : undefined,
+                                event.target.value as "ACTIVE" | "DISABLED" | "ALL",
                             )}
                             className="h-10 w-full border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white lg:w-auto"
                         >
-                            <option value="">Todos os status</option>
+                            <option value="ALL">Todos os status</option>
                             <option value="ACTIVE">{USER_STATUS_LABEL.ACTIVE}</option>
                             <option value="DISABLED">{USER_STATUS_LABEL.DISABLED}</option>
                         </Select.Unregister>
