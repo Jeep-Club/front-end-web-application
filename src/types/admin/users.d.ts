@@ -66,6 +66,7 @@ interface AdminUsersDataSource {
 }
 
 interface AdminUserSearchParams {
+    tab?: "applications";
     id?: string;
     name?: string;
     birthDate?: string;

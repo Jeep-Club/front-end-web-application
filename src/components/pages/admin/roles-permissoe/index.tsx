@@ -45,6 +45,13 @@ const TABS = [
 ] as const;
 
 type TabKey = typeof TABS[number]["key"];
+type RoleStatusFilter = RoleStatus;
+const ROLE_FILTERS: Array<{ key: RoleStatusFilter; label: string }> = [
+    { key: "ACTIVE", label: "Ativos" },
+    { key: "INACTIVE", label: "Inativos" },
+    { key: "DELETED", label: "Excluídos" },
+];
+const deletedDateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" });
 
 const TABS_GRID_COLS: Record<number, string> = {
     1: "grid-cols-1",
@@ -74,6 +81,7 @@ export default function RolesPermissions() {
     const [activeTab, setActiveTab] = useState<TabKey>(
         () => visibleTabs[0]?.key ?? TABS[0].key
     );
+    const [roleStatusFilter, setRoleStatusFilter] = useState<RoleStatusFilter>("ACTIVE");
 
     // Tour do módulo de Roles e Permissões (Mobile e Desktop)
     const { restartTour } = usePageTour({
@@ -106,6 +114,11 @@ export default function RolesPermissions() {
         queryFn: listRolesAction,
         enabled: activeTab === "roles" && isTabVisible("roles"),
     });
+    const filteredRoles = (roles ?? []).filter((role) => role.status === roleStatusFilter);
+    const roleCounts = ROLE_FILTERS.reduce<Record<RoleStatusFilter, number>>((counts, filter) => {
+        counts[filter.key] = (roles ?? []).filter((role) => role.status === filter.key).length;
+        return counts;
+    }, { ACTIVE: 0, INACTIVE: 0, DELETED: 0 });
 
     const {
         data: permissionsList,
@@ -218,7 +231,7 @@ export default function RolesPermissions() {
                                 <div>
                                     <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
                                     <p className="text-sm text-j-gray-600">
-                                        {isLoading ? "Carregando..." : `${roles?.length ?? 0} cadastrado(s)`}
+                                        {isLoading ? "Carregando..." : `${roleCounts[roleStatusFilter]} ${roleStatusFilter === "DELETED" ? "excluído(s)" : "cargo(s)"}`}
                                     </p>
                                 </div>
 
@@ -230,15 +243,24 @@ export default function RolesPermissions() {
                                 )}
                             </div>
 
+                            <div className="flex flex-wrap gap-2 border-b border-j-gray-200 px-4 py-3 md:px-6" role="tablist" aria-label="Filtrar cargos por situação">
+                                {ROLE_FILTERS.map(({ key, label }) => (
+                                    <button key={key} type="button" role="tab" aria-selected={roleStatusFilter === key} onClick={() => setRoleStatusFilter(key)}
+                                        className={twMerge("inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors", roleStatusFilter === key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800")}>
+                                        {label}<span className={twMerge("rounded-full px-2 py-0.5 text-xs", roleStatusFilter === key ? "bg-j-white/15" : "bg-j-gray-100")}>{roleCounts[key]}</span>
+                                    </button>
+                                ))}
+                            </div>
+
                             {isError && (
                                 <p className="p-4 text-sm text-red-600 md:px-6">
                                     Não foi possível carregar os cargos.
                                 </p>
                             )}
 
-                            {!isLoading && !isError && roles && roles.length > 0 && (
+                            {!isLoading && !isError && roles && filteredRoles.length > 0 && (
                                 <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 md:p-6">
-                                    {roles.map((role, index) => (
+                                    {filteredRoles.map((role, index) => (
                                         <article
                                             key={role.id}
                                             className="rounded-xl border border-j-gray-200 p-4"
@@ -264,6 +286,11 @@ export default function RolesPermissions() {
                                                     <p className="mt-1 text-sm text-j-gray-600">
                                                         {role.description ?? "Sem descrição."}
                                                     </p>
+                                                    {role.status === "DELETED" && role.deletedAt && (
+                                                        <p className="mt-2 text-xs font-semibold text-j-gray-500">
+                                                            Excluído em {deletedDateFormatter.format(new Date(role.deletedAt))}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -290,7 +317,7 @@ export default function RolesPermissions() {
                                                         </button>
                                                     )
                                                 )}
-                                                {canUpdateRole && role.kind !== "ROOT" && (
+                                                {role.status !== "DELETED" && canUpdateRole && role.kind !== "ROOT" && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenEditRole(role.id)}
@@ -318,7 +345,7 @@ export default function RolesPermissions() {
                                                         Ver permissões
                                                     </button>
                                                 )}
-                                                {(canAssignPermission || canRevokePermission) && (
+                                                {role.status !== "DELETED" && (canAssignPermission || canRevokePermission) && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenManageRolePermissions(role)}
@@ -344,18 +371,18 @@ export default function RolesPermissions() {
                                 </div>
                             )}
 
-                            {!isLoading && !isError && roles && roles.length === 0 && (
+                            {!isLoading && !isError && roles && filteredRoles.length === 0 && (
                                 <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
                                     <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
                                         <KeyRound size={31} />
                                     </div>
 
                                     <h3 className="text-lg font-black text-j-blue-800">
-                                        Nenhum cargo cadastrado
+                                        {roleStatusFilter === "DELETED" ? "Nenhum cargo excluído" : roleStatusFilter === "INACTIVE" ? "Nenhum cargo inativo" : "Nenhum cargo ativo"}
                                     </h3>
 
                                     <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                        Crie um cargo para começar a configurar os acessos.
+                                        {roleStatusFilter === "DELETED" ? "Cargos removidos aparecerão aqui para consulta." : roleStatusFilter === "INACTIVE" ? "Cargos desativados aparecerão aqui." : "Crie um cargo para começar a configurar os acessos."}
                                     </p>
                                 </div>
                             )}
