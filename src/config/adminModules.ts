@@ -1,5 +1,4 @@
 import {
-    CalendarDays,
     Car,
     HeartPulse,
     KeyRound,
@@ -43,6 +42,17 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "IDENTITY",
             action: "USER_READ",
+        },
+    },
+    {
+        key: "membership-applications",
+        title: "Solicitações de associação",
+        description: "Analise novos pedidos de adesão ao clube.",
+        href: "/admin/users?tab=applications",
+        icon: UserRoundCheck,
+        visibilityPermission: {
+            module: "MEMBERSHIP",
+            action: "MEMBERSHIP_REQUEST_READ",
         },
     },
     {

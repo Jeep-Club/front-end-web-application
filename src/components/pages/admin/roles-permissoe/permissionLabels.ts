@@ -53,6 +53,7 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     MEMBERSHIP_MEMBERSHIP_REQUEST_APPROVE: "Aprovar solicitações de adesão",
     MEMBERSHIP_MEMBERSHIP_REQUEST_REJECT: "Rejeitar solicitações de adesão",
     MEMBERSHIP_MEMBERSHIP_REQUEST_INVITE_RESEND: "Reenviar convite de adesão",
+    MEMBERSHIP_MEMBERSHIP_APPLICANT_BLOCK: "Bloquear CPF de solicitante",
 };
 
 export function getPermissionName(permission: PermissionResponse): string {
