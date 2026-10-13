@@ -17,20 +17,25 @@ export default async function Page({ searchParams }: Props) {
     const query = new URLSearchParams(
         Object.entries(validSearchParams).filter(
             (entry): entry is [string, string] => typeof entry[1] === "string",
-        ),
+        ).filter(([key, value]) => key !== "status" || value !== "ALL"),
     );
 
 
-    const res = await serverFetchWrapper<PageResponse<AdminUser>>({
-        url: HttpAPIRoutes.ADMIN_USERS + `?${query.toString()}`,
-        method: "GET",
-        schema: adminUserListResponseSchema,
-    });
+    const users = rawSearchParams.tab === "applications"
+        ? {
+            content: [], number: 0, size: 20, totalElements: 0, totalPages: 0,
+            numberOfElements: 0, first: true, last: true, empty: true,
+        } satisfies PageResponse<AdminUser>
+        : (await serverFetchWrapper<PageResponse<AdminUser>>({
+            url: HttpAPIRoutes.ADMIN_USERS + `?${query.toString()}`,
+            method: "GET",
+            schema: adminUserListResponseSchema,
+        })).data;
 
 
     return (
         <AdminUsersPage
-            users={res.data}
+            users={users}
             searchParams={validSearchParams}
         />
     );

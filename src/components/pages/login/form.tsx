@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
 import { loginRequestSchema, LoginRequestType } from "@/schemas/auth/login/loginRequest";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { AlertCircle, ArrowRight, LoaderCircle } from "lucide-react";
 import InputPassword from "@/components/common/input/input-password";
 import InputCPF from "@/components/common/input/input-cpf";
 
@@ -24,7 +24,7 @@ export default function FormLogin() {
             router.push("/feed");
             toast.success('Login realizado com sucesso!');
         }, 
-      //  onError: (error) => toast.error(error.message || 'Erro ao realizar login. Verifique suas credenciais e tente novamente.') 
+        onError: (error) => toast.error(error.message || 'CPF ou senha inválidos. Confira os dados e tente novamente.'),
     });
 
     const isLoading = mutation.isPending;
@@ -38,7 +38,7 @@ export default function FormLogin() {
             <Form<LoginRequestType>
                 schema={loginRequestSchema}
                 onSubmit={handleSubmit}
-                onError={(errors) => console.log(errors)}
+                onError={() => toast.error('Confira o CPF e a senha informados.')}
             >
                 <div id="tour-login-cpf" className="w-full">
                     <InputCPF required />
@@ -56,6 +56,13 @@ export default function FormLogin() {
                         </span>
                     </div>
                 </div>
+
+                {mutation.isError && (
+                    <div role="alert" className="flex w-full items-start gap-2 rounded-xl border border-j-red-200 bg-j-red-50 px-3 py-2.5 text-sm leading-5 text-j-red-700">
+                        <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+                        <span>{mutation.error instanceof Error ? mutation.error.message : 'CPF ou senha inválidos. Confira os dados e tente novamente.'}</span>
+                    </div>
+                )}
 
                 <Button 
                     id="tour-login-submit"

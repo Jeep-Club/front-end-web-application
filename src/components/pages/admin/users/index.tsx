@@ -16,6 +16,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { isValidCPF } from "@/utils/validate";
 import { UserManagementView } from "./UserManagementView";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
+import { MembershipApplicationsTab } from "./MembershipApplicationsTab";
 
 type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
 
@@ -65,6 +66,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const currentSearchParams = useSearchParams();
+    const canReadApplications = hasPermission(permissionsFromStore, "MEMBERSHIP", "MEMBERSHIP_REQUEST_READ");
+    const activeTab = currentSearchParams.get("tab") === "applications" && canReadApplications ? "applications" : "users";
     const [isPending, startTransition] = useTransition();
     const [selectedSearchType, setSelectedSearchType] = useState<SearchType>(() =>
         SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? "q",
@@ -246,7 +249,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         replaceSearchParams({ sort: nextSort }, { resetPage: true });
     }
 
-    if (!permissions.canReadUsers) {
+    if (!permissions.canReadUsers && !canReadApplications) {
         return (
             <div className="min-h-full w-full p-3 md:p-4">
                 <div className="flex w-full flex-col gap-6">
@@ -275,7 +278,14 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
-                    title="Gestão de usuários"
+                    title={activeTab === "applications" ? "Gestão de usuários" :
+                        <>
+                            Gestão de usuários
+                            <span className="ml-2 align-middle text-sm font-normal text-j-gray-400 md:text-base">
+                                {users.totalElements} usuário(s) cadastrado(s)
+                            </span>
+                        </>
+                    }
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
@@ -283,7 +293,13 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     ]}
                 />
 
-                <UserManagementView
+                {(permissions.canReadUsers || canReadApplications) && <div className="flex gap-2 border-b border-j-gray-200">
+                    {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
+                    {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}
+                </div>}
+
+                {activeTab === "applications" && canReadApplications && <MembershipApplicationsTab />}
+                {activeTab === "users" && permissions.canReadUsers && <UserManagementView
                     users={users.content}
                     query={query}
                     searchType={searchType}
@@ -301,7 +317,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     onSearchChange={updateSearch}
 
                     onStatusChange={(status) => replaceSearchParams(
-                        { status },
+                        { status: status === "ACTIVE" ? undefined : status },
                         { resetPage: true },
                     )}
 
@@ -314,7 +330,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     onViewUser={handleViewUser}
                     onChangeUserStatus={handleChangeUserStatus}
                     setSearchType={updateSearchType}
-                />
+                />}
+                {activeTab === "users" && !permissions.canReadUsers && <section className="rounded-xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center text-sm text-j-gray-600">Você tem acesso à análise de solicitações, mas não à lista de usuários.</section>}
             </div>
         </div>
     );

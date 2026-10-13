@@ -66,6 +66,7 @@ interface AdminUsersDataSource {
 }
 
 interface AdminUserSearchParams {
+    tab?: "applications";
     id?: string;
     name?: string;
     birthDate?: string;
@@ -74,7 +75,7 @@ interface AdminUserSearchParams {
     email?: string;
     phoneNumber?: string;
 
-    status?: "ACTIVE" | "DISABLED";
+    status?: "ACTIVE" | "DISABLED" | "ALL";
 
     createdFrom?: string;
     createdTo?: string;

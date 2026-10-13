@@ -51,11 +51,18 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         ],
     },
 
-    "/admin/users": [
-        {
-            module: "IDENTITY",
-            actions: ["USER_READ"],
-        },
+    "/admin/users": {
+        match: "any",
+        permissions: [
+            { module: "IDENTITY", actions: ["USER_READ"] },
+            { module: "MEMBERSHIP", actions: ["MEMBERSHIP_REQUEST_READ"] },
+        ],
+    },
+    "/admin/users/new": [
+        { module: "IDENTITY", actions: ["USER_CREATE"] },
+    ],
+    "/admin/users/[id]": [
+        { module: "IDENTITY", actions: ["USER_READ"] },
     ],
 
     "/admin/medical-profile": [
