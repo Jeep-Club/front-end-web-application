@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, RefreshCw, ShieldCheck } from "lucide-react";
@@ -81,6 +81,7 @@ export function UserSecurityTab({ userId }: { userId: number }) {
     const permissions = useUserStore((state) => state.permissions);
     const queryClient = useQueryClient();
     const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null);
+    const [activeSection, setActiveSection] = useState<"sessions" | "tokens" | "recovery">("sessions");
 
     const canReadSessions = hasPermission(permissions, "AUTHENTICATION", permissionActions.SESSION_READ);
     const canLogoutSession = hasPermission(permissions, "AUTHENTICATION", permissionActions.SESSION_LOGOUT);
@@ -88,6 +89,15 @@ export function UserSecurityTab({ userId }: { userId: number }) {
     const canRevokeToken = hasPermission(permissions, "AUTHENTICATION", permissionActions.REFRESH_TOKEN_REVOKE);
     const canReadRecovery = hasPermission(permissions, "AUTHENTICATION", permissionActions.PASSWORD_RECOVERY_READ);
     const canCancelRecovery = hasPermission(permissions, "AUTHENTICATION", permissionActions.PASSWORD_RECOVERY_CANCEL);
+
+    useEffect(() => {
+        if (canReadSessions && canReadTokens && canReadRecovery) return;
+        if (!canReadSessions && !canReadTokens && !canReadRecovery) return;
+        if (activeSection === "sessions" && canReadSessions) return;
+        if (activeSection === "tokens" && canReadTokens) return;
+        if (activeSection === "recovery" && canReadRecovery) return;
+        setActiveSection(canReadSessions ? "sessions" : canReadTokens ? "tokens" : "recovery");
+    }, [activeSection, canReadSessions, canReadTokens, canReadRecovery]);
 
     const sessionsQuery = useQuery({
         queryKey: ["admin-user-security", userId, "sessions"],
@@ -140,7 +150,20 @@ export function UserSecurityTab({ userId }: { userId: number }) {
                 <p>Esta área exibe somente metadados de segurança. Segredos, hashes e tokens não são retornados pela API.</p>
             </div>
 
-            {canReadSessions && (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label="Dados de segurança">
+                {([
+                    { key: "sessions", label: "Sessões", allowed: canReadSessions, count: sessionsQuery.data?.length ?? 0 },
+                    { key: "tokens", label: "Tokens", allowed: canReadTokens, count: tokensQuery.data?.length ?? 0 },
+                    { key: "recovery", label: "Recuperação", allowed: canReadRecovery, count: recoveryQuery.data?.length ?? 0 },
+                ] as const).filter((item) => item.allowed).map((item) => (
+                    <button key={item.key} type="button" role="tab" aria-selected={activeSection === item.key} onClick={() => setActiveSection(item.key)}
+                        className={`flex min-h-12 items-center justify-between rounded-xl border px-4 py-3 text-left text-sm font-bold ${activeSection === item.key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-700"}`}>
+                        <span>{item.label}</span><span className={`rounded-full px-2 py-0.5 text-xs ${activeSection === item.key ? "bg-j-white/15" : "bg-j-gray-100"}`}>{item.count}</span>
+                    </button>
+                ))}
+            </div>
+
+            {canReadSessions && activeSection === "sessions" && (
                 <SecuritySection
                     title="Sessões"
                     description="Sessões de autenticação vinculadas a este usuário."
@@ -150,13 +173,13 @@ export function UserSecurityTab({ userId }: { userId: number }) {
                     isEmpty={!sessionsQuery.isLoading && !sessionsQuery.error && (sessionsQuery.data?.length ?? 0) === 0}
                     emptyMessage="Nenhuma sessão encontrada."
                 >
-                    {sessionsQuery.data?.map((session) => (
-                        <SessionRow key={session.id} session={session} canLogout={canLogoutSession} onLogout={() => setConfirmTarget({ kind: "session", id: session.id, description: `encerrar a sessão #${session.id}` })} />
-                    ))}
+                    <ActiveAndHistory records={sessionsQuery.data ?? []} isActive={(item) => item.status === "ACTIVE"} activeLabel="Sessões ativas" historyLabel="Histórico de sessões">
+                        {(session) => <SessionRow key={session.id} session={session} canLogout={canLogoutSession} onLogout={() => setConfirmTarget({ kind: "session", id: session.id, description: `encerrar a sessão #${session.id}` })} />}
+                    </ActiveAndHistory>
                 </SecuritySection>
             )}
 
-            {canReadTokens && (
+            {canReadTokens && activeSection === "tokens" && (
                 <SecuritySection
                     title="Refresh tokens"
                     description="Tokens de renovação e sessão de origem."
@@ -166,13 +189,13 @@ export function UserSecurityTab({ userId }: { userId: number }) {
                     isEmpty={!tokensQuery.isLoading && !tokensQuery.error && (tokensQuery.data?.length ?? 0) === 0}
                     emptyMessage="Nenhum token encontrado."
                 >
-                    {tokensQuery.data?.map((token) => (
-                        <RefreshTokenRow key={token.id} token={token} canRevoke={canRevokeToken} onRevoke={() => setConfirmTarget({ kind: "refresh-token", id: token.id, description: `revogar o refresh token #${token.id}` })} />
-                    ))}
+                    <ActiveAndHistory records={tokensQuery.data ?? []} isActive={(item) => item.status === "ACTIVE"} activeLabel="Tokens ativos" historyLabel="Histórico de tokens">
+                        {(token) => <RefreshTokenRow key={token.id} token={token} canRevoke={canRevokeToken} onRevoke={() => setConfirmTarget({ kind: "refresh-token", id: token.id, description: `revogar o token #${token.id}` })} />}
+                    </ActiveAndHistory>
                 </SecuritySection>
             )}
 
-            {canReadRecovery && (
+            {canReadRecovery && activeSection === "recovery" && (
                 <SecuritySection
                     title="Pedidos de recuperação de senha"
                     description="Solicitações de redefinição de senha deste usuário."
@@ -182,9 +205,9 @@ export function UserSecurityTab({ userId }: { userId: number }) {
                     isEmpty={!recoveryQuery.isLoading && !recoveryQuery.error && (recoveryQuery.data?.length ?? 0) === 0}
                     emptyMessage="Nenhum pedido de recuperação encontrado."
                 >
-                    {recoveryQuery.data?.map((request) => (
-                        <RecoveryRequestRow key={request.id} request={request} canCancel={canCancelRecovery} onCancel={() => setConfirmTarget({ kind: "recovery-request", id: request.id, description: `cancelar o pedido de recuperação #${request.id}` })} />
-                    ))}
+                    <ActiveAndHistory records={recoveryQuery.data ?? []} isActive={(item) => item.status === "OPEN"} activeLabel="Pedidos em aberto" historyLabel="Histórico de pedidos">
+                        {(request) => <RecoveryRequestRow key={request.id} request={request} canCancel={canCancelRecovery} onCancel={() => setConfirmTarget({ kind: "recovery-request", id: request.id, description: `cancelar o pedido #${request.id}` })} />}
+                    </ActiveAndHistory>
                 </SecuritySection>
             )}
 
@@ -212,6 +235,54 @@ function NoPermission() {
             <CircleAlert size={28} className="text-j-gray-400" />
             <p className="mt-3 text-sm font-bold text-j-gray-700">Sem permissão de leitura de segurança</p>
             <p className="mt-1 max-w-sm text-xs leading-relaxed text-j-gray-500">Seu acesso não inclui sessões, refresh tokens ou pedidos de recuperação.</p>
+        </div>
+    );
+}
+
+function ActiveAndHistory<T extends { status: string; createdAt: string }>({
+    records,
+    isActive,
+    activeLabel,
+    historyLabel,
+    children,
+}: {
+    records: T[];
+    isActive: (record: T) => boolean;
+    activeLabel: string;
+    historyLabel: string;
+    children: (record: T) => ReactNode;
+}) {
+    const [showAllHistory, setShowAllHistory] = useState(false);
+    const newestFirst = (items: T[]) => items.slice().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    const active = newestFirst(records.filter(isActive));
+    const history = newestFirst(records.filter((record) => !isActive(record)));
+    const visibleHistory = showAllHistory ? history : history.slice(0, 5);
+
+    return (
+        <div>
+            <div>
+                <div className="border-b border-j-gray-100 bg-j-gray-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-j-gray-500 sm:px-5">
+                    {activeLabel} <span className="ml-1 rounded-full bg-j-white px-2 py-0.5 text-j-gray-700">{active.length}</span>
+                </div>
+                {active.length ? active.map((record) => children(record)) : (
+                    <p className="px-4 py-5 text-sm text-j-gray-500 sm:px-5">Nenhum item ativo.</p>
+                )}
+            </div>
+            {history.length > 0 && (
+                <details className="border-t border-j-gray-200">
+                    <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-j-gray-600 hover:bg-j-gray-50 sm:px-5">
+                        {historyLabel} ({history.length}) <span className="float-right text-j-gray-400">Expandir</span>
+                    </summary>
+                    <div className="divide-y divide-j-gray-100">
+                        {visibleHistory.map((record) => children(record))}
+                        {history.length > 5 && (
+                            <button type="button" onClick={() => setShowAllHistory((value) => !value)} className="w-full px-4 py-3 text-sm font-bold text-j-blue-800 hover:bg-j-gray-50 sm:px-5">
+                                {showAllHistory ? "Mostrar menos" : `Mostrar todos (${history.length})`}
+                            </button>
+                        )}
+                    </div>
+                </details>
+            )}
         </div>
     );
 }
