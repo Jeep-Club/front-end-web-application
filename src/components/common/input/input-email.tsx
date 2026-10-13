@@ -23,7 +23,7 @@ export function InputEmail({label="Email", name='email;', placeholder="exemplo@e
                     className
                 )}
             >
-                <Mail size={20} className="absolute left-2.5 text-j-transparent-white"/>
+                <Mail size={20} aria-hidden="true" className="absolute left-2.5 text-j-blue-800"/>
             </InputRegister>
 
     );
