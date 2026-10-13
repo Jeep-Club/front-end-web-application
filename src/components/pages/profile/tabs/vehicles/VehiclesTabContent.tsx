@@ -85,7 +85,7 @@ export function VehiclesTabContent() {
                                         <img
                                             src={getMediaImageUrl(vehicle.photo)}
                                             alt={vehicle.nickname || vehicle.model}
-                                            className="h-full w-full object-cover"
+                                            className="h-full w-full object-contain bg-j-gray-50"
                                         />
                                     ) : (
                                         <div className="flex h-full w-full items-center justify-center">

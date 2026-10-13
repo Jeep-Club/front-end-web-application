@@ -117,7 +117,7 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                         <img
                             src={getMediaImageUrl(vehicle.photo)}
                             alt={vehicle.nickname || vehicle.model}
-                            className="w-full h-40 object-cover rounded-lg"
+                            className="w-full h-40 object-contain rounded-lg bg-j-gray-50"
                         />
                     ) : (
                         <div className="w-full h-40 flex items-center justify-center rounded-lg bg-j-gray-100">
