@@ -185,7 +185,7 @@ export default function RolesPermissions() {
                     id="tour-roles-header"
                     title="Cargos e permissões"
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
+                        { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: activeTabLabel ?? "" },
                     ]}

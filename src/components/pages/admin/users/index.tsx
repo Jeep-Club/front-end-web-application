@@ -256,7 +256,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     <PageHeader
                         title="Gestão de usuários"
                         breadcrumbs={[
-                            { label: "Início", href: "/feed" },
+                            { label: "Home", href: "/feed" },
                             { label: "Gestão Administrativa", href: "/admin" },
                             { label: "Usuários" },
                         ]}
@@ -287,7 +287,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         </>
                     }
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
+                        { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Usuários" },
                     ]}

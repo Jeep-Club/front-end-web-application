@@ -46,7 +46,7 @@ export function ChargeDefinitionFormFields() {
                 className={LIGHT_FIELD_CLASS}
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
                 <InputRegister
                     type="number"
                     step="0.01"
