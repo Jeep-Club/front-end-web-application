@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmButton } from "@/components/common/button/ConfirmButton";
 
 import { useState } from "react";
 import { LoaderCircle, Power, PowerOff, X } from "lucide-react";
@@ -94,7 +95,7 @@ export function UserStatusConfirmationModal({
                 >
                     Cancelar
                 </Button>
-                <Button
+                <ConfirmButton
                     type="button"
                     autoFocus
                     onClick={() => void handleConfirm()}
@@ -112,7 +113,7 @@ export function UserStatusConfirmationModal({
                     ) : (
                         <><PowerOff size={16} /> Desativar</>
                     )}
-                </Button>
+                </ConfirmButton>
             </div>
         </div>
     );

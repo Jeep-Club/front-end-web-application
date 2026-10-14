@@ -17,6 +17,7 @@ import { isValidCPF } from "@/utils/validate";
 import { UserManagementView } from "./UserManagementView";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 import { MembershipApplicationsTab } from "./MembershipApplicationsTab";
+import { NewAdminUserPage } from "./new";
 
 type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
 
@@ -61,7 +62,7 @@ interface Props {
 
 export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const permissionsFromStore = useUserStore((state) => state.permissions);
-    const { setContent, setOpen } = useModal();
+    const { setContent, setOpen, setClose } = useModal();
     // const queryClient = useQueryClient();
     const router = useRouter();
     const pathname = usePathname();
@@ -278,14 +279,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
-                    title={activeTab === "applications" ? "Gestão de usuários" :
-                        <>
-                            Gestão de usuários
-                            <span className="ml-2 align-middle text-sm font-normal text-j-gray-400 md:text-base">
-                                {users.totalElements} usuário(s) cadastrado(s)
-                            </span>
-                        </>
-                    }
+                    title="Gestão de usuários"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
@@ -300,6 +294,14 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
                 {activeTab === "applications" && canReadApplications && <MembershipApplicationsTab />}
                 {activeTab === "users" && permissions.canReadUsers && <UserManagementView
+                    onCreateUser={() => {
+                        setContent(
+                            <div role="dialog" aria-modal="true" aria-label="Novo usuário" className="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-j-white p-2 shadow-2xl sm:p-3">
+                                <NewAdminUserPage onClose={setClose} onCreated={() => router.refresh()} />
+                            </div>,
+                        );
+                        setOpen();
+                    }}
                     users={users.content}
                     query={query}
                     searchType={searchType}

@@ -1,4 +1,5 @@
 'use client';
+import { confirmAction } from '@/components/common/tour/confirmTourExit';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ban, Mail, RefreshCw } from 'lucide-react';
@@ -60,8 +61,8 @@ export function UserActivationInvitation({ userId }: { userId: number }) {
                             {resend.isPending ? <RefreshCw size={16} className="animate-spin" /> : <Mail size={16} />} {isRevoked ? 'Enviar novo convite' : 'Reenviar convite'}
                         </Button>
                         {!isRevoked && <>
-                            <Button type="button" disabled={isBusy} onClick={() => {
-                                if (window.confirm('Revogar este convite? O link enviado por e-mail deixará de funcionar.')) revoke.mutate();
+                            <Button type="button" disabled={isBusy} onClick={async () => {
+                                if (await confirmAction('Revogar este convite? O link enviado por e-mail deixará de funcionar.')) revoke.mutate();
                             }} className="bg-j-red-100 text-j-red-700 hover:bg-j-red-200 hover:text-j-red-800">
                                 {revoke.isPending ? <RefreshCw size={16} className="animate-spin" /> : <Ban size={16} />} Revogar convite
                             </Button>

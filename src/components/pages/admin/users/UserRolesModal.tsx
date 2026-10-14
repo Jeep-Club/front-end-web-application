@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmButton } from "@/components/common/button/ConfirmButton";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -153,7 +154,7 @@ function RoleAssignmentFormContent({
                         >
                             Voltar
                         </Button>
-                        <Button
+                        <ConfirmButton
                             type="button"
                             autoFocus
                             onClick={onConfirmRemoval}
@@ -161,7 +162,7 @@ function RoleAssignmentFormContent({
                             className="flex-1 bg-j-red-500 text-white hover:bg-j-red-600 hover:text-white"
                         >
                             {isSaving ? <><LoaderCircle size={16} className="animate-spin" /> Salvando...</> : "Confirmar e salvar"}
-                        </Button>
+                        </ConfirmButton>
                     </div>
                 </div>
             ) : (

@@ -1,4 +1,5 @@
 'use client';
+import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -72,7 +73,7 @@ export function ToggleToolStatusModal({ toolId, toolName, nextStatus }: ToggleTo
                 >
                     Cancelar
                 </Button>
-                <Button
+                <ConfirmButton
                     type="button"
                     onClick={() => mutation.mutate()}
                     disabled={mutation.isPending}
@@ -81,7 +82,7 @@ export function ToggleToolStatusModal({ toolId, toolName, nextStatus }: ToggleTo
                     {mutation.isPending
                         ? (isDeactivating ? "Desativando..." : "Ativando...")
                         : (isDeactivating ? "Desativar" : "Ativar")}
-                </Button>
+                </ConfirmButton>
             </div>
         </div>
     );

@@ -16,8 +16,8 @@ import TourHelpButton from "@/components/common/tour/TourHelpButton";
 const TABS = [
     { key: "personal", label: "Dados pessoais", icon: IdCard, content: "dados pessoal" },
     { key: "medical", label: "Dados médicos", icon: HeartPulse, content: "dados médicos" },
-    { key: "dependents", label: "Dependentes", icon: Users, content: "dependentes" },
     { key: "vehicles", label: "Veículos", icon: Car, content: "veículos" },
+    { key: "dependents", label: "Dependentes", icon: Users, content: "dependentes" },
     { key: "tools", label: "Ferramentas", icon: Wrench, content: "ferramentas" },
 ] as const;
 

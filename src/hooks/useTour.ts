@@ -5,6 +5,7 @@ import { driver, type Driver, type DriveStep } from "driver.js";
 import { getTourSteps } from "@/config/tourSteps";
 import { useUserStore } from "@/stores/userStore";
 import { hasAnyAdminAccess } from "@/config/adminModules";
+import { confirmTourExit } from "@/components/common/tour/confirmTourExit";
 
 const INITIAL_TOUR_SEEN_KEY = "tour_initial_seen_v1";
 
@@ -41,7 +42,7 @@ export function usePageTour({
     steps,
     autoStartOnFirstVisit = false,
     enabled = true,
-    confirmOnExit = false,
+    confirmOnExit = true,
     exitConfirmMessage = "Deseja realmente sair do tutorial? Você poderá reiniciá-lo a qualquer momento pelo botão de ajuda.",
     onCompleted,
 }: PageTourOptions) {
@@ -51,7 +52,10 @@ export function usePageTour({
     });
 
     const driverRef = useRef<Driver | null>(null);
+    const exitConfirmationRef = useRef<AbortController | null>(null);
     const hasAutoStartedRef = useRef<boolean>(false);
+
+    useEffect(() => () => exitConfirmationRef.current?.abort(), []);
 
     useEffect(() => {
         if (typeof window !== "undefined" && storageKey) {
@@ -108,6 +112,20 @@ export function usePageTour({
         const firstElementSelector = resolvedSteps.find((s) => s.element)?.element as string | undefined;
 
         const executeDrive = () => {
+            const requestExit = async (_element: unknown, _step: unknown, { driver: d }: { driver: Driver }) => {
+                if (confirmOnExit) {
+                    if (exitConfirmationRef.current) return;
+                    const controller = new AbortController();
+                    exitConfirmationRef.current = controller;
+                    const confirmed = await confirmTourExit(exitConfirmMessage, controller.signal);
+                    exitConfirmationRef.current = null;
+                    if (!confirmed || !d.isActive()) return;
+                }
+                markAsCompleted();
+                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
+                d.destroy();
+            };
+
             const driverObj = driver({
                 animate: true,
                 duration: 400,
@@ -119,17 +137,8 @@ export function usePageTour({
                 doneBtnText: "Concluir ✓",
                 skipMissingElement: true,
                 steps: resolvedSteps,
-                onCloseClick: (_element, _step, { driver: d }) => {
-                    if (confirmOnExit && !d.isLastStep()) {
-                        const confirmed = window.confirm(exitConfirmMessage);
-                        if (!confirmed) return;
-                    }
-                    markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
-                    d.destroy();
-                },
+                onCloseClick: requestExit,
+                onDestroyStarted: requestExit,
                 onDoneClick: (_element, _step, { driver: d }) => {
                     markAsCompleted();
                     if (typeof window !== "undefined") {
@@ -138,6 +147,7 @@ export function usePageTour({
                     d.destroy();
                 },
                 onDestroyed: () => {
+                    exitConfirmationRef.current?.abort();
                     markAsCompleted();
                     if (typeof window !== "undefined") {
                         window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));

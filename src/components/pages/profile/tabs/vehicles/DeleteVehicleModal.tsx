@@ -1,4 +1,5 @@
 'use client';
+import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -69,14 +70,14 @@ export function DeleteVehicleModal({ vehicleId, vehicleLabel }: DeleteVehicleMod
                 >
                     Cancelar
                 </Button>
-                <Button
+                <ConfirmButton
                     type="button"
                     onClick={() => mutation.mutate()}
                     disabled={mutation.isPending}
                     className="flex-1 bg-red-500 text-white hover:bg-red-600 hover:text-white"
                 >
                     {mutation.isPending ? "Excluindo..." : "Excluir"}
-                </Button>
+                </ConfirmButton>
             </div>
         </div>
     );

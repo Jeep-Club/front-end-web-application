@@ -58,8 +58,8 @@ export default function FormLogin() {
                 </div>
 
                 {mutation.isError && (
-                    <div role="alert" className="flex w-full items-start gap-2 rounded-xl border border-j-red-200 bg-j-red-50 px-3 py-2.5 text-sm leading-5 text-j-red-700">
-                        <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    <div role="alert" className="flex w-full items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm font-medium leading-5 text-red-800 shadow-sm">
+                        <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-600" aria-hidden="true" />
                         <span>{mutation.error instanceof Error ? mutation.error.message : 'CPF ou senha inválidos. Confira os dados e tente novamente.'}</span>
                     </div>
                 )}
