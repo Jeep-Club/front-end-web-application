@@ -86,14 +86,14 @@ export function VehiclesTabContent() {
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
-                                    <div className="flex min-w-0 flex-col gap-3">
-                                        <div className="min-w-0">
+                                    <div className="flex min-w-0 items-center justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
                                             <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
                                                 {vehicle.model}
                                             </h4>
                                         </div>
 
-                                        <div className="inline-flex w-fit max-w-full flex-col overflow-hidden rounded-lg border border-j-gray-300 bg-white shadow-sm">
+                                        <div className="inline-flex shrink-0 flex-col overflow-hidden rounded-lg border border-j-gray-300 bg-white shadow-sm">
                                             <span className="bg-j-blue-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white">
                                                 Placa do veículo
                                             </span>
