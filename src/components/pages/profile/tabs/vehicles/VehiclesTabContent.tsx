@@ -89,7 +89,8 @@ export function VehiclesTabContent() {
                                     <div className="flex min-w-0 items-center justify-between gap-3">
                                         <div className="min-w-0 flex-1">
                                             <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
-                                                {vehicle.nickname ? `${vehicle.nickname} - ${vehicle.model}` : vehicle.model}
+                                                {vehicle.model}
+
                                             </h4>
                                         </div>
 

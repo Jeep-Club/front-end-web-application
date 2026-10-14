@@ -12,6 +12,8 @@ interface VehicleListItem {
     modelYear: number;
     model: string;
     color: string;
+    ownerId?: number | null;
+    ownerName?: string | null;
 }
 
 type ListVehicleMemberResponse = PageResponse<VehicleListItem>;
