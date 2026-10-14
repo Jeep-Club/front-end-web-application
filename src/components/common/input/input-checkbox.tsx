@@ -9,9 +9,10 @@ export interface InputCheckboxProps {
     name: string;
     value?: boolean;
     className?: string;
+    required?: boolean;
 }
 
-export function InputCheckbox({ label, name, value, className }: InputCheckboxProps) {
+export function InputCheckbox({ label, name, value, className, required = false }: InputCheckboxProps) {
     const { control } = useFormContext();
     const {
         field: { value: fieldValue, onChange, onBlur, ref }
@@ -23,6 +24,8 @@ export function InputCheckbox({ label, name, value, className }: InputCheckboxPr
                 ref={ref}
                 type="checkbox"
                 name={name}
+                required={required}
+                aria-required={required}
                 checked={!!fieldValue}
                 onChange={(e) => onChange(e.target.checked)}
                 onBlur={onBlur}
@@ -31,7 +34,7 @@ export function InputCheckbox({ label, name, value, className }: InputCheckboxPr
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-j-transparent-white bg-input-bg text-transparent transition-colors peer-checked:border-j-yellow-400 peer-checked:bg-j-yellow-400 peer-checked:text-j-blue-800 peer-focus-visible:outline-2 peer-focus-visible:outline-j-yellow-400">
                 <Check size={14} strokeWidth={3} />
             </span>
-            <span className="text-sm font-medium text-j-white">{label}</span>
+            <span className="text-sm font-medium text-j-white">{label}{required && <span className="ml-1 text-j-red-500" aria-hidden="true">*</span>}</span>
         </label>
     );
 }
