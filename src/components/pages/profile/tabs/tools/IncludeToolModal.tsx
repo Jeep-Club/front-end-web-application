@@ -13,6 +13,27 @@ import { createToolAction } from "@/actions/tools/create";
 import { editToolFormSchema } from "@/schemas/tools/update";
 import { updateToolAction } from "@/actions/tools/update";
 import { getToolDetailAction } from "@/actions/tools/detail";
+import { useRef } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { InputFile } from '@/components/common/input/file';
+import { uploadImageAction } from '@/actions/media/upload-image';
+import { updateToolPhotoAction } from '@/actions/tools/photo';
+import { getMediaImageUrl } from '@/utils/media/imageUrl';
+
+function ToolPhotoField({ storageKey }: { storageKey?: string | null }) {
+    const { control, setValue } = useFormContext<CreateToolFormData>();
+    const removed = useWatch({ control, name: 'removePhoto' });
+    const files = useWatch({ control, name: 'photo' });
+    return <section className="w-full rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3">
+        {storageKey && !removed && !files?.length && <div className="mb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={getMediaImageUrl(storageKey)} alt="Foto atual da ferramenta" className="mb-2 aspect-video w-full rounded-lg object-cover" />
+            <button type="button" onClick={() => setValue('removePhoto', true)} className="text-xs font-semibold text-red-600">Remover foto atual</button>
+        </div>}
+        {removed && <div className="mb-2 flex items-center justify-between gap-2 text-xs text-j-gray-600"><span>A foto será removida ao salvar.</span><button type="button" onClick={() => setValue('removePhoto', false)} className="font-bold text-j-blue-800">Desfazer</button></div>}
+        <InputFile.Image name="photo" label="Foto da ferramenta (opcional)" maxFiles={1} maxSizeMB={5} cropShape="landscape" className="[&_label]:font-semibold [&_label]:!text-j-gray-700 [&_p]:!text-j-gray-600 [&_svg]:!text-j-gray-400 [&>div]:!border-j-gray-200 [&>div]:!bg-j-white [&>div]:py-4" />
+    </section>;
+}
 
 const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
 
@@ -24,6 +45,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
     const { setClose } = useModal();
     const queryClient = useQueryClient();
     const isEditMode = !!toolId;
+    const savedIdRef = useRef<number | undefined>(toolId);
 
     const { data: tool, isLoading: isLoadingTool } = useQuery({
         queryKey: ["tools", "detail", toolId],
@@ -32,13 +54,32 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
     });
 
     const mutation = useMutation({
-        mutationFn: (data: CreateToolFormData | UpdateToolFormData) =>
-            isEditMode && toolId
-                ? updateToolAction(toolId, data)
-                : createToolAction(data as CreateToolRequest),
+        mutationFn: async (data: CreateToolFormData | UpdateToolFormData) => {
+            let storageKey: string | undefined;
+            if (data.photo?.[0]) {
+                const upload = new FormData();
+                upload.set('file', data.photo[0]);
+                storageKey = await uploadImageAction(upload);
+            }
+            const request = { name: data.name, description: data.description };
+            const saved = savedIdRef.current
+                ? await updateToolAction(savedIdRef.current, request)
+                : await createToolAction(request as CreateToolRequest);
+            savedIdRef.current = saved.id;
+            queryClient.invalidateQueries({ queryKey: ['tools', 'list'] });
+            if (storageKey || data.removePhoto) {
+                try {
+                    return await updateToolPhotoAction(saved.id, storageKey ?? null);
+                } catch (error) {
+                    throw new Error(`Os dados da ferramenta foram salvos, mas a foto não. Tente salvar novamente. ${error instanceof Error ? error.message : ''}`);
+                }
+            }
+            return saved;
+        },
         onSuccess: () => {
             toast.success(isEditMode ? "Ferramenta atualizada com sucesso!" : "Ferramenta cadastrada com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["tools", "list"] });
+            queryClient.invalidateQueries({ queryKey: ["tools", "detail"] });
             setClose();
         },
         onError: (error) => toast.error(error.message || (isEditMode ? "Erro ao editar ferramenta." : "Erro ao cadastrar ferramenta.")),
@@ -54,6 +95,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
         >
             <ButtonIcon
                 onClick={setClose}
+                disabled={mutation.isPending}
                 className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
                 <X className="h-5 w-5 md:h-[22px] md:w-[22px]" />
@@ -89,6 +131,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                     onError={(errors) => console.log(errors)}
                     className="gap-4 px-5 py-5 md:px-8 md:py-6"
                 >
+                    <fieldset disabled={mutation.isPending} className="flex w-full flex-col gap-4">
                     <InputRegister
                         label="Nome"
                         name="name"
@@ -107,6 +150,8 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                         className={LIGHT_FIELD_CLASS}
                     />
 
+                    <ToolPhotoField storageKey={tool?.photoStorageKey} />
+                    </fieldset>
                     <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
                         <Button
                             type="submit"

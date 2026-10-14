@@ -3,6 +3,7 @@ interface CreateToolRequest {
     description?: string;
 }
 
-type CreateToolFormData = CreateToolRequest;
+interface ToolPhotoFormFields { photo?: File[]; removePhoto?: boolean; }
+type CreateToolFormData = CreateToolRequest & ToolPhotoFormFields;
 
 type CreateToolResponse = ToolDetail;

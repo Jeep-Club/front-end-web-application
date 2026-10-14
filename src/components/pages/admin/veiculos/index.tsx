@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
+
 import { Car, Eye, Pencil, Plus, ShieldX, Trash2 } from "lucide-react";
 
 import { PageHeader } from "@/components/common/page-header";
-import { Button, ButtonIcon } from "@/components/common/button";
-import { Table } from "@/components/common/table";
+import { Button } from "@/components/common/button";
+import { ListPagination } from "@/components/common/table/ListPagination";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -33,12 +33,14 @@ export default function VehicleManagement() {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
 
-    const { data, isLoading, isFetching, error } = useQuery({
+    const query = useQuery({
         queryKey: ["admin", "vehicles", { page, size: pageSize }],
         queryFn: () => listVehiclesAdminAction({ page, size: pageSize }),
         placeholderData: (previous) => previous,
         enabled: canRead,
     });
+
+    const { data, isLoading, isFetching, error } = query;
 
     const handleOpenCreate = () => {
         setContent(<CreateVehicleModal />);
@@ -69,172 +71,65 @@ export default function VehicleManagement() {
         setOpen();
     };
 
-    const columns = useMemo<ColumnDef<VehicleListItem, unknown>[]>(() => [
-        {
-            accessorKey: "photo",
-            header: "Foto",
-            meta: { label: "Foto" },
-            cell: ({ row }) => (
-                <div className="flex h-11 w-14 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-gray-100">
-                    {row.original.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={getMediaImageUrl(row.original.photo)}
-                            alt={row.original.nickname || row.original.model}
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <Car size={20} className="text-j-gray-400" />
-                    )}
-                </div>
-            ),
-        },
-        {
-            accessorKey: "plate",
-            header: "Placa",
-            meta: { label: "Placa" },
-            cell: ({ row }) => (
-                <span className="font-bold tracking-wider text-j-gray-700">
-                    {maskPlate(row.original.plate)}
-                </span>
-            ),
-        },
-        {
-            accessorKey: "model",
-            header: "Modelo",
-            meta: { label: "Modelo" },
-            cell: ({ row }) => (
-                <div className="flex flex-col">
-                    <span className="font-bold text-j-gray-700">{row.original.model}</span>
-                    {row.original.nickname && (
-                        <span className="text-xs text-j-gray-500">{row.original.nickname}</span>
-                    )}
-                </div>
-            ),
-        },
-        {
-            accessorKey: "modelYear",
-            header: "Ano/Modelo",
-            meta: { label: "Ano/Modelo" },
-            cell: ({ row }) => (
-                <span className="text-j-gray-700">{row.original.modelYear}</span>
-            ),
-        },
-        {
-            accessorKey: "color",
-            header: "Cor",
-            meta: { label: "Cor" },
-            cell: ({ row }) => (
-                <span className="text-j-gray-700">{row.original.color}</span>
-            ),
-        },
-        {
-            id: "actions",
-            header: "Ações",
-            meta: { label: "Ações" },
-            cell: ({ row }) => {
-                const vehicle = row.original;
-
-                return (
-                    <div className="flex items-center justify-end gap-1.5">
-                        {canRead && (
-                            <ButtonIcon
-                                type="button"
-                                title="Visualizar detalhes"
-                                aria-label={`Visualizar detalhes de ${vehicle.model}`}
-                                onClick={() => handleOpenDetail(vehicle.id)}
-                                className="rounded-lg bg-j-blue-800 p-2 text-j-yellow-300 hover:bg-j-blue-600 hover:text-j-yellow-300"
-                            >
-                                <Eye size={18} />
-                            </ButtonIcon>
-                        )}
-
-                        {canUpdate && (
-                            <ButtonIcon
-                                type="button"
-                                title="Editar"
-                                aria-label={`Editar ${vehicle.model}`}
-                                onClick={() => handleOpenEdit(vehicle.id)}
-                                className="rounded-lg bg-yellow-50 p-2 text-yellow-600 hover:bg-yellow-100"
-                            >
-                                <Pencil size={18} />
-                            </ButtonIcon>
-                        )}
-
-                        {canDelete && (
-                            <ButtonIcon
-                                type="button"
-                                title="Excluir"
-                                aria-label={`Excluir ${vehicle.model}`}
-                                onClick={() => handleOpenDelete(vehicle)}
-                                className="rounded-lg bg-red-50 p-2 text-red-500 hover:bg-red-100"
-                            >
-                                <Trash2 size={18} />
-                            </ButtonIcon>
-                        )}
-                    </div>
-                );
-            },
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], [canRead, canUpdate, canDelete]);
-
     return (
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
-                <PageHeader
-                    title="Administração de veículos"
-                    breadcrumbs={[
-                        { label: "Home", href: "/feed" },
-                        { label: "Gestão Administrativa", href: "/admin" },
-                        { label: "Administração de veículos" },
-                    ]}
-                />
-
+                <PageHeader title="Administração de veículos" breadcrumbs={[
+                    { label: "Home", href: "/feed" },
+                    { label: "Gestão Administrativa", href: "/admin" },
+                    { label: "Administração de veículos" },
+                ]} />
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
                         <h3 className="text-lg font-black text-j-blue-800">Acesso não permitido</h3>
-                        <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                            Seu usuário não possui permissão para visualizar a administração de veículos.
-                        </p>
+                        <p className="mt-1 text-sm text-j-gray-600">Seu usuário não possui permissão para visualizar a administração de veículos.</p>
                     </section>
                 ) : (
-                    <Table.Root
-                        data={data?.content ?? []}
-                        columns={columns}
-                        getRowId={(vehicle) => String(vehicle.id)}
-                        pagination={{
-                            pageIndex: page,
-                            pageSize,
-                            pageCount: data?.totalPages ?? 0,
-                            rowCount: data?.totalElements,
-                            pageSizeOptions: [5, 10, 20, 50, 100],
-                            onChange: (next) => {
-                                setPage(next.pageIndex);
-                                setPageSize(next.pageSize);
-                            },
-                        }}
-                        footer={<Table.Pagination itemLabel="veículo" showCount={false} />}
-                        isLoading={isLoading}
-                        isFetching={isFetching}
-                        error={error ? error.message : undefined}
-                        emptyState="Nenhum veículo cadastrado."
-                    >
-                        <Table.Header
-                            title="Veículos cadastrados"
-                            description={isLoading ? "Carregando..." : `${data?.totalElements ?? 0} veículo(s) cadastrado(s)`}
-                        >
-                            {canCreate && (
-                                <Button type="button" onClick={handleOpenCreate} className="w-full shrink-0 sm:w-auto">
-                                    <Plus size={16} strokeWidth={3} />
-                                    Cadastrar veículo
-                                </Button>
-                            )}
-                        </Table.Header>
-
-                        <Table.Content loadingRows={pageSize} />
-                    </Table.Root>
+                    <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
+                        <div className="flex items-center justify-between gap-3">
+                            <h3 className="text-base font-bold text-j-gray-700">Veículos cadastrados</h3>
+                            {canCreate && <Button onClick={handleOpenCreate} className="h-11 shrink-0 gap-2"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
+                        </div>
+                        {isLoading && <p className="text-sm text-j-gray-400">Carregando veículos...</p>}
+                        {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"><p>{error.message}</p><Button onClick={() => query.refetch()} disabled={isFetching}>Tentar novamente</Button></div>}
+                        {!isLoading && !error && !data?.content.length && <p className="text-sm text-j-gray-400">Nenhum veículo cadastrado.</p>}
+                        {!isLoading && !error && Boolean(data?.content.length) && (
+                            <div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                                <div className="hidden grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] items-center gap-3 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 xl:grid">
+                                    <span>Veículo</span><span className="text-center">Placa</span><span className="text-center">Dono</span><span className="text-center">Ações</span>
+                                </div>
+                                <div className="divide-y divide-j-gray-100">
+                                    {data?.content.map((vehicle) => (
+                                        <div key={vehicle.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] xl:items-center xl:gap-3">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-20 sm:w-36">
+                                                    {vehicle.photo ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img src={getMediaImageUrl(vehicle.photo)} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="h-full w-full object-cover" />
+                                                    ) : <Car size={24} aria-hidden="true" />}
+                                                </div>
+                                                <h4 className="min-w-0 truncate font-extrabold text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
+                                                    {vehicle.nickname?.trim() ? <><span className="text-lg">{vehicle.nickname.trim()}</span><span className="text-sm font-medium"> - {vehicle.model}</span></> : <span className="text-lg">{vehicle.model}</span>}
+                                                </h4>
+                                            </div>
+                                            <p className="text-sm font-bold text-j-gray-600 xl:text-center"><span className="mr-1 text-xs xl:hidden">Placa:</span>{maskPlate(vehicle.plate)}</p>
+                                            <p className="truncate text-sm text-j-gray-600 xl:text-center" title={vehicle.ownerName ?? undefined}><span className="mr-1 text-xs font-bold xl:hidden">Dono:</span>{vehicle.ownerName || '—'}</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <button type="button" onClick={() => handleOpenDetail(vehicle.id)} aria-label={`Visualizar ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 hover:bg-blue-100"><Eye size={15} aria-hidden="true" /><span className="hidden sm:inline">Visualizar</span></button>
+                                                {canUpdate && <button type="button" onClick={() => handleOpenEdit(vehicle.id)} aria-label={`Editar ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 hover:bg-yellow-100"><Pencil size={15} className="text-j-yellow-500" aria-hidden="true" /><span className="hidden sm:inline">Editar</span></button>}
+                                                {canDelete && <button type="button" onClick={() => handleOpenDelete(vehicle)} aria-label={`Excluir ${vehicle.model}`} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 hover:bg-red-100"><Trash2 size={15} aria-hidden="true" /><span className="hidden sm:inline">Excluir</span></button>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {data && !error && <ListPagination itemLabel="veículo" isFetching={isFetching} pagination={{
+                            pageIndex: data.number, pageSize, pageCount: data.totalPages, rowCount: data.totalElements,
+                            onChange: (next) => { setPage(next.pageSize !== pageSize ? 0 : next.pageIndex); setPageSize(next.pageSize); },
+                        }} />}
+                    </section>
                 )}
             </div>
         </div>

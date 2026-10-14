@@ -90,6 +90,7 @@ export function VehiclesTabContent() {
                                         <div className="min-w-0 flex-1">
                                             <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
                                                 {vehicle.model}
+
                                             </h4>
                                         </div>
 
