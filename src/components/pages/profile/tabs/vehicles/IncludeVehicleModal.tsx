@@ -53,11 +53,12 @@ interface VehicleStepsFieldsProps {
     currentStep: number;
     onNext: () => void;
     onBack: () => void;
+    onStepChange: (step: number) => void;
     isEditMode: boolean;
     vehicle?: VehicleDetailForEdit;
 }
 
-function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }: VehicleStepsFieldsProps) {
+function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditMode, vehicle }: VehicleStepsFieldsProps) {
     const { trigger, formState: { errors } } = useFormContext();
 
     const handleNext = async () => {
@@ -67,6 +68,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
+        if ((event.target as HTMLElement).closest('button')) return;
         if (event.key !== 'Enter') return;
         if (currentStep < STEPS.length) {
             event.preventDefault();
@@ -82,11 +84,15 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                     const isActive = step === currentStep;
                     const isCompleted = step < currentStep;
                     return (
-                        <div
+                        <button
+                            type="button"
                             key={step}
+                            onClick={() => onStepChange(step)}
+                            aria-label={`Etapa ${step}: ${label}`}
+                            aria-current={isActive ? "step" : undefined}
                             title={`Etapa ${step}`}
                             className={twMerge(
-                                "flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors md:text-sm",
+                                "flex min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors hover:bg-j-blue-100/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700 md:text-sm",
                                 hasError
                                     ? "bg-j-red-100 text-j-red-600"
                                     : isActive
@@ -103,7 +109,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                                 {step}
                             </span>
                             <span className="hidden truncate sm:inline">{label}</span>
-                        </div>
+                        </button>
                     );
                 })}
             </div>
@@ -360,11 +366,15 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                 <Form<IncludeVehicleMemberFormData | EditVehicleMemberFormData>
                     schema={isEditMode ? editVehicleMemberFormSchema : includeVehicleMemberFormSchema}
                     onSubmit={handleSubmit}
-                    onError={(errors) => console.log(errors)}
+                    onError={(errors) => {
+                        const invalidStep = STEPS.find(({ fields }) => fields.some((field) => field in errors));
+                        if (invalidStep) setCurrentStep(invalidStep.step);
+                    }}
                     className="gap-5 px-5 py-5 md:px-8 md:py-6"
                 >
                     <VehicleStepsFields
                         currentStep={currentStep}
+                        onStepChange={setCurrentStep}
                         onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
                         onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
                         isEditMode={isEditMode}

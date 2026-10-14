@@ -47,11 +47,12 @@ interface ViewVehicleStepsProps {
     currentStep: number;
     onNext: () => void;
     onBack: () => void;
+    onStepChange: (step: number) => void;
     onClose: () => void;
     vehicle: VehicleDetail;
 }
 
-function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: ViewVehicleStepsProps) {
+function ViewVehicleSteps({ currentStep, onNext, onBack, onStepChange, onClose, vehicle }: ViewVehicleStepsProps) {
     return (
         <div className="w-full flex flex-col items-center gap-5">
             <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-j-gray-100 p-1.5">
@@ -59,11 +60,15 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                     const isActive = step === currentStep;
                     const isCompleted = step < currentStep;
                     return (
-                        <div
+                        <button
+                            type="button"
                             key={step}
+                            onClick={() => onStepChange(step)}
+                            aria-label={`Etapa ${step}: ${label}`}
+                            aria-current={isActive ? "step" : undefined}
                             title={`Etapa ${step}`}
                             className={twMerge(
-                                "flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors md:text-sm",
+                                "flex min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700 md:text-sm",
                                 isActive
                                     ? "bg-j-blue-700 text-j-white shadow-sm"
                                     : isCompleted
@@ -78,7 +83,7 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                                 {step}
                             </span>
                             <span className="hidden truncate sm:inline">{label}</span>
-                        </div>
+                        </button>
                     );
                 })}
             </div>
@@ -222,6 +227,7 @@ export function ViewVehicleModal({ vehicleId }: ViewVehicleModalProps) {
                 <div className="px-5 py-5 md:px-8 md:py-6">
                     <ViewVehicleSteps
                         currentStep={currentStep}
+                        onStepChange={setCurrentStep}
                         onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
                         onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
                         onClose={setClose}
