@@ -9,7 +9,7 @@ import { Button, ButtonIcon } from "@/components/common/button";
 import { Avatar } from "@/components/common/avatar";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
-import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
+import { maskCPF, maskPhoneNumber } from "@/utils/masks";
 
 import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "./user-display";
 
@@ -34,6 +34,7 @@ interface UserManagementViewProps {
     onPaginationChange: (pagination: PaginationState) => void;
     onSortChange: (field: string) => void;
     onViewUser: (userId: number) => void;
+    onCreateUser: () => void;
     onChangeUserStatus: (user: AdminUser) => void;
     searchType: SearchType;
     setSearchType: (type: SearchType) => void;
@@ -58,6 +59,7 @@ export function UserManagementView({
     onPaginationChange,
     onSortChange,
     onViewUser,
+    onCreateUser,
     onChangeUserStatus,
     searchType,
     setSearchType,
@@ -179,14 +181,6 @@ export function UserManagementView({
 
         baseColumns.push(
             {
-                accessorKey: "createdAt",
-                header: () => (
-                    <Table.Sortable field="createdAt" label="Cadastro" sort={query.sort} onSortChange={onSortChange} />
-                ),
-                meta: { label: "Cadastro" },
-                cell: ({ row }) => maskDate(row.original.createdAt),
-            },
-            {
                 id: "actions",
                 header: "Ações",
                 meta: { label: "Ações" },
@@ -246,7 +240,7 @@ export function UserManagementView({
                 pageSizeOptions: [5, 10, 20, 50, 100],
                 onChange: onPaginationChange,
             }}
-            footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
+            footer={<Table.Pagination itemLabel="usuário" />}
             isLoading={isLoading}
             isFetching={isFetching}
             error={error}
@@ -313,13 +307,14 @@ export function UserManagementView({
                         </Select.Unregister>
 
                         {permissions.canCreateUsers && (
-                            <a
-                                href="/admin/users/new"
+                            <button
+                                type="button"
+                                onClick={onCreateUser}
                                 className="flex w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg p-2.5 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
                             >
                                 Novo usuário
                                 <Plus size={16} strokeWidth={3} />
-                            </a>
+                            </button>
                         )}
                     </div>
                 </div>

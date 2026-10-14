@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
 import toast from "react-hot-toast";
-import { ArrowRight, Check, Copy, LoaderCircle, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { ArrowRight, Check, Copy, LoaderCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { UserWorkspace } from "../UserWorkspace";
@@ -23,15 +23,17 @@ const fieldStyle = {
     className: "min-w-0 h-12 border rounded-xl border-j-gray-300 bg-j-white font-normal text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:outline-j-yellow-400 aria-[invalid=true]:border-j-red-500",
 };
 
-export function NewAdminUserPage() {
+export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void; onCreated?: () => void } = {}) {
     const router = useRouter();
-    const [selected, setSelected] = useState("personal");
+    const backToUsers = () => onClose ? onClose() : router.push("/admin/users");
+
     const [createdUser, setCreatedUser] = useState<AdminCreateUserResponse | null>(null);
     const [copied, setCopied] = useState(false);
     const mutation = useMutation({
         mutationFn: createFirstAccessUserAction,
         onSuccess: (result) => {
             setCreatedUser(result);
+            onCreated?.();
             toast.success(result.activationMethod === "TEMPORARY_PASSWORD"
                 ? "Usuário cadastrado com sucesso!"
                 : "Cadastro criado. Confira o status do convite.");
@@ -65,7 +67,7 @@ export function NewAdminUserPage() {
                             {copied ? <Check size={16} /> : <Copy size={16} />}
                             {copied ? "Senha copiada" : "Copiar senha provisória"}
                         </Button>
-                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
+                        <Button type="button" onClick={backToUsers} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
                     </div>
                     <p className="mt-4 text-xs text-j-gray-500">Por segurança, esta senha será exibida somente agora.</p>
                 </div>
@@ -97,10 +99,10 @@ export function NewAdminUserPage() {
                         <p role="status" className="mt-3 text-sm text-j-red-600">O usuário foi criado, mas o convite não foi entregue. Você poderá consultar e reenviar o convite nos detalhes do usuário.</p>
                     )}
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                        <Button type="button" onClick={() => router.push(`/admin/users/${createdUser.userId}?invitation=1`)} className="min-h-11 flex-1 gap-2">
+                        <Button type="button" onClick={() => { onClose?.(); router.push(`/admin/users/${createdUser.userId}?invitation=1`); }} className="min-h-11 flex-1 gap-2">
                             Gerenciar convite <ArrowRight size={16} />
                         </Button>
-                        <Button type="button" onClick={() => router.push("/admin/users")} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
+                        <Button type="button" onClick={backToUsers} className="min-h-11 flex-1 bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800">Voltar aos usuários</Button>
                     </div>
                 </div>
             </div>
@@ -111,13 +113,11 @@ export function NewAdminUserPage() {
         <UserWorkspace
             title="Novo usuário"
             description="Preencha os dados para criar a conta."
-            options={[
-                { key: "personal", label: "Dados pessoais", description: "Identificação e contato", icon: UserRound },
-                { key: "access", label: "Acesso", description: "Como ativará a conta", icon: LockKeyhole },
-            ]}
-            selected={selected}
-            onSelect={setSelected}
-            onBack={() => router.push("/admin/users")}
+            options={[]}
+            selected="personal"
+            onSelect={() => {}}
+            onBack={backToUsers}
+            modal={Boolean(onClose)}
             disabled={isLoading}
         >
                 <Form<AdminCreateUserForm>
@@ -126,7 +126,7 @@ export function NewAdminUserPage() {
                     formOptions={{ shouldFocusError: false }}
                     onError={(errors) => {
                         const firstField = Object.keys(errors)[0];
-                        setSelected(firstField === "activationMethod" ? "access" : "personal");
+
                         requestAnimationFrame(() => {
                             document.getElementsByName(firstField)[0]?.focus();
                         });
@@ -137,38 +137,33 @@ export function NewAdminUserPage() {
                     <fieldset disabled={isLoading} className="flex min-w-0 flex-col gap-4 p-4 sm:p-6 [&_input+svg]:text-j-gray-400 [&_input~button]:text-j-gray-400">
                         <p className="text-sm text-j-gray-500"><span className="font-bold text-j-red-500">*</span> Campos obrigatórios</p>
 
-                        <CreateUserFields selected={selected} />
+                        <CreateUserFields />
                     </fieldset>
 
                     <footer className="flex items-center gap-3 border-t border-j-gray-200 px-4 py-4 sm:justify-end sm:px-6">
                         <Button
                             type="button"
                             disabled={isLoading}
-                            onClick={() => router.push("/admin/users")}
+                            onClick={backToUsers}
                             className="min-h-12 rounded-xl bg-transparent px-3 text-j-gray-500 hover:bg-j-gray-100 hover:text-j-gray-700"
                         >Cancelar</Button>
-                        <Button type="submit" disabled={isLoading} aria-busy={isLoading} className={selected === "access" ? "min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6" : "hidden"}>
+                        <Button type="submit" disabled={isLoading} aria-busy={isLoading} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">
                             {isLoading ? <>Criando… <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /></> : <>Criar usuário <ArrowRight size={18} aria-hidden="true" /></>}
                         </Button>
-                        {selected === "personal" && (
-                            <Button type="button" disabled={isLoading} onClick={() => setSelected("access")} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">
-                                Continuar <ArrowRight size={18} aria-hidden="true" />
-                            </Button>
-                        )}
                     </footer>
                 </Form>
         </UserWorkspace>
     );
 }
 
-function CreateUserFields({ selected }: { selected: string }) {
+function CreateUserFields() {
     const { control, register, formState: { errors } } = useFormContext<AdminCreateUserForm>();
     const activationMethod = useWatch({ control, name: "activationMethod" });
     const inviteByEmail = activationMethod === "EMAIL_INVITATION";
 
     return (
         <>
-            <section hidden={selected !== "personal"} aria-labelledby="personal-data-title">
+            <section aria-labelledby="personal-data-title">
                 <h2 id="personal-data-title" className="sr-only">Dados pessoais</h2>
                 <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
                     <div className="min-w-0 sm:col-span-2">
@@ -179,16 +174,6 @@ function CreateUserFields({ selected }: { selected: string }) {
                     <InputRegister {...fieldStyle} name="rg" label="RG" placeholder="Opcional" autoComplete="off" />
                     <InputPhoneNumber {...fieldStyle} name="phoneNumber" label="Telefone" placeholder="(00) 00000-0000 · opcional" autoComplete="tel-national" />
                     <div className="sm:col-span-2">
-                        <InputEmail {...fieldStyle} name="email" label="E-mail" placeholder="nome@exemplo.com" autoComplete="email" required={inviteByEmail} />
-                        <p className="mt-1 text-xs text-j-gray-500">
-                            {inviteByEmail ? "Obrigatório para enviar o convite de ativação." : "Opcional para cadastro com senha provisória."}
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <section hidden={selected !== "access"} aria-labelledby="access-data-title">
-                <h2 id="access-data-title" className="sr-only">Ativação da conta</h2>
                 <label htmlFor="activationMethod" className="mb-2 block text-sm font-bold text-j-gray-700">
                     Como o usuário vai ativar a conta <span className="text-j-red-500">*</span>
                 </label>
@@ -207,19 +192,17 @@ function CreateUserFields({ selected }: { selected: string }) {
                     <p id="activation-method-error" role="alert" className="mt-1 text-sm text-j-red-600">{errors.activationMethod.message}</p>
                 )}
 
-                {activationMethod === "TEMPORARY_PASSWORD" && (
-                    <div className="mt-4 rounded-xl border border-j-blue-100 bg-j-blue-50 p-4">
-                        <h3 className="font-bold text-j-blue-800">Senha provisória</h3>
-                        <p className="mt-1 text-sm leading-6 text-j-gray-600">O backend gera uma senha que será exibida uma única vez após o cadastro. No primeiro login, o usuário precisará criar uma senha permanente.</p>
                     </div>
-                )}
-                {activationMethod === "EMAIL_INVITATION" && (
-                    <div className="mt-4 rounded-xl border border-j-blue-100 bg-j-blue-50 p-4">
-                        <h3 className="font-bold text-j-blue-800">Convite de ativação</h3>
-                        <p className="mt-1 text-sm leading-6 text-j-gray-600">O usuário receberá um link para definir a senha. Confira o e-mail informado nos dados pessoais antes de criar a conta.</p>
+                    <div className="sm:col-span-2">
+                        <InputEmail {...fieldStyle} name="email" label="E-mail" placeholder="nome@exemplo.com" autoComplete="email" required={inviteByEmail} />
+                        <p className="mt-1 text-xs text-j-gray-500">
+                            {inviteByEmail ? "Obrigatório para enviar o convite de ativação." : "Opcional para cadastro com senha provisória."}
+                        </p>
                     </div>
-                )}
+                </div>
             </section>
+
+
         </>
     );
 }
