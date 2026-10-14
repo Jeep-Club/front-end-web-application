@@ -16,6 +16,7 @@ import { fetchWrapper } from "./services/fetchWrapper/fetchWrapper";
 import { authCookieOptions } from './utils/auth/cookieOptions';
 import { getFrontendAccessHeaders } from './services/fetchWrapper/frontendAccess';
 
+
 export async function proxy(request: NextRequest) {
 
     const path = request.nextUrl.pathname;
@@ -104,6 +105,7 @@ export async function proxy(request: NextRequest) {
             const meToken = request.cookies.get("Me")?.value || '';
             const me = await verifyWithSchema<MeCookie>(meToken, meCookieSchema);
             if (new Date(me.expires) < new Date()) {
+
                 const headers = { ...getFrontendAccessHeaders(), 'Authorization': 'Bearer ' + authAccessToken };
                 const sessionResponse = await fetchWrapper<MeResponse>({
                     url: process.env.API_URL + '/' + HttpAPIRoutes.AUTHENTICATION_ME,

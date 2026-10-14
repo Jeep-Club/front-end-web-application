@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "@/components/common/layout-admin/Sidebar";
 import Topbar from "@/components/common/layout-admin/Topbar";
+import DashboardFooter from "@/components/common/layout-admin/DashboardFooter";
 import GuidedTour from "@/components/common/tour/GuidedTour";
 import { FirstAccessOnboarding } from "@/components/pages/first-access/Onboarding";
 
@@ -39,6 +40,7 @@ export default function DashboardShell({ fullName, initialProfilePhotoUrl, onboa
                     <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch]">
                         {children}
                     </div>
+                    <DashboardFooter />
                 </div>
             </div>
         </GuidedTour>

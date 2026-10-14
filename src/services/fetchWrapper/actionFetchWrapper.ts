@@ -1,4 +1,5 @@
 import { getAuthCookies } from "@/utils/auth/get";
+import { frontendHeaders } from './frontendHeaders';
 import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWrapper";
 import fetchRefreshToken from "@/utils/auth/refresh";
 import { login } from "@/utils/auth/login";
@@ -24,11 +25,10 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
     }
 
     const authCookies = await getAuthCookies.SERVER();
-    fetchProps.headers = {
-        ...fetchProps.headers,
-        ...getFrontendAccessHeaders(),
-        ...(authCookies?.AuthAccessToken ? { 'Authorization': `Bearer ${authCookies.AuthAccessToken}` } : {})
-    }
+    const requestHeaders = new Headers(fetchProps.headers);
+    if (authCookies?.AuthAccessToken) requestHeaders.set('Authorization', `Bearer ${authCookies.AuthAccessToken}`);
+    fetchProps.headers = frontendHeaders(requestHeaders);
+
 
     try {
         return await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
@@ -59,7 +59,7 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
             return await fetchWrapper<T>({
                 url: `${apiURL}/${url}`,
                 ...fetchProps,
-                headers: { ...fetchProps.headers, 'Authorization': `Bearer ${refreshResponse.accessToken}` },
+                headers: { ...fetchProps.headers, 'authorization': `Bearer ${refreshResponse.accessToken}` },
             });
         } catch {
             // Refresh token tambem invalido/expirado: nao ha como renovar

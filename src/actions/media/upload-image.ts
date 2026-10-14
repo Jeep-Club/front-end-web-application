@@ -50,6 +50,7 @@ export async function uploadImageAction(formData: FormData): Promise<string> {
     const response = await fetch(`${apiURL}/media/images`, {
         method: 'POST',
         headers: { ...getFrontendAccessHeaders(), Authorization: `Bearer ${token}`, Accept: 'application/json' },
+
         body: upload,
         cache: 'no-store',
     });

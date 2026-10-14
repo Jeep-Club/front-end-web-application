@@ -9,9 +9,8 @@ import {
 } from "lucide-react";
 
 /**
- * Permissão única e obrigatória que decide se o módulo existe pro
- * usuário — card no painel + acesso à rota. De propósito coisa binária (tem a
- * permissão de leitura, ou não tem), não uma combinação de alternativas.
+ * Permissão de leitura que decide se o módulo existe para o usuário.
+ * Módulos com várias áreas podem oferecer ações alternativas de leitura.
  *
  * As demais permissões daquele módulo (criar, editar, excluir...) só
  * fazem sentido DEPOIS que essa aqui já liberou o acesso — elas
@@ -20,6 +19,7 @@ import {
 export interface AdminVisibilityPermission {
     module: string;
     action: string;
+    alternativeActions?: string[];
 }
 
 export interface AdminModuleConfig {
@@ -77,6 +77,7 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "BILLING",
             action: "CHARGE_DEFINITION_READ",
+            alternativeActions: ["CHARGE_CYCLE_READ", "MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"],
         },
     },
     {
@@ -129,7 +130,7 @@ export function canAccessAdminModule(
         return false;
     }
 
-    return userModule.actions.includes(action);
+    return [action, ...(adminModule.visibilityPermission.alternativeActions ?? [])].some((candidate) => userModule.actions.includes(candidate));
 }
 
 // retorna somente os módulos que devem aparecer
