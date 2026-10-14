@@ -156,7 +156,7 @@ function UserDetailsWorkspace({ user, modal }: UserDetailsModalProps) {
                         <ReadOnlyField {...fieldStyle} label="Data de desativação" value={maskDate(user.disabledAt)} />
                         <ReadOnlyField {...fieldStyle} label="Data de cadastro" value={maskDate(user.createdAt)} />
                         <ReadOnlyField {...fieldStyle} label="Última atualização" value={maskDate(user.updatedAt)} />
-                        {canManageInvitations && user.email && <UserActivationInvitation userId={user.id} />}
+                        {canManageInvitations && user.email && <UserActivationInvitation userId={user.id} userStatus={user.status} />}
                     </section>
                 )}
                 {selected === "roles" && canReadUserRoles && <UserRolesPanel userId={user.id} userName={user.name} />}
