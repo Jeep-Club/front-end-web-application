@@ -29,7 +29,7 @@ export default function ApplyForm() {
             setSubmitted(result.id);
             toast.success(result.created ? 'Solicitação enviada para análise.' : 'Sua solicitação pendente foi localizada.');
         },
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toast.error(error.message || 'Não foi possível enviar sua solicitação. Tente novamente.'),
     });
 
     return (

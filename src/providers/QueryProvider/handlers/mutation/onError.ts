@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { SESSION_EXPIRED_MESSAGE } from "@/utils/http/apiError";
+import { extractApiErrorMessage, SESSION_EXPIRED_MESSAGE } from "@/utils/http/apiError";
 
 export function mutationErrorHandler(error: Error) {
 
@@ -10,5 +10,5 @@ export function mutationErrorHandler(error: Error) {
   }
 
   // Fallback para outros erros genéricos
-  toast.error(error.message || 'Ocorreu um erro inesperado. Tente novamente Mais tarde.');
+  toast.error(extractApiErrorMessage(error, 'Ocorreu um erro inesperado. Tente novamente mais tarde.'));
 }
