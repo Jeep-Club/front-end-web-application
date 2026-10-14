@@ -1,5 +1,6 @@
 import { getAuthCookies } from "@/utils/auth/get";
 import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWrapper";
+import { getFrontendAccessHeaders } from "./frontendAccess";
 
 interface ServerFetchWapperProps<T> extends FetchWrapperProps<T> {
 
@@ -22,6 +23,7 @@ export default async function serverFetchWrapper<T>({ ...props }: ServerFetchWap
     const authCookies = await getAuthCookies.SERVER();
     fetchProps.headers = {
         ...fetchProps.headers,
+        ...getFrontendAccessHeaders(),
         ...(authCookies?.AuthAccessToken ? {'Authorization': `Bearer ${authCookies.AuthAccessToken}`} : {})
     }
 

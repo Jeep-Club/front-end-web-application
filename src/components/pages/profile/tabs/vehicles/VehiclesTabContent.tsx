@@ -85,17 +85,10 @@ export function VehiclesTabContent() {
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={getMediaImageUrl(vehicle.photo)}
-                                                alt=""
-                                                aria-hidden="true"
-                                                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-j-blue-900/10" />
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={getMediaImageUrl(vehicle.photo)}
                                                 alt={`Foto de ${vehicle.nickname || vehicle.model}`}
-                                                className="relative h-full w-full object-contain p-2 drop-shadow-lg transition-transform duration-300 group-hover:scale-[1.03]"
+                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                                             />
+                                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-j-blue-950/45 via-transparent to-black/10" />
                                         </>
                                     ) : (
                                         <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-j-gray-400">

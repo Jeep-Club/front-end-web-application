@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { fetchWrapper } from '@/services/fetchWrapper/fetchWrapper';
 import { HttpAPIRoutes } from '@/utils/http/api';
 import { extractApiErrorMessage } from '@/utils/http/apiError';
+import { getFrontendAccessHeaders } from '@/services/fetchWrapper/frontendAccess';
 
 const noContentSchema = z.literal('');
 
@@ -13,6 +14,7 @@ async function publicActivationRequest(url: string, body: unknown) {
     return fetchWrapper({
         url: `${apiUrl.replace(/\/$/, '')}/${url}`,
         method: 'POST',
+        headers: getFrontendAccessHeaders(),
         body: JSON.stringify(body),
         schema: noContentSchema,
     });

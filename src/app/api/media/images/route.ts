@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthCookies } from "@/utils/auth/get";
 import fetchRefreshToken from "@/utils/auth/refresh";
 import { login } from "@/utils/auth/login";
+import { getFrontendAccessHeaders } from "@/services/fetchWrapper/frontendAccess";
 
 export async function GET(request: NextRequest) {
     const key = request.nextUrl.searchParams.get("key");
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     try {
         const backendUrl = `${apiURL}/media/images?key=${encodeURIComponent(key)}`;
         const res = await fetch(backendUrl, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { ...getFrontendAccessHeaders(), Authorization: `Bearer ${token}` },
             cache: "no-store",
         });
 

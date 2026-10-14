@@ -3,6 +3,7 @@ import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWr
 import fetchRefreshToken from "@/utils/auth/refresh";
 import { login } from "@/utils/auth/login";
 import { isSessionInvalidError, SESSION_EXPIRED_MESSAGE } from "@/utils/http/apiError";
+import { getFrontendAccessHeaders } from "./frontendAccess";
 
 interface ActionFetchWapperProps<T> extends FetchWrapperProps<T> {
 
@@ -25,6 +26,7 @@ export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWap
     const authCookies = await getAuthCookies.SERVER();
     fetchProps.headers = {
         ...fetchProps.headers,
+        ...getFrontendAccessHeaders(),
         ...(authCookies?.AuthAccessToken ? { 'Authorization': `Bearer ${authCookies.AuthAccessToken}` } : {})
     }
 

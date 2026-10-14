@@ -1,6 +1,7 @@
 import { fetchWrapper } from "@/services/fetchWrapper/fetchWrapper";
 import { refreshTokenResponseSchema } from "@/schemas/auth/refresh/refreshTokenResponse";
 import { HttpAPIRoutes } from "../http/api";
+import { getFrontendAccessHeaders } from "@/services/fetchWrapper/frontendAccess";
 
 export default async function fetchRefreshToken({
     refreshToken,
@@ -10,6 +11,7 @@ export default async function fetchRefreshToken({
         url: `${ApiURL}/${HttpAPIRoutes.REFRESH}`,
         method: 'POST',
         body: JSON.stringify({ refreshToken }),
+        headers: getFrontendAccessHeaders(),
         schema: refreshTokenResponseSchema
     });
     return response.data;
