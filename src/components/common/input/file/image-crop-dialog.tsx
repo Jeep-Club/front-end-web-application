@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Image as ImageIcon, RotateCcw, X } from "lucide-react";
 
-const STAGE_SIZE = 400;
+const STAGE_WIDTH = 400;
 const OUTPUT_SIZE = 1024;
 const CROP_SIZE = {
-    circle: { width: 300, height: 300 },
-    square: { width: 340, height: 340 },
-    landscape: { width: 380, height: 214 },
+    circle: { width: 320, height: 320 },
+    square: { width: STAGE_WIDTH, height: STAGE_WIDTH },
+    landscape: { width: STAGE_WIDTH, height: 225 },
 } as const;
 type CropShape = keyof typeof CROP_SIZE;
 type Point = { x: number; y: number };
@@ -35,8 +35,9 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
     const imageRef = useRef<HTMLImageElement>(null);
     const completedFiles = useRef<File[]>([]);
     const crop = CROP_SIZE[shape];
-    const cropLeft = (STAGE_SIZE - crop.width) / 2;
-    const cropTop = (STAGE_SIZE - crop.height) / 2;
+    const stageHeight = shape === "landscape" ? crop.height : STAGE_WIDTH;
+    const cropLeft = (STAGE_WIDTH - crop.width) / 2;
+    const cropTop = (stageHeight - crop.height) / 2;
     const currentFile = files[index];
     const sourceUrl = useMemo(() => currentFile ? URL.createObjectURL(currentFile) : "", [currentFile]);
 
@@ -45,14 +46,14 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
         const scale = baseScale * currentZoom;
         const width = image.naturalWidth * scale;
         const height = image.naturalHeight * scale;
-        const left = (STAGE_SIZE - width) / 2 + currentOffset.x;
-        const top = (STAGE_SIZE - height) / 2 + currentOffset.y;
-        const minX = cropLeft + crop.width - ((STAGE_SIZE - width) / 2) - width;
-        const maxX = cropLeft - ((STAGE_SIZE - width) / 2);
-        const minY = cropTop + crop.height - ((STAGE_SIZE - height) / 2) - height;
-        const maxY = cropTop - ((STAGE_SIZE - height) / 2);
+        const left = (STAGE_WIDTH - width) / 2 + currentOffset.x;
+        const top = (stageHeight - height) / 2 + currentOffset.y;
+        const minX = cropLeft + crop.width - ((STAGE_WIDTH - width) / 2) - width;
+        const maxX = cropLeft - ((STAGE_WIDTH - width) / 2);
+        const minY = cropTop + crop.height - ((stageHeight - height) / 2) - height;
+        const maxY = cropTop - ((stageHeight - height) / 2);
         return { width, height, left, top, minX, maxX, minY, maxY };
-    }, [crop.width, crop.height, cropLeft, cropTop]);
+    }, [crop.width, crop.height, cropLeft, cropTop, stageHeight]);
 
     const clampOffset = useCallback((next: Point, currentZoom = zoom) => {
         const image = imageRef.current;
@@ -75,11 +76,11 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
         if (!canvas || !image || !context || !image.complete || !image.naturalWidth) return;
 
         const { left, top, width, height } = getGeometry(image, zoom, offset);
-        context.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
-        context.fillStyle = "#1a1b1f";
-        context.fillRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+        context.clearRect(0, 0, STAGE_WIDTH, stageHeight);
+        context.fillStyle = shape === "landscape" ? "#111827" : "#1a1b1f";
+        context.fillRect(0, 0, STAGE_WIDTH, stageHeight);
         context.drawImage(image, left, top, width, height);
-    }, [zoom, offset, isLoading, index, sourceUrl, getGeometry]);
+    }, [zoom, offset, isLoading, index, sourceUrl, getGeometry, stageHeight, shape]);
 
     useEffect(() => () => {
         if (sourceUrl) URL.revokeObjectURL(sourceUrl);
@@ -87,8 +88,10 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
 
     const pointFromEvent = (event: ReactPointerEvent<HTMLDivElement>): Point => {
         const rect = event.currentTarget.getBoundingClientRect();
-        const factor = STAGE_SIZE / rect.width;
-        return { x: event.clientX * factor, y: event.clientY * factor };
+        return {
+            x: (event.clientX - rect.left) * STAGE_WIDTH / rect.width,
+            y: (event.clientY - rect.top) * stageHeight / rect.height,
+        };
     };
 
     const applyCrop = async () => {
@@ -104,6 +107,11 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
             output.height = outputHeight;
             const context = output.getContext("2d");
             if (!context) throw new Error("Não foi possível preparar o recorte.");
+
+            if (shape === "landscape") {
+                context.fillStyle = "#111827";
+                context.fillRect(0, 0, outputWidth, outputHeight);
+            }
 
             const { left, top, width, height } = getGeometry(source, zoom, offset);
             const outputScale = outputWidth / crop.width;
@@ -139,7 +147,7 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
     };
 
     if (!currentFile) return null;
-    const cropMaskStyle = { width: `${crop.width / STAGE_SIZE * 100}%`, height: `${crop.height / STAGE_SIZE * 100}%` };
+    const cropMaskStyle = { width: `${crop.width / STAGE_WIDTH * 100}%`, height: `${crop.height / stageHeight * 100}%` };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-3 backdrop-blur-[2px] sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
@@ -156,7 +164,7 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
                 </header>
 
                 <div
-                    className="relative mx-auto aspect-square w-full max-w-[400px] touch-none select-none overflow-hidden rounded-xl bg-[#1a1b1f]"
+                    className={`relative mx-auto w-full max-w-[400px] touch-none select-none overflow-hidden bg-[#1a1b1f] ${shape === "landscape" ? "aspect-video rounded-lg" : "aspect-square rounded-xl"}`}
                     onPointerDown={(event) => {
                         if (isLoading || isSaving) return;
                         event.currentTarget.setPointerCapture(event.pointerId);
@@ -173,9 +181,9 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img ref={imageRef} src={sourceUrl} alt="Prévia do recorte" className="hidden" onLoad={() => setIsLoading(false)} onError={() => { setIsLoading(false); setError("Não foi possível abrir esta imagem. Escolha outro arquivo."); }} />
-                    <canvas ref={canvasRef} width={STAGE_SIZE} height={STAGE_SIZE} className="absolute inset-0 h-full w-full" />
+                    <canvas ref={canvasRef} width={STAGE_WIDTH} height={stageHeight} className="absolute inset-0 h-full w-full" />
                     <div
-                        className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border-[3px] border-white shadow-[0_0_0_999px_rgba(0,0,0,0.58)] ${shape === "circle" ? "rounded-full" : shape === "square" ? "rounded-xl" : "rounded-lg"}`}
+                        className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-white/90 ${shape === "circle" ? "rounded-full shadow-[0_0_0_999px_rgba(0,0,0,0.46)]" : shape === "square" ? "rounded-xl" : "rounded-lg"}`}
                         style={cropMaskStyle}
                     />
                     {isLoading && <div className="absolute inset-0 flex items-center justify-center bg-[#191a1e] text-sm text-[#b5bac1]">Carregando imagem...</div>}

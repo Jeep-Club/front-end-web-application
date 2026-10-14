@@ -79,17 +79,14 @@ export function VehiclesTabContent() {
                                 key={vehicle.id}
                                 className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md"
                             >
-                                <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-j-gray-100 via-j-gray-50 to-j-blue-50 sm:h-56">
+                                <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
                                     {vehicle.photo ? (
-                                        <>
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={getMediaImageUrl(vehicle.photo)}
-                                                alt={`Foto de ${vehicle.nickname || vehicle.model}`}
-                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                                            />
-                                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-j-blue-950/45 via-transparent to-black/10" />
-                                        </>
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={getMediaImageUrl(vehicle.photo)}
+                                            alt={`Foto de ${vehicle.nickname || vehicle.model}`}
+                                            className="absolute inset-0 block h-full w-full object-cover"
+                                        />
                                     ) : (
                                         <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-j-gray-400">
                                             <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/80 text-j-blue-800 shadow-sm"><Car size={32} /></span>
