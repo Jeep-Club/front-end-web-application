@@ -22,6 +22,8 @@ export type InputFileProps = {
     className?: string;
     /** Se true, exibe uma mensagem amigável quando a lista de arquivos estiver vazia */
     isFallback?: boolean;
+    /** Formato do recorte. Fotos de perfil usam círculo; fotos de veículo usam quadrado. */
+    cropShape?: "circle" | "square";
 }
 
 export function InputFile({

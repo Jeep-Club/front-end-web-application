@@ -20,6 +20,7 @@ export function InputFileImage2({
     maxSizeMB = 5,
     multiple = false || maxFiles > 1,
     className,
+    cropShape = "square",
 }: InputFileImageProps) {
     const accept = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
     const id = useId();
@@ -110,7 +111,7 @@ export function InputFileImage2({
                 ))}
             </div>
             { error && <span className="text-j-red-300 text-xs">{String(error.message)}</span> }
-            {filesToCrop && <ImageCropDialog files={filesToCrop} onCancel={() => setFilesToCrop(null)} onComplete={(croppedFiles) => { onChange(multiple ? [...currentFiles, ...croppedFiles].slice(0, maxFiles || undefined) : [croppedFiles[0]]); setFilesToCrop(null); }} />}
+            {filesToCrop && <ImageCropDialog files={filesToCrop} shape={cropShape} onCancel={() => setFilesToCrop(null)} onComplete={(croppedFiles) => { onChange(multiple ? [...currentFiles, ...croppedFiles].slice(0, maxFiles || undefined) : [croppedFiles[0]]); setFilesToCrop(null); }} />}
         </div>
     );
 }
