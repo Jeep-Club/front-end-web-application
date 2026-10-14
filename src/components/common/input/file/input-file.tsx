@@ -7,6 +7,7 @@ import { ListFile } from "./list/list";
 import { twMerge } from "tailwind-merge";
 import { UploadCloud } from "lucide-react";
 import { FallBackFile } from "./fallback/fallback";
+import type { FileRejection } from "react-dropzone";
 
 export type InputFileProps = {
     name: string;
@@ -22,6 +23,8 @@ export type InputFileProps = {
     className?: string;
     /** Se true, exibe uma mensagem amigável quando a lista de arquivos estiver vazia */
     isFallback?: boolean;
+    /** Formato do recorte; avatar circular, imagem comum quadrada e veículo horizontal. */
+    cropShape?: "circle" | "square" | "landscape";
 }
 
 export function InputFile({
@@ -44,7 +47,7 @@ export function InputFile({
 
     const currentFiles: File[] = Array.isArray(value) ? value : (value ? [value] : []);
 
-    const handleDrop = (acceptedFiles: File[], fileRejections: any[]) => {
+    const handleDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
         clearErrors(name);
 
         // Tratamento de Rejeições do Dropzone

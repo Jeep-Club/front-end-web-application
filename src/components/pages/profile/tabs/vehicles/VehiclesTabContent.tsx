@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { ListPagination } from "@/components/common/table/ListPagination";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Plus, IdCard, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
-import { Button } from "@/components/common/button";
+import { Car, Plus, ChevronLeft, ChevronRight, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
+import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
 import { maskPlate } from "@/utils/masks/maskPlate";
@@ -81,24 +81,14 @@ export function VehiclesTabContent() {
                                 key={vehicle.id}
                                 className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md"
                             >
-                                <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-j-gray-100 via-j-gray-50 to-j-blue-50 sm:h-56">
+                                <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
                                     {vehicle.photo ? (
-                                        <>
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={getMediaImageUrl(vehicle.photo)}
-                                                alt=""
-                                                aria-hidden="true"
-                                                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-j-blue-900/10" />
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={getMediaImageUrl(vehicle.photo)}
-                                                alt={`Foto de ${vehicle.nickname || vehicle.model}`}
-                                                className="relative h-full w-full object-contain p-2 drop-shadow-lg transition-transform duration-300 group-hover:scale-[1.03]"
-                                            />
-                                        </>
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={getMediaImageUrl(vehicle.photo)}
+                                            alt={`Foto de ${vehicle.nickname || vehicle.model}`}
+                                            className="absolute inset-0 block h-full w-full object-cover"
+                                        />
                                     ) : (
                                         <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-j-gray-400">
                                             <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/80 text-j-blue-800 shadow-sm"><Car size={32} /></span>
@@ -108,20 +98,19 @@ export function VehiclesTabContent() {
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
-                                    <div className="flex items-start gap-3">
-                                        <div className="min-w-0 flex-1">
-                                            <h4 className="truncate font-bold leading-tight text-j-blue-800" title={vehicle.nickname ? `${vehicle.nickname} - ${vehicle.model}` : vehicle.model}>
-                                                {vehicle.nickname ? (
-                                                    <>
-                                                        <span className="text-lg">{vehicle.nickname}</span>
-                                                        <span className="text-sm font-medium"> - {vehicle.model}</span>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-lg">{vehicle.model}</span>
-                                                )}
+                                    <div className="flex min-w-0 flex-col gap-3">
+                                        <div className="min-w-0">
+                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
+                                                {vehicle.model}
                                             </h4>
-                                            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-j-gray-100 px-2.5 py-1 text-xs font-semibold tracking-wide text-j-gray-600">
-                                                <IdCard size={14} aria-hidden="true" /> {maskPlate(vehicle.plate)}
+                                        </div>
+
+                                        <div className="inline-flex w-fit max-w-full flex-col overflow-hidden rounded-lg border border-j-gray-300 bg-white shadow-sm">
+                                            <span className="bg-j-blue-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white">
+                                                Placa do veículo
+                                            </span>
+                                            <span className="px-3 py-1 font-mono text-base font-extrabold leading-none tracking-[0.14em] text-j-gray-800 sm:text-lg" aria-label={`Placa ${maskPlate(vehicle.plate)}`}>
+                                                {maskPlate(vehicle.plate)}
                                             </span>
                                         </div>
                                     </div>

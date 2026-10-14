@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useId } from "react";
+import React, { useId, useState } from "react";
 import { useFormContext, useController } from "react-hook-form";
 import { Dropzone } from "./dropzone/dropzone";
 import { ListFileImage } from "./list/list-image/list-image";
@@ -8,6 +8,7 @@ import { twMerge } from "tailwind-merge";
 import { InputFileProps } from "./input-file";
 import { UploadCloud } from "lucide-react";
 import { FallBackFile } from "./fallback/fallback";
+import { ImageCropDialog } from "./image-crop-dialog";
 
 export type InputFileImageProps = Omit<InputFileProps, 'accept'>
 
@@ -19,7 +20,8 @@ export function InputFileImage({
     maxSizeMB = 5,
     multiple = false || maxFiles > 1,
     className,
-    isFallback = false
+    isFallback = false,
+    cropShape = "square"
 }: InputFileImageProps) {
     const accept = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
     const id = useId();
@@ -30,6 +32,21 @@ export function InputFileImage({
     } = useController({ name, control, defaultValue: [] });
 
     const currentFiles: File[] = Array.isArray(value) ? value : (value ? [value] : []);
+    const [filesToCrop, setFilesToCrop] = useState<File[] | null>(null);
+
+    const addFiles = (acceptedFiles: File[]) => {
+        if (multiple) {
+            const newFiles = [...currentFiles, ...acceptedFiles];
+            if (maxFiles > 0 && newFiles.length > maxFiles) {
+                setError(name, { type: "manual", message: `Máximo de ${maxFiles} imagem(ns) permitida(s).` });
+                onChange(newFiles.slice(0, maxFiles));
+            } else {
+                onChange(newFiles);
+            }
+        } else {
+            onChange([acceptedFiles[0]]);
+        }
+    };
 
     const handleDrop = (acceptedFiles: File[], fileRejections: any[]) => {
         clearErrors(name);
@@ -49,18 +66,13 @@ export function InputFileImage({
         }
 
         if (!acceptedFiles.length) return;
-
-        if (multiple) {
-            const newFiles = [...currentFiles, ...acceptedFiles];
-            if (maxFiles > 0 && newFiles.length > maxFiles) {
-                setError(name, { type: "manual", message: `Máximo de ${maxFiles} imagem(ns) permitida(s).` });
-                onChange(newFiles.slice(0, maxFiles));
-            } else {
-                onChange(newFiles);
-            }
-        } else {
-            onChange([acceptedFiles[0]]);
+        const availableFiles = maxFiles > 0 ? Math.max(maxFiles - (multiple ? currentFiles.length : 0), 0) : acceptedFiles.length;
+        const filesToProcess = acceptedFiles.slice(0, multiple ? availableFiles : 1);
+        if (!filesToProcess.length) {
+            setError(name, { type: "manual", message: `Máximo de ${maxFiles} imagem(ns) permitida(s).` });
+            return;
         }
+        setFilesToCrop(filesToProcess);
     };
 
     const handleRemove = (indexToRemove: number) => {
@@ -116,6 +128,7 @@ export function InputFileImage({
                     Nenhuma imagem enviada.
                 </FallBackFile>
             ) : null}
+            {filesToCrop && <ImageCropDialog files={filesToCrop} shape={cropShape} onCancel={() => setFilesToCrop(null)} onComplete={(croppedFiles) => { addFiles(croppedFiles); setFilesToCrop(null); }} />}
         </div>
     );
 }
