@@ -82,6 +82,11 @@ export function extractApiErrorMessage(error: unknown, fallback: string): string
         return fallback;
     }
 
+    if (problem.errors?.length) {
+        const firstError = problem.errors.find((item) => item.message?.trim());
+        if (firstError) return firstError.message;
+    }
+
     const codeMessages: Record<string, string> = {
         VALIDATION_ERROR: 'Confira os dados informados e tente novamente.',
         INVALID_REQUEST: 'Confira os dados informados e tente novamente.',
@@ -89,18 +94,12 @@ export function extractApiErrorMessage(error: unknown, fallback: string): string
         ACCESS_DENIED: 'Você não tem permissão para realizar esta ação.',
         FORBIDDEN: 'Você não tem permissão para realizar esta ação.',
         NOT_FOUND: 'Não encontramos o registro solicitado.',
-        CONFLICT: 'Esta ação não pode ser concluída porque os dados já existem ou foram alterados.',
+        CONFLICT: 'Não foi possível concluir porque os dados já existem ou foram alterados. Atualize a página e tente novamente.',
         INTERNAL_SERVER_ERROR: 'O servidor encontrou um problema. Tente novamente mais tarde.',
         SERVICE_UNAVAILABLE: 'O serviço está temporariamente indisponível. Tente novamente mais tarde.',
+        TOO_MANY_REQUESTS: 'Muitas tentativas em pouco tempo. Aguarde um instante e tente novamente.',
     };
-    if (codeMessages[problem.code]) {
-        return codeMessages[problem.code];
-    }
-
-    if (problem.errors?.length) {
-        return problem.errors[0].message;
-    }
-
+    if (codeMessages[problem.code]) return codeMessages[problem.code];
     return problem.detail || fallback;
 }
 
