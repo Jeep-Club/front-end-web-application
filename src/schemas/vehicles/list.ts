@@ -5,6 +5,7 @@ export const vehicleListItemSchema: z.ZodType<VehicleListItem> = z.object({
     nickname: z.string().nullable(),
     plate: z.string(),
     photo: z.string().nullable(),
+    photos: z.array(z.string()).max(3).optional(),
     modelYear: z.number(),
     model: z.string(),
     color: z.string(),

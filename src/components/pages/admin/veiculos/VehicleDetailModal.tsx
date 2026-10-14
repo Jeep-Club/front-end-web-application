@@ -11,7 +11,7 @@ import { getVehicleDetailAdminAction } from "@/actions/admin/vehicles/detail";
 import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { FUEL_TYPE_LABEL, VEHICLE_STATUS_LABEL, VEHICLE_STATUS_STYLE } from "./vehicleDisplay";
-import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 
 const STEPS = [
     { step: 1, label: "Identificação" },
@@ -106,18 +106,7 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                 </div>
 
                 <div className={currentStep === 3 ? "w-full flex flex-col gap-4" : "hidden"}>
-                    {vehicle.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={getMediaImageUrl(vehicle.photo)}
-                            alt={vehicle.nickname || vehicle.model}
-                            className="w-full h-44 object-cover rounded-xl border border-j-gray-200"
-                        />
-                    ) : (
-                        <div className="w-full h-44 flex items-center justify-center rounded-xl bg-j-gray-100 border border-j-gray-200">
-                            <Car size={40} className="text-j-gray-300" />
-                        </div>
-                    )}
+                    <VehiclePhotoCarousel photos={vehicle.photos?.length ? vehicle.photos : [vehicle.photo]} alt={vehicle.nickname || vehicle.model} className="h-44 w-full rounded-xl border border-j-gray-200" />
 
                     <div className="flex flex-col gap-1.5">
                         <span className="text-xs font-bold text-j-gray-700 md:text-sm">Status</span>

@@ -2,6 +2,7 @@
 interface EditVehicleMemberRequest {
     nickname?: string | null;
     photo?: string | null;
+    photos?: string[];
     plate?: string;
     renavam?: string;
     brand?: string;
@@ -15,6 +16,6 @@ interface EditVehicleMemberRequest {
     towing?: boolean;
 }
 
-type EditVehicleMemberFormData = Omit<EditVehicleMemberRequest, 'photo'> & {
+type EditVehicleMemberFormData = Omit<EditVehicleMemberRequest, 'photo' | 'photos'> & {
     photo?: File[];
 };
