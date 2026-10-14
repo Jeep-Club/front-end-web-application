@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { toolDetailResponseSchema } from "./detail";
+import { toolPhotoFields } from './photo';
 
 export const createToolFormSchema: z.ZodType<CreateToolFormData> = z.object({
+    ...toolPhotoFields,
     name: z.string()
         .trim()
         .min(1, { message: "O nome da ferramenta é obrigatório" })
