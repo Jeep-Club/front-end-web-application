@@ -6,6 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { getToolDetailAction } from "@/actions/tools/detail";
+import { getMediaImageUrl } from '@/utils/media/imageUrl';
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
@@ -79,6 +80,10 @@ export function ViewToolModal({ toolId }: ViewToolModalProps) {
                     </div>
                 ) : (
                     <div className="flex w-full flex-col gap-4">
+                        {tool.photoStorageKey && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={getMediaImageUrl(tool.photoStorageKey)} alt={`Foto de ${tool.name}`} className="aspect-video w-full rounded-xl border border-j-gray-200 object-cover" />
+                        )}
                         <ReadOnlyField label="Nome" value={tool.name} />
                         <ReadOnlyField label="Descrição" value={tool.description} />
 

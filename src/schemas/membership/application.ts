@@ -25,6 +25,7 @@ export const membershipApplicationSubmissionSchema: z.ZodType<MembershipApplicat
 
 export const membershipApplicationSchema: z.ZodType<MembershipApplication> = z.object({
     id: z.number(),
+    userId: z.number().nullable().optional(),
     name: z.string(),
     cpf: z.string(),
     email: z.string().nullable(),

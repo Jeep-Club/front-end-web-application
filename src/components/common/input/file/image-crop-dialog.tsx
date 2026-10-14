@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
+import { createPortal } from "react-dom";
+import styles from "./image-crop-dialog.module.css";
 import { Image as ImageIcon, RotateCcw, X } from "lucide-react";
 
 const STAGE_WIDTH = 400;
@@ -31,6 +33,7 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const dragRef = useRef<DragState | null>(null);
+    const dialogRef = useRef<HTMLDialogElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
     const completedFiles = useRef<File[]>([]);
@@ -39,7 +42,27 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
     const cropLeft = (STAGE_WIDTH - crop.width) / 2;
     const cropTop = (stageHeight - crop.height) / 2;
     const currentFile = files[index];
-    const sourceUrl = useMemo(() => currentFile ? URL.createObjectURL(currentFile) : "", [currentFile]);
+    useEffect(() => {
+        const image = imageRef.current;
+        if (!image || !currentFile) return;
+        const url = URL.createObjectURL(currentFile);
+        image.src = url;
+        return () => {
+            image.removeAttribute("src");
+            URL.revokeObjectURL(url);
+        };
+    }, [currentFile]);
+
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+        const previousFocus = document.activeElement as HTMLElement | null;
+        dialog.showModal();
+        return () => {
+            dialog.close();
+            if (previousFocus?.isConnected) previousFocus.focus();
+        };
+    }, []);
 
     const getGeometry = useCallback((image: HTMLImageElement, currentZoom: number, currentOffset: Point) => {
         const baseScale = Math.max(crop.width / image.naturalWidth, crop.height / image.naturalHeight);
@@ -80,11 +103,7 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
         context.fillStyle = shape === "landscape" ? "#111827" : "#1a1b1f";
         context.fillRect(0, 0, STAGE_WIDTH, stageHeight);
         context.drawImage(image, left, top, width, height);
-    }, [zoom, offset, isLoading, index, sourceUrl, getGeometry, stageHeight, shape]);
-
-    useEffect(() => () => {
-        if (sourceUrl) URL.revokeObjectURL(sourceUrl);
-    }, [sourceUrl]);
+    }, [zoom, offset, isLoading, index, currentFile, getGeometry, stageHeight, shape]);
 
     const pointFromEvent = (event: ReactPointerEvent<HTMLDivElement>): Point => {
         const rect = event.currentTarget.getBoundingClientRect();
@@ -149,18 +168,21 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
     if (!currentFile) return null;
     const cropMaskStyle = { width: `${crop.width / STAGE_WIDTH * 100}%`, height: `${crop.height / stageHeight * 100}%` };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-3 backdrop-blur-[2px] sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
-            <section role="dialog" aria-modal="true" aria-labelledby="image-crop-title" className="my-auto w-full max-w-[540px] rounded-2xl border border-white/10 bg-[#232428] p-4 text-white shadow-2xl sm:p-6">
+    return createPortal(
+        <dialog ref={dialogRef} aria-labelledby="image-crop-title" className={styles.dialog}
+            onCancel={(event) => { event.preventDefault(); if (!isSaving) onCancel(); }}
+            onKeyDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}>
+            <section className="w-full bg-j-white p-4 text-j-blue-800 sm:p-6">
                 <header className="mb-4 flex items-center justify-between sm:mb-5">
                     <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white"><ImageIcon size={18} /></span>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300"><ImageIcon size={18} /></span>
                         <div className="min-w-0">
-                            <h2 id="image-crop-title" className="truncate text-base font-bold sm:text-lg">Editar imagem</h2>
-                            <p className="text-xs text-[#b5bac1]">{files.length > 1 ? `Imagem ${index + 1} de ${files.length} · ` : ""}Arraste para ajustar o enquadramento</p>
+                            <h2 id="image-crop-title" className="truncate text-base font-extrabold sm:text-lg">Ajustar foto</h2>
+                            <p className="mt-1 text-xs text-j-gray-500">{files.length > 1 ? `Imagem ${index + 1} de ${files.length} · ` : ""}{shape === "landscape" ? "Horizontal · 16:9. " : ""}Arraste a foto para enquadrar.</p>
                         </div>
                     </div>
-                    <button type="button" onClick={onCancel} aria-label="Fechar edição de imagem" className="rounded-lg p-2 text-[#b5bac1] transition hover:bg-white/10 hover:text-white"><X size={20} /></button>
+                    <button type="button" disabled={isSaving} onClick={onCancel} aria-label="Fechar edição de imagem" className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 transition hover:bg-j-gray-200 disabled:opacity-50"><X size={20} /></button>
                 </header>
 
                 <div
@@ -180,7 +202,7 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
                     onPointerCancel={() => { dragRef.current = null; }}
                 >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img ref={imageRef} src={sourceUrl} alt="Prévia do recorte" className="hidden" onLoad={() => setIsLoading(false)} onError={() => { setIsLoading(false); setError("Não foi possível abrir esta imagem. Escolha outro arquivo."); }} />
+                    <img ref={imageRef} alt="Prévia do recorte" className="hidden" onLoad={() => { setError(null); setIsLoading(false); }} onError={() => { setIsLoading(false); setError("Não foi possível abrir esta imagem. Escolha outro arquivo."); }} />
                     <canvas ref={canvasRef} width={STAGE_WIDTH} height={stageHeight} className="absolute inset-0 h-full w-full" />
                     <div
                         className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-white/90 ${shape === "circle" ? "rounded-full shadow-[0_0_0_999px_rgba(0,0,0,0.46)]" : shape === "square" ? "rounded-xl" : "rounded-lg"}`}
@@ -189,26 +211,26 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
                     {isLoading && <div className="absolute inset-0 flex items-center justify-center bg-[#191a1e] text-sm text-[#b5bac1]">Carregando imagem...</div>}
                 </div>
 
-                <div className="mx-auto mt-4 flex max-w-[400px] items-center gap-3 text-[#b5bac1]">
+                <div className="mx-auto mt-4 flex max-w-[400px] items-center gap-3 text-j-gray-500">
                     <ImageIcon size={15} aria-hidden="true" />
                     <input aria-label="Zoom da imagem" type="range" min="1" max="4" step="0.01" value={zoom} onChange={(event) => {
                         const nextZoom = Number(event.target.value);
                         setZoom(nextZoom);
                         setOffset((current) => clampOffset(current, nextZoom));
-                    }} className="h-1.5 w-full cursor-pointer accent-[#5865f2]" />
+                    }} disabled={isLoading || isSaving} className="h-1.5 w-full cursor-pointer accent-j-blue-800" />
                     <ImageIcon size={20} aria-hidden="true" />
-                    <button type="button" onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }} aria-label="Redefinir enquadramento" className="ml-1 rounded-lg p-2 transition hover:bg-white/10 hover:text-white"><RotateCcw size={17} /></button>
+                    <button type="button" disabled={isSaving} onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }} aria-label="Redefinir enquadramento" className="ml-1 rounded-lg p-2 transition hover:bg-j-gray-100 hover:text-j-blue-800"><RotateCcw size={17} /></button>
                 </div>
-                {error && <p role="alert" className="mt-3 text-sm text-red-300">{error}</p>}
+                {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
-                <footer className="mt-5 flex flex-col-reverse gap-3 border-t border-white/10 pt-4 sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <button type="button" onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); setError(null); }} className="self-start text-sm font-medium text-[#a5b4fc] transition hover:text-white">Redefinir</button>
+                <footer className="mt-5 flex items-center justify-end gap-3 border-t border-j-gray-200 pt-4">
                     <div className="flex justify-end gap-2">
-                        <button type="button" onClick={onCancel} className="rounded-lg bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Cancelar</button>
-                        <button type="button" disabled={isLoading || isSaving || Boolean(error)} onClick={() => void applyCrop()} className="rounded-lg bg-[#5865f2] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#4752c4] disabled:cursor-not-allowed disabled:opacity-50">{isSaving ? "Aplicando..." : index + 1 < files.length ? "Próxima" : "Aplicar"}</button>
+                        <button type="button" disabled={isSaving} onClick={onCancel} className="rounded-lg border border-j-gray-200 px-4 py-2.5 text-sm font-semibold text-j-gray-600 transition hover:bg-j-gray-100">Cancelar</button>
+                        <button type="button" disabled={isLoading || isSaving || Boolean(error)} onClick={() => void applyCrop()} className="rounded-lg bg-j-yellow-300 px-5 py-2.5 text-sm font-bold text-j-blue-800 transition hover:bg-j-yellow-400 disabled:cursor-not-allowed disabled:opacity-50">{isSaving ? "Aplicando..." : index + 1 < files.length ? "Próxima foto" : "Usar foto"}</button>
                     </div>
                 </footer>
             </section>
-        </div>
+        </dialog>,
+        document.body,
     );
 }

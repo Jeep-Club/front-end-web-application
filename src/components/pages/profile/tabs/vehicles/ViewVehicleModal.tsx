@@ -10,7 +10,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
 import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
-import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 
 const FUEL_TYPE_LABELS: Record<FuelType, string> = {
     GASOLINE: "Gasolina",
@@ -117,18 +117,7 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onStepChange, onClose, 
                 </div>
 
                 <div className={currentStep === 3 ? "w-full flex flex-col gap-4" : "hidden"}>
-                    {vehicle.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={getMediaImageUrl(vehicle.photo)}
-                            alt={vehicle.nickname || vehicle.model}
-                            className="w-full h-40 object-cover rounded-lg"
-                        />
-                    ) : (
-                        <div className="w-full h-40 flex items-center justify-center rounded-lg bg-j-gray-100">
-                            <Car size={40} className="text-j-gray-300" />
-                        </div>
-                    )}
+                    <VehiclePhotoCarousel photos={vehicle.photos?.length ? vehicle.photos : [vehicle.photo]} alt={vehicle.nickname || vehicle.model} className="h-40 w-full rounded-lg" />
 
                     <ReadOnlyField label="Status" value={STATUS_LABELS[vehicle.status]} />
 

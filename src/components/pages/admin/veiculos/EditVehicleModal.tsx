@@ -27,7 +27,7 @@ import { getMediaImageUrl } from "@/utils/media/imageUrl";
 const STEPS = [
     { step: 1, label: "Identificação", fields: ["plate", "renavam", "brand", "nickname"] as const },
     { step: 2, label: "Características", fields: ["model", "color", "manufacturingYear", "modelYear", "seatingCapacity", "fuelType", "engineDisplacement", "towing"] as const },
-    { step: 3, label: "Foto", fields: ["photo"] as const },
+    { step: 3, label: "Fotos", fields: ["photo"] as const },
 ];
 
 const LIGHT_FIELDS_CLASS = `
@@ -220,11 +220,12 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                     />
                 </div>
 
-                <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
+            <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
+                    <p className="text-xs text-j-gray-500">Envie até 3 fotos. Na edição, as novas fotos substituem as atuais.</p>
                     <InputFile.Image
                         name="photo"
                         label="Foto do veículo"
-                        maxFiles={1}
+                        maxFiles={3}
                         cropShape="landscape"
                         className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                     />
@@ -301,18 +302,16 @@ export function EditVehicleModal({ vehicleId }: EditVehicleModalProps) {
 
     const mutation = useMutation({
         mutationFn: async (data: EditVehicleMemberFormData) => {
-            const photoFile = data.photo?.[0];
-            let photo = vehicle?.photo ?? undefined;
-
-            if (typeof File !== "undefined" && photoFile instanceof File) {
+            const photoFiles = data.photo ?? [];
+            const photos = await Promise.all(photoFiles.map(async (file) => {
                 const formData = new FormData();
-                formData.append("file", photoFile);
-                photo = await uploadImageAction(formData);
-            }
+                formData.append("file", file);
+                return uploadImageAction(formData);
+            }));
 
             const payload: EditVehicleMemberRequest = {
                 nickname: data.nickname,
-                photo,
+                ...(photoFiles.length ? { photos, photo: photos[0] } : {}),
                 plate: data.plate,
                 renavam: data.renavam,
                 brand: data.brand,

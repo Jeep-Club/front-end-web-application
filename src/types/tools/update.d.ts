@@ -3,6 +3,6 @@ interface UpdateToolRequest {
     description?: string;
 }
 
-type UpdateToolFormData = UpdateToolRequest;
+type UpdateToolFormData = UpdateToolRequest & ToolPhotoFormFields;
 
 type UpdateToolResponse = ToolDetail;

@@ -5,6 +5,7 @@ export const vehicleDetailResponseSchema: z.ZodType<VehicleDetail> = z.object({
     id: z.number(),
     nickname: z.string().nullable(),
     photo: z.string().nullable(),
+    photos: z.array(z.string()).max(3).optional(),
     plate: z.string(),
     renavam: z.string(),
     brand: z.string(),

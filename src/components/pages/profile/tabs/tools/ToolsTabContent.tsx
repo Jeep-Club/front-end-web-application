@@ -12,6 +12,7 @@ import { IncludeToolModal } from "./IncludeToolModal";
 import { ViewToolModal } from "./ViewToolModal";
 import { DeleteToolModal } from "./DeleteToolModal";
 import { ToggleToolStatusModal } from "./ToggleToolStatusModal";
+import { getMediaImageUrl } from '@/utils/media/imageUrl';
 
 
 
@@ -103,7 +104,10 @@ export function ToolsTabContent() {
                             {data.content.map((tool) => (
                                 <div key={tool.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 md:grid md:grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] md:items-center md:gap-4">
                                     <div className="flex min-w-0 items-center gap-3">
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300"><Wrench size={19} aria-hidden="true" /></span>
+                                        {tool.photoStorageKey ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={getMediaImageUrl(tool.photoStorageKey)} alt={`Foto de ${tool.name}`} className="h-16 w-28 shrink-0 sm:h-20 sm:w-36 rounded-lg border border-j-gray-200 object-cover" />
+                                        ) : <span className="flex h-16 w-28 shrink-0 sm:h-20 sm:w-36 items-center justify-center rounded-lg bg-j-blue-800 text-j-yellow-300"><Wrench size={19} aria-hidden="true" /></span>}
                                         <div className="min-w-0">
                                             <h4 className="truncate font-extrabold text-j-blue-800" title={tool.name}>{tool.name}</h4>
                                             <span className={twMerge("mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-bold md:hidden", STATUS_BADGE_CLASS[tool.status])}>{STATUS_LABEL[tool.status]}</span>

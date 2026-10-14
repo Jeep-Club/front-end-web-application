@@ -9,6 +9,7 @@ export enum HttpAPIRoutes {
     REGISTER = "identity/register",
     ADMIN_CREATE_USER = "identity/admin/users",
     ADMIN_USER_ACTIVATION_INVITATIONS = "authentication/admin/users/{userId}/activation-invitations",
+    ADMIN_USER_TEMPORARY_PASSWORD = "authentication/admin/users/{userId}/temporary-password",
     PUBLIC_ACTIVATION_INVITATION_VALIDATION = "authentication/activation-invitations/validation",
     PUBLIC_ACCOUNT_ACTIVATION = "authentication/account-activations",
     MEMBERSHIP_APPLICATIONS = "membership-applications",
