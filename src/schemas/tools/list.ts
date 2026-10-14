@@ -6,6 +6,7 @@ export const toolListItemSchema: z.ZodType<ToolListItem> = z.object({
     id: z.number(),
     name: z.string(),
     status: toolStatusSchema,
+    photoStorageKey: z.string().nullable().optional(),
 });
 
 export const listToolsResponseSchema: z.ZodType<ListToolsResponse> = z.object({
