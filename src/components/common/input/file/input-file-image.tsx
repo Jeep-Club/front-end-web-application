@@ -20,7 +20,8 @@ export function InputFileImage({
     maxSizeMB = 5,
     multiple = false || maxFiles > 1,
     className,
-    isFallback = false
+    isFallback = false,
+    cropShape = "square"
 }: InputFileImageProps) {
     const accept = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
     const id = useId();
@@ -127,7 +128,7 @@ export function InputFileImage({
                     Nenhuma imagem enviada.
                 </FallBackFile>
             ) : null}
-            {filesToCrop && <ImageCropDialog files={filesToCrop} onCancel={() => setFilesToCrop(null)} onComplete={(croppedFiles) => { addFiles(croppedFiles); setFilesToCrop(null); }} />}
+            {filesToCrop && <ImageCropDialog files={filesToCrop} shape={cropShape} onCancel={() => setFilesToCrop(null)} onComplete={(croppedFiles) => { addFiles(croppedFiles); setFilesToCrop(null); }} />}
         </div>
     );
 }
