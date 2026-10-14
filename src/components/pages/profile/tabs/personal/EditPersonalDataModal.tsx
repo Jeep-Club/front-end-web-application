@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import {
     CalendarDays,
@@ -71,6 +71,10 @@ export function EditPersonalDataModal({
 }: EditPersonalDataModalProps) {
     const { setClose } = useModal();
     const [isSaving, setIsSaving] = useState(false);
+    const photoSectionRef = useRef<HTMLElement>(null);
+    const openPhotoPicker = () => {
+        if (!isSaving) photoSectionRef.current?.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+    };
 
     const handleRemovePhoto = async () => {
         setIsSaving(true);
@@ -151,16 +155,16 @@ export function EditPersonalDataModal({
                 <X size={22} />
             </ButtonIcon>
 
-            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-yellow-300 text-j-blue-800 shadow-sm">
+            <header className="border-b border-j-gray-200 px-4 py-4 pr-14 md:px-6 md:py-5 md:pr-20">
+                <div className="flex items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-j-yellow-300 text-j-blue-800 shadow-sm">
                         <UserRoundPen
                             size={20}
                         />
                     </span>
 
                     <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                        <h2 className="text-lg font-extrabold text-j-blue-800 md:text-2xl">
                             Editar dados pessoais
                         </h2>
 
@@ -172,7 +176,7 @@ export function EditPersonalDataModal({
                 </div>
             </header>
 
-            <div className="mx-5 mt-5 grid gap-3 rounded-2xl border border-j-gray-200 bg-j-gray-100 p-4 sm:grid-cols-2 md:mx-8 md:mt-6">
+            <div className="mx-4 mt-3 grid grid-cols-2 gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100 p-2 md:mx-6 md:mt-4 md:p-3">
                 <ReadOnlyField
                     label="CPF"
                     value={formatCpf(
@@ -226,11 +230,28 @@ export function EditPersonalDataModal({
                         errors,
                     );
                 }}
-                className="items-stretch gap-5 px-5 pt-5 md:px-8 md:pt-6"
+                className="items-stretch gap-3 px-4 pt-3 md:gap-4 md:px-6 md:pt-4"
             >
-                <section className="grid gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:grid-cols-[minmax(0,1fr)_minmax(240px,0.9fr)] md:items-center md:p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-j-white bg-j-gray-200 shadow-md ring-2 ring-j-gray-200">
+                <section
+                    ref={photoSectionRef}
+                    tabIndex={isSaving ? -1 : 0}
+                    aria-label="Selecionar nova foto de perfil"
+                    onClick={(event) => {
+                        if ((event.target as HTMLElement).closest('[data-photo-picker] [tabindex], button, input')) return;
+                        event.preventDefault();
+                        openPhotoPicker();
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.target !== event.currentTarget) return;
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openPhotoPicker();
+                        }
+                    }}
+                    className="grid cursor-pointer gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 transition-colors hover:border-j-blue-300 focus-visible:outline-2 focus-visible:outline-j-blue-700 md:grid-cols-[minmax(0,1fr)_minmax(240px,0.9fr)] md:items-center md:p-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-14 w-14 shrink-0 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border-4 border-j-white bg-j-gray-200 shadow-md ring-2 ring-j-gray-200">
                             {personalData.profilePhotoUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
@@ -270,12 +291,14 @@ export function EditPersonalDataModal({
                         </div>
                     </div>
 
-                    <InputFile.Image
-                        name="profilePhoto"
-                        label="Selecionar nova foto"
-                        maxFiles={1}
-                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-j-white [&>div]:py-4"
-                    />
+                    <div data-photo-picker>
+                        <InputFile.Image
+                            name="profilePhoto"
+                            label="Selecionar nova foto"
+                            maxFiles={1}
+                            className="[&_label]:cursor-pointer [&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-j-white [&>div]:py-2 [&_svg]:h-6 [&_svg]:w-6 [&_svg]:mb-1"
+                        />
+                    </div>
                     {personalData.profilePhotoUrl && (
                         <button
                             type="button"
@@ -288,7 +311,7 @@ export function EditPersonalDataModal({
                     )}
                 </section>
 
-                <div className="flex items-center gap-2 border-b border-j-gray-200 pb-3">
+                <div className="flex items-center gap-2 border-b border-j-gray-200 pb-2">
                     <CalendarDays size={17} className="text-j-gray-500" />
                     <h3 className="text-sm font-extrabold text-j-blue-800">
                         Informações pessoais
@@ -301,16 +324,16 @@ export function EditPersonalDataModal({
                     placeholder="Nome completo"
                     required
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                 />
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                     <InputRegister
                         type="date"
                         label="Data de nascimento"
                         name="birthDate"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 focus:bg-j-white"
                     />
 
                     <InputRegister
@@ -318,11 +341,11 @@ export function EditPersonalDataModal({
                         name="rg"
                         placeholder="00.000.000-0"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                     <InputRegister
                         type="email"
                         label="E-mail"
@@ -330,7 +353,7 @@ export function EditPersonalDataModal({
                         placeholder="nome@email.com"
                         required
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
 
                     <InputRegister
@@ -339,11 +362,11 @@ export function EditPersonalDataModal({
                         name="phoneNumber"
                         placeholder="(12) 99999-9999"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
                 </div>
 
-                <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-j-gray-200 bg-j-gray-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-end md:-mx-8 md:px-8">
+                <div className="-mx-4 mt-1 flex flex-row items-center justify-end gap-2 border-t border-j-gray-200 bg-j-gray-100 px-4 py-3 md:-mx-6 md:px-6">
                     <Button
                         type="button"
                         onClick={setClose}

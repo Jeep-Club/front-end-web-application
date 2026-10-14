@@ -163,9 +163,9 @@ export function MembershipCard(props: MembershipCardProps) {
         } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao exportar a carteirinha."); }
     };
     return <section className="flex w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-j-gray-200 px-5 py-4">
-            <div><h2 className="text-sm font-extrabold text-j-blue-800">Carteirinha digital</h2><p className="mt-1 text-[11px] text-j-gray-500">85,6 × 53,98 mm · Frente e verso</p></div>
-            <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-j-gray-100 p-1 sm:w-auto" aria-label="Selecionar lado da carteirinha">{(["front", "back"] as const).map((option) => <button key={option} type="button" aria-pressed={side === option} aria-label={`Visualizar ${option === "front" ? "frente" : "verso"}`} onClick={() => setSide(option)} className={`rounded-md px-4 py-2 text-xs font-bold ${side === option ? "bg-j-blue-800 text-white" : "text-j-gray-600"}`}>{option === "front" ? "Frente" : "Verso"}</button>)}</div>
+        <header className="flex min-h-20 shrink-0 flex-wrap content-start items-start justify-between gap-3 border-b-4 border-j-yellow-300 bg-j-blue-800 px-5 py-4 sm:h-20">
+            <div><h2 className="text-sm font-extrabold text-j-white">Carteirinha digital</h2><p className="mt-1 text-[11px] text-j-white/60">85,6 × 53,98 mm · Frente e verso</p></div>
+            <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-j-blue-700 p-1 sm:w-auto" aria-label="Selecionar lado da carteirinha">{(["front", "back"] as const).map((option) => <button key={option} type="button" aria-pressed={side === option} aria-label={`Visualizar ${option === "front" ? "frente" : "verso"}`} onClick={() => setSide(option)} className={`rounded-md border px-4 py-2 text-xs font-bold transition-colors ${side === option ? "border-j-yellow-300 bg-j-yellow-300 text-j-blue-800" : "border-j-white/40 text-j-white/80 hover:border-j-white hover:bg-j-blue-800"}`}>{option === "front" ? "Frente" : "Verso"}</button>)}</div>
         </header>
         <div className="flex flex-col gap-4 p-4 sm:p-5">
             <div className="mx-auto w-full max-w-[720px]"><CardFace side={side} data={props} logo={logo.data} photo={photo.data} /></div>
