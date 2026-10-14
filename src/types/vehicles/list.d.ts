@@ -8,6 +8,7 @@ interface VehicleListItem {
     nickname: string | null;
     plate: string;
     photo: string | null;
+    photos?: string[];
     modelYear: number;
     model: string;
     color: string;

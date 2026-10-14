@@ -5,12 +5,11 @@ import toast from "react-hot-toast";
 import { CardExportActions, type CardExportRequest } from "@/components/common/card-export/CardExportActions";
 import { captureCardElement, exportCardAsPng } from "@/utils/card-export/exportCard";
 import { buildAndSaveMembershipCardPdf } from "@/utils/card-export/buildMembershipCardPdf";
-import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
+import { maskDate, maskPhoneNumber } from "@/utils/masks";
 
 interface MembershipCardProps {
     profilePhotoUrl?: string | null;
     fullName?: string | null;
-    cpf?: string | null;
     birthDate?: string | null;
     memberSince?: string | null;
     phoneNumber?: string | null;
@@ -91,7 +90,7 @@ function CardFace({ side, data, logo, photo }: { side: CardSide; data: Membershi
     const secondFieldY = firstFieldY + 86;
     return <div data-card-side={side} className="aspect-[856/540] w-full overflow-hidden bg-white shadow-md">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" className="block h-full w-full" role="img" aria-label={`${side === "front" ? "Frente" : "Verso"} da carteirinha de ${name}`} fontFamily="Arial, Helvetica, sans-serif">
-            <defs><clipPath id={`${id}-frame`}><rect width="856" height="540" /></clipPath><clipPath id={`${id}-photo`}><rect x="36" y="151" width="160" height="260" rx="12" /></clipPath></defs>
+            <defs><clipPath id={`${id}-frame`}><rect width="856" height="540" /></clipPath><clipPath id={`${id}-photo`}><rect x="36" y="151" width="160" height="345" rx="12" /></clipPath></defs>
             <g clipPath={`url(#${id}-frame)`}>
                 <rect width="856" height="540" fill={side === "front" ? "#ffffff" : NAVY} />
                 {side === "front" ? <>
@@ -101,18 +100,15 @@ function CardFace({ side, data, logo, photo }: { side: CardSide; data: Membershi
                     {logo && <image href={logo} x="29" y="12" width="88" height="88" />}
                     <text x="140" y="43" fill={GOLD} fontSize="14" letterSpacing="3" fontWeight="700">JEEP CLUBE TAMOIOS</text>
                     <text x="140" y="80" fill="#ffffff" fontSize="28" fontWeight="700">CARTEIRA DE ASSOCIADO</text>
-                    <rect x="36" y="151" width="160" height="260" rx="12" fill="#edf1f7" stroke={NAVY} strokeWidth="3" />
-                    {photo ? <image href={photo} x="36" y="151" width="160" height="260" preserveAspectRatio="xMidYMid slice" clipPath={`url(#${id}-photo)`} /> : <g fill="none" stroke="#a5b3cb" strokeWidth="8"><circle cx="116" cy="253" r="30" /><path d="M65 337c0-60 102-60 102 0" strokeLinecap="round" /></g>}
+                    <rect x="36" y="151" width="160" height="345" rx="12" fill="#edf1f7" stroke={NAVY} strokeWidth="3" />
+                    {photo ? <image href={photo} x="36" y="151" width="160" height="345" preserveAspectRatio="xMidYMid slice" clipPath={`url(#${id}-photo)`} /> : <g fill="none" stroke="#a5b3cb" strokeWidth="8"><circle cx="116" cy="285" r="30" /><path d="M65 369c0-60 102-60 102 0" strokeLinecap="round" /></g>}
                     <text x="230" y="170" fill={MUTED} fontSize="12" fontWeight="700" letterSpacing="1.5">NOME DO ASSOCIADO</text>
                     <text x="230" y={nameBaseline} fill={NAVY} fontSize={compactName ? 20 : longName ? 25 : 31} fontWeight="700">{lines.map((line, index) => <tspan key={index} x="230" dy={index === 0 ? 0 : nameLineHeight}>{line}</tspan>)}</text>
                     <line x1="230" y1={nameUnderline} x2="820" y2={nameUnderline} stroke={NAVY} strokeWidth="3" strokeLinecap="round" />
-                    <Field x={230} y={firstFieldY} label="CPF" text={data.cpf ? maskCPF(data.cpf) : null} />
+                    <Field x={230} y={firstFieldY} label="Nº DE REGISTRO" text={registration(data.registrationNumber)} />
                     <Field x={558} y={firstFieldY} label="Nascimento" text={maskDate(data.birthDate, { includeTime: false })} />
                     <Field x={230} y={secondFieldY} label="Telefone" text={data.phoneNumber ? maskPhoneNumber(data.phoneNumber) : null} />
                     <Field x={558} y={secondFieldY} label="Categoria" text={data.roleLabel || "Associado"} />
-                    <line x1="36" y1="435" x2="196" y2="435" stroke={GOLD} strokeWidth="6" />
-                    <text x="36" y="455" fill={MUTED} fontSize="11" letterSpacing="1.5" fontWeight="700">MATRÍCULA</text>
-                    <text x="36" y="481" fill={NAVY} fontSize="24" fontWeight="700">{registration(data.registrationNumber)}</text>
                     <g>
                         <rect x="558" y="435" width="262" height="61" rx="10" fill="#fff5f5" stroke="#dc2626" strokeWidth="2.5" />
                         <text x="689" y="455" textAnchor="middle" fill="#b91c1c" fontSize="10" fontWeight="700" letterSpacing="1.2">TIPO SANGUÍNEO</text>

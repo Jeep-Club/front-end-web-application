@@ -115,7 +115,6 @@ export function PersonalDataTab() {
             />
 
             <MembershipCard
-                cpf={personalData.cpf}
                 profilePhotoUrl={
                     personalData.profilePhotoUrl
                 }

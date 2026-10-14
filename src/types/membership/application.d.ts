@@ -16,6 +16,7 @@ interface MembershipApplicationSubmission {
 
 interface MembershipApplication {
     id: number;
+    userId?: number | null;
     name: string;
     cpf: string;
     email: string | null;

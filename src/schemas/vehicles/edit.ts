@@ -10,7 +10,7 @@ const imageFileSchema = z.custom<File>(
 
 export const editVehicleMemberFormSchema: z.ZodType<EditVehicleMemberFormData> = z.object({
     nickname: z.string().max(50, { message: "O apelido deve ter no máximo 50 caracteres" }).optional(),
-    photo: z.array(imageFileSchema).max(1, { message: "Envie apenas uma foto" }).optional(),
+    photo: z.array(imageFileSchema).max(3, { message: "Envie no máximo 3 fotos" }).optional(),
     plate: z.string()
         .min(1, { message: "A placa é obrigatória" })
         .transform((value) => value.toUpperCase().replace(/[^A-Z0-9]/g, ""))

@@ -1,6 +1,5 @@
 import {
     Car,
-    HeartPulse,
     KeyRound,
     UserRoundCheck,
     Users,
@@ -78,28 +77,6 @@ export const adminModules: AdminModuleConfig[] = [
             module: "BILLING",
             action: "CHARGE_DEFINITION_READ",
             alternativeActions: ["CHARGE_CYCLE_READ", "MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"],
-        },
-    },
-    {
-        key: "member-dependents",
-        title: "Dependentes",
-        description: "Consulte e gerencie dependentes dos associados.",
-        href: "/admin/socios",
-        icon: UserRoundCheck,
-        visibilityPermission: {
-            module: "DEPENDENTS",
-            action: "DEPENDENT_READ",
-        },
-    },
-    {
-        key: "medical-profiles",
-        title: "Perfis médicos",
-        description: "Consulte os perfis médicos dos associados.",
-        href: "/admin/medical-profile",
-        icon: HeartPulse,
-        visibilityPermission: {
-            module: "HEALTH",
-            action: "MEDICAL_PROFILE_READ",
         },
     },
     {

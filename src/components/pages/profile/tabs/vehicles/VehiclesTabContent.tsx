@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { ListPagination } from "@/components/common/table/ListPagination";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Plus, ChevronLeft, ChevronRight, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Plus, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
+import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { IncludeVehicleModal } from "./IncludeVehicleModal";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { ViewVehicleModal } from "./ViewVehicleModal";
-import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 
 
 
@@ -82,19 +82,7 @@ export function VehiclesTabContent() {
                                 className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md"
                             >
                                 <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
-                                    {vehicle.photo ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={getMediaImageUrl(vehicle.photo)}
-                                            alt={`Foto de ${vehicle.nickname || vehicle.model}`}
-                                            className="absolute inset-0 block h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-j-gray-400">
-                                            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/80 text-j-blue-800 shadow-sm"><Car size={32} /></span>
-                                            <span className="text-xs font-semibold">Sem foto cadastrada</span>
-                                        </div>
-                                    )}
+                                    <VehiclePhotoCarousel photos={vehicle.photos?.length ? vehicle.photos : [vehicle.photo]} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">

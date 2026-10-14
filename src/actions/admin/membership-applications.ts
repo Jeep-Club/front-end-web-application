@@ -65,6 +65,19 @@ export async function resendMembershipActivationLinkAction(id: number) {
     }
 }
 
+export async function generateUserTemporaryPasswordAction(userId: number) {
+    try {
+        const result = await actionFetchWrapper<TemporaryPasswordApproval>({
+            url: HttpAPIRoutes.ADMIN_USER_TEMPORARY_PASSWORD.replace('{userId}', String(userId)),
+            method: 'POST',
+            schema: temporaryPasswordApprovalSchema,
+        });
+        return result.data;
+    } catch (error) {
+        throw new Error(extractApiErrorMessage(error, 'Não foi possível gerar a senha provisória.'), { cause: error });
+    }
+}
+
 export async function rejectMembershipApplicationAction(id: number, reason: string) {
     try {
         await actionFetchWrapper({

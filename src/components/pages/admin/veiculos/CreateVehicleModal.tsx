@@ -34,7 +34,7 @@ export const createVehicleAdminFormSchema = z.object({
         .transform((value) => Number(value))
         .pipe(z.number().int().gt(0, { message: "ID do membro deve ser maior que zero" })),
     nickname: z.string().max(100, { message: "O apelido deve ter no máximo 100 caracteres" }).optional(),
-    photo: z.array(z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, { message: "Invalid image file" })).max(1, { message: "Envie apenas uma foto" }).optional(),
+    photo: z.array(z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, { message: "Invalid image file" })).max(3, { message: "Envie no máximo 3 fotos" }).optional(),
     plate: z.string()
         .min(1, { message: "A placa é obrigatória" })
         .transform((value) => value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
@@ -96,7 +96,7 @@ export type CreateVehicleAdminFormData = {
 const STEPS = [
     { step: 1, label: "Identificação", fields: ["memberId", "plate", "renavam", "brand", "nickname"] as const },
     { step: 2, label: "Características", fields: ["model", "color", "manufacturingYear", "modelYear", "seatingCapacity", "fuelType", "engineDisplacement", "towing"] as const },
-    { step: 3, label: "Foto", fields: ["photo"] as const },
+    { step: 3, label: "Fotos", fields: ["photo"] as const },
 ];
 
 const LIGHT_FIELDS_CLASS = `
@@ -286,10 +286,11 @@ function CreateVehicleSteps({ currentStep, onNext, onBack }: CreateVehicleStepsP
                 </div>
 
                 <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
+                    <p className="text-xs text-j-gray-500">Envie até 3 fotos do veículo.</p>
                     <InputFile.Image
                         name="photo"
                         label="Foto do veículo"
-                        maxFiles={1}
+                        maxFiles={3}
                         cropShape="landscape"
                         className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                     />
@@ -341,18 +342,15 @@ export function CreateVehicleModal() {
 
     const mutation = useMutation({
         mutationFn: async (data: CreateVehicleAdminFormData) => {
-            const photoFile = data.photo?.[0];
-            let photo: string | undefined = undefined;
-
-            if (typeof File !== "undefined" && photoFile instanceof File) {
+            const photos = await Promise.all((data.photo ?? []).map(async (file) => {
                 const formData = new FormData();
-                formData.append("file", photoFile);
-                photo = await uploadImageAction(formData);
-            }
+                formData.append("file", file);
+                return uploadImageAction(formData);
+            }));
 
             const payload: IncludeVehicleMemberRequest = {
                 nickname: data.nickname,
-                photo,
+                ...(photos.length ? { photos, photo: photos[0] } : {}),
                 plate: data.plate,
                 renavam: data.renavam,
                 brand: data.brand,
