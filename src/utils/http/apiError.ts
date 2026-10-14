@@ -70,10 +70,31 @@ export function extractApiErrorMessage(error: unknown, fallback: string): string
     if (error instanceof Error && error.message === SESSION_EXPIRED_MESSAGE) {
         return SESSION_EXPIRED_MESSAGE;
     }
+    if (error instanceof Error && /API_URL is not defined|API_URL não está configurada/i.test(error.message)) {
+        return 'O serviço está indisponível no momento. Tente novamente mais tarde.';
+    }
 
     const problem = getApiProblem(error);
     if (!problem) {
+        if (error instanceof TypeError && /fetch|network|failed to fetch/i.test(error.message)) {
+            return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
+        }
         return fallback;
+    }
+
+    const codeMessages: Record<string, string> = {
+        VALIDATION_ERROR: 'Confira os dados informados e tente novamente.',
+        INVALID_REQUEST: 'Confira os dados informados e tente novamente.',
+        INVALID_CREDENTIALS: 'Os dados informados não conferem. Verifique e tente novamente.',
+        ACCESS_DENIED: 'Você não tem permissão para realizar esta ação.',
+        FORBIDDEN: 'Você não tem permissão para realizar esta ação.',
+        NOT_FOUND: 'Não encontramos o registro solicitado.',
+        CONFLICT: 'Esta ação não pode ser concluída porque os dados já existem ou foram alterados.',
+        INTERNAL_SERVER_ERROR: 'O servidor encontrou um problema. Tente novamente mais tarde.',
+        SERVICE_UNAVAILABLE: 'O serviço está temporariamente indisponível. Tente novamente mais tarde.',
+    };
+    if (codeMessages[problem.code]) {
+        return codeMessages[problem.code];
     }
 
     if (problem.errors?.length) {
