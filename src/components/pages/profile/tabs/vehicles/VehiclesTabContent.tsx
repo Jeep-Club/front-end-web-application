@@ -100,8 +100,13 @@ export function VehiclesTabContent() {
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
                                     <div className="flex min-w-0 flex-col gap-3">
                                         <div className="min-w-0">
-                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
-                                                {vehicle.model}
+                                            <h4 className="mt-0.5 truncate font-black leading-tight text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
+                                                {vehicle.nickname?.trim() ? (
+                                                    <>
+                                                        <span className="text-xl">{vehicle.nickname.trim()}</span>
+                                                        <span className="text-sm font-medium"> - {vehicle.model}</span>
+                                                    </>
+                                                ) : <span className="text-xl">{vehicle.model}</span>}
                                             </h4>
                                         </div>
 

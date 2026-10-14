@@ -8,6 +8,8 @@ export const vehicleListItemSchema: z.ZodType<VehicleListItem> = z.object({
     modelYear: z.number(),
     model: z.string(),
     color: z.string(),
+    ownerId: z.number().nullable().optional(),
+    ownerName: z.string().nullable().optional(),
 });
 
 export const listVehicleMemberResponseSchema: z.ZodType<ListVehicleMemberResponse> = z.object({
