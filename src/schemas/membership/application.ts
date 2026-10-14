@@ -7,8 +7,12 @@ export const membershipApplicationFormSchema: z.ZodType<MembershipApplicationFor
     cpf: cpfSchema,
     phoneNumber: z.string()
         .min(1, "Informe seu celular com DDD.")
-        .max(20)
-        .regex(/^(?:\+55\s?)?(?:\([1-9]\d\)|[1-9]\d)\s?9\d{4}[-\s]?\d{4}$/, "Informe um celular brasileiro válido com DDD."),
+        .max(20, "O celular informado é muito longo.")
+        .refine((value) => {
+            const digits = value.replace(/\D/g, "");
+            const nationalNumber = digits.length === 13 && digits.startsWith("55") ? digits.slice(2) : digits;
+            return /^[1-9]\d9\d{8}$/.test(nationalNumber);
+        }, "Informe um celular válido com DDD, incluindo o 9 inicial."),
     email: z.string().max(180, "Use até 180 caracteres.").refine((value) => !value || isValidEmail(value), "Informe um e-mail válido."),
     message: z.string().trim().min(1, "Conte um pouco sobre você e por que quer fazer parte do clube.").max(2000, "A apresentação pode ter até 2.000 caracteres."),
 });
