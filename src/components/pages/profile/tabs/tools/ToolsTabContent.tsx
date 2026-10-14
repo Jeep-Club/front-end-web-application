@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from "react";
+import { ListPagination } from "@/components/common/table/ListPagination";
 import { useQuery } from "@tanstack/react-query";
-import { Wrench, Plus, ChevronLeft, ChevronRight, Eye, Pencil, Trash2, Power } from "lucide-react";
+import { Wrench, Plus, Eye, Pencil, Trash2, Power } from "lucide-react";
 import { twMerge } from "tailwind-merge";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listToolsAction } from "@/actions/tools/list";
 import { IncludeToolModal } from "./IncludeToolModal";
@@ -12,7 +13,7 @@ import { ViewToolModal } from "./ViewToolModal";
 import { DeleteToolModal } from "./DeleteToolModal";
 import { ToggleToolStatusModal } from "./ToggleToolStatusModal";
 
-const PAGE_SIZE = 10;
+
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
@@ -29,10 +30,11 @@ const STATUS_BADGE_CLASS: Record<ToolStatus, string> = {
 export function ToolsTabContent() {
     const { setContent, setOpen } = useModal();
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ["tools", "list", page],
-        queryFn: () => listToolsAction({ page, size: PAGE_SIZE }),
+    const { data, isLoading, isError, isFetching } = useQuery({
+        queryKey: ["tools", "list", page, pageSize],
+        queryFn: () => listToolsAction({ page, size: pageSize }),
     });
 
     const handleOpenInclude = () => {
@@ -70,7 +72,7 @@ export function ToolsTabContent() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-j-gray-700">Minhas ferramentas</h3>
-                <Button onClick={handleOpenInclude}>
+                <Button onClick={handleOpenInclude} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
                     <Plus size={16} />
                     <span className="hidden sm:inline">Incluir Ferramenta</span>
                     <span className="sm:hidden">Incluir</span>
@@ -91,91 +93,47 @@ export function ToolsTabContent() {
 
             {!isLoading && !isError && data && data.content.length > 0 && (
                 <>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {data.content.map((tool) => (
-                            <div
-                                key={tool.id}
-                                className="flex flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm"
-                            >
-                                <div className="flex flex-1 flex-col gap-3 p-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300">
-                                            <Wrench size={20} />
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <h4 className="truncate font-black text-j-blue-800">
-                                                {tool.name}
-                                            </h4>
-                                            <span className={twMerge(
-                                                "mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold",
-                                                STATUS_BADGE_CLASS[tool.status],
-                                            )}>
-                                                {STATUS_LABEL[tool.status]}
-                                            </span>
+                    <div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                        <div className="hidden grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] gap-4 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 md:grid">
+                            <span>Ferramenta</span>
+                            <span className="text-center">Status</span>
+                            <span className="text-center">Ações</span>
+                        </div>
+                        <div className="divide-y divide-j-gray-100">
+                            {data.content.map((tool) => (
+                                <div key={tool.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 md:grid md:grid-cols-[minmax(0,1fr)_minmax(90px,0.65fr)_360px] md:items-center md:gap-4">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300"><Wrench size={19} aria-hidden="true" /></span>
+                                        <div className="min-w-0">
+                                            <h4 className="truncate font-extrabold text-j-blue-800" title={tool.name}>{tool.name}</h4>
+                                            <span className={twMerge("mt-1 inline-flex rounded-full px-2.5 py-1 text-xs font-bold md:hidden", STATUS_BADGE_CLASS[tool.status])}>{STATUS_LABEL[tool.status]}</span>
                                         </div>
                                     </div>
-
-                                    <div className="mt-1 grid grid-cols-1 gap-2 border-t border-j-gray-100 pt-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleOpenEdit(tool.id)}
-                                            className="flex items-center gap-2.5 rounded-lg bg-yellow-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-yellow-100"
-                                        >
-                                            <Pencil size={16} className="text-yellow-500" />
-                                            Editar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleOpenView(tool.id)}
-                                            className="flex items-center gap-2.5 rounded-lg bg-blue-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
-                                        >
-                                            <Eye size={16} className="text-j-blue-800" />
-                                            Visualizar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleOpenToggleStatus(tool)}
-                                            className="flex items-center gap-2.5 rounded-lg bg-purple-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-purple-100"
-                                        >
-                                            <Power size={16} className="text-purple-500" />
-                                            {tool.status === "ACTIVE" ? "Desativar" : "Ativar"}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleOpenDelete(tool)}
-                                            className="flex items-center gap-2.5 rounded-lg bg-red-50 px-2.5 py-2 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-100"
-                                        >
-                                            <Trash2 size={16} />
-                                            Excluir
-                                        </button>
+                                    <span className={twMerge("hidden w-fit justify-self-center rounded-full px-2.5 py-1 text-xs font-bold md:inline-flex", STATUS_BADGE_CLASS[tool.status])}>{STATUS_LABEL[tool.status]}</span>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <button type="button" aria-label={`Visualizar ${tool.name}`} title="Visualizar" onClick={() => handleOpenView(tool.id)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-blue-50 px-2 py-2 text-xs font-bold text-j-blue-700 transition-colors hover:bg-blue-100"><Eye size={15} aria-hidden="true" /><span className="hidden sm:inline">Visualizar</span></button>
+                                        <button type="button" aria-label={`Editar ${tool.name}`} title="Editar" onClick={() => handleOpenEdit(tool.id)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100"><Pencil size={15} className="text-j-yellow-500" aria-hidden="true" /><span className="hidden sm:inline">Editar</span></button>
+                                        <button type="button" aria-label={`${tool.status === "ACTIVE" ? "Desativar" : "Ativar"} ${tool.name}`} title={tool.status === "ACTIVE" ? "Desativar" : "Ativar"} onClick={() => handleOpenToggleStatus(tool)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-purple-50 px-2 py-2 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"><Power size={15} aria-hidden="true" /><span className="hidden sm:inline">{tool.status === "ACTIVE" ? "Desativar" : "Ativar"}</span></button>
+                                        <button type="button" aria-label={`Excluir ${tool.name}`} title="Excluir" onClick={() => handleOpenDelete(tool)} className="flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-red-50 px-2 py-2 text-xs font-bold text-red-500 transition-colors hover:bg-red-100"><Trash2 size={15} aria-hidden="true" /><span className="hidden sm:inline">Excluir</span></button>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {data.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 pt-2">
-                            <ButtonIcon
-                                disabled={data.first}
-                                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                                className="text-j-gray-600 disabled:flex disabled:cursor-not-allowed disabled:opacity-30"
-                            >
-                                <ChevronLeft size={18} />
-                            </ButtonIcon>
-                            <span className="text-xs text-j-gray-400">
-                                Página {data.number + 1} de {data.totalPages}
-                            </span>
-                            <ButtonIcon
-                                disabled={data.last}
-                                onClick={() => setPage((prev) => prev + 1)}
-                                className="text-j-gray-600 disabled:flex disabled:cursor-not-allowed disabled:opacity-30"
-                            >
-                                <ChevronRight size={18} />
-                            </ButtonIcon>
+                            ))}
                         </div>
-                    )}
+                    </div>
+                    <ListPagination
+                        itemLabel="ferramenta"
+                        isFetching={isFetching}
+                        pagination={{
+                            pageIndex: data.number,
+                            pageSize,
+                            pageCount: data.totalPages,
+                            rowCount: data.totalElements,
+                            onChange: (next) => {
+                                setPage(next.pageSize !== pageSize ? 0 : next.pageIndex);
+                                setPageSize(next.pageSize);
+                            },
+                        }}
+                    />
                 </>
             )}
         </div>
