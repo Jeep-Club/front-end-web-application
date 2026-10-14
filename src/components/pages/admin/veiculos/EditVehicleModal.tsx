@@ -225,6 +225,7 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                         name="photo"
                         label="Foto do veículo"
                         maxFiles={1}
+                        cropShape="landscape"
                         className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                     />
                     {vehicle.photo && (
@@ -233,7 +234,7 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                             <img
                                 src={getMediaImageUrl(vehicle.photo)}
                                 alt="Foto atual"
-                                className="h-16 w-24 rounded-lg object-contain bg-j-gray-50 border border-j-gray-200"
+                                className="h-16 w-24 rounded-lg object-cover border border-j-gray-200"
                             />
                             <div className="flex flex-col">
                                 <span className="text-xs font-bold text-j-gray-700">Foto atual cadastrada</span>
