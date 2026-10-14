@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { ListPagination } from "@/components/common/table/ListPagination";
 import { useQuery } from "@tanstack/react-query";
 import { Car, Plus, ChevronLeft, ChevronRight, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
@@ -12,15 +13,16 @@ import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { ViewVehicleModal } from "./ViewVehicleModal";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
-const PAGE_SIZE = 10;
+
 
 export function VehiclesTabContent() {
     const { setContent, setOpen } = useModal();
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ["vehicles", "list-member", page],
-        queryFn: () => listVehiclesMemberAction({ page, size: PAGE_SIZE }),
+    const { data, isLoading, isError, isFetching } = useQuery({
+        queryKey: ["vehicles", "list-member", page, pageSize],
+        queryFn: () => listVehiclesMemberAction({ page, size: pageSize }),
     });
 
     const handleOpenIncludeVehicle = () => {
@@ -52,7 +54,7 @@ export function VehiclesTabContent() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-j-gray-700">Meus veículos</h3>
-                <Button onClick={handleOpenIncludeVehicle}>
+                <Button onClick={handleOpenIncludeVehicle} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
                     <Plus size={16} />
                     <span className="hidden sm:inline">Incluir Veículo</span>
                     <span className="sm:hidden">Incluir</span>
@@ -93,11 +95,6 @@ export function VehiclesTabContent() {
                                             <span className="text-xs font-semibold">Sem foto cadastrada</span>
                                         </div>
                                     )}
-                                    {vehicle.nickname && (
-                                        <span className="absolute right-3 top-3 rounded-full border border-white/30 bg-j-blue-900/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm backdrop-blur-sm">
-                                            #{vehicle.nickname}
-                                        </span>
-                                    )}
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
@@ -119,13 +116,15 @@ export function VehiclesTabContent() {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-j-gray-50 px-3 py-2.5 text-j-gray-600">
+                                        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-j-gray-200 bg-j-gray-50 px-3 py-2.5 text-j-gray-600">
                                             <CalendarDays size={16} className="shrink-0 text-j-blue-700" aria-hidden="true" />
+                                            <span className="shrink-0 text-xs font-bold">Ano:</span>
                                             <span className="truncate">{vehicle.modelYear}</span>
                                         </div>
-                                        <div className="flex min-w-0 items-center gap-2 rounded-xl bg-j-gray-50 px-3 py-2.5 text-j-gray-600">
+                                        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-j-gray-200 bg-j-gray-50 px-3 py-2.5 text-j-gray-600">
                                             <Palette size={16} className="shrink-0 text-j-blue-700" aria-hidden="true" />
-                                            <span className="truncate">{vehicle.color}</span>
+                                            <span className="shrink-0 text-xs font-bold">Cor:</span>
+                                            <span className="truncate" title={vehicle.color}>{vehicle.color}</span>
                                         </div>
                                     </div>
 
@@ -160,27 +159,20 @@ export function VehiclesTabContent() {
                         ))}
                     </div>
 
-                    {data.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 pt-2">
-                            <ButtonIcon
-                                disabled={data.first}
-                                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                                className="text-j-gray-600 disabled:flex disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                                <ChevronLeft size={18} />
-                            </ButtonIcon>
-                            <span className="text-xs text-j-gray-400">
-                                Página {data.number + 1} de {data.totalPages}
-                            </span>
-                            <ButtonIcon
-                                disabled={data.last}
-                                onClick={() => setPage((prev) => prev + 1)}
-                                className="text-j-gray-600 disabled:flex disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                                <ChevronRight size={18} />
-                            </ButtonIcon>
-                        </div>
-                    )}
+                    <ListPagination
+                        itemLabel="veículo"
+                        isFetching={isFetching}
+                        pagination={{
+                            pageIndex: data.number,
+                            pageSize,
+                            pageCount: data.totalPages,
+                            rowCount: data.totalElements,
+                            onChange: (next) => {
+                                setPage(next.pageSize !== pageSize ? 0 : next.pageIndex);
+                                setPageSize(next.pageSize);
+                            },
+                        }}
+                    />
                 </>
             )}
         </div>

@@ -60,7 +60,7 @@ export function MedicalProfileTab() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-3">
                 <h3 className="text-base font-bold text-j-gray-700">Meus dados médicos</h3>
-                <Button onClick={openEditor}>
+                <Button onClick={openEditor} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
                     {data ? <Edit3 size={16} /> : <Plus size={16} />}
                     <span className="hidden sm:inline">{data ? "Editar Dados Médicos" : "Incluir Dados Médicos"}</span>
                     <span className="sm:hidden">{data ? "Editar" : "Incluir"}</span>
