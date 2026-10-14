@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Car, Plus, ChevronLeft, ChevronRight, IdCard, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
+import { Car, Plus, ChevronLeft, ChevronRight, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
@@ -111,17 +111,19 @@ export function VehiclesTabContent() {
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
-                                            <Car size={21} />
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <h4 className="truncate text-lg font-black leading-tight text-j-blue-800">
+                                    <div className="flex min-w-0 flex-col gap-3">
+                                        <div className="min-w-0">
+                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
                                                 {vehicle.model}
                                             </h4>
-                                            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-j-gray-100 px-2.5 py-1 text-xs font-semibold tracking-wide text-j-gray-600">
-                                                <IdCard size={14} aria-hidden="true" /> {maskPlate(vehicle.plate)}
+                                        </div>
+
+                                        <div className="inline-flex w-fit max-w-full flex-col overflow-hidden rounded-lg border border-j-gray-300 bg-white shadow-sm">
+                                            <span className="bg-j-blue-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white">
+                                                Placa do veículo
+                                            </span>
+                                            <span className="px-3 py-1 font-mono text-base font-extrabold leading-none tracking-[0.14em] text-j-gray-800 sm:text-lg" aria-label={`Placa ${maskPlate(vehicle.plate)}`}>
+                                                {maskPlate(vehicle.plate)}
                                             </span>
                                         </div>
                                     </div>
