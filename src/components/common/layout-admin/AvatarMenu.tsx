@@ -10,6 +10,8 @@ import logoutAction from "@/actions/auth/logout";
 import { TourContext } from "@/components/common/tour/TourContext";
 import { resetAllTours } from "@/hooks/useTour";
 import { useContext } from "react";
+import { useModal } from "@/providers/ModalProvider";
+import { LogoutConfirmationModal } from "./LogoutConfirmationModal";
 
 interface AvatarMenuProps {
     src?: string | null;
@@ -18,6 +20,7 @@ interface AvatarMenuProps {
 
 export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const { setContent, setOpen } = useModal();
     const containerRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const tourContext = useContext(TourContext);
@@ -155,7 +158,11 @@ export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
                         type="button"
                         role="menuitem"
                         disabled={logoutMutation.isPending}
-                        onClick={() => logoutMutation.mutate()}
+                        onClick={() => {
+                            setIsOpen(false);
+                            setContent(<LogoutConfirmationModal onConfirm={() => logoutMutation.mutateAsync()} />);
+                            setOpen();
+                        }}
                         className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-j-red-400 transition-colors hover:bg-j-red-100/50 cursor-pointer disabled:opacity-60"
                     >
                         {logoutMutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <LogOut size={16} />}

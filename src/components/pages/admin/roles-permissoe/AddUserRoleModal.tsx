@@ -1,4 +1,5 @@
 'use client';
+import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -93,14 +94,14 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                         >
                             Cancelar
                         </Button>
-                        <Button
+                        <ConfirmButton
                             type="button"
                             onClick={() => mutation.mutate(pendingRole)}
                             disabled={mutation.isPending}
                             className="flex-1 bg-j-yellow-300 text-j-black hover:bg-j-yellow-500 hover:text-j-black"
                         >
                             {mutation.isPending ? "Atribuindo..." : "Confirmar"}
-                        </Button>
+                        </ConfirmButton>
                     </div>
                 </>
             ) : (

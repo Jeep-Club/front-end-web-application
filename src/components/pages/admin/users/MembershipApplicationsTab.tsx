@@ -1,4 +1,5 @@
 'use client';
+import { confirmAction } from '@/components/common/tour/confirmTourExit';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -142,17 +143,17 @@ export function MembershipApplicationsTab() {
                                 <textarea value={reason} maxLength={2000} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} className="mt-1 block w-full rounded-lg border border-j-gray-300 p-3 text-sm font-normal text-j-gray-800" placeholder="Registre o motivo, se necessário." />
                             </label>}
                             <div className="flex flex-wrap gap-2">
-                                {canApprove && <Button type="button" disabled={busy} onClick={() => {
-                                    if (window.confirm(`Aprovar ${application.name} e gerar uma senha provisória?`)) approve.mutate(application.id);
+                                {canApprove && <Button type="button" disabled={busy} onClick={async () => {
+                                    if (await confirmAction(`Aprovar ${application.name} e gerar uma senha provisória?`)) approve.mutate(application.id);
                                 }}><Check size={16} /> Aprovar e gerar senha</Button>}
-                                {canApprove && application.email && <Button type="button" disabled={busy} onClick={() => {
-                                    if (window.confirm(`Aprovar ${application.name} e enviar um convite por e-mail?`)) approveByLink.mutate(application.id);
+                                {canApprove && application.email && <Button type="button" disabled={busy} onClick={async () => {
+                                    if (await confirmAction(`Aprovar ${application.name} e enviar um convite por e-mail?`)) approveByLink.mutate(application.id);
                                 }} className="bg-j-blue-100 text-j-blue-800 hover:bg-j-blue-200 hover:text-j-blue-900"><Mail size={16} /> Aprovar e enviar convite</Button>}
-                                {canReject && <Button type="button" disabled={busy} onClick={() => {
-                                    if (window.confirm(`Rejeitar a solicitação de ${application.name}?`)) reject.mutate({ id: application.id, reason });
+                                {canReject && <Button type="button" disabled={busy} onClick={async () => {
+                                    if (await confirmAction(`Rejeitar a solicitação de ${application.name}?`)) reject.mutate({ id: application.id, reason });
                                 }} className="bg-j-gray-100 text-j-gray-700 hover:bg-j-gray-200 hover:text-j-gray-800"><X size={16} /> Rejeitar</Button>}
-                                {canBlock && <Button type="button" disabled={busy || !reason.trim()} onClick={() => {
-                                    if (window.confirm(`Rejeitar e bloquear novas solicitações deste CPF?`)) rejectAndBlock.mutate({ id: application.id, reason });
+                                {canBlock && <Button type="button" disabled={busy || !reason.trim()} onClick={async () => {
+                                    if (await confirmAction(`Rejeitar e bloquear novas solicitações deste CPF?`)) rejectAndBlock.mutate({ id: application.id, reason });
                                 }} className="bg-red-50 text-j-red-700 hover:bg-red-100 hover:text-j-red-800"><ShieldAlert size={16} /> Rejeitar e bloquear CPF</Button>}
                             </div>
                         </div>}
