@@ -7,6 +7,7 @@ import {
     Ambulance,
     ClipboardPlus,
     Edit3,
+    HeartPulse,
     Pill,
     Plus,
     RefreshCw,
@@ -24,9 +25,7 @@ const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string> = {
     UNKNOWN: "—",
 };
 
-function display(value: string | null | undefined) {
-    return value?.trim() || "Não informado";
-}
+const hasText = (value: string | null | undefined) => Boolean(value?.trim());
 
 export function MedicalProfileTab() {
     const { setContent, setOpen } = useModal();
@@ -57,48 +56,60 @@ export function MedicalProfileTab() {
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-3">
-                <h3 className="text-base font-bold text-j-gray-700">Meus dados médicos</h3>
-                <Button onClick={openEditor} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
+        <div className="flex flex-col gap-5 rounded-3xl border border-j-gray-200 bg-gradient-to-br from-j-gray-50 via-white to-j-blue-50/40 p-4 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm"><HeartPulse size={23} /></span>
+                    <div>
+                        <h3 className="text-lg font-extrabold text-j-blue-800">Meu perfil de saúde</h3>
+                        <p className="mt-0.5 text-sm text-j-gray-500">Informações úteis para seu cuidado e em caso de emergência.</p>
+                    </div>
+                </div>
+                <Button onClick={openEditor} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5 sm:w-auto">
                     {data ? <Edit3 size={16} /> : <Plus size={16} />}
-                    <span className="hidden sm:inline">{data ? "Editar Dados Médicos" : "Incluir Dados Médicos"}</span>
-                    <span className="sm:hidden">{data ? "Editar" : "Incluir"}</span>
+                    <span>{data ? "Editar informações" : "Adicionar informações"}</span>
                 </Button>
             </div>
 
             {!data && (
-                <p className="text-sm text-j-gray-400">Você ainda não tem dados médicos cadastrados.</p>
+                <div className="flex flex-col items-center rounded-2xl border border-dashed border-j-gray-300 bg-white/80 px-5 py-10 text-center">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-700"><Activity size={22} /></span>
+                    <p className="mt-3 font-bold text-j-gray-700">Seu perfil médico está vazio</p>
+                    <p className="mt-1 max-w-md text-sm text-j-gray-500">Adicione dados de saúde e um contato de emergência para deixá-los disponíveis no seu perfil.</p>
+                </div>
             )}
 
-            {data && <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {data && <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <MedicalCard title="Informações médicas" icon={Activity} accent="bg-red-100 text-red-600">
-                    <div className="mb-3 flex items-center justify-between rounded-xl bg-red-50 px-4 py-3">
-                        <span className="text-xs font-bold uppercase tracking-wide text-j-gray-500">Tipo sanguíneo</span>
-                        <span className="text-2xl font-extrabold text-red-600">{data.bloodType ? BLOOD_TYPE_LABELS[data.bloodType] : "—"}</span>
-                    </div>
-                    <ProfileItem label="Alergias" value={display(data.allergies)} />
-                    <ProfileItem label="Condições crônicas" value={display(data.chronicConditions)} />
+                    {data.bloodType && data.bloodType !== "UNKNOWN" && <div className="flex items-center justify-between rounded-xl border border-red-100 bg-gradient-to-r from-red-50 to-white px-4 py-3">
+                        <div><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-j-gray-500">Tipo sanguíneo</span><span className="mt-1 block text-xs text-j-gray-500">Informação importante em emergências</span></div>
+                        <span className="rounded-lg bg-white px-3 py-1 text-2xl font-black text-red-600 shadow-sm">{BLOOD_TYPE_LABELS[data.bloodType]}</span>
+                    </div>}
+                    {hasText(data.allergies) && <ProfileItem label="Alergias" value={data.allergies!} />}
+                    {hasText(data.chronicConditions) && <ProfileItem label="Condições crônicas" value={data.chronicConditions!} />}
+                    {(!data.bloodType || data.bloodType === "UNKNOWN") && !hasText(data.allergies) && !hasText(data.chronicConditions) && <EmptyCardState text="Nenhuma informação médica cadastrada." />}
                 </MedicalCard>
 
                 <MedicalCard title="Medicamentos" icon={Pill} accent="bg-amber-100 text-amber-700">
-                    <ProfileItem label="Uso contínuo" value={display(data.continuousMedications)} />
+                    {hasText(data.continuousMedications) ? <ProfileItem label="Uso contínuo" value={data.continuousMedications!} /> : <EmptyCardState text="Nenhum medicamento informado." />}
                 </MedicalCard>
 
                 <MedicalCard title="Plano de saúde" icon={ShieldPlus} accent="bg-emerald-100 text-emerald-700">
-                    <ProfileItem label="Operadora" value={display(data.healthInsuranceProvider)} />
-                    <ProfileItem label="Plano" value={display(data.healthInsurancePlan)} />
-                    <ProfileItem label="Carteirinha" value={display(data.healthInsuranceNumber)} />
+                    {hasText(data.healthInsuranceProvider) && <ProfileItem label="Operadora" value={data.healthInsuranceProvider!} />}
+                    {hasText(data.healthInsurancePlan) && <ProfileItem label="Plano" value={data.healthInsurancePlan!} />}
+                    {hasText(data.healthInsuranceNumber) && <ProfileItem label="Número da carteirinha" value={data.healthInsuranceNumber!} />}
+                    {!hasText(data.healthInsuranceProvider) && !hasText(data.healthInsurancePlan) && !hasText(data.healthInsuranceNumber) && <EmptyCardState text="Nenhum plano informado." />}
                 </MedicalCard>
 
                 <MedicalCard title="Contato de emergência" icon={Ambulance} accent="bg-blue-100 text-blue-700">
-                    <ProfileItem label="Nome" value={display(data.emergencyContactName)} />
-                    <ProfileItem label="Telefone" value={display(data.emergencyContactPhone)} />
-                    <ProfileItem label="Parentesco" value={display(data.emergencyContactRelationship)} />
+                    {hasText(data.emergencyContactName) && <ProfileItem label="Nome" value={data.emergencyContactName!} />}
+                    {hasText(data.emergencyContactPhone) && <ProfileItem label="Telefone" value={data.emergencyContactPhone!} />}
+                    {hasText(data.emergencyContactRelationship) && <ProfileItem label="Parentesco" value={data.emergencyContactRelationship!} />}
+                    {!hasText(data.emergencyContactName) && !hasText(data.emergencyContactPhone) && !hasText(data.emergencyContactRelationship) && <EmptyCardState text="Nenhum contato de emergência cadastrado." />}
                 </MedicalCard>
 
                 <MedicalCard title="Observações" icon={ClipboardPlus} accent="bg-violet-100 text-violet-700" className="md:col-span-2 xl:col-span-2">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{display(data.observations)}</p>
+                    {hasText(data.observations) ? <p className="whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{data.observations}</p> : <EmptyCardState text="Nenhuma observação adicional." />}
                 </MedicalCard>
             </div>}
         </div>
@@ -107,10 +118,10 @@ export function MedicalProfileTab() {
 
 function MedicalCard({ title, icon: Icon, accent, className = "", children }: { title: string; icon: ElementType; accent: string; className?: string; children: React.ReactNode }) {
     return (
-        <section className={`flex min-h-44 flex-col rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm ${className}`}>
+        <section className={`flex h-full flex-col rounded-2xl border border-j-gray-200/90 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 ${className}`}>
             <header className="mb-4 flex items-center gap-3 border-b border-j-gray-100 pb-3">
-                <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent}`}><Icon size={18} /></span>
-                <h4 className="font-extrabold text-j-gray-700">{title}</h4>
+                <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent}`}><Icon size={19} /></span>
+                <h4 className="font-extrabold text-j-gray-800">{title}</h4>
             </header>
             <div className="flex flex-col gap-3">{children}</div>
         </section>
@@ -121,9 +132,13 @@ function ProfileItem({ label, value }: { label: string; value: string }) {
     return (
         <div>
             <span className="block text-[10px] font-bold uppercase tracking-wide text-j-gray-400">{label}</span>
-            <p className="mt-0.5 whitespace-pre-wrap break-words text-sm font-semibold text-j-gray-700">{value}</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-j-gray-800">{value}</p>
         </div>
     );
+}
+
+function EmptyCardState({ text }: { text: string }) {
+    return <p className="rounded-xl border border-dashed border-j-gray-200 bg-j-gray-50/80 px-3 py-4 text-sm text-j-gray-500">{text}</p>;
 }
 
 export default MedicalProfileTab;
