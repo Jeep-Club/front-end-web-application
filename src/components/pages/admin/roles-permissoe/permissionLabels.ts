@@ -1,5 +1,6 @@
 
 const MODULE_LABELS: Record<string, string> = {
+    BILLING: "Financeiro",
     AUTHENTICATION: "Autenticação",
     AUTHORIZATION: "Autorização",
     HEALTH: "Saúde",
@@ -11,6 +12,9 @@ export function getModuleLabel(module: string): string {
 }
 
 const PERMISSION_NAME_LABELS: Record<string, string> = {
+    BILLING_PAYMENT_READ: "Consultar pagamentos e comprovantes",
+    BILLING_PAYMENT_CONFIRM: "Confirmar pagamentos",
+    BILLING_PAYMENT_REJECT: "Rejeitar pagamentos",
     AUTHENTICATION_USER_READ: "Consultar usuários",
     AUTHENTICATION_USER_CREATE: "Criar usuários",
     AUTHENTICATION_USER_UPDATE: "Atualizar usuários",

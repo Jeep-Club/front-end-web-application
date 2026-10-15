@@ -16,6 +16,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Análise administrativa de pagamentos
+
+Acesse **Painel administrativo → Análise de pagamentos** (`/admin/pagamentos`).
+O backend configurado em `API_URL` deve expor `/billing/member-payments`.
+
+- `BILLING_PAYMENT_READ`: libera o módulo, a listagem, os detalhes e os comprovantes.
+- `BILLING_PAYMENT_CONFIRM` e `BILLING_PAYMENT_REJECT`: liberam cada decisão separadamente, junto à leitura.
+- A listagem usa o filtro de status disponível na API, com paginação de 10, 20 ou 50 itens e parâmetros preservados na URL.
+- Apenas pagamentos `PENDING_VALIDATION` podem ser decididos. Rejeitar exige motivo de até 500 caracteres.
+- Comprovantes PDF, JPEG, PNG e WebP são consultados pela rota autenticada `/api/payments/{id}/receipt`.
+
+Para validar manualmente, compare um usuário somente com leitura e outro com permissões de decisão; filtre pagamentos pendentes, abra um comprovante e confirme ou rejeite. Confira o novo status nos detalhes e na listagem. Uma decisão concorrente deve exibir o erro da API e recarregar o estado atual.
+
+Testes do fluxo: `npm test -- --runInBand --coverage=false payment`.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -1,5 +1,6 @@
 import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
 import { verifyWithSchema } from "@/services/token/verify";
+import { paymentPermissions } from "@/config/paymentPermissions";
 
 /*
  * "all" (padrão): o usuário precisa satisfazer TODAS as entradas de
@@ -16,6 +17,7 @@ interface RoutePermissionRule {
 type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
 
 export const routePermissions: Record<string, RoutePermissionsConfig> = {
+    "/admin/pagamentos": [{ module: paymentPermissions.module, actions: [paymentPermissions.read] }],
     "/register": [
         {
             module: "AUTHENTICATION",

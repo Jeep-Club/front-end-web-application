@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react";
-import { Input, InputProps } from "./";
+import { Input } from "./";
+import type { InputProps } from "./input";
 import { ButtonIcon } from "../button";
 import { twMerge } from "tailwind-merge";
 import { Eye, EyeClosed, KeyRound } from "lucide-react";

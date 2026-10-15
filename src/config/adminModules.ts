@@ -1,10 +1,10 @@
 import {
-    CalendarDays,
     KeyRound,
     Users,
     WalletCards,
     type LucideIcon,
 } from "lucide-react";
+import { paymentPermissions } from "@/config/paymentPermissions";
 
 /**
  * Permissão única e obrigatória que decide se o módulo existe pro
@@ -30,6 +30,14 @@ export interface AdminModuleConfig {
 }
 
 export const adminModules: AdminModuleConfig[] = [
+    {
+        key: "payments",
+        title: "Análise de pagamentos",
+        description: "Consulte comprovantes e confirme ou rejeite pagamentos.",
+        href: "/admin/pagamentos",
+        icon: WalletCards,
+        visibilityPermission: { module: paymentPermissions.module, action: paymentPermissions.read },
+    },
     {
         key: "users",
         title: "Gestão de usuários",
