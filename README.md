@@ -1,39 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jeep Club — frontend
 
-## Getting Started
+Interface web do Jeep Clube Tamoios, com área pública, autenticação, perfil de associados e administração de usuários e finanças. As operações integradas dependem de uma API externa e das permissões do usuário.
 
-First, run the development server:
+Construído com Next.js (App Router), React e TypeScript; utiliza Tailwind CSS, TanStack Query e React Hook Form com Zod. As dependências declaradas estão em [package.json](package.json); as versões resolvidas, em [package-lock.json](package-lock.json).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Começar localmente
+
+Pré-requisitos:
+
+- Node.js compatível com as dependências instaladas. O Next.js 16.2.4 resolvido neste checkout declara Node `>=20.9.0`; isso é um requisito do pacote, **não uma versão oficial de suporte do projeto**. A escolha do runtime, dos browsers e do ambiente de testes ainda está pendente.
+- npm, utilizado com o `package-lock.json` versionado. Não há versão de npm fixada no projeto.
+- Para login e operações integradas: API de desenvolvimento acessível, credencial de acesso quando exigida pelo backend e usuário de teste com as permissões correspondentes. O servidor frontend, sozinho, não fornece esses serviços.
+
+Na raiz do repositório:
+
+```sh
+npm ci
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Copie [env.example](env.example) para `.env.local` e ajuste o ambiente antes de iniciar. Em PowerShell:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+Copy-Item -LiteralPath env.example -Destination .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Se `.env.local` já existir, preserve sua configuração em vez de sobrescrevê-la. O template contém um endereço de implantação como exemplo: substitua-o pela API de desenvolvimento acordada com o responsável. Não use contas ou dados reais para testes.
 
-## Learn More
+| Variável | Uso atual |
+| --- | --- |
+| `API_URL` | URL-base da API, sem barra final; necessária às chamadas de servidor para o backend |
+| `API_FRONTEND_KEY` | Credencial privada servidor→API. Obrigatória nos wrappers em produção; em desenvolvimento pode ficar vazia somente se o backend permitir |
+| `ACCESS` | Segredo privado de assinatura da sessão. Configure um valor próprio e estável no ambiente; produção exige seu preenchimento. O código tem fallback de desenvolvimento |
+| `NODE_SECURE` | `HTTPS` ativa cookies seguros também no desenvolvimento; para localhost HTTP, o template usa `HTTP`. Em produção os cookies são seguros independentemente desse valor |
+| `NEXT_PUBLIC_API_URL` | Campo legado dos templates, sem leitura ativa encontrada em `src/`; não é requisito das chamadas atuais, feitas pelo servidor |
 
-To learn more about Next.js, take a look at the following resources:
+Não preencha `NODE_ENV` manualmente: os comandos Next.js definem o modo. `.env.local` é ignorado pelo Git; não versione valores privados nem coloque credenciais em variáveis `NEXT_PUBLIC_`. Há também um template antigo, [.env.example](.env.example); este início rápido utiliza `env.example`, com comentários, sem exigir preenchimento dos campos legados.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sh
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Abra [http://localhost:3000](http://localhost:3000). As rotas estão em [src/app](src/app), incluindo a página pública e `/login`. Reinicie o servidor após alterar o ambiente. O layout usa `next/font/google` para Geist; a preparação das fontes pode exigir acesso à rede.
 
-## Deploy on Vercel
+## Comandos
 
-Consulte [a configuração deste projeto na Vercel](deploy/vercel.md) para a
-branch de produção, variáveis de ambiente e integração com a API na VPS.
+Execute na raiz, após instalar as dependências:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Comando | Finalidade |
+| --- | --- |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm start` | Executar o build de produção previamente gerado |
+| `npm run lint` | ESLint conforme a configuração existente |
+| `node node_modules/typescript/bin/tsc --noEmit --incremental false` | Verificação de tipos sem emitir arquivos ou cache incremental; não há script `typecheck` |
+| `npm test -- --runInBand --coverage=false --cache=false` | Jest completo sem cobertura/cache de testes |
+| `npm test -- tests/useTour.spec.ts --runInBand --coverage=false --cache=false` | Exemplo de execução de uma suíte existente |
+| `npm run test:coverage -- --runInBand` | Jest com relatório de cobertura em `coverage/` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O Jest usa ambiente Node e coleta cobertura por padrão na configuração atual. Os comandos acima não significam que todos os checks estão aprovados: há pendências conhecidas de lint e testes. Build, lint, TypeScript e Jest verificam aspectos diferentes; Jest não substitui validação de interface no navegador.
+
+## Documentação
+
+Consulte o [índice de documentação](docs/README.md) para navegar pelo material existente e pelos guias planejados. As instruções de implantação, variáveis de deploy e integração operacional permanecem no [runbook da Vercel](deploy/vercel.md).
