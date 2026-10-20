@@ -8,7 +8,7 @@ import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
   FaGift,
-  FaWhatsapp,
+  FaUserPlus,
   FaIdCard,
   FaUsers,
   FaChevronRight,
@@ -23,10 +23,6 @@ import { getHomeTourSteps } from "@/config/tourSteps";
 export default function HomeClient() {
   const router = useRouter();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
-
-  const handleContact = () => {
-    router.push("/membership/apply");
-  };
 
   const handleLogin = () => {
     router.push("/login");
@@ -95,7 +91,7 @@ export default function HomeClient() {
               className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-all active:scale-95 hover:bg-[#001a52] shadow-lg"
             >
               <FaIdCard size={14} />
-              Sou membro
+              Entrar
             </button>
 
             <Logo />
@@ -115,12 +111,13 @@ export default function HomeClient() {
             <p className="text-xs md:text-sm text-white/90">09/09/1999</p>
           </div>
 
+          <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
           <button
-            onClick={handleContact}
+            onClick={handleRegister}
             className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
           >
-            <FaWhatsapp size={20} />
-            Entre em Contato
+            <FaUserPlus size={20} />
+            Quero ser sócio
             <FaChevronRight size={12} />
           </button>
         </div>
