@@ -1,3 +1,4 @@
+import { publicationManagementAccessActions } from "@/config/publicationManagement";
 import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
 import { verifyWithSchema } from "@/services/token/verify";
 
@@ -72,6 +73,19 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         },
     ],
 
+    "/admin/gestao-publicacoes": {
+        match: "any",
+        permissions: publicationManagementAccessActions.map((action) => ({
+            module: "PUBLICATIONS",
+            actions: [action],
+        })),
+    },
+    "/admin/gestao-eventos": [
+        {
+            module: "PUBLICATIONS",
+            actions: ["EVENT_READ_ADMIN"],
+        },
+    ],
     "/admin/veiculos": [
         {
             module: "VEHICLES",

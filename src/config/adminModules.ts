@@ -1,4 +1,6 @@
+import { publicationManagementAccessActions } from "@/config/publicationManagement";
 import {
+    Newspaper,
     Car,
     KeyRound,
     UserRoundCheck,
@@ -31,6 +33,18 @@ export interface AdminModuleConfig {
 }
 
 export const adminModules: AdminModuleConfig[] = [
+    {
+        key: "publication-management",
+        title: "Gestão de publicações",
+        description: "Gerencie eventos, avisos e anúncios de serviços do clube.",
+        href: "/admin/gestao-publicacoes",
+        icon: Newspaper,
+        visibilityPermission: {
+            module: "PUBLICATIONS",
+            action: publicationManagementAccessActions[0],
+            alternativeActions: publicationManagementAccessActions.slice(1),
+        },
+    },
     {
         key: "users",
         title: "Gestão de usuários",
