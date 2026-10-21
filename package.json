@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "storybook": "storybook dev -p 6006 --disable-telemetry",
+    "build-storybook": "storybook build --disable-telemetry"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -35,6 +37,8 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@storybook/addon-docs": "10.6.3",
+    "@storybook/nextjs-vite": "10.6.3",
     "@tailwindcss/postcss": "^4",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
@@ -44,9 +48,11 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "jest": "^30.4.2",
+    "storybook": "10.6.3",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "8.0.3"
   }
 }
