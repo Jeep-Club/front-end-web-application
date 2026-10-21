@@ -12,7 +12,7 @@ const preview: Preview = {
   tags: ["autodocs"],
   parameters: {
     options: {
-      storySort: { order: ["Introdução", "Componentes", "Composições", "Interfaces"] },
+      storySort: { order: ["Introdução", "Documentação", "Componentes", "Composições", "Interfaces"] },
     },
     nextjs: { appDirectory: true },
     viewport: { options: MINIMAL_VIEWPORTS },
