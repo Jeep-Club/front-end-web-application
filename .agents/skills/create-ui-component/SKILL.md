@@ -22,6 +22,8 @@ Consulte [design](../../../docs/design.md) para contexto visual, [desenvolviment
 
 ## Verificação e entrega
 
+Avalie o impacto no componente e nos consumidores com [create-playwright-test](../create-playwright-test/SKILL.md), que orienta cobertura e abrangência de execução sem exigir um teste novo por alteração.
+
 Selecione checks em [testing](../../../docs/testing.md): tipos/lint e testes de comportamento afetado, quando aplicáveis. O teste [editChargeDefinitionModal](../../../tests/editChargeDefinitionModal.spec.ts) é referência de erro/retry e callbacks em Node, não prova visual ou de foco. Para UI, registre estados/viewports/interações realmente verificados e o que exige navegador. Entregue componente alterado, consumidores, motivo do reuso/extração e limitações, sem criar catálogo ou ferramenta adicional.
 
 ## Quando não é necessária

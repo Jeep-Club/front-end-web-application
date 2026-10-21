@@ -23,6 +23,8 @@ Use [architecture](../../../docs/architecture.md) para fronteiras e donos dos da
 
 ## Verificação e entrega
 
+Avalie os testes do fluxo e de seus componentes com [create-playwright-test](../create-playwright-test/SKILL.md) para decidir o que reutilizar, atualizar, acrescentar e executar conforme o impacto.
+
 Use [testing](../../../docs/testing.md) para checks proporcionais. Verifique os consumidores da mutação, formulário e navegação alterados, além de responsividade, conteúdo longo e teclado no ambiente disponível. Relate fluxo escolhido, componentes/operações reutilizados, resultados e limites; testes Node não comprovam navegação ou layout completos.
 
 ## Quando não é necessária

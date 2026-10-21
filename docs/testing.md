@@ -71,15 +71,28 @@ Para comparar falhas, registre revisão do código, diff, comando/flags e ambien
 
 Os comandos de preparação dos navegadores, execução, seleção por projeto e abertura do relatório estão no [README](../README.md#comandos). A configuração inicia os dois servidores por `webServer`, sem reutilizar processos existentes, e usa um worker sem retries. O Next recebe apenas valores sintéticos de sessão e um backend local inacessível. Os projetos combinam os perfis oficiais Desktop Chrome, Desktop Firefox e Desktop Safari com viewports de 375×812, 768×1024 e 1440×900: são nove projetos, reutilizando os mesmos testes. Os nomes seguem `<motor>-<largura>`. Isso não emula aparelhos reais ou touch; WebKit gerenciado pelo Playwright não equivale ao Safari instalado em macOS/iOS. A instalação dos binários é explícita e independente da execução; consulte [navegadores](https://playwright.dev/docs/browsers) e [projetos](https://playwright.dev/docs/test-projects).
 
-O [piloto](../tests/browser/pilot.spec.ts) usa seletores por papel/nome acessível e verifica:
+Os testes de [Table](../tests/browser/table-interactions.spec.ts) e [login](../tests/browser/login-form.spec.ts) são organizados por comportamento, compartilham [fixtures locais](../tests/browser/fixtures.ts) e usam seletores por papel/nome acessível. A fixture preserva isolamento, verificações de runtime e capturas exploratórias. Os cenários verificam:
 
 - Table: a story existente `componentes-table--composicao-completa`, busca, limpeza por teclado, filtro, paginação e apresentação em tabela desktop ou acordeão nas larguras menores. Usa `embed=true`, que desativa autoplay no Storybook instalado, para que só o Playwright conduza essas interações. Isso não executa nem aprova o `play` da story.
 - Login: campos, máscara de CPF, sequência de foco, indicador de foco do campo senha, alternância da senha e validação real de CPF inválido. Não envia credenciais válidas nem testa autenticação. Requisições não locais, APIs e métodos diferentes de GET são bloqueados e fazem o teste falhar; erros JavaScript não tratados também falham o piloto.
 - Reflow: elementos principais visíveis, comportamento próprio de cada largura e ausência de overflow horizontal da página. Rolagem interna intencional da tabela não é proibida. Essas verificações não aprovam todos os conteúdos ou requisitos de acessibilidade.
 
+Selecione a execução pelo impacto: ajustes locais pedem specs/cenários diretamente relacionados no projeto adequado; mudanças compartilhadas incluem consumidores afetados e outros motores/larguras conforme o risco; alterações estruturais, de fixture ou configuração pedem a suíte completa. Avalie sempre a cobertura existente; acrescente testes somente para comportamentos ou riscos relevantes ainda não demonstrados.
+
+```sh
+# Arquivo e projeto específicos
+npm run test:browser -- tests/browser/table-interactions.spec.ts --project=chromium-mobile
+# Mesmo fluxo nos três viewports de um motor, com filtro pelo nome do teste
+npm run test:browser -- tests/browser/login-form.spec.ts --project="webkit-*" --grep="Login:"
+# Conferir seleção sem executar o navegador
+npm run test:browser -- --list --project="firefox-*"
+# Suíte completa nos nove projetos
+npm run test:browser
+```
+
 A digitação sequencial do `play` de Table pode deixar a busca com caracteres incompletos e interromper suas assertions. O piloto Playwright preenche a busca com `fill` e verifica os resultados reais, mas não cobre essa sequência de eventos por caractere. Investigue separadamente a interação entre o campo controlado, React Hook Form e a atualização dos filtros antes de considerar esse comportamento aprovado; não altere o componente apenas para fazer a automação passar.
 
-No login, campos renderizados no servidor podem ficar visíveis antes de receber os handlers React. No WebKit em 375px e 768px, o preenchimento imediato do CPF perdeu o valor; em investigação após a hidratação, a mesma entrada recebeu a máscara corretamente. Visibilidade e o evento `load` não garantem prontidão interativa. As assertions continuam exigindo o valor mascarado, sem retries ou esperas fixas para ocultar essa condição. A sincronização entre disponibilidade dos controles e hidratação requer tratamento próprio; esses cenários não estão aprovados apenas porque a máscara funciona depois da hidratação.
+No login, campos renderizados no servidor podem ficar visíveis antes de receber os handlers React. No WebKit, o preenchimento imediato do CPF perdeu o valor nas três larguras configuradas; em investigação após a hidratação, a mesma entrada recebeu a máscara corretamente. A ocorrência pode variar com o momento da interação e a ordem de execução: desktop também já passou sem mudança nas assertions. Visibilidade e o evento `load` não garantem prontidão interativa. As assertions continuam exigindo o valor mascarado, sem retries ou esperas fixas para ocultar essa condição. A sincronização entre disponibilidade dos controles e hidratação requer tratamento próprio; esses cenários não estão aprovados apenas porque a máscara funciona depois da hidratação.
 
 Cada teste salva uma captura exploratória de página inteira, anexada ao relatório HTML em `playwright-report/`, e arquivos por cenário em `test-results/`. Falhas preservam screenshot e trace do Playwright; o relatório oferece acesso ao trace. Esses diretórios são ignorados pelo Git e a próxima execução substitui os resultados anteriores. A captura exploratória mostra o estado final alcançado, inclusive quando houve falha, e não representa uma referência visual aprovada.
 

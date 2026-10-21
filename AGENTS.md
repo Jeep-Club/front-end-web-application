@@ -54,6 +54,7 @@ Durante a implementação:
 ## Validação
 
 - Selecione verificações proporcionais conforme docs/testing.md.
+- Em toda alteração de interface, avalie a validade e as lacunas dos testes existentes e selecione a execução conforme o impacto, seguindo [create-playwright-test](.agents/skills/create-playwright-test/SKILL.md). Avaliar é obrigatório; criar teste novo depende de benefício concreto.
 - Execute TypeScript, ESLint e testes relevantes quando aplicáveis, usando os
   comandos existentes. Não exija build ou suíte completa para toda edição.
 - Revise o diff e os consumidores afetados antes de finalizar.

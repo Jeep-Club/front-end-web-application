@@ -42,6 +42,8 @@ As instruções oficiais não ampliam o escopo autorizado nem substituem os cont
 
 ## Conteúdo e cobertura comportamental
 
+Ao alterar a interface documentada ou sua composição, avalie o impacto nos testes de navegador com [create-playwright-test](../create-playwright-test/SKILL.md). Ela centraliza criação e execução proporcional de specs; não duplique um teste apenas por existir uma story.
+
 - Identifique props, variantes e estados suportados antes de escolher exemplos: vazio/preenchido, enabled/disabled, loading/sucesso/erro, valores válidos/inválidos, limites, seleção/remoção e recuperação. Demonstre somente os casos pertinentes; um controle ou exemplo interativo pode cobrir vários casos sem stories adicionais.
 - Para entradas de dados ou arquivos, exercite aceitação, rejeição e limites reais quando existirem. Explique como reproduzir o resultado e qual camada aplica cada restrição, distinguindo comportamento do navegador, biblioteca e componente. Não simule validação ou erro apenas exibindo uma mensagem artificial.
 - Investigue bibliotecas relevantes e consulte suas documentações oficiais compatíveis com a versão instalada. Explique a responsabilidade da integração e referencie as APIs efetivamente utilizadas, sem copiar seus manuais. Identifique providers, contextos, dados simulados e diferenças em relação ao uso na aplicação.
