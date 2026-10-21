@@ -5,7 +5,7 @@ description: Criar, manter, executar e investigar testes de navegador do Jeep Cl
 
 # Testes de navegador
 
-Siga o [AGENTS.md](../../../AGENTS.md). Consulte [testing](../../../docs/testing.md#testes-de-navegador) para ambiente, isolamento, artefatos e limitações; os comandos de preparação ficam no [README](../../../README.md#comandos). Esta Skill não autoriza mudar produção ou instalar ferramentas para fazer um teste passar.
+Siga o [AGENTS.md](../../../AGENTS.md). Consulte [testing](../../../docs/testing.md#testes-de-navegador) para ambiente, isolamento, artefatos e limitações; os comandos de preparação ficam no [README](../../../README.md#comandos). Esta Skill não amplia o escopo autorizado: em uma implementação, corrija regressões do trabalho conforme o AGENTS; em uma tarefa exclusivamente de diagnóstico/testes, não altere produção sem autorização.
 
 ## Investigar e escolher a cobertura
 
@@ -21,6 +21,7 @@ Siga o [AGENTS.md](../../../AGENTS.md). Consulte [testing](../../../docs/testing
 - Use o auto-wait e assertions com retry do Playwright; não acrescente sleeps, retries de cenário, skips ou tolerâncias para ocultar falhas. Visibilidade e `load` não garantem hidratação: investigue prontidão observável e perda de eventos sem recorrer a detalhes privados do React nos testes. Preserve as verificações existentes quando a falha revelar comportamento real.
 - Em stories com `play`, escolha conscientemente quem conduz as interações. O piloto usa `embed=true` no Storybook instalado para desativar autoplay; isso não valida o `play`. Confirme esse recurso antes de reutilizá-lo em outra versão.
 - Reutilize os projetos configurados para motores e larguras, sem copiar testes por navegador. Verifique reflow, conteúdo, foco/teclado e elementos alcançáveis; overflow de página difere de scroll interno intencional. Screenshots complementam assertions, não certificam acessibilidade. Não crie ou atualize baselines visuais sem referência estável e aprovada.
+- Use as origens configuradas no `.env` e navegação relativa à base apropriada, conforme [testing](../../../docs/testing.md#testes-de-navegador). Não fixe portas nos specs, na fixture ou em comandos avulsos; se houver conflito, ajuste o ambiente mantendo inicialização, prontidão e isolamento alinhados.
 
 ## Selecionar e executar
 
@@ -37,6 +38,8 @@ Defina a abrangência pelos consumidores afetados, sem executar tudo automaticam
 Use arquivos, `--project` e `--grep` conforme os exemplos em testing.md. Confira a seleção com `--list` quando houver dúvida. Não deixe de executar testes relevantes para economizar tempo; se infraestrutura impedir, registre o bloqueio e o que ficou sem validar.
 
 ## Verificação e entrega
+
+Documente fixtures, utilitários e configurações conforme [development](../../../docs/development.md#documentação-no-código). Aplique o [tratamento de falhas](../../../docs/testing.md#tratamento-de-falhas) para investigação, correção autorizada e reexecução dos testes afetados; os [critérios gerais de entrega](../../../AGENTS.md#entrega) também se aplicam quando a tarefa envolve código de teste.
 
 Execute TypeScript e ESLint proporcionais aos arquivos alterados; confirme que o Jest não coleta specs Playwright se tocar descoberta ou organização. Analise screenshots, trace, contexto de erro e logs nas falhas, comparando cenário/motor com evidências anteriores. Distinga ambiente, sincronização, expectativa desatualizada e defeito funcional; não diminua assertions ou altere produção só para obter verde.
 

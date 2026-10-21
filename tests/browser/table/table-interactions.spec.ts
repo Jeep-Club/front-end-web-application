@@ -1,8 +1,11 @@
 import { test, expect } from "../fixtures";
+import { readLocalUrl } from "../../../config/local-urls.cjs";
+
+test.use({ baseURL: readLocalUrl("PLAYWRIGHT_STORYBOOK_URL").origin });
 
 test("Table: busca, filtros, paginação e reflow", async ({ page }) => {
   // Storybook 10.6 embed mode disables autoplay: Playwright owns these interactions.
-  await page.goto("http://127.0.0.1:6106/iframe.html?id=componentes-table--composicao-completa&viewMode=story&embed=true");
+  await page.goto("/iframe.html?id=componentes-table--composicao-completa&viewMode=story&embed=true");
   await expect(page.getByRole("heading", { name: "Gestão de membros" })).toBeVisible();
   await expect(page.getByLabel("Página 1 de 2", { exact: true })).toBeVisible();
 

@@ -1,15 +1,23 @@
 import { test as base, expect } from "@playwright/test";
+import { readLocalUrl } from "../../config/local-urls.cjs";
 
-// Both pilots must stay local and must not call Server Actions or backend APIs.
+/**
+ * Base dos testes locais: cada cenário recebe sua própria coleta de erros e requisições proibidas.
+ * A fixture automática aceita somente GET nas origens locais do .env, sem rotas /api/.
+ * Após o cenário, captura a página se estiver aberta e reprova erros JavaScript ou tráfego proibido.
+ * A interceptação cobre a página do navegador; chamadas do servidor Next dependem do isolamento
+ * de ambiente em playwright.config.ts. Não representa uma fixture de integração com backend.
+ */
 export const test = base.extend<{ runtimeChecks: void }>({
   runtimeChecks: [async ({ page }, use, testInfo) => {
     const errors: string[] = [];
     const forbiddenRequests: string[] = [];
+    const allowedOrigins = [readLocalUrl("PLAYWRIGHT_APP_URL").origin, readLocalUrl("PLAYWRIGHT_STORYBOOK_URL").origin];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.route("**/*", async (route) => {
       const request = route.request();
       const url = new URL(request.url());
-      if (!["http://127.0.0.1:3100", "http://127.0.0.1:6106"].includes(url.origin)
+      if (!allowedOrigins.includes(url.origin)
         || request.method() !== "GET" || url.pathname.startsWith("/api/")) {
         forbiddenRequests.push(`${request.method()} ${url.origin}${url.pathname}`);
         await route.abort();
@@ -17,6 +25,7 @@ export const test = base.extend<{ runtimeChecks: void }>({
       }
       await route.continue();
     });
+    // Cede a execução ao cenário; captura e verificações finais ocorrem antes de liberar a página.
     await use();
     if (!page.isClosed()) {
       const path = testInfo.outputPath("exploratory.png");

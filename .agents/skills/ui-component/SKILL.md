@@ -9,7 +9,7 @@ Siga o [AGENTS.md](../../../AGENTS.md). Esta Skill trata do componente; coordena
 
 ## Referências
 
-Consulte [design](../../../docs/design.md) para contexto visual, [desenvolvimento](../../../docs/development.md) para granularidade e [componentes e páginas](../../../docs/components-and-pages.md) para composição. Valores e APIs permanecem no código.
+Consulte [design](../../../docs/design.md) para contexto visual, [desenvolvimento](../../../docs/development.md) para granularidade e documentação dos contratos e [componentes e páginas](../../../docs/components-and-pages.md) para composição. Valores e APIs permanecem no código.
 
 ## Procedimento
 
@@ -25,6 +25,8 @@ Consulte [design](../../../docs/design.md) para contexto visual, [desenvolviment
 Avalie o impacto no componente e nos consumidores com [playwright-test](../playwright-test/SKILL.md), que orienta cobertura e abrangência de execução sem exigir um teste novo por alteração.
 
 Selecione checks em [testing](../../../docs/testing.md): tipos/lint e testes de comportamento afetado, quando aplicáveis. O teste [editChargeDefinitionModal](../../../tests/editChargeDefinitionModal.spec.ts) é referência de erro/retry e callbacks em Node, não prova visual ou de foco. Para UI, registre estados/viewports/interações realmente verificados e o que exige navegador. Entregue componente alterado, consumidores, motivo do reuso/extração e limitações, sem criar catálogo ou ferramenta adicional.
+
+Inclua a avaliação de lógica/contratos no Jest quando pertinente, além de stories e verificações de navegador. Aplique o [tratamento de falhas](../../../docs/testing.md#tratamento-de-falhas) e os [critérios de entrega](../../../AGENTS.md#entrega) antes de encerrar o trabalho no componente.
 
 ## Quando não é necessária
 

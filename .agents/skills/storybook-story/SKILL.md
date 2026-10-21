@@ -33,6 +33,8 @@ As instruções oficiais não ampliam o escopo autorizado nem substituem os cont
 
 ## Documentação progressiva e navegação
 
+Mantenha também os comentários de contratos e integrações conforme [development](../../../docs/development.md#documentação-no-código). Se uma verificação falhar, siga o [tratamento de falhas](../../../docs/testing.md#tratamento-de-falhas) dentro do escopo autorizado e os [critérios de entrega](../../../AGENTS.md#entrega); a existência da story não encerra sua validação.
+
 - Ao criar ou alterar interface, avalie impacto em props, aparência, estados, interação e composição. Mantenha as stories e seus consumidores afetados no mesmo escopo; mudanças internas sem impacto no contrato/exemplos não exigem stories artificiais. Não documente em massa nem crie exemplos para preencher categorias.
 - Siga os títulos hierárquicos existentes, incluindo famílias como `Componentes/Input/...`. Use `Composições/<contexto>/<nome>` ou `Interfaces/<contexto>/<nome>` somente quando houver um exemplo útil correspondente; não reorganize famílias existentes apenas por serem compostas. A introdução fica em `.storybook/Introduction.mdx`; não é necessário criar uma story para cada rota.
 - Em componentes simples, use Autodocs e `parameters.docs.description.component`/descrições por story. Explique finalidade, quando usar e quando evitar, exemplos práticos, restrições e limitações técnicas ou de acessibilidade conhecidas. Documente somente o que a implementação comprova; não apresente uma limitação como garantia. Não replique APIs ou tokens mantidos no código.

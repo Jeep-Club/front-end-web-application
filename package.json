@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/local-server.mjs next",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -12,7 +12,7 @@
     "test:browser": "playwright test",
     "test:browser:report": "playwright show-report",
     "test:a11y": "playwright test --project=a11y-*",
-    "storybook": "storybook dev -p 6006 --disable-telemetry",
+    "storybook": "node scripts/local-server.mjs storybook",
     "build-storybook": "storybook build --disable-telemetry"
   },
   "dependencies": {

@@ -27,7 +27,7 @@ Antes de modificar:
 1. Confira o estado Git e preserve alterações existentes.
 2. Inspecione a implementação e seus consumidores.
 3. Procure componentes, funções, tipos, schemas e padrões reutilizáveis.
-4. Identifique a menor alteração que atende ao requisito.
+4. Identifique a menor alteração que atende ao requisito e os critérios verificáveis de aceite.
 
 Durante a implementação:
 
@@ -47,22 +47,26 @@ Durante a implementação:
 - Preserve contratos e validações; respeite autenticação, autorização e regras
   de negócio. Visibilidade de interface não substitui autorização da operação.
 - Siga o design documentado e considere mobile-first, estados e acessibilidade.
+- Documente contratos e decisões não evidentes conforme [documentação no código](docs/development.md#documentação-no-código), incluindo testes e infraestrutura.
 - Mantenha stories e documentação interativa coerentes com mudanças relevantes de interface, seguindo [storybook-story](.agents/skills/storybook-story/SKILL.md).
 - Distinga limitações do código de padrões a reproduzir. Se um requisito exigir
   definir um contrato ou comportamento ainda ambíguo, esclareça essa parte.
 
 ## Validação
 
-- Selecione verificações proporcionais conforme docs/testing.md.
+- Avalie Jest, Playwright, acessibilidade e demais verificações conforme [docs/testing.md](docs/testing.md); selecione pelo comportamento e impacto, sem exigir todas as ferramentas para toda edição.
 - Em toda alteração de interface, avalie a validade e as lacunas dos testes existentes e selecione a execução conforme o impacto, seguindo [playwright-test](.agents/skills/playwright-test/SKILL.md). Avaliar é obrigatório; criar teste novo depende de benefício concreto.
 - Execute TypeScript, ESLint e testes relevantes quando aplicáveis, usando os
   comandos existentes. Não exija build ou suíte completa para toda edição.
+- Conduza investigação, implementação, documentação pertinente e validação como um único ciclo, sem aguardar pedidos separados para stories, testes ou correções dentro do escopo autorizado. Investigue falhas, corrija regressões causadas pela alteração e reexecute as verificações afetadas conforme [tratamento de falhas](docs/testing.md#tratamento-de-falhas). Repita até atender ao aceite ou comprovar um impedimento real; não enfraqueça testes, ignore erros ou altere requisitos para obter aprovação.
 - Revise o diff e os consumidores afetados antes de finalizar.
 - Diferencie regressões de falhas preexistentes com evidências comparáveis.
 - Informe limitações e verificações não executadas. Não declare aprovação de
   testes não executados nem apresente teste Node como validação visual ou E2E.
 
 ## Entrega
+
+Antes de declarar conclusão, confira cada requisito e seus resultados de verificação: implementação, documentação/stories e cobertura pertinentes devem estar coerentes, sem falhas introduzidas ainda abertas. Falhas preexistentes não autorizam ampliar o escopo nem devem ser apresentadas como regressões resolvidas. Se faltar acesso, ferramenta, definição de contrato ou autorização necessária, ou se uma verificação obrigatória não puder ser concluída, informe a parte incompleta, as evidências e a decisão necessária; não declare aceite integral.
 
 Resuma o que mudou, os arquivos envolvidos, as verificações executadas e os
 problemas ou pendências relevantes. Evite relatórios extensos e documentação

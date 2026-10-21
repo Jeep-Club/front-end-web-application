@@ -47,6 +47,17 @@ Defina use client na fronteira interativa necessária. Função comum de servido
 
 Prefira children, props pequenas e callbacks significativos a muitas flags combináveis. Uma primitiva não deve conhecer API/regra de um domínio por causa de um consumidor. Identifique os demais usos antes de alterar contrato compartilhado; modal e campos possuem lacunas reais, não APIs novas unificadas.
 
+## Documentação no código
+
+Use JSDoc em funções, métodos e APIs compartilhadas quando o contrato ou a responsabilidade precisar de explicação além do nome e da tipagem. Aplique o mesmo critério a código de aplicação, testes, fixtures, utilitários e infraestrutura; não exija um bloco para cada símbolo exportado.
+
+- Descreva parâmetros e retornos quando houver significado, formato, unidade ou condição não evidente; não repita os tipos já expressos em TypeScript. Registre efeitos colaterais, erros propagados, pré-condições e restrições relevantes.
+- Explique decisões técnicas não evidentes e os limites da responsabilidade. Para constantes, configurações e variáveis, documente significado, origem ou motivo do valor quando o nome não bastar; não transforme todo valor local em constante apenas para comentá-lo.
+- Prefira comentários sobre o motivo e o contrato. Evite narrar operações óbvias, manter código morto comentado ou copiar guias completos para o arquivo.
+- Atualize ou remova comentários na mesma alteração que mudar o comportamento. Descreva o contrato implementado, distinguindo limitações de garantias; não registre apenas a intenção de uma proposta.
+
+[auditAccessibility](../tests/browser/accessibility.ts) exemplifica um contrato com efeitos em arquivos/relatório e assertions soft: a função terminar não significa que o teste passou. A [fixture de navegador](../tests/browser/fixtures.ts) explica o alcance da interceptação e do ciclo por teste, sem confundir requisições do browser com chamadas do servidor Next. Mantenha detalhes executáveis no código e estratégias de validação em [testing.md](testing.md).
+
 ## Minimal Implementation
 
 1. Delimite comportamento e arquivos; confira estado Git/diff e preserve alterações anteriores.

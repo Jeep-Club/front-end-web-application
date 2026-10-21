@@ -1,8 +1,11 @@
 import { test, expect } from "../fixtures";
 import { auditAccessibility } from "../accessibility";
+import { readLocalUrl } from "../../../config/local-urls.cjs";
+
+test.use({ baseURL: readLocalUrl("PLAYWRIGHT_STORYBOOK_URL").origin });
 
 test("Table: acessibilidade da composição e estados interativos", async ({ page }, testInfo) => {
-  await page.goto("http://127.0.0.1:6106/iframe.html?id=componentes-table--composicao-completa&viewMode=story&embed=true");
+  await page.goto("/iframe.html?id=componentes-table--composicao-completa&viewMode=story&embed=true");
   await expect(page.getByRole("heading", { name: "Gestão de membros" })).toBeVisible();
   await auditAccessibility(page, testInfo, "table-initial");
 

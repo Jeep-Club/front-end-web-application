@@ -1,4 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import { readLocalUrl } from "./config/local-urls.cjs";
+
+const appUrl = readLocalUrl("PLAYWRIGHT_APP_URL");
+const storybookUrl = readLocalUrl("PLAYWRIGHT_STORYBOOK_URL");
+const isolatedApiUrl = readLocalUrl("PLAYWRIGHT_API_URL");
 
 export default defineConfig({
   testDir: "./tests/browser",
@@ -10,7 +15,7 @@ export default defineConfig({
   outputDir: "test-results",
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: appUrl.origin,
     locale: "pt-BR",
     serviceWorkers: "block",
     trace: "retain-on-failure",
@@ -38,22 +43,24 @@ export default defineConfig({
   }))],
   webServer: [
     {
-      command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
-      url: "http://127.0.0.1:3100/login",
+      command: "npm run dev",
+      url: new URL("/login", appUrl).href,
       timeout: 180_000,
       reuseExistingServer: false,
       env: {
-        API_URL: "http://127.0.0.1:1",
+        APP_URL: appUrl.origin,
+        API_URL: isolatedApiUrl.origin,
         API_FRONTEND_KEY: "playwright-local-only",
         ACCESS: "playwright-local-session-not-for-production",
         NODE_SECURE: "HTTP",
       },
     },
     {
-      command: "npm run storybook -- --port 6106 --host 127.0.0.1 --ci --no-open",
-      url: "http://127.0.0.1:6106/index.json",
+      command: "npm run storybook -- --ci --no-open",
+      url: new URL("/index.json", storybookUrl).href,
       timeout: 180_000,
       reuseExistingServer: false,
+      env: { STORYBOOK_URL: storybookUrl.origin },
     },
   ],
 });

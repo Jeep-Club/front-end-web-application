@@ -19,13 +19,13 @@ Na raiz do repositório:
 npm ci
 ```
 
-Copie [env.example](env.example) para `.env.local` e ajuste o ambiente antes de iniciar. Em PowerShell:
+Copie [.env.example](.env.example) para `.env` e ajuste o ambiente antes de iniciar. Em PowerShell:
 
 ```powershell
-Copy-Item -LiteralPath env.example -Destination .env.local
+Copy-Item -LiteralPath .env.example -Destination .env
 ```
 
-Se `.env.local` já existir, preserve sua configuração em vez de sobrescrevê-la. O template contém um endereço de implantação como exemplo: substitua-o pela API de desenvolvimento acordada com o responsável. Não use contas ou dados reais para testes.
+Se `.env` já existir, preserve sua configuração em vez de sobrescrevê-la. O template contém um endereço de implantação como exemplo: substitua-o pela API de desenvolvimento acordada com o responsável. Não use contas ou dados reais para testes.
 
 | Variável | Uso atual |
 | --- | --- |
@@ -35,13 +35,13 @@ Se `.env.local` já existir, preserve sua configuração em vez de sobrescrevê-
 | `NODE_SECURE` | `HTTPS` ativa cookies seguros também no desenvolvimento; para localhost HTTP, o template usa `HTTP`. Em produção os cookies são seguros independentemente desse valor |
 | `NEXT_PUBLIC_API_URL` | Campo legado dos templates, sem leitura ativa encontrada em `src/`; não é requisito das chamadas atuais, feitas pelo servidor |
 
-Não preencha `NODE_ENV` manualmente: os comandos Next.js definem o modo. `.env.local` é ignorado pelo Git; não versione valores privados nem coloque credenciais em variáveis `NEXT_PUBLIC_`. Há também um template antigo, [.env.example](.env.example); este início rápido utiliza `env.example`, com comentários, sem exigir preenchimento dos campos legados.
+Não preencha `NODE_ENV` manualmente: os comandos Next.js definem o modo. `.env` é ignorado pelo Git; não versione valores privados nem coloque credenciais em variáveis `NEXT_PUBLIC_`. Os comandos locais e o Playwright usam o carregador de ambiente do Next; variáveis do processo e arquivos `.env*` mais específicos podem sobrescrever `.env`.
 
 ```sh
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000). As rotas estão em [src/app](src/app), incluindo a página pública e `/login`. Reinicie o servidor após alterar o ambiente. O layout usa `next/font/google` para Geist; a preparação das fontes pode exigir acesso à rede.
+Abra o endereço definido por `APP_URL` no `.env`. As rotas estão em [src/app](src/app), incluindo a página pública e `/login`. Reinicie o servidor após alterar o ambiente. O layout usa `next/font/google` para Geist; a preparação das fontes pode exigir acesso à rede.
 
 ## Comandos
 
@@ -50,7 +50,7 @@ Execute na raiz, após instalar as dependências:
 | Comando | Finalidade |
 | --- | --- |
 | `npm run dev` | Servidor de desenvolvimento |
-| `npm run storybook` | Componentes isolados em http://localhost:6006 |
+| `npm run storybook` | Componentes isolados no endereço `STORYBOOK_URL` do `.env` |
 | `npm run build-storybook` | Build estático do catálogo em `storybook-static/` |
 | `npm run build` | Build de produção |
 | `npm start` | Executar o build de produção previamente gerado |
@@ -74,7 +74,9 @@ npx playwright install chromium firefox webkit
 
 A execução dos testes não instala navegadores automaticamente. O comando instala as versões compatíveis com o Playwright do projeto e reutiliza as já disponíveis. Para uma única combinação, use, por exemplo, `npm run test:browser -- --project=webkit-mobile`.
 
-O Playwright inicia Next em `127.0.0.1:3100` e Storybook em `127.0.0.1:6106`; essas portas devem estar livres. Encerre outro `next dev` deste checkout antes de executar, pois o Next compartilha o diretório `.next`. O carregamento das fontes pode exigir rede. Não é necessário configurar credenciais de backend para esses pilotos. Veja o [guia de testes](docs/testing.md#testes-de-navegador) para escopo, capturas e limitações.
+O Playwright inicia Next em `PLAYWRIGHT_APP_URL` e Storybook em `PLAYWRIGHT_STORYBOOK_URL`, definidos no `.env`; essas portas devem estar livres. Se houver conflito, altere as variáveis e reinicie a execução. A prontidão dos servidores, a navegação e a lista de origens permitidas usam esses mesmos valores, sem escolha automática de outra porta. Encerre outro `next dev` deste checkout antes de executar, pois o Next compartilha o diretório `.next`. O carregamento das fontes pode exigir rede. Não é necessário configurar credenciais de backend para esses pilotos. Veja o [guia de testes](docs/testing.md#testes-de-navegador) para escopo, capturas e limitações.
+
+As origens locais `APP_URL`, `STORYBOOK_URL`, `PLAYWRIGHT_APP_URL`, `PLAYWRIGHT_STORYBOOK_URL` e `PLAYWRIGHT_API_URL` são documentadas no `.env.example`. Use somente origens HTTP locais, sem caminhos; nos testes, mantenha o destino da API isolado e sem serviço. Rotas como `/login` e `/iframe.html` permanecem relativas.
 
 ## Documentação
 

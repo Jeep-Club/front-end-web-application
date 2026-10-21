@@ -9,7 +9,7 @@ Siga o [AGENTS.md](../../../AGENTS.md). Esta Skill coordena a tela; consulte a r
 
 ## Referências
 
-Use [architecture](../../../docs/architecture.md) para fronteiras e donos dos dados, [components-and-pages](../../../docs/components-and-pages.md) para execução e [design](../../../docs/design.md) para o contexto visual.
+Use [architecture](../../../docs/architecture.md) para fronteiras e donos dos dados, [components-and-pages](../../../docs/components-and-pages.md) para execução, [design](../../../docs/design.md) para o contexto visual e [development](../../../docs/development.md) para convenções e documentação no código.
 
 ## Procedimento
 
@@ -26,6 +26,8 @@ Use [architecture](../../../docs/architecture.md) para fronteiras e donos dos da
 Avalie os testes do fluxo e de seus componentes com [playwright-test](../playwright-test/SKILL.md) para decidir o que reutilizar, atualizar, acrescentar e executar conforme o impacto.
 
 Use [testing](../../../docs/testing.md) para checks proporcionais. Verifique os consumidores da mutação, formulário e navegação alterados, além de responsividade, conteúdo longo e teclado no ambiente disponível. Relate fluxo escolhido, componentes/operações reutilizados, resultados e limites; testes Node não comprovam navegação ou layout completos.
+
+Inclua a avaliação de schemas/lógica no Jest quando pertinente. Coordene as responsabilidades necessárias ao fluxo sem exigir todas as Skills: dados, componentes, stories e testes integram o mesmo aceite. Aplique o [tratamento de falhas](../../../docs/testing.md#tratamento-de-falhas) e os [critérios de entrega](../../../AGENTS.md#entrega).
 
 ## Quando não é necessária
 
