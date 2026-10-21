@@ -27,7 +27,7 @@ export function PublishedPublicationCardActions({ publication }: { publication: 
             return <button key={action} type="button" aria-label={`${label}: ${publication.title}`} title={label}
                 onClick={() => { setContent(<DraftPublicationActionModal publication={target} action={action} />); setOpen(); }}
                 className={`flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${color}`}>
-                <Icon size={15} className="shrink-0" aria-hidden="true" />{label}
+                <Icon size={15} className="hidden shrink-0 md:block" aria-hidden="true" />{label}
             </button>;
         })}
     </div>;

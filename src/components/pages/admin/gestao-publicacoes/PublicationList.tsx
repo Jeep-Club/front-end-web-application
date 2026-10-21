@@ -14,7 +14,8 @@ export interface PublicationListItem {
     type: "NOTICE" | "EVENT" | "SERVICE";
     title: string;
     content: string;
-    status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+    status: "DRAFT" | "PUBLISHED" | "ARCHIVED" | "PENDING";
+    serviceRequest?: boolean;
     eventStatus?: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
     images: { storageKey: string; position: number; primary: boolean }[];
 }
@@ -41,7 +42,13 @@ function previewText(text: string, limit: number) {
     const characters = Array.from(text.replace(/\s+/g, " ").trim());
     return characters.length > limit ? `${characters.slice(0, limit - 1).join("").trimEnd()}…` : characters.join("");
 }
-const statuses = { DRAFT: "Rascunho", PUBLISHED: "Publicado", ARCHIVED: "Arquivado" };
+const statuses = { DRAFT: "Rascunho", PUBLISHED: "Publicado", ARCHIVED: "Arquivado", PENDING: "Aguardando aprovação" };
+const statusColors = {
+    DRAFT: "bg-gray-100 text-gray-700",
+    PUBLISHED: "bg-blue-100 text-blue-800",
+    ARCHIVED: "bg-j-gray-100 text-j-gray-600",
+    PENDING: "bg-amber-100 text-amber-900",
+};
 
 /** Recebe uma página da API sem acoplar a apresentação a um endpoint específico. */
 export function PublicationList({ page, pageIndex, pageSize, onPaginationChange, isLoading = false, isFetching = false, error }: PublicationListProps) {
@@ -59,15 +66,16 @@ export function PublicationList({ page, pageIndex, pageSize, onPaginationChange,
                         const cover = item.images.find((image) => image.primary);
                         const { label, icon: TypeIcon } = types[item.type];
                         return (
-                            <article key={`${item.type}-${item.id}`} className="flex flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white">
+                            <article key={`${item.type}-${item.serviceRequest ? 'request' : 'publication'}-${item.id}`} className="flex flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white">
                                 {cover && <div className="relative aspect-video bg-j-gray-100"><Image src={getMediaImageUrl(cover.storageKey)} alt={item.title} fill unoptimized sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" /></div>}
                                 <div className="flex flex-col gap-3 p-4">
                                     <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold">
                                         <span className="inline-flex items-center gap-1.5 text-j-blue-800"><TypeIcon size={16} aria-hidden="true" className="shrink-0" />{label}</span>
-                                        <span className="rounded-full bg-j-gray-100 px-2.5 py-1 text-j-gray-600">{statuses[item.status]}</span>
+                                        <span className={`rounded-full px-2.5 py-1 ${statusColors[item.status]}`}>{statuses[item.status]}</span>
                                     </div>
                                     <h3 title={item.title} className="line-clamp-2 break-words font-bold text-j-blue-800">{previewText(item.title, CARD_TITLE_LIMIT)}</h3>
                                     <p className="line-clamp-3 break-words text-sm text-j-gray-600">{previewText(publicationPlainText(item.content), CARD_CONTENT_LIMIT)}</p>
+                                    {item.serviceRequest && <p className="text-sm text-amber-900">Solicitação recebida. O serviço aparecerá no feed após aprovação.</p>}
                                 </div>
                                 <DraftPublicationCardActions publication={item} />
                                 <PublishedPublicationCardActions publication={item} />

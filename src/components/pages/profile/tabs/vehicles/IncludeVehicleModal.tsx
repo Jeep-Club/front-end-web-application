@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { vehiclePhotoKeys, appendVehiclePhotos } from "@/utils/media/vehiclePhotos";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -190,14 +191,14 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                 </div>
 
             <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
-                <p className="text-xs text-j-gray-500">Envie até 3 fotos. Na edição, as novas fotos substituem as atuais.</p>
-                <InputFile.Image
+                <p className="text-xs text-j-gray-500">Envie até 3 fotos. A primeira será a capa. Na edição, as novas fotos são adicionadas às atuais, até o total de 3.</p>
+                {vehiclePhotoKeys(vehicle).length < 3 && <InputFile.Image
                     name="photo"
                     label="Foto do veículo"
-                    maxFiles={3}
+                    maxFiles={3 - vehiclePhotoKeys(vehicle).length}
                     cropShape="landscape"
                     className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
-                />
+                />}
                 {isEditMode && vehicle?.photo && (
                     <div className="flex items-center gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -209,7 +210,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                         <div className="flex flex-col">
                             <span className="text-xs font-bold text-j-gray-700">Foto atual cadastrada</span>
                             <span className="text-[11px] text-j-gray-500">
-                                Envie uma nova imagem acima apenas se desejar substituí-la.
+                                As novas fotos serão adicionadas à galeria. A capa atual será mantida.
                             </span>
                         </div>
                     </div>
@@ -278,11 +279,13 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
     const mutation = useMutation({
         mutationFn: async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {
             const photoFiles = data.photo ?? [];
-            const photos = await Promise.all(photoFiles.map(async (file) => {
+            if (vehiclePhotoKeys(vehicle).length + photoFiles.length > 3) throw new Error("O veículo pode ter no máximo 3 fotos. Considere também as fotos já cadastradas.");
+            const uploadedPhotos = await Promise.all(photoFiles.map(async (file) => {
                 const formData = new FormData();
                 formData.append("file", file);
                 return uploadImageAction(formData);
             }));
+            const photos = appendVehiclePhotos(vehicle, uploadedPhotos);
 
             if (isEditMode && vehicleId) {
                 const changes: EditVehicleMemberRequest = {

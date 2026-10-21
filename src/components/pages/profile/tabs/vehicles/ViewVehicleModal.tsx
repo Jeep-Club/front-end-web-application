@@ -117,7 +117,7 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onStepChange, onClose, 
                 </div>
 
                 <div className={currentStep === 3 ? "w-full flex flex-col gap-4" : "hidden"}>
-                    <VehiclePhotoCarousel photos={vehicle.photos?.length ? vehicle.photos : [vehicle.photo]} alt={vehicle.nickname || vehicle.model} className="h-40 w-full rounded-lg" />
+                    <VehiclePhotoCarousel cover={vehicle.photo} photos={vehicle.photos} alt={vehicle.nickname || vehicle.model} className="h-40 w-full rounded-lg" />
 
                     <ReadOnlyField label="Status" value={STATUS_LABELS[vehicle.status]} />
 

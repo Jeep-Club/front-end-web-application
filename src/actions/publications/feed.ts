@@ -42,11 +42,11 @@ export async function setPublicationLikeAction(input: { id: number; like: boolea
     } catch (error) { throw new Error(extractApiErrorMessage(error, "Não foi possível atualizar sua curtida."), { cause: error }); }
 }
 
-export async function listPublicationCommentsAction(input: { id: number; page: number }) {
-    const data = z.object({ id: idSchema, page: z.number().int().nonnegative() }).parse(input);
+export async function listPublicationCommentsAction(input: { id: number; page: number; size?: number }) {
+    const data = z.object({ id: idSchema, page: z.number().int().nonnegative(), size: z.number().int().min(1).max(50).default(10) }).parse(input);
     await requirePermission("COMMENT_READ");
     try {
-        const result = await actionFetchWrapper({ url: `publications/${data.id}/comments?page=${data.page}&size=10`, method: "GET", cache: "no-store", schema: pageResponseSchema(publicationCommentSchema) });
+        const result = await actionFetchWrapper({ url: `publications/${data.id}/comments?page=${data.page}&size=${data.size}`, method: "GET", cache: "no-store", schema: pageResponseSchema(publicationCommentSchema) });
         return result.data;
     } catch (error) { throw new Error(extractApiErrorMessage(error, "Não foi possível carregar os comentários."), { cause: error }); }
 }

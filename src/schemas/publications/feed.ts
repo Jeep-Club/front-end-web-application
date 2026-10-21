@@ -16,6 +16,7 @@ export const publicationFeedDetailSchema = z.discriminatedUnion("type", [
 ]);
 export const publicationCommentSchema = z.object({
     id: z.number(), publicationId: z.number(), authorUserId: z.number(), text: z.string(),
+    authorName: z.string().nullish(),
     images: z.array(z.object({ storageKey: z.string(), position: z.number() })), createdAt: z.string(),
 });
 export type PublicationFeedItem = z.infer<typeof publicationFeedItemSchema>;

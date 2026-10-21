@@ -1,3 +1,5 @@
-export default function EventosPage() {
-    return null;
+import { redirect } from "next/navigation";
+
+export default function Page() {
+    redirect("/feed?type=EVENT");
 }
