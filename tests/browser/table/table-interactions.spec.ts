@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect } from "../fixtures";
 
 test("Table: busca, filtros, paginação e reflow", async ({ page }) => {
   // Storybook 10.6 embed mode disables autoplay: Playwright owns these interactions.

@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect } from "../fixtures";
 
 test("Login: campos, teclado e validação sem autenticação", async ({ page }) => {
   await page.goto("/login");

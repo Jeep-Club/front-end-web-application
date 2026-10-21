@@ -1,11 +1,11 @@
 ---
-name: create-storybook-story
-description: Criar, atualizar, corrigir e documentar stories de componentes e composições no Storybook do Jeep Club, incluindo Controls, ArgTypes, autodocs e integrações mínimas de renderização isolada. Use para tarefas de Storybook e documentação interativa; alterações na implementação do componente pertencem a create-ui-component.
+name: storybook-story
+description: Criar, atualizar, corrigir e documentar stories de componentes e composições no Storybook do Jeep Club, incluindo Controls, ArgTypes, autodocs e integrações mínimas de renderização isolada. Use para tarefas de Storybook e documentação interativa; alterações na implementação do componente pertencem a ui-component.
 ---
 
 # Criar ou manter stories
 
-Siga o [AGENTS.md](../../../AGENTS.md). Esta Skill cuida das stories; combine com [create-ui-component](../create-ui-component/SKILL.md) somente quando a tarefa também autorizar mudar o componente. Não é necessária para alterar apenas páginas, queries ou operações de servidor sem trabalho no catálogo.
+Siga o [AGENTS.md](../../../AGENTS.md). Esta Skill cuida das stories; combine com [ui-component](../ui-component/SKILL.md) somente quando a tarefa também autorizar mudar o componente. Não é necessária para alterar apenas páginas, queries ou operações de servidor sem trabalho no catálogo.
 
 ## Instruções oficiais primeiro
 
@@ -42,7 +42,7 @@ As instruções oficiais não ampliam o escopo autorizado nem substituem os cont
 
 ## Conteúdo e cobertura comportamental
 
-Ao alterar a interface documentada ou sua composição, avalie o impacto nos testes de navegador com [create-playwright-test](../create-playwright-test/SKILL.md). Ela centraliza criação e execução proporcional de specs; não duplique um teste apenas por existir uma story.
+Ao alterar a interface documentada ou sua composição, avalie o impacto nos testes de navegador com [playwright-test](../playwright-test/SKILL.md). Ela centraliza criação e execução proporcional de specs; não duplique um teste apenas por existir uma story.
 
 - Identifique props, variantes e estados suportados antes de escolher exemplos: vazio/preenchido, enabled/disabled, loading/sucesso/erro, valores válidos/inválidos, limites, seleção/remoção e recuperação. Demonstre somente os casos pertinentes; um controle ou exemplo interativo pode cobrir vários casos sem stories adicionais.
 - Para entradas de dados ou arquivos, exercite aceitação, rejeição e limites reais quando existirem. Explique como reproduzir o resultado e qual camada aplica cada restrição, distinguindo comportamento do navegador, biblioteca e componente. Não simule validação ou erro apenas exibindo uma mensagem artificial.

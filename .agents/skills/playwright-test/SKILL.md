@@ -1,5 +1,5 @@
 ---
-name: create-playwright-test
+name: playwright-test
 description: Criar, manter, executar e investigar testes de navegador do Jeep Club com Playwright, na aplicação Next.js ou em stories existentes. Use também para avaliar cobertura e selecionar testes afetados por mudanças de interface; não para testes unitários Jest ou para documentar stories sem trabalho de testes no navegador.
 ---
 
@@ -15,7 +15,7 @@ Siga o [AGENTS.md](../../../AGENTS.md). Consulte [testing](../../../docs/testing
 
 ## Implementar ou adaptar
 
-- Organize specs por comportamento/funcionalidade, como [Table](../../../tests/browser/table-interactions.spec.ts) e [login](../../../tests/browser/login-form.spec.ts), sem impor um arquivo por componente. Mantenha-os em `tests/browser/`, excluídos do [Jest](../../../jest.config.ts).
+- Organize specs por comportamento/funcionalidade, agrupando os testes relacionados nas pastas de [Table](../../../tests/browser/table) e [login](../../../tests/browser/login), sem impor um arquivo por componente. Mantenha-os em `tests/browser/`, excluídos do [Jest](../../../jest.config.ts).
 - Reutilize [fixtures.ts](../../../tests/browser/fixtures.ts) para cenários locais sem backend: bloqueia operações remotas, detecta erros JavaScript e anexa capturas. Confira se essa fronteira serve ao requisito; não remova proteções para executar operações reais. Integração autenticada exige ambiente e dados próprios autorizados, ainda não fornecidos por esses pilotos. Extraia outra fixture apenas com necessidade concreta.
 - Use papéis/nomes acessíveis, labels e dados sintéticos determinísticos. Prefira assertions sobre resultados visíveis, valores, foco, estados e efeitos. Evite classes CSS, seletores de implementação, posições arbitrárias e textos voláteis; CSS pode ser verificado quando o próprio requisito for apresentação, como indicador de foco.
 - Use o auto-wait e assertions com retry do Playwright; não acrescente sleeps, retries de cenário, skips ou tolerâncias para ocultar falhas. Visibilidade e `load` não garantem hidratação: investigue prontidão observável e perda de eventos sem recorrer a detalhes privados do React nos testes. Preserve as verificações existentes quando a falha revelar comportamento real.
@@ -23,6 +23,8 @@ Siga o [AGENTS.md](../../../AGENTS.md). Consulte [testing](../../../docs/testing
 - Reutilize os projetos configurados para motores e larguras, sem copiar testes por navegador. Verifique reflow, conteúdo, foco/teclado e elementos alcançáveis; overflow de página difere de scroll interno intencional. Screenshots complementam assertions, não certificam acessibilidade. Não crie ou atualize baselines visuais sem referência estável e aprovada.
 
 ## Selecionar e executar
+
+Para mudanças de interface, avalie também o impacto na acessibilidade e nas verificações existentes em `*.a11y.spec.ts`. Reutilize [accessibility.ts](../../../tests/browser/accessibility.ts) para scans axe nos estados relevantes (inicial, validação, expansão, vazio etc.); acrescente ou atualize cenários somente se houver risco ou comportamento sem cobertura. Combine-os com teclado/foco quando pertinente, sem repetir todo o teste funcional. Os projetos `a11y-chromium-*` e `npm run test:a11y` selecionam somente essas auditorias; escolha arquivo/projeto conforme o impacto e amplie motores apenas com justificativa. Analise os anexos JSON, incluindo `violations` e `incomplete`, e investigue nós, critérios e causa antes de propor correções. Não exclua elementos, desative regras ou reduza a exigência para obter aprovação. Ausência de violações automatizadas não certifica WCAG nem substitui leitor de tela, teclado, zoom e avaliação manual; veja [testing](../../../docs/testing.md#acessibilidade-automatizada).
 
 Defina a abrangência pelos consumidores afetados, sem executar tudo automaticamente:
 

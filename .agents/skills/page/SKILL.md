@@ -1,5 +1,5 @@
 ---
-name: create-page
+name: page
 description: Implementar ou adaptar páginas e fluxos do Jeep Club no Next.js App Router, compondo layouts, fronteiras Server/Client, permissões, dados e navegação. Use para tarefas de tela ou funcionalidade; não para uma alteração isolada de primitiva, query ou operação backend.
 ---
 
@@ -19,11 +19,11 @@ Use [architecture](../../../docs/architecture.md) para fronteiras e donos dos da
 4. Componha os controles, Form, Table e modais existentes. Separe comportamento específico da view quando trouxer clareza, sem gerar arquivos automaticamente. Reutilize as operações/schemas encontrados; trate mudanças remotas ou de cache no procedimento específico, sem duplicá-lo aqui.
 5. Confira visibilidade de ação, acesso direto e autorização da operação separadamente. Menu financeiro e rota têm regras diferentes no código; não ampliar acesso para fazer a tela aparecer. Se o requisito depender de regra ambígua, esclareça essa parte sem inventar política.
 6. Complete os estados de carga, erro/recuperação, vazio, mutação e atualização. Preserve valores em falha e as ações permitidas. Confira navegação direta, refresh e voltar/avançar; em usuários, verifique slot `@modal`, detalhe interceptado e conflito com `/new` se afetados.
-7. Identifique os componentes da interface e suas stories. Avalie se a view ou composição alterada tem um exemplo isolável útil; nesse caso siga [create-storybook-story](../create-storybook-story/SKILL.md) para documentação, composição, referências e validação. Não force uma página com backend/sessão real a executar no catálogo nem extraia uma view apenas para preencher uma categoria. Mudanças internas sem efeito nos exemplos não exigem stories novas; mantenha o trabalho no escopo da tarefa.
+7. Identifique os componentes da interface e suas stories. Avalie se a view ou composição alterada tem um exemplo isolável útil; nesse caso siga [storybook-story](../storybook-story/SKILL.md) para documentação, composição, referências e validação. Não force uma página com backend/sessão real a executar no catálogo nem extraia uma view apenas para preencher uma categoria. Mudanças internas sem efeito nos exemplos não exigem stories novas; mantenha o trabalho no escopo da tarefa.
 
 ## Verificação e entrega
 
-Avalie os testes do fluxo e de seus componentes com [create-playwright-test](../create-playwright-test/SKILL.md) para decidir o que reutilizar, atualizar, acrescentar e executar conforme o impacto.
+Avalie os testes do fluxo e de seus componentes com [playwright-test](../playwright-test/SKILL.md) para decidir o que reutilizar, atualizar, acrescentar e executar conforme o impacto.
 
 Use [testing](../../../docs/testing.md) para checks proporcionais. Verifique os consumidores da mutação, formulário e navegação alterados, além de responsividade, conteúdo longo e teclado no ambiente disponível. Relate fluxo escolhido, componentes/operações reutilizados, resultados e limites; testes Node não comprovam navegação ou layout completos.
 

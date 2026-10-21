@@ -62,6 +62,7 @@ Execute na raiz, após instalar as dependências:
 | `npm run test:browser` | Pilotos de Table/Storybook e login em Chromium, Firefox e WebKit, nas três larguras |
 | `npm run test:browser -- --project="firefox-*"` | Apenas Firefox nas três larguras; aceita também `chromium-*` e `webkit-*` |
 | `npm run test:browser:report` | Abrir o relatório HTML da última execução Playwright |
+| `npm run test:a11y` | Somente axe-core em Chromium desktop/mobile; resultados e violações no relatório Playwright |
 
 O Jest usa ambiente Node e coleta cobertura por padrão na configuração atual. Build, lint, TypeScript e Jest verificam aspectos diferentes; Jest não substitui validação de interface no navegador.
 

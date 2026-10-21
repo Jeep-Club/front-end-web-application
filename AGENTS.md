@@ -47,14 +47,14 @@ Durante a implementação:
 - Preserve contratos e validações; respeite autenticação, autorização e regras
   de negócio. Visibilidade de interface não substitui autorização da operação.
 - Siga o design documentado e considere mobile-first, estados e acessibilidade.
-- Mantenha stories e documentação interativa coerentes com mudanças relevantes de interface, seguindo [create-storybook-story](.agents/skills/create-storybook-story/SKILL.md).
+- Mantenha stories e documentação interativa coerentes com mudanças relevantes de interface, seguindo [storybook-story](.agents/skills/storybook-story/SKILL.md).
 - Distinga limitações do código de padrões a reproduzir. Se um requisito exigir
   definir um contrato ou comportamento ainda ambíguo, esclareça essa parte.
 
 ## Validação
 
 - Selecione verificações proporcionais conforme docs/testing.md.
-- Em toda alteração de interface, avalie a validade e as lacunas dos testes existentes e selecione a execução conforme o impacto, seguindo [create-playwright-test](.agents/skills/create-playwright-test/SKILL.md). Avaliar é obrigatório; criar teste novo depende de benefício concreto.
+- Em toda alteração de interface, avalie a validade e as lacunas dos testes existentes e selecione a execução conforme o impacto, seguindo [playwright-test](.agents/skills/playwright-test/SKILL.md). Avaliar é obrigatório; criar teste novo depende de benefício concreto.
 - Execute TypeScript, ESLint e testes relevantes quando aplicáveis, usando os
   comandos existentes. Não exija build ou suíte completa para toda edição.
 - Revise o diff e os consumidores afetados antes de finalizar.

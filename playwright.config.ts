@@ -16,7 +16,7 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  projects: [
+  projects: [...[
     { browser: "chromium", device: "Desktop Chrome" },
     { browser: "firefox", device: "Desktop Firefox" },
     { browser: "webkit", device: "Desktop Safari" },
@@ -26,8 +26,16 @@ export default defineConfig({
     { name: "desktop", viewport: { width: 1440, height: 900 } },
   ].map(({ name, viewport }) => ({
     name: `${browser}-${name}`,
+    testIgnore: "**/*.a11y.spec.ts",
     use: { ...devices[device], viewport },
-  }))),
+  }))), ...[
+    { name: "desktop", viewport: { width: 1440, height: 900 } },
+    { name: "mobile", viewport: { width: 375, height: 812 } },
+  ].map(({ name, viewport }) => ({
+    name: `a11y-chromium-${name}`,
+    testMatch: "**/*.a11y.spec.ts",
+    use: { ...devices["Desktop Chrome"], viewport },
+  }))],
   webServer: [
     {
       command: "npm run dev -- --hostname 127.0.0.1 --port 3100",

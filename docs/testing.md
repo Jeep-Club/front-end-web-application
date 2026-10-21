@@ -71,7 +71,7 @@ Para comparar falhas, registre revisão do código, diff, comando/flags e ambien
 
 Os comandos de preparação dos navegadores, execução, seleção por projeto e abertura do relatório estão no [README](../README.md#comandos). A configuração inicia os dois servidores por `webServer`, sem reutilizar processos existentes, e usa um worker sem retries. O Next recebe apenas valores sintéticos de sessão e um backend local inacessível. Os projetos combinam os perfis oficiais Desktop Chrome, Desktop Firefox e Desktop Safari com viewports de 375×812, 768×1024 e 1440×900: são nove projetos, reutilizando os mesmos testes. Os nomes seguem `<motor>-<largura>`. Isso não emula aparelhos reais ou touch; WebKit gerenciado pelo Playwright não equivale ao Safari instalado em macOS/iOS. A instalação dos binários é explícita e independente da execução; consulte [navegadores](https://playwright.dev/docs/browsers) e [projetos](https://playwright.dev/docs/test-projects).
 
-Os testes de [Table](../tests/browser/table-interactions.spec.ts) e [login](../tests/browser/login-form.spec.ts) são organizados por comportamento, compartilham [fixtures locais](../tests/browser/fixtures.ts) e usam seletores por papel/nome acessível. A fixture preserva isolamento, verificações de runtime e capturas exploratórias. Os cenários verificam:
+Os testes de [Table](../tests/browser/table/table-interactions.spec.ts) e [login](../tests/browser/login/login-form.spec.ts) são organizados por comportamento, compartilham [fixtures locais](../tests/browser/fixtures.ts) e usam seletores por papel/nome acessível. Quando houver vários specs da mesma funcionalidade, agrupe-os em uma pasta, mantendo testes funcionais e de acessibilidade próximos. A fixture preserva isolamento, verificações de runtime e capturas exploratórias. Os cenários verificam:
 
 - Table: a story existente `componentes-table--composicao-completa`, busca, limpeza por teclado, filtro, paginação e apresentação em tabela desktop ou acordeão nas larguras menores. Usa `embed=true`, que desativa autoplay no Storybook instalado, para que só o Playwright conduza essas interações. Isso não executa nem aprova o `play` da story.
 - Login: campos, máscara de CPF, sequência de foco, indicador de foco do campo senha, alternância da senha e validação real de CPF inválido. Não envia credenciais válidas nem testa autenticação. Requisições não locais, APIs e métodos diferentes de GET são bloqueados e fazem o teste falhar; erros JavaScript não tratados também falham o piloto.
@@ -81,9 +81,9 @@ Selecione a execução pelo impacto: ajustes locais pedem specs/cenários direta
 
 ```sh
 # Arquivo e projeto específicos
-npm run test:browser -- tests/browser/table-interactions.spec.ts --project=chromium-mobile
+npm run test:browser -- tests/browser/table/table-interactions.spec.ts --project=chromium-mobile
 # Mesmo fluxo nos três viewports de um motor, com filtro pelo nome do teste
-npm run test:browser -- tests/browser/login-form.spec.ts --project="webkit-*" --grep="Login:"
+npm run test:browser -- tests/browser/login/login-form.spec.ts --project="webkit-*" --grep="Login:"
 # Conferir seleção sem executar o navegador
 npm run test:browser -- --list --project="firefox-*"
 # Suíte completa nos nove projetos
@@ -100,7 +100,32 @@ Não há snapshots visuais definitivos. Para adicionar comparações com `expect
 
 ## Limites e registro de resultados
 
-O piloto Playwright não cobre fluxos autenticados, integração real com backend, regressão visual por snapshots ou auditoria automatizada de acessibilidade. Os testes Node com mocks continuam sem equivaler a integração completa. No Storybook, use o seletor de viewport para complementar a inspeção mobile, tablet e desktop, controles para alterar props e navegação por teclado para conferir interação. As stories ficam junto aos componentes como *.stories.tsx; demonstre apenas estados suportados pela API existente. O Input usa register=false no piloto, sem integrar React Hook Form.
+O piloto Playwright não cobre fluxos autenticados, integração real com backend ou regressão visual por snapshots. As verificações axe descritas abaixo não constituem auditoria completa de acessibilidade. Os testes Node com mocks continuam sem equivaler a integração completa. No Storybook, use o seletor de viewport para complementar a inspeção mobile, tablet e desktop, controles para alterar props e navegação por teclado para conferir interação. As stories ficam junto aos componentes como *.stories.tsx; demonstre apenas estados suportados pela API existente. O Input usa register=false no piloto, sem integrar React Hook Form.
+
+## Acessibilidade automatizada
+
+Os specs [login.a11y](../tests/browser/login/login.a11y.spec.ts) e [table.a11y](../tests/browser/table/table.a11y.spec.ts) reutilizam o isolamento local e o scanner [accessibility.ts](../tests/browser/accessibility.ts). O login é analisado inicialmente e após validação de campos vazios; Table, inicialmente, após expansão mobile/filtro desktop e no estado vazio. Os testes funcionais existentes continuam responsáveis pelos demais fluxos e pelas falhas de hidratação: a análise axe não comprova prontidão do formulário.
+
+O adaptador `@axe-core/playwright` 4.11.1 usa regras axe-core 4.11.x. As tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` e `wcag22aa` selecionam as regras disponíveis para WCAG até 2.2 A/AA; elas não cobrem todos os critérios da norma. O axe verifica condições identificáveis no DOM renderizado, como labels, nomes acessíveis, ARIA, contraste textual e relações semânticas. Cada estado gera um JSON completo no relatório, com regra, impacto, seletor, explicação, referência e resultados `incomplete` que exigem análise humana. Violações fazem o teste falhar; assertions soft permitem coletar também os estados seguintes sem ignorar falhas.
+
+```sh
+npm run test:a11y
+npm run test:a11y -- tests/browser/login/login.a11y.spec.ts --project=a11y-chromium-desktop
+```
+
+O piloto usa somente dois projetos Chromium: 1440×900 e 375×812, pois Table troca sua estrutura entre tabela e acordeão. Os nove projetos funcionais Chromium/Firefox/WebKit ignoram `*.a11y.spec.ts`; os projetos `a11y-chromium-*` coletam somente esses specs. `npm run test:browser` inclui ambos os grupos. Para executar apenas os funcionais, selecione `--project="chromium-*" --project="firefox-*" --project="webkit-*"`. Amplie auditorias para outros motores ou larguras quando houver diferenças relevantes, sem repetir cada scan nos nove projetos por padrão.
+
+O relatório HTML, screenshots e traces de falha usam os mecanismos existentes. Não desative regras nem exclua elementos para fazer um scan passar. Revise especialmente contraste indeterminado, navegação e retorno de foco, leitura/anúncio dos erros com leitor de tela, zoom/reflow e controles com aparência de link. Problemas de teclado, contexto e experiência assistiva podem passar pelo axe. São necessárias avaliações manuais complementares; aprovação automatizada não certifica conformidade. Referências: [Playwright e axe](https://playwright.dev/docs/accessibility-testing) e [API do axe-core](https://github.com/dequelabs/axe-core/blob/develop/doc/API.md).
+
+O scanner aguarda fontes e o término das animações finitas em andamento, sem espera fixa, e grava `axe-<estado>.json` no diretório do cenário antes de verificar violações. No código atual, a regra `color-contrast` identifica os seguintes problemas (mínimo esperado: 4,5:1):
+
+| Contexto | Contraste observado | Referência para avaliação da correção |
+| --- | --- | --- |
+| Cor de texto dos campos CPF/senha em erro, vermelho sobre cinza | 1,71:1 | [Input](../src/components/common/input/input.tsx): rever a aplicação de text-input-border-error conforme a superfície, conferindo também conteúdo preenchido e placeholder, sem alterar indiscriminadamente o token global |
+| Mensagens de validação vermelhas sobre o fundo azul do login | 3,92:1 | [Input](../src/components/common/input/input.tsx): rever a cor do texto de erro no contexto escuro |
+| Rótulos Nome/Veículo do acordeão mobile | 3,69:1 | [Table.Content](../src/components/common/table/table-content.tsx): avaliar contraste do texto secundário text-j-gray-400 |
+
+Há resultados `incomplete` para o contraste do botão Voltar no login e para `aria-label` aplicado ao span de paginação de [Table.Pagination](../src/components/common/table/table-pagination.tsx), sem papel que suporte claramente esse nome. Precisam de avaliação manual e semântica, respectivamente; não são equivalentes a aprovações nem são descartados pelo relatório. As correções de produção devem ser avaliadas separadamente.
 
 O preview importa o CSS global e carrega as variáveis de Geist/Geist Mono como o layout. Preserva a resolução atual de font-sans, incluindo a divergência descrita em [design.md](design.md); não representa uma correção da tipografia da aplicação. O carregamento de fontes pode exigir rede.
 

@@ -1,5 +1,5 @@
 ---
-name: create-server-function
+name: server-function
 description: Criar ou adaptar operações de servidor do Jeep Club, como Server Functions e Actions ou leituras server-side, reutilizando autenticação, wrappers e contratos backend existentes. Use para validação, integração e execução no servidor; não para apenas configurar Query, compor UI ou expor remotamente toda função auxiliar.
 ---
 

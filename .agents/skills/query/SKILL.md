@@ -1,5 +1,5 @@
 ---
-name: create-query
+name: query
 description: Implementar, corrigir ou manter consultas e mutations TanStack Query do Jeep Club, incluindo keys, parâmetros, estados, cache e invalidação por consumidor. Use para integração de dados remotos no cliente; não para converter uma leitura RSC/URL adequada ou implementar sozinho um endpoint de servidor.
 ---
 
