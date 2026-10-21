@@ -7,6 +7,9 @@ import { useModal } from "@/providers/ModalProvider";
 import { ModalRoot } from "@/components/common/modal/root";
 import { EditChargeDefinitionModal } from "@/components/pages/admin/gestao-financeira/EditChargeDefinitionModal";
 import { updateChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/update";
+import { createChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/create";
+import { CreateChargeDefinitionModal } from "@/components/pages/admin/gestao-financeira/CreateChargeDefinitionModal";
+import toast from "react-hot-toast";
 
 jest.mock("@tanstack/react-query", () => ({ useQuery: jest.fn(), useMutation: jest.fn(), useQueryClient: jest.fn() }));
 jest.mock("@/providers/ModalProvider", () => ({ useModal: jest.fn() }));
@@ -14,6 +17,7 @@ jest.mock("@/components/common/form", () => ({ Form: () => null }));
 jest.mock("@/components/pages/admin/gestao-financeira/ChargeDefinitionFormFields", () => ({ ChargeDefinitionFormFields: () => null }));
 jest.mock("@/actions/billing/chargeDefinitions/get", () => ({ getChargeDefinitionAction: jest.fn() }));
 jest.mock("@/actions/billing/chargeDefinitions/update", () => ({ updateChargeDefinitionAction: jest.fn() }));
+jest.mock("@/actions/billing/chargeDefinitions/create", () => ({ createChargeDefinitionAction: jest.fn() }));
 jest.mock("react-hot-toast", () => ({ __esModule: true, default: { success: jest.fn(), error: jest.fn() } }));
 
 const close = jest.fn();
@@ -133,4 +137,65 @@ it("retains Escape closure through the existing ModalRoot, including while an er
         if (originalDocument) Object.defineProperty(globalThis, "document", originalDocument);
         else Reflect.deleteProperty(globalThis, "document");
     }
+});
+
+describe.each([
+    ["creation", () => CreateChargeDefinitionModal(), jest.mocked(createChargeDefinitionAction)],
+    ["editing", () => EditChargeDefinitionModal({ chargeDefinitionId: 7 }), jest.mocked(updateChargeDefinitionAction)],
+] as const)("definition metrics after %s", (_label, renderModal, action) => {
+    const { QueryClient } = jest.requireActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+    const metricKey = ["billing", "dashboard", "Definições cadastradas"];
+    const definitionKeys = [
+        ["billing", "charge-definitions", { page: "0", size: "10" }],
+        ["billing", "charge-definitions", 7],
+    ];
+    const unrelatedKeys = [
+        ...["Cobranças em aberto", "Cobranças pagas", "Pagamentos para validar", "Reembolsos solicitados", "Devoluções a realizar"]
+            .map((title) => ["billing", "dashboard", title]),
+        ["admin-users", "details", 7],
+    ];
+
+    it.each([true, false])("invalidates affected consumers only on success (success=%s)", async (success) => {
+        const client = new QueryClient({ defaultOptions: {
+            queries: { staleTime: 30_000, gcTime: Infinity },
+            mutations: { retry: false, gcTime: Infinity },
+        } });
+        const keys = [metricKey, ...definitionKeys, ...unrelatedKeys];
+        for (const key of keys) client.setQueryData(key, 1);
+        const invalidate = jest.spyOn(client, "invalidateQueries");
+        jest.mocked(useQueryClient).mockReturnValue(client);
+        action.mockReset();
+        if (success) action.mockResolvedValue(definition as ChargeDefinition);
+        else action.mockRejectedValue(new Error("Operation failed"));
+
+        try {
+            renderModal();
+            const options = jest.mocked(useMutation).mock.calls[0][0];
+            const mutation = client.getMutationCache().build(client, options);
+            const values = { ...definition, defaultAmount: 150 };
+            if (success) {
+                await mutation.execute(values);
+                for (const key of [metricKey, ...definitionKeys]) {
+                    expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+                }
+                for (const key of unrelatedKeys) {
+                    expect(client.getQueryState(key)?.isInvalidated).toBe(false);
+                }
+                expect(close).toHaveBeenCalledTimes(1);
+                expect(toast.success).toHaveBeenCalledTimes(1);
+            } else {
+                await expect(mutation.execute(values)).rejects.toThrow("Operation failed");
+                expect(invalidate).not.toHaveBeenCalled();
+                for (const key of keys) {
+                    expect(client.getQueryState(key)?.isInvalidated).toBe(false);
+                    expect(client.getQueryData(key)).toBe(1);
+                }
+                expect(close).not.toHaveBeenCalled();
+                expect(toast.success).not.toHaveBeenCalled();
+                expect(toast.error).toHaveBeenCalledTimes(1);
+            }
+        } finally {
+            client.clear();
+        }
+    });
 });

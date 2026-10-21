@@ -30,6 +30,7 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
         onSuccess: () => {
             toast.success("Definição de cobrança atualizada com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
+            queryClient.invalidateQueries({ queryKey: ["billing", "dashboard", "Definições cadastradas"], exact: true });
             setClose();
         },
         onError: (error) => toast.error(error.message || "Erro ao atualizar definição de cobrança."),
