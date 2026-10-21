@@ -5,6 +5,7 @@ interface VehicleDetailForEdit {
     id: number;
     nickname: string | null;
     photo: string | null;
+    photos?: string[];
     plate: string;
     renavam: string;
     brand: string;

@@ -8,9 +8,12 @@ interface VehicleListItem {
     nickname: string | null;
     plate: string;
     photo: string | null;
+    photos?: string[];
     modelYear: number;
     model: string;
     color: string;
+    ownerId?: number | null;
+    ownerName?: string | null;
 }
 
 type ListVehicleMemberResponse = PageResponse<VehicleListItem>;

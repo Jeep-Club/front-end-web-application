@@ -65,20 +65,6 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         { module: "IDENTITY", actions: ["USER_READ"] },
     ],
 
-    "/admin/medical-profile": [
-        {
-            module: "HEALTH",
-            actions: ["MEDICAL_PROFILE_READ"],
-        },
-    ],
-
-    "/admin/socios": [
-        {
-            module: "DEPENDENTS",
-            actions: ["DEPENDENT_READ"],
-        },
-    ],
-
     "/admin/gestao-financeira": [
         {
             module: "BILLING",

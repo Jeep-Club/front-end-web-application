@@ -1,8 +1,9 @@
 'use client';
 import { confirmAction } from '@/components/common/tour/confirmTourExit';
 
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ban, Mail, RefreshCw } from 'lucide-react';
+import { Ban, ChevronDown, Mail, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getUserActivationInvitationAction, resendUserActivationInvitationAction, revokeUserActivationInvitationAction } from '@/actions/admin/users/activation-invitation';
 import { Button } from '@/components/common/button';
@@ -14,12 +15,20 @@ const labels: Record<AdminInvitationStatus, string> = {
     REVOKED: 'Revogado',
 };
 
-export function UserActivationInvitation({ userId }: { userId: number }) {
+const statusStyles: Record<AdminInvitationStatus, string> = {
+    QUEUED: 'bg-amber-100 text-amber-800',
+    SENT: 'bg-blue-100 text-blue-800',
+    DELIVERY_FAILED: 'bg-red-100 text-red-800',
+    REVOKED: 'bg-j-gray-100 text-j-gray-600',
+};
+
+export function UserActivationInvitation({ userId, userStatus }: { userId: number; userStatus: UserStatus }) {
+    const [showMore, setShowMore] = useState(false);
     const queryClient = useQueryClient();
     const query = useQuery({
         queryKey: ['admin-users', userId, 'activation-invitation'],
         queryFn: () => getUserActivationInvitationAction(userId),
-        enabled: false,
+        enabled: userStatus === 'PENDING_FIRST_ACCESS',
         retry: false,
     });
     const resend = useMutation({
@@ -44,32 +53,42 @@ export function UserActivationInvitation({ userId }: { userId: number }) {
     const isRevoked = query.data?.invitationStatus === 'REVOKED';
     const isBusy = query.isFetching || resend.isPending || revoke.isPending;
 
+    if (userStatus !== 'PENDING_FIRST_ACCESS') return null;
+
     return (
-        <section className="rounded-xl border border-j-gray-200 bg-j-white p-4 sm:col-span-2">
-            <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-j-blue-50 text-j-blue-800"><Mail size={19} /></span>
-                <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-j-blue-800">Convite de ativação</h3>
-                    <p className="mt-1 text-sm text-j-gray-600">Consulte, reenvie ou revogue o convite enviado por e-mail.</p>
-                    {query.data && <p className="mt-2 text-sm font-semibold text-j-gray-700">Status: {labels[query.data.invitationStatus]}</p>}
-                    {query.isError && <p role="alert" className="mt-2 text-sm text-j-red-600">{query.error.message}</p>}
-                    <div className="mt-3 flex flex-wrap gap-2">
-                        <Button type="button" disabled={isBusy} onClick={() => void query.refetch()} className="border border-j-gray-300 bg-j-white text-j-blue-800 hover:bg-j-gray-100 hover:text-j-blue-800">
-                            {query.isFetching ? <RefreshCw size={16} className="animate-spin" /> : null} Consultar status
-                        </Button>
-                        <Button type="button" disabled={isBusy} onClick={() => resend.mutate()}>
-                            {resend.isPending ? <RefreshCw size={16} className="animate-spin" /> : <Mail size={16} />} {isRevoked ? 'Enviar novo convite' : 'Reenviar convite'}
-                        </Button>
-                        {!isRevoked && <>
-                            <Button type="button" disabled={isBusy} onClick={async () => {
-                                if (await confirmAction('Revogar este convite? O link enviado por e-mail deixará de funcionar.')) revoke.mutate();
-                            }} className="bg-j-red-100 text-j-red-700 hover:bg-j-red-200 hover:text-j-red-800">
-                                {revoke.isPending ? <RefreshCw size={16} className="animate-spin" /> : <Ban size={16} />} Revogar convite
-                            </Button>
-                        </>}
+        <section className="rounded-2xl border border-j-gray-200 bg-gradient-to-br from-white to-j-gray-50 p-4 shadow-sm sm:col-span-2 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300"><Mail size={19} /></span>
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-bold text-j-blue-800">Convite de ativação</h3>
+                            {query.data && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusStyles[query.data.invitationStatus]}`}>{labels[query.data.invitationStatus]}</span>}
+                            {query.isLoading && <span className="text-xs text-j-gray-500">Consultando status...</span>}
+                        </div>
+                        <p className="mt-1 text-sm text-j-gray-600">O usuário ainda precisa ativar a conta pelo e-mail.</p>
+                        {query.isError && <p role="alert" className="mt-1 text-xs text-j-red-600">{query.error.message}</p>}
                     </div>
                 </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                    <Button type="button" disabled={isBusy} onClick={() => resend.mutate()} className="min-h-10 gap-2 rounded-xl bg-j-yellow-300 px-4 text-j-blue-900 hover:bg-yellow-400 hover:text-j-blue-900">
+                        {resend.isPending ? <RefreshCw size={16} className="animate-spin" /> : <Mail size={16} />} {isRevoked ? 'Enviar novo convite' : 'Reenviar convite'}
+                    </Button>
+                    <Button type="button" disabled={isBusy} onClick={() => void query.refetch()} aria-label="Atualizar status do convite" className="min-h-10 gap-2 rounded-xl border border-j-gray-300 bg-white px-3 text-j-gray-700 hover:bg-j-gray-100 hover:text-j-gray-800">
+                        <RefreshCw size={16} className={query.isFetching ? 'animate-spin' : ''} /><span className="sm:hidden">Atualizar</span>
+                    </Button>
+                    {!isRevoked && <Button type="button" onClick={() => setShowMore((current) => !current)} aria-expanded={showMore} className="min-h-10 gap-1 rounded-xl bg-transparent px-2 text-xs text-j-gray-500 hover:bg-j-gray-100 hover:text-j-gray-700">
+                        Opções <ChevronDown size={15} className={showMore ? 'rotate-180 transition-transform' : 'transition-transform'} />
+                    </Button>}
+                </div>
             </div>
+            {showMore && !isRevoked && <div className="mt-4 flex justify-end border-t border-j-gray-200 pt-3">
+                <Button type="button" disabled={isBusy} onClick={async () => {
+                    if (await confirmAction('Revogar este convite? O link enviado por e-mail deixará de funcionar.')) revoke.mutate();
+                }} className="min-h-9 gap-2 rounded-lg bg-transparent px-3 text-xs text-j-red-700 hover:bg-red-50 hover:text-j-red-800">
+                    {revoke.isPending ? <RefreshCw size={15} className="animate-spin" /> : <Ban size={15} />} Revogar convite
+                </Button>
+            </div>}
         </section>
     );
 }
