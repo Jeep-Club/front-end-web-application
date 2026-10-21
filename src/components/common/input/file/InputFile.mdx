@@ -25,7 +25,13 @@ Não é necessário TanStack Query, sessão, serviço de upload ou provider glob
   <Controls of={FileStories.Vazio} />
 </div>
 
-O controle `name` fica fixo para acompanhar o schema do formulário de demonstração; `accept` é um mapa MIME/extensões configurado por cenário, não um objeto arbitrário editável. Não existem props de loading, disabled ou onUpload nessa API. `cropShape`, embora declarado no tipo base, só produz efeito nas apresentações de imagem.
+O controle `name` fica fixo para acompanhar o schema do formulário de demonstração. Os tipos e padrões da tabela refletem a implementação; os args de cada exemplo podem diferir desses padrões (por exemplo, Vazio ativa isFallback, cujo padrão real é false). As anotações de argTypes corrigem limitações do docgen, sem substituir os tipos de produção. Não existem props de loading, disabled ou onUpload nessa API. `cropShape`, embora declarado no tipo base, só produz efeito nas apresentações de imagem.
+
+### Alterar os formatos aceitos
+
+No seletor **accept**, escolha Imagens (JPEG, PNG, WebP), Somente PDF, XML, CSV ou Sem restrição de formato. A opção altera o accept do input nativo e as regras do react-dropzone. Os presets usam MIME e extensões: image/jpeg (.jpg/.jpeg), image/png (.png), image/webp (.webp), application/pdf (.pdf), application/xml e text/xml (.xml), text/csv (.csv). Sem restrição envia undefined.
+
+O controle usa `argTypes.mapping`: `acceptPreset` é um argumento exclusivo da story, exibido como accept, convertido para o objeto de configuração real. Esse argumento não deve ser passado ao componente na aplicação. A pequena adaptação de render mantém os tokens serializáveis do painel separados de `Record<string, string[]>`, preservando os tipos sem casts. Cada Canvas possui seus próprios args; alterar o preset de Vazio não altera Rejeicoes.
 
 <Canvas of={FileStories.SelecionarERemover} />
 
@@ -37,11 +43,19 @@ Esse cenário aceita PDF e verifica seleção e remoção reais. Não comprova i
 
 <Canvas of={FileStories.Rejeicoes} />
 
-O exemplo verifica formato e tamanho rejeitados. `maxSizeMB` é convertido usando 1024 × 1024 bytes, apesar do rótulo MB. Uma seleção com rejeições não incorpora os aceitos do mesmo lote. A remoção limpa o erro do campo e pode deixar seu valor como undefined em vez de array vazio; o schema do consumidor deve representar isso.
+**Rejeicoes começa em Somente PDF e limite de 1 MiB.** Selecione um PDF menor que esse limite para aceitá-lo. Arraste uma imagem, XML ou CSV para ver “Formato de arquivo não suportado.”; um PDF maior que 1 MiB produz “O arquivo excedeu o limite de 1MB.”. O teste automatizado realiza esses passos com Files sintéticos e confirma que o PDF válido anterior continua na lista. Não valida a estrutura interna de um PDF.
+
+Abra a story Rejeicoes para alterar seus próprios Controls (accept e maxSizeMB); os passos acima descrevem os args iniciais. O filtro do seletor nativo normalmente oculta arquivos não aceitos: um arquivo que não pode ser escolhido não demonstra rejeição. Arraste-o para o dropzone para exercitar a validação de fato. Nos testes, `applyAccept: false` desliga apenas o filtro do simulador de seleção, deixando o react-dropzone rejeitar o arquivo real; não há mensagem artificial.
+
+O react-dropzone compara MIME **ou** extensão, aplica tamanho/quantidade por lote e fornece as rejeições. MIME pode variar entre sistemas; o preset não certifica o conteúdo e não substitui validação no servidor. O Jeep Club escolhe a mensagem da primeira rejeição, guarda os Files no RHF, controla substituição/acúmulo e remoção. Uma seleção com rejeições não incorpora os aceitos do mesmo lote. A remoção limpa o erro do campo e pode deixar seu valor como undefined em vez de array vazio; o schema do consumidor deve representar isso.
+
+`maxSizeMB` é convertido usando 1024 × 1024 bytes, apesar do rótulo MB. Para quantidade, react-dropzone limita o lote; a implementação também verifica o total acumulado entre seleções. Durante o arraste, o navegador pode não informar extensão/MIME suficientes para antecipar o resultado: confira a mensagem após soltar.
 
 ## Imagens e casos de uso
 
 As apresentações `InputFile.Image` e `InputFile.Image2` aceitam JPEG, PNG e WebP. O recorte suporta circle, square e landscape. PNG permanece PNG; as demais entradas são exportadas como JPEG. Image2 apresenta seleção compacta e miniaturas e não oferece isFallback.
+
+As duas apresentações fixam seus formatos internamente e não expõem accept. O seletor de presets pertence somente ao InputFile geral. O recorte e os previews são comportamentos da composição Jeep Club, não do react-dropzone. Ambas usam square quando cropShape é omitido; Avatar escolhe circle explicitamente.
 
 Explore as [stories de imagens](?path=/docs/componentes-input-inputfile-imagens--docs) no grupo **InputFile → Imagens**. `Avatar` demonstra seleção e aplicação de recorte com imagem sintética; `Veiculo` reproduz a configuração landscape e até três fotos usada pelos modais de veículos; `Compacta` apresenta Image2. O perfil pessoal usa circle e uma foto; o cadastro de ferramentas também utiliza landscape. Nenhuma dessas stories executa o fluxo completo de cadastro ou edição.
 
@@ -52,3 +66,7 @@ Explore as [stories de imagens](?path=/docs/componentes-input-inputfile-imagens-
 O estado de arraste depende de interação real; não há prop para forçá-lo. Nos testes, a rejeição de formato ignora somente o filtro de accept do simulador de seleção para deixar o react-dropzone rejeitar o arquivo de fato. O seletor nativo do sistema, gestos de arraste, foco completo do diálogo e acessibilidade integral exigem validação adicional.
 
 Consulte também o [Input](?path=/docs/componentes-input-input--docs) para campos textuais e <a href="/technical-docs/components-and-pages.md" target="_blank" rel="noreferrer">componentes e páginas</a> para o procedimento de formulários.
+
+## Referências oficiais
+
+- [react-dropzone](https://react-dropzone.js.org/): regras accept, limites e rejeições; a configuração não realiza upload HTTP.
