@@ -1,4 +1,6 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/tools/list";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from "@/utils/http/api";

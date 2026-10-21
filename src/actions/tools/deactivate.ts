@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/tools/deactivate";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { toolDetailResponseSchema } from "@/schemas/tools/detail";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-
-export async function deactivateToolAction(toolId: number) {
-    try {
-        const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.TOOLS}/${toolId}/deactivate`,
-            method: 'PATCH',
-            schema: toolDetailResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao desativar ferramenta'), { cause: error });
-    }
+export async function deactivateToolAction(...args: Parameters<typeof server.deactivateToolAction>) {
+    return unwrapActionResult(await server.deactivateToolAction(...args));
 }

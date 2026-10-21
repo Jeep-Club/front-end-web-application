@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
+    "test:production-errors": "node tests/productionServerActionErrors.mjs",
     "test:coverage": "jest --coverage"
   },
   "dependencies": {

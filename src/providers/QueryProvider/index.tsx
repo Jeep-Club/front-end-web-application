@@ -9,10 +9,10 @@ import { queryErrorHandler } from "./handlers/query/onError";
 export default function QueryProvider({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         mutationCache: new MutationCache({
-            onError: (error: any) => mutationErrorHandler(error),
+            onError: (error, _variables, _context, mutation) => mutationErrorHandler(error, !!mutation.options.onError),
         }),
         queryCache: new QueryCache({
-            onError: (error: any) => queryErrorHandler(error),
+            onError: (error) => queryErrorHandler(error),
         }),
 
     }));

@@ -1,23 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/billing/chargeDefinitions/activate";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { chargeDefinitionResponseSchema } from "@/schemas/billing/chargeDefinition";
-
-export async function activateChargeDefinitionAction(id: number): Promise<ChargeDefinition> {
-    try {
-        const response = await actionFetchWrapper<ChargeDefinition>({
-            url: `${HttpAPIRoutes.BILLING_CHARGE_DEFINITIONS}/${id}/activate`,
-            method: "PATCH",
-            schema: chargeDefinitionResponseSchema,
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(
-            extractApiErrorMessage(error, "Erro ao ativar definição de cobrança"),
-            { cause: error },
-        );
-    }
+export async function activateChargeDefinitionAction(...args: Parameters<typeof server.activateChargeDefinitionAction>) {
+    return unwrapActionResult(await server.activateChargeDefinitionAction(...args));
 }

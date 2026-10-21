@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/profile/update-photo";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import { z } from 'zod';
-import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-
-export async function updateProfilePhotoAction(storageKey: string | null): Promise<void> {
-    try {
-        await actionFetchWrapper({
-            url: `${HttpAPIRoutes.IDENTITY_ME}/photo`,
-            method: 'PATCH',
-            schema: z.unknown(),
-            body: JSON.stringify({ storageKey }),
-        });
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Não foi possível atualizar a foto de perfil.'), { cause: error });
-    }
+export async function updateProfilePhotoAction(...args: Parameters<typeof server.updateProfilePhotoAction>) {
+    return unwrapActionResult(await server.updateProfilePhotoAction(...args));
 }

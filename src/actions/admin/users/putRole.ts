@@ -1,22 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/admin/users/putRole";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import { adminUserSchema } from "@/schemas/admin/users";
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from '@/utils/http/api';
-import z from "zod";
-
-interface Props {
-    id: number;
-    roles: PutUserRoleRequest;
-}
-
-export async function putUserRoleAction({ id, roles }: Props) {
-    const res = await actionFetchWrapper<null>({
-        url: HttpAPIRoutes.USER_ROLES.replace('{id}', id.toString()),
-        method: "PUT",
-        body: JSON.stringify(roles),
-        schema: z.any()
-    });
-
-    return res.data;
+export async function putUserRoleAction(...args: Parameters<typeof server.putUserRoleAction>) {
+    return unwrapActionResult(await server.putUserRoleAction(...args));
 }
