@@ -11,6 +11,7 @@
     "test:coverage": "jest --coverage",
     "test:browser": "playwright test",
     "test:browser:report": "playwright show-report",
+    "test:a11y": "playwright test --project=a11y-*",
     "storybook": "storybook dev -p 6006 --disable-telemetry",
     "build-storybook": "storybook build --disable-telemetry"
   },
@@ -39,6 +40,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.1",
     "@playwright/test": "1.64.1",
     "@storybook/addon-docs": "10.6.3",
     "@storybook/nextjs-vite": "10.6.3",
