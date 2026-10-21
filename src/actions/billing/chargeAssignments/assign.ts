@@ -1,50 +1,19 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/billing/chargeAssignments/assign";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { chargeAssignmentResponseSchema } from "@/schemas/billing/chargeAssignment";
-
-async function postAssignment(url: string): Promise<ChargeAssignment> {
-    try {
-        const response = await actionFetchWrapper<ChargeAssignment>({
-            url,
-            method: "POST",
-            schema: chargeAssignmentResponseSchema,
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(
-            extractApiErrorMessage(error, "Erro ao criar atribuição de cobrança"),
-            { cause: error },
-        );
-    }
+export async function assignChargeToAllMembersAction(...args: Parameters<typeof server.assignChargeToAllMembersAction>) {
+    return unwrapActionResult(await server.assignChargeToAllMembersAction(...args));
 }
 
-export async function assignChargeToAllMembersAction(chargeDefinitionId: number): Promise<ChargeAssignment> {
-    return postAssignment(
-        `${HttpAPIRoutes.BILLING_CHARGE_DEFINITIONS}/${chargeDefinitionId}/assignments/all-members`,
-    );
+export async function assignChargeToUserAction(...args: Parameters<typeof server.assignChargeToUserAction>) {
+    return unwrapActionResult(await server.assignChargeToUserAction(...args));
 }
 
-export async function assignChargeToUserAction(chargeDefinitionId: number, userId: number): Promise<ChargeAssignment> {
-    return postAssignment(
-        `${HttpAPIRoutes.BILLING_CHARGE_DEFINITIONS}/${chargeDefinitionId}/assignments/users/${userId}`,
-    );
+export async function assignChargeToRoleAction(...args: Parameters<typeof server.assignChargeToRoleAction>) {
+    return unwrapActionResult(await server.assignChargeToRoleAction(...args));
 }
 
-export async function assignChargeToRoleAction(chargeDefinitionId: number, roleId: number): Promise<ChargeAssignment> {
-    return postAssignment(
-        `${HttpAPIRoutes.BILLING_CHARGE_DEFINITIONS}/${chargeDefinitionId}/assignments/roles/${roleId}`,
-    );
-}
-
-export async function assignChargeToEventParticipantsAction(
-    chargeDefinitionId: number,
-    eventId: number,
-): Promise<ChargeAssignment> {
-    return postAssignment(
-        `${HttpAPIRoutes.BILLING_CHARGE_DEFINITIONS}/${chargeDefinitionId}/assignments/events/${eventId}/participants`,
-    );
+export async function assignChargeToEventParticipantsAction(...args: Parameters<typeof server.assignChargeToEventParticipantsAction>) {
+    return unwrapActionResult(await server.assignChargeToEventParticipantsAction(...args));
 }

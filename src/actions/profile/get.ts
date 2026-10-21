@@ -1,39 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/profile/get";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import { meProfileResponseSchema } from '@/schemas/user/profile';
-import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { cacheProfilePhotoStorageKey } from '@/utils/auth/me';
-
-export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
-    try {
-        const response = await actionFetchWrapper({
-            url: HttpAPIRoutes.IDENTITY_ME,
-            method: 'GET',
-            schema: meProfileResponseSchema,
-        });
-
-        const user = response.data;
-        await cacheProfilePhotoStorageKey(user.profilePhotoStorageKey);
-
-        return {
-            id: user.id,
-            name: user.name,
-            birthDate: user.birthDate,
-            email: user.email,
-            cpf: user.cpf,
-            rg: user.rg,
-            phoneNumber: user.phoneNumber,
-            profilePhotoUrl: user.profilePhotoUrl,
-            status: user.status,
-            createdAt: user.createdAt,
-            lastLoginAt: null,
-        };
-    } catch (error) {
-        throw new Error(
-            extractApiErrorMessage(error, 'Erro ao carregar os dados pessoais'),
-            { cause: error },
-        );
-    }
+export async function getUserProfileAction(...args: Parameters<typeof server.getUserProfileAction>) {
+    return unwrapActionResult(await server.getUserProfileAction(...args));
 }

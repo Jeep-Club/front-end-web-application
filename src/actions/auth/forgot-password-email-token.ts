@@ -1,22 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/auth/forgot-password-email-token";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import z from 'zod';
-import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { ForgotPasswordRequestType } from "@/schemas/auth/forgot-password/forgotPasswordRequest";
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-
-export default async function forgotPasswordEmailTokenAction({ cpf }: ForgotPasswordRequestType) {
-    try {
-        await actionFetchWrapper({
-            url: HttpAPIRoutes.PASSWORD_RECOVERY_EMAIL_TOKEN,
-            method: 'POST',
-            body: JSON.stringify({ cpf }),
-            schema: z.any()
-        });
-
-        return { success: true };
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao enviar o e-mail de redefinição. Tente novamente.'), { cause: error });
-    }
+export default async function forgotPasswordEmailTokenAction(...args: Parameters<typeof server.default>) {
+    return unwrapActionResult(await server.default(...args));
 }

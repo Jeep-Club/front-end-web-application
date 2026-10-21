@@ -1,20 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/auth/me";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import z from 'zod';
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { meResponseSchema } from '@/schemas/auth/me/me';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-
-export async function meAction() {
-    try {
-            const response = await actionFetchWrapper<MeResponse>({
-                url: HttpAPIRoutes.AUTHENTICATION_ME,
-                method: 'GET',
-                schema: meResponseSchema
-            });
-            return response.data;
-        } catch (error) {
-            throw new Error(extractApiErrorMessage(error, 'Erro ao buscar dados do usuário'), { cause: error });
-        }
+export async function meAction(...args: Parameters<typeof server.meAction>) {
+    return unwrapActionResult(await server.meAction(...args));
 }
