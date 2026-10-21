@@ -37,7 +37,7 @@ export default function DashboardShell({ fullName, initialProfilePhotoUrl, onboa
                         fullName={fullName}
                         initialProfilePhotoUrl={initialProfilePhotoUrl}
                     />
-                    <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch]">
+                    <div data-dashboard-scroll className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch]">
                         {children}
                     </div>
                     <DashboardFooter />

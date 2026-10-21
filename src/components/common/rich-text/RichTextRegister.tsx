@@ -6,6 +6,7 @@ import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/r
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Quote, Code, Minus, Undo2, Redo2, RemoveFormatting, Link2, Unlink, Check, X } from "lucide-react";
 import { publicationEditorHtml } from "@/utils/publications/content";
+import { isolateListSelection } from "@/utils/publications/listSelection";
 import styles from "./rich-text.module.css";
 
 function Tool({ label, children, active = false, disabled = false, onClick }: {
@@ -41,6 +42,15 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
         } catch { setLinkError("Informe um link válido, começando com https://, http://, mailto: ou tel:."); }
     }
 
+    function toggleList(type: 'bulletList' | 'orderedList') {
+        const chain = editor.chain().focus().command(({ tr }) => {
+            if (!editor.isActive('bulletList') && !editor.isActive('orderedList')) isolateListSelection(tr);
+            return true;
+        });
+        if (type === 'bulletList') chain.toggleBulletList().run();
+        else chain.toggleOrderedList().run();
+    }
+
     return <div className="border-b border-j-gray-200 bg-j-gray-100/70 p-2">
         <div role="group" aria-label="Formatação do conteúdo" className="flex flex-wrap items-center gap-1">
             <select aria-label="Estilo do parágrafo" value={state.heading} disabled={disabled}
@@ -58,8 +68,8 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
             <Tool label="Sublinhado (Ctrl+U)" active={state.underline} disabled={disabled} onClick={() => editor.chain().focus().toggleUnderline().run()}><Underline size={17} /></Tool>
             <Tool label="Tachado" active={state.strike} disabled={disabled} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough size={17} /></Tool>
             <span className="mx-1 h-6 w-px bg-j-gray-200" aria-hidden="true" />
-            <Tool label="Lista com marcadores" active={state.bulletList} disabled={disabled} onClick={() => editor.chain().focus().toggleBulletList().run()}><List size={17} /></Tool>
-            <Tool label="Lista numerada" active={state.orderedList} disabled={disabled} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered size={17} /></Tool>
+            <Tool label="Lista com marcadores" active={state.bulletList} disabled={disabled} onClick={() => toggleList('bulletList')}><List size={17} /></Tool>
+            <Tool label="Lista numerada" active={state.orderedList} disabled={disabled} onClick={() => toggleList('orderedList')}><ListOrdered size={17} /></Tool>
             <Tool label="Citação" active={state.blockquote} disabled={disabled} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote size={17} /></Tool>
             <Tool label="Bloco de código" active={state.codeBlock} disabled={disabled} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code size={17} /></Tool>
             <Tool label="Linha divisória" disabled={disabled} onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus size={17} /></Tool>

@@ -58,6 +58,11 @@ describe("Feed de publicações", () => {
         expect(actionFetchWrapper).toHaveBeenLastCalledWith(expect.objectContaining({ url: "publications/7/comments", method: "POST", body: JSON.stringify({ text: "Olá", images: [] }) }));
         await expect(createPublicationCommentAction({ id: 7, text: " " })).rejects.toThrow();
     });
+    it('requests only the three newest comments for a feed card', async () => {
+        jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: {} });
+        await listPublicationCommentsAction({ id: 7, page: 0, size: 3 });
+        expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: 'publications/7/comments?page=0&size=3' }));
+    });
 });
 
 describe("Leitura de conteúdo formatado", () => {

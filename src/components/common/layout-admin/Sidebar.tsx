@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-    Bell,
-    CalendarDays,
     Newspaper,
+    HelpCircle,
+    CalendarRange,
     ShieldCheck,
     X,
 } from "lucide-react";
@@ -22,14 +22,9 @@ const navItems = [
         icon: Newspaper,
     },
     {
-        href: "/eventos",
-        label: "Eventos",
-        icon: CalendarDays,
-    },
-    {
-        href: "/avisos",
-        label: "Avisos",
-        icon: Bell,
+        href: "/agenda",
+        label: "Agenda",
+        icon: CalendarRange,
     },
 ];
 
@@ -162,6 +157,20 @@ export default function Sidebar({
                             );
                         },
                     )}
+                    <Link
+                        href="/tutoriais"
+                        title="Tutoriais"
+                        aria-current={pathname.startsWith("/tutoriais") ? "page" : undefined}
+                        onClick={onCloseMobile}
+                        className={twMerge(
+                            "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-red-400 transition-colors hover:bg-j-blue-700 hover:text-red-300",
+                            pathname.startsWith("/tutoriais") && "bg-j-blue-700",
+                            isCollapsed && "md:justify-center md:px-0",
+                        )}
+                    >
+                        <HelpCircle size={18} />
+                        <span className={isCollapsed ? "md:hidden" : ""}>Tutoriais</span>
+                    </Link>
                     {canAccessAdmin && (
                         <Link
                             href={panelHref}

@@ -13,28 +13,34 @@ const imageSchema = z.object({ storageKey: z.string(), position: z.number(), pri
 const statusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
 const publicationSchema = z.object({ id: z.number(), title: z.string(), content: z.string(), status: statusSchema, images: z.array(imageSchema), eventStatus: z.enum(["OPEN", "IN_PROGRESS", "FINISHED", "CANCELLED"]).optional() });
 const eventSchema = publicationSchema.omit({ status: true }).extend({ publicationStatus: statusSchema });
+const pendingServiceSchema = publicationSchema.omit({ status: true }).extend({ status: z.literal("PENDING") });
 const resources = {
     NOTICE: { path: "admin/notices", action: "NOTICE_READ" },
     EVENT: { path: "admin/events", action: "EVENT_READ_ADMIN" },
     SERVICE: { path: "admin/services", action: "SERVICE_ADMIN_READ" },
 } as const;
 type PublicationType = keyof typeof resources;
+type PendingService = z.infer<typeof pendingServiceSchema>;
+type AdminListItem = Omit<z.infer<typeof publicationSchema>, 'status'> & { type: PublicationType; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING'; serviceRequest?: boolean };
 
 export async function listAdminPublicationsAction(input: { types: string[]; page: number; size: number; status?: PublicationStatusFilter }) {
     const status = parsePublicationStatus(input.status);
     const types = [...new Set(input.types)].filter((type): type is PublicationType => Object.hasOwn(resources, type));
     if (!types.length) throw new Error("Selecione ao menos um tipo de publicação.");
-    const permitted = await Promise.all(types.map(async (type) => await haveActionPermission("PUBLICATIONS", resources[type].action) ? type : null));
+    const canReadRequests = types.includes('SERVICE') && await haveActionPermission('PUBLICATIONS', 'SERVICE_REQUEST_ADMIN_READ');
+    const canReadServices = types.includes('SERVICE') && await haveActionPermission('PUBLICATIONS', 'SERVICE_ADMIN_READ');
+    const permitted = await Promise.all(types.map(async (type) => (type === 'SERVICE' ? canReadServices || canReadRequests : await haveActionPermission("PUBLICATIONS", resources[type].action)) ? type : null));
     const allowedTypes = permitted.filter((type): type is PublicationType => type !== null);
     if (!allowedTypes.length) throw new Error("Você não tem permissão para consultar estes tipos de publicação.");
     const canExport = await haveActionPermission("PUBLICATIONS", "EXPORT");
-    if (!canExport && allowedTypes.some((type) => type !== "EVENT")) {
+    if (!canExport && allowedTypes.some((type) => type !== "EVENT" && (type !== 'SERVICE' || canReadServices))) {
         throw new Error("A consulta administrativa de avisos e serviços pela API atual exige a permissão PUBLICATIONS_EXPORT, além da permissão de leitura do tipo.");
     }
     const { pageIndex, pageSize } = parsePublicationPagination(new URLSearchParams({ page: String(input.page), size: String(input.size) }));
     try {
         const groups = await Promise.all(allowedTypes.map(async (type) => {
             const resource = resources[type];
+            if (type === 'SERVICE' && !canReadServices) return [];
             if (type === "SERVICE" && status === "DRAFT") return [];
             if (type === "EVENT" && !canExport) {
                 const summaries: { id: number; type: PublicationType }[] = [];
@@ -52,12 +58,26 @@ export async function listAdminPublicationsAction(input: { types: string[]; page
             const response = await actionFetchWrapper({ url: `${resource.path}/export?${params}`, headers: { Accept: "text/csv" }, method: "GET", cache: "no-store", schema: z.string() });
             return parsePublicationExportIds(response.data).map((id) => ({ id, type }));
         }));
-        const summaries = groups.flat().sort((a, b) => b.id - a.id);
+        const pending: PendingService[] = [];
+        if (canReadRequests && status === 'ALL') {
+            let page = 0;
+            while (true) {
+                const response = await actionFetchWrapper({ url: `admin/service-publication-requests?status=PENDING&page=${page}&size=48&sort=requestedAt,desc`, method: 'GET', cache: 'no-store', schema: pageResponseSchema(pendingServiceSchema) });
+                pending.push(...response.data.content);
+                if (response.data.last || !response.data.content.length) break;
+                page++;
+            }
+        }
+        const summaries: { id: number; type: PublicationType; request?: PendingService }[] = [
+            ...groups.flat(), ...pending.map(request => ({ id: request.id, type: 'SERVICE' as const, request })),
+        ];
+        summaries.sort((a, b) => b.id - a.id);
         const selected = summaries.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
-        const content: (z.infer<typeof publicationSchema> & { type: PublicationType })[] = [];
+        const content: AdminListItem[] = [];
         // Limita a concorrência da leitura das galerias aos itens da página visível.
         for (let offset = 0; offset < selected.length; offset += 6) {
-            const batch = await Promise.all(selected.slice(offset, offset + 6).map(async ({ id, type }) => {
+            const batch = await Promise.all(selected.slice(offset, offset + 6).map(async ({ id, type, request }) => {
+                if (request) return { ...request, type, serviceRequest: true };
                 if (type === "EVENT") {
                     const result = await actionFetchWrapper({ url: `${resources[type].path}/${id}`, method: "GET", cache: "no-store", schema: eventSchema });
                     return { ...result.data, type, status: result.data.publicationStatus };

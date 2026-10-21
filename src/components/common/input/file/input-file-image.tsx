@@ -10,6 +10,7 @@ import { UploadCloud } from "lucide-react";
 import { FallBackFile } from "./fallback/fallback";
 import { ImageCropDialog } from "./image-crop-dialog";
 import type { FileRejection } from "react-dropzone";
+import { imageAccept } from "@/utils/media/imageAccept";
 
 export type InputFileImageProps = Omit<InputFileProps, 'accept'>
 
@@ -24,7 +25,7 @@ export function InputFileImage({
     isFallback = false,
     cropShape = "square"
 }: InputFileImageProps) {
-    const accept = { 'image/jpeg': [], 'image/png': [], 'image/webp': [] }
+    const accept = imageAccept;
     const id = useId();
     const { control, setError, clearErrors } = useFormContext();
     const {

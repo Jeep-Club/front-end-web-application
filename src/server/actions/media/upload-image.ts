@@ -6,8 +6,9 @@ import { ActionError } from "@/utils/actions/actionResult";
 import { getAuthCookies } from '@/utils/auth/get';
 import fetchRefreshToken from '@/utils/auth/refresh';
 import { login } from '@/utils/auth/login';
-import { extractApiErrorMessage, SESSION_EXPIRED_MESSAGE } from '@/utils/http/apiError';
+import { SESSION_EXPIRED_MESSAGE } from '@/utils/http/apiError';
 import { getFrontendAccessHeaders } from '@/services/fetchWrapper/frontendAccess';
+import { imageUploadErrorMessage } from '@/utils/media/uploadError';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -63,10 +64,7 @@ async function uploadImageActionImpl(formData: FormData): Promise<string> {
         try { parsed = JSON.parse(body); } catch {}
         // This response is already the JSON problem body (unlike errors from
         // fetchWrapper, which wrap it in `rawData`). Preserve its backend detail.
-        throw new ActionError(extractApiErrorMessage(
-            { rawData: parsed },
-            'Não foi possível enviar a imagem.',
-        ));
+        throw new ActionError(imageUploadErrorMessage(response.status, parsed));
     }
 
     const result = await response.json() as UploadResponse;
