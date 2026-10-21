@@ -1,43 +1,15 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/admin/users/activation-invitation";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { adminUserInvitationStatusResponseSchema } from '@/schemas/admin/create-user';
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-import { z } from 'zod';
-
-function invitationUrl(userId: number) {
-    return HttpAPIRoutes.ADMIN_USER_ACTIVATION_INVITATIONS.replace('{userId}', String(userId));
+export async function getUserActivationInvitationAction(...args: Parameters<typeof server.getUserActivationInvitationAction>) {
+    return unwrapActionResult(await server.getUserActivationInvitationAction(...args));
 }
 
-export async function getUserActivationInvitationAction(userId: number): Promise<AdminUserInvitationStatusResponse> {
-    try {
-        const response = await actionFetchWrapper<AdminUserInvitationStatusResponse>({
-            url: invitationUrl(userId), method: 'GET', schema: adminUserInvitationStatusResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Não foi possível consultar o convite.'), { cause: error });
-    }
+export async function resendUserActivationInvitationAction(...args: Parameters<typeof server.resendUserActivationInvitationAction>) {
+    return unwrapActionResult(await server.resendUserActivationInvitationAction(...args));
 }
 
-export async function resendUserActivationInvitationAction(userId: number): Promise<AdminUserInvitationStatusResponse> {
-    try {
-        const response = await actionFetchWrapper<AdminUserInvitationStatusResponse>({
-            url: invitationUrl(userId), method: 'POST', schema: adminUserInvitationStatusResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Não foi possível reenviar o convite.'), { cause: error });
-    }
-}
-
-export async function revokeUserActivationInvitationAction(userId: number): Promise<void> {
-    try {
-        await actionFetchWrapper<unknown>({
-            url: invitationUrl(userId), method: 'DELETE', schema: z.unknown(),
-        });
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Não foi possível revogar o convite.'), { cause: error });
-    }
+export async function revokeUserActivationInvitationAction(...args: Parameters<typeof server.revokeUserActivationInvitationAction>) {
+    return unwrapActionResult(await server.revokeUserActivationInvitationAction(...args));
 }

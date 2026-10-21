@@ -85,6 +85,9 @@ describe('ações do perfil médico', () => {
         mockedActionFetchWrapper.mockRejectedValue({
             status: 400,
             rawData: {
+                code: 'VALIDATION_ERROR',
+                status: 400,
+                detail: 'Existem campos inválidos na requisição.',
                 errors: [{ field: 'allergies', message: 'As alergias devem ter no máximo 2000 caracteres.' }],
             },
         });

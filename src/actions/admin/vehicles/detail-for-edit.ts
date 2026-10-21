@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/admin/vehicles/detail-for-edit";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { vehicleDetailForEditResponseSchema } from "@/schemas/vehicles/detail-for-edit";
-
-export async function getVehicleDetailForEditAdminAction(vehicleId: number) {
-    try {
-        const response = await actionFetchWrapper<VehicleDetailForEdit>({
-            url: `${HttpAPIRoutes.VEHICLES_DETAIL_FOR_EDIT_ADMIN}/${vehicleId}`,
-            method: 'GET',
-            schema: vehicleDetailForEditResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao carregar dados do veículo'), { cause: error });
-    }
+export async function getVehicleDetailForEditAdminAction(...args: Parameters<typeof server.getVehicleDetailForEditAdminAction>) {
+    return unwrapActionResult(await server.getVehicleDetailForEditAdminAction(...args));
 }

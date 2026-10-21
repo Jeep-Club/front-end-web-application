@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/tools/detail";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { toolDetailResponseSchema } from "@/schemas/tools/detail";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-
-export async function getToolDetailAction(toolId: number) {
-    try {
-        const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.TOOLS}/${toolId}`,
-            method: 'GET',
-            schema: toolDetailResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao carregar dados da ferramenta'), { cause: error });
-    }
+export async function getToolDetailAction(...args: Parameters<typeof server.getToolDetailAction>) {
+    return unwrapActionResult(await server.getToolDetailAction(...args));
 }

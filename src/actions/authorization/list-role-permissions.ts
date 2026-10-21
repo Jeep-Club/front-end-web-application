@@ -1,20 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/authorization/list-role-permissions";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { permissionListResponseSchema } from "@/schemas/authorization/permission";
-
-export async function listRolePermissionsAction(roleId: number): Promise<PermissionResponse[]> {
-    try {
-        const response = await actionFetchWrapper<PermissionResponse[]>({
-            url: `${HttpAPIRoutes.AUTHORIZATION_ROLES}/${roleId}/permissions`,
-            method: 'GET',
-            schema: permissionListResponseSchema,
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao listar permissões do cargo'), { cause: error });
-    }
+export async function listRolePermissionsAction(...args: Parameters<typeof server.listRolePermissionsAction>) {
+    return unwrapActionResult(await server.listRolePermissionsAction(...args));
 }

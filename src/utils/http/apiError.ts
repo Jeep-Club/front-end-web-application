@@ -1,3 +1,5 @@
+import { ActionError } from "@/utils/actions/actionResult";
+
 /**
  * Mensagem fixa lancada pelo actionFetchWrapper quando o access token (e o
  * refresh token) nao sao mais validos. Toda action envolve seus erros com
@@ -70,9 +72,10 @@ export function extractApiErrorMessage(error: unknown, fallback: string): string
     if (error instanceof Error && error.message === SESSION_EXPIRED_MESSAGE) {
         return SESSION_EXPIRED_MESSAGE;
     }
-    if (error instanceof Error && /API_URL is not defined|API_URL não está configurada/i.test(error.message)) {
+    if (error instanceof Error && /API_URL|API_FRONTEND_KEY/.test(error.message)) {
         return 'O serviço está indisponível no momento. Tente novamente mais tarde.';
     }
+    if (error instanceof ActionError) return error.message;
 
     const problem = getApiProblem(error);
     if (!problem) {
@@ -86,6 +89,8 @@ export function extractApiErrorMessage(error: unknown, fallback: string): string
         const firstError = problem.errors.find((item) => item.message?.trim());
         if (firstError) return firstError.message;
     }
+
+    if (problem.detail?.trim()) return problem.detail;
 
     const codeMessages: Record<string, string> = {
         VALIDATION_ERROR: 'Confira os dados informados e tente novamente.',

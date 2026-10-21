@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/vehicles/detail-member";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { vehicleDetailResponseSchema } from "@/schemas/vehicles/detail";
-
-export async function getVehicleDetailAction(vehicleId: number) {
-    try {
-        const response = await actionFetchWrapper<VehicleDetail>({
-            url: `${HttpAPIRoutes.VEHICLES_DETAIL_MEMBER}/${vehicleId}`,
-            method: 'GET',
-            schema: vehicleDetailResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao carregar dados do veículo'), { cause: error });
-    }
+export async function getVehicleDetailAction(...args: Parameters<typeof server.getVehicleDetailAction>) {
+    return unwrapActionResult(await server.getVehicleDetailAction(...args));
 }

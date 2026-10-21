@@ -1,18 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/admin/vehicles/delete";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { deleteVehicleMemberResponseSchema } from "@/schemas/vehicles/delete";
-
-export async function deleteVehicleAdminAction(vehicleId: number) {
-    try {
-        await actionFetchWrapper({
-            url: `${HttpAPIRoutes.VEHICLES_DELETE_ADMIN}/${vehicleId}`,
-            method: 'DELETE',
-            schema: deleteVehicleMemberResponseSchema,
-        });
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao excluir veículo'), { cause: error });
-    }
+export async function deleteVehicleAdminAction(...args: Parameters<typeof server.deleteVehicleAdminAction>) {
+    return unwrapActionResult(await server.deleteVehicleAdminAction(...args));
 }

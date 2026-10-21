@@ -1,24 +1,7 @@
-'use server';
-import z from 'zod';
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { refreshTokenResponseSchema } from '@/schemas/auth/refresh/refreshTokenResponse';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/auth/refresh";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-//apenas para testes
-
-const mockRefreshResponseSchema = z.object({
-    message: z.string()
-});
-
-export async function refreshAction() {
-    try {
-        const response = await actionFetchWrapper<RefreshTokenResponse>({
-            url: HttpAPIRoutes.REFRESH,
-            method: 'POST',
-            schema: refreshTokenResponseSchema
-        }); 
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao fazer refresh'), { cause: error });
-    }
+export async function refreshAction(...args: Parameters<typeof server.refreshAction>) {
+    return unwrapActionResult(await server.refreshAction(...args));
 }
