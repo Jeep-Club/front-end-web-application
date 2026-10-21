@@ -47,6 +47,7 @@ Durante a implementação:
 - Preserve contratos e validações; respeite autenticação, autorização e regras
   de negócio. Visibilidade de interface não substitui autorização da operação.
 - Siga o design documentado e considere mobile-first, estados e acessibilidade.
+- Mantenha stories e documentação interativa coerentes com mudanças relevantes de interface, seguindo [create-storybook-story](.agents/skills/create-storybook-story/SKILL.md).
 - Distinga limitações do código de padrões a reproduzir. Se um requisito exigir
   definir um contrato ou comportamento ainda ambíguo, esclareça essa parte.
 

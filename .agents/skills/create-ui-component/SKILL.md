@@ -13,11 +13,12 @@ Consulte [design](../../../docs/design.md) para contexto visual, [desenvolviment
 
 ## Procedimento
 
-1. Localize o consumidor e procure equivalentes em `src/components/common` e na pasta da tela. Inspecione props, exports e estados antes de criar outra implementação. Determine qual comportamento precisa mudar.
+1. Localize o consumidor e procure equivalentes em `src/components/common` e na pasta da tela. Inspecione implementação, story existente, props, exports e estados antes de criar outra implementação. Determine qual comportamento precisa mudar.
 2. Decida a responsabilidade: common para apresentação/interação sem regra de domínio; components/pages para coordenação específica. Prefira compor; extraia quando houver reuso ou ganho concreto. Um componente principal por TSX admite helpers privados coesos, como os de Table.Content.
 3. Use o contexto visual e a primitiva existente. [Table](../../../src/components/common/table/index.ts) oferece composição de listas; [ChargeDefinitionFormFields](../../../src/components/pages/admin/gestao-financeira/ChargeDefinitionFormFields.tsx) compartilha campos entre criação/edição sem virar formulário universal. Não adicionar variante só para um consumidor se composição local resolver.
 4. Preserve atributos nativos, labels, erros e nomes acessíveis. Defina loading, erro, vazio, sucesso e disabled quando pertinentes. Comece pela menor largura e confira conteúdo longo, teclado e foco; limite de altura/scroll não comprova acessibilidade de modal. Consulte as lacunas de Select/ModalRoot no guia antes de reproduzi-las.
 5. Revise os consumidores afetados pela mudança de props/estilo. Mantenha dados e operações com seus donos atuais; não levar uma Action de domínio para uma primitiva nem criar fetch duplicado para preencher o componente.
+6. Quando a mudança afetar props, aparência, estados, interação ou composição, crie ou atualize a story e sua documentação com [create-storybook-story](../create-storybook-story/SKILL.md); confira também stories consumidoras afetadas. Valide componente e story. Mudança exclusivamente interna sem impacto no contrato ou nos exemplos não exige uma story artificial; não documente componentes alheios à tarefa.
 
 ## Verificação e entrega
 

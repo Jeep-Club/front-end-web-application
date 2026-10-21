@@ -1,10 +1,10 @@
 import type { StorybookConfig } from "@storybook/nextjs-vite";
 
 const config: StorybookConfig = {
-  stories: ["../src/components/common/**/*.stories.tsx"],
+  stories: ["./Introduction.mdx", "../src/components/**/*.mdx", "../src/components/**/*.stories.tsx"],
   addons: ["@storybook/addon-docs"],
   framework: "@storybook/nextjs-vite",
-  staticDirs: ["../public"],
+  staticDirs: ["../public", { from: "../docs", to: "/technical-docs" }],
 };
 
 export default config;
