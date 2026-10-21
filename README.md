@@ -8,7 +8,7 @@ Construído com Next.js (App Router), React e TypeScript; utiliza Tailwind CSS, 
 
 Pré-requisitos:
 
-- Node.js compatível com as dependências instaladas. O Next.js 16.2.4 resolvido neste checkout declara Node `>=20.9.0`; isso é um requisito do pacote, **não uma versão oficial de suporte do projeto**. A escolha do runtime, dos browsers e do ambiente de testes ainda está pendente.
+- Node.js compatível com as dependências instaladas. O Next.js 16.2.4 resolvido neste checkout declara Node `>=20.9.0`; isso é um requisito do pacote, **não uma versão oficial de suporte do projeto**. Não há versão de runtime fixada na configuração do projeto.
 - npm, utilizado com o `package-lock.json` versionado. Não há versão de npm fixada no projeto.
 - Para login e operações integradas: API de desenvolvimento acessível, credencial de acesso quando exigida pelo backend e usuário de teste com as permissões correspondentes. O servidor frontend, sozinho, não fornece esses serviços.
 
@@ -57,8 +57,8 @@ Execute na raiz, após instalar as dependências:
 | `npm test -- tests/useTour.spec.ts --runInBand --coverage=false --cache=false` | Exemplo de execução de uma suíte existente |
 | `npm run test:coverage -- --runInBand` | Jest com relatório de cobertura em `coverage/` |
 
-O Jest usa ambiente Node e coleta cobertura por padrão na configuração atual. Os comandos acima não significam que todos os checks estão aprovados: há pendências conhecidas de lint e testes. Build, lint, TypeScript e Jest verificam aspectos diferentes; Jest não substitui validação de interface no navegador.
+O Jest usa ambiente Node e coleta cobertura por padrão na configuração atual. Build, lint, TypeScript e Jest verificam aspectos diferentes; Jest não substitui validação de interface no navegador.
 
 ## Documentação
 
-Consulte o [índice de documentação](docs/README.md) para navegar pelo material existente e pelos guias planejados. As instruções de implantação, variáveis de deploy e integração operacional permanecem no [runbook da Vercel](deploy/vercel.md).
+Consulte o [índice de documentação](docs/README.md) para consultar arquitetura, design, convenções, implementação de componentes e testes. As instruções de implantação, variáveis de deploy e integração operacional permanecem no [runbook da Vercel](deploy/vercel.md).
