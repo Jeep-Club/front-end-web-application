@@ -59,8 +59,21 @@ Execute na raiz, após instalar as dependências:
 | `npm test -- --runInBand --coverage=false --cache=false` | Jest completo sem cobertura/cache de testes |
 | `npm test -- tests/useTour.spec.ts --runInBand --coverage=false --cache=false` | Exemplo de execução de uma suíte existente |
 | `npm run test:coverage -- --runInBand` | Jest com relatório de cobertura em `coverage/` |
+| `npm run test:browser` | Pilotos de Table/Storybook e login em Chromium, Firefox e WebKit, nas três larguras |
+| `npm run test:browser -- --project="firefox-*"` | Apenas Firefox nas três larguras; aceita também `chromium-*` e `webkit-*` |
+| `npm run test:browser:report` | Abrir o relatório HTML da última execução Playwright |
 
 O Jest usa ambiente Node e coleta cobertura por padrão na configuração atual. Build, lint, TypeScript e Jest verificam aspectos diferentes; Jest não substitui validação de interface no navegador.
+
+Após `npm ci`, prepare os navegadores gerenciados pelo Playwright:
+
+```sh
+npx playwright install chromium firefox webkit
+```
+
+A execução dos testes não instala navegadores automaticamente. O comando instala as versões compatíveis com o Playwright do projeto e reutiliza as já disponíveis. Para uma única combinação, use, por exemplo, `npm run test:browser -- --project=webkit-mobile`.
+
+O Playwright inicia Next em `127.0.0.1:3100` e Storybook em `127.0.0.1:6106`; essas portas devem estar livres. Encerre outro `next dev` deste checkout antes de executar, pois o Next compartilha o diretório `.next`. O carregamento das fontes pode exigir rede. Não é necessário configurar credenciais de backend para esses pilotos. Veja o [guia de testes](docs/testing.md#testes-de-navegador) para escopo, capturas e limitações.
 
 ## Documentação
 

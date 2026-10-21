@@ -6,11 +6,12 @@ Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o a
 
 | Ferramenta/configuração | Alcance e limite |
 | --- | --- |
-| [Jest + ts-jest](../jest.config.ts) | Testes TypeScript em ambiente Node; globs tests/**/*.spec.ts e tests/**/*.test.ts. Não há DOM/browser configurado nem descoberta de specs .tsx por essas globs |
+| [Jest + ts-jest](../jest.config.ts) | Testes TypeScript em ambiente Node; globs tests/**/*.spec.ts e tests/**/*.test.ts, excluindo tests/browser/. Não há DOM/browser configurado nem descoberta de specs .tsx por essas globs |
 | [ESLint](../eslint.config.mjs) | Regras Next core-web-vitals e TypeScript; o script lint usa ESLint CLI. Executar só arquivos alterados não equivale ao lint da raiz |
 | [TypeScript](../tsconfig.json) | Strict/noEmit, aliases e tipos Next gerados. Typecheck é comando direto; não há script typecheck. Não valida runtime/backend |
 | Build Next | Compilação/build de produção, dependente de ambiente/rede/fontes. Não substitui lint, Jest ou navegação |
 | [Storybook](../.storybook/main.ts) | Catálogo isolado de Button, Input e PageHeader com autodocs, controles e seletor de viewport. Não executa uma suíte visual ou E2E |
+| [Playwright](../playwright.config.ts) | Chromium, Firefox e WebKit reais; pilotos em tests/browser/, excluídos da coleta Jest. Interações, teclado, reflow e capturas exploratórias, sem autenticação ou backend |
 
 O Jest coleta cobertura por padrão, com relatórios text/lcov/html em coverage. A coleta está restrita aos utilitários definidos na configuração, não à aplicação inteira. Os argumentos sem cobertura/cache no README evitam esses artefatos, mas testes individuais ainda podem escrever arquivos.
 
@@ -66,9 +67,27 @@ Não adicionar teste que só espelha implementação ou texto trivial. Execute a
 
 Para comparar falhas, registre revisão do código, diff, comando/flags e ambiente. Use o mesmo alvo e condições; totais iguais não provam falhas iguais. Confronte suíte/cenário/diagnóstico. Sem referência comparável, classifique como inconclusivo e investigue, sem descartar trabalho local. Não confunda falha de ambiente, contrato de fixture e regressão funcional.
 
+## Testes de navegador
+
+Os comandos de preparação dos navegadores, execução, seleção por projeto e abertura do relatório estão no [README](../README.md#comandos). A configuração inicia os dois servidores por `webServer`, sem reutilizar processos existentes, e usa um worker sem retries. O Next recebe apenas valores sintéticos de sessão e um backend local inacessível. Os projetos combinam os perfis oficiais Desktop Chrome, Desktop Firefox e Desktop Safari com viewports de 375×812, 768×1024 e 1440×900: são nove projetos, reutilizando os mesmos testes. Os nomes seguem `<motor>-<largura>`. Isso não emula aparelhos reais ou touch; WebKit gerenciado pelo Playwright não equivale ao Safari instalado em macOS/iOS. A instalação dos binários é explícita e independente da execução; consulte [navegadores](https://playwright.dev/docs/browsers) e [projetos](https://playwright.dev/docs/test-projects).
+
+O [piloto](../tests/browser/pilot.spec.ts) usa seletores por papel/nome acessível e verifica:
+
+- Table: a story existente `componentes-table--composicao-completa`, busca, limpeza por teclado, filtro, paginação e apresentação em tabela desktop ou acordeão nas larguras menores. Usa `embed=true`, que desativa autoplay no Storybook instalado, para que só o Playwright conduza essas interações. Isso não executa nem aprova o `play` da story.
+- Login: campos, máscara de CPF, sequência de foco, indicador de foco do campo senha, alternância da senha e validação real de CPF inválido. Não envia credenciais válidas nem testa autenticação. Requisições não locais, APIs e métodos diferentes de GET são bloqueados e fazem o teste falhar; erros JavaScript não tratados também falham o piloto.
+- Reflow: elementos principais visíveis, comportamento próprio de cada largura e ausência de overflow horizontal da página. Rolagem interna intencional da tabela não é proibida. Essas verificações não aprovam todos os conteúdos ou requisitos de acessibilidade.
+
+A digitação sequencial do `play` de Table pode deixar a busca com caracteres incompletos e interromper suas assertions. O piloto Playwright preenche a busca com `fill` e verifica os resultados reais, mas não cobre essa sequência de eventos por caractere. Investigue separadamente a interação entre o campo controlado, React Hook Form e a atualização dos filtros antes de considerar esse comportamento aprovado; não altere o componente apenas para fazer a automação passar.
+
+No login, campos renderizados no servidor podem ficar visíveis antes de receber os handlers React. No WebKit em 375px e 768px, o preenchimento imediato do CPF perdeu o valor; em investigação após a hidratação, a mesma entrada recebeu a máscara corretamente. Visibilidade e o evento `load` não garantem prontidão interativa. As assertions continuam exigindo o valor mascarado, sem retries ou esperas fixas para ocultar essa condição. A sincronização entre disponibilidade dos controles e hidratação requer tratamento próprio; esses cenários não estão aprovados apenas porque a máscara funciona depois da hidratação.
+
+Cada teste salva uma captura exploratória de página inteira, anexada ao relatório HTML em `playwright-report/`, e arquivos por cenário em `test-results/`. Falhas preservam screenshot e trace do Playwright; o relatório oferece acesso ao trace. Esses diretórios são ignorados pelo Git e a próxima execução substitui os resultados anteriores. A captura exploratória mostra o estado final alcançado, inclusive quando houve falha, e não representa uma referência visual aprovada.
+
+Não há snapshots visuais definitivos. Para adicionar comparações com `expect(page).toHaveScreenshot()` no futuro, primeiro estabilize dados, fontes, estado, SO e versão do navegador, aprove uma referência e versione as imagens resultantes. Revise diferenças antes de qualquer atualização explícita; não atualize snapshots automaticamente para resolver falhas. Consulte as referências oficiais de [webServer](https://playwright.dev/docs/test-webserver), [rede](https://playwright.dev/docs/network) e [comparação visual](https://playwright.dev/docs/test-snapshots).
+
 ## Limites e registro de resultados
 
-Não há harness de navegador/E2E, suíte visual, automação de acessibilidade ou ambiente de integração real com backend configurado. Alguns testes combinam módulos com mocks; isso não equivale a integração completa. Playwright não está instalado. No Storybook, use o seletor de viewport para inspecionar mobile, tablet e desktop, controles para alterar props e navegação por teclado para conferir interação. As stories ficam junto aos componentes como *.stories.tsx; demonstre apenas estados suportados pela API existente. O Input usa register=false no piloto, sem integrar React Hook Form.
+O piloto Playwright não cobre fluxos autenticados, integração real com backend, regressão visual por snapshots ou auditoria automatizada de acessibilidade. Os testes Node com mocks continuam sem equivaler a integração completa. No Storybook, use o seletor de viewport para complementar a inspeção mobile, tablet e desktop, controles para alterar props e navegação por teclado para conferir interação. As stories ficam junto aos componentes como *.stories.tsx; demonstre apenas estados suportados pela API existente. O Input usa register=false no piloto, sem integrar React Hook Form.
 
 O preview importa o CSS global e carrega as variáveis de Geist/Geist Mono como o layout. Preserva a resolução atual de font-sans, incluindo a divergência descrita em [design.md](design.md); não representa uma correção da tipografia da aplicação. O carregamento de fontes pode exigir rede.
 
