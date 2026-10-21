@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { Input } from "./index";
 
 const meta = {
-  title: "Componentes/Input",
+  title: "Componentes/Input/Input",
   component: Input,
   argTypes: {
     register: { control: false, table: { disable: true } },

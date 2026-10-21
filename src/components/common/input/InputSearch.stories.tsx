@@ -3,7 +3,7 @@ import { expect, fn, waitFor } from "storybook/test";
 import { InputSearch } from "./input-search";
 
 const meta = {
-  title: "Composições/Busca/InputSearch",
+  title: "Componentes/Input/InputSearch",
   component: InputSearch,
   tags: ["!autodocs"],
   args: {

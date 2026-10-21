@@ -10,7 +10,7 @@ Composição existente para capturar e enviar um termo de busca. Use quando prec
 ## Componentes e responsabilidades
 
 - **Form:** cria o contexto React Hook Form e aplica o schema Zod interno.
-- **InputRegister:** conecta o campo ao formulário; a apresentação e os estados de campo vêm do [Input](?path=/docs/componentes-input--docs).
+- **InputRegister:** conecta o campo ao formulário; a apresentação e os estados de campo vêm do [Input](?path=/docs/componentes-input-input--docs).
 - **Ícones e botão nativo de limpeza:** indicam busca/carregamento e permitem apagar o termo. O botão de limpeza não utiliza o componente Button.
 
 ## Uso e controles
@@ -35,4 +35,4 @@ Composição existente para capturar e enviar um termo de busca. Use quando prec
 
 O formulário e a validação são reais e já pertencem à composição. A story só acrescenta a superfície escura e um spy `fn()` para observar `onSubmit`; não há chamada de API, autenticação, TanStack Query ou provider global adicional. Os cenários de digitação/limpeza e envio com Enter têm verificações `play` no navegador, sem runner de CI configurado.
 
-Veja também o [Input com ícone](?path=/story/componentes-input--com-icone) para a composição direta de JSX via `children`. As APIs permanecem nos tipos reais e nos Controls; diretrizes visuais ficam no <a href="/technical-docs/design.md" target="_blank" rel="noreferrer">guia de design</a>.
+Veja também o [Input com ícone](?path=/story/componentes-input-input--com-icone) para a composição direta de JSX via `children`. As APIs permanecem nos tipos reais e nos Controls; diretrizes visuais ficam no <a href="/technical-docs/design.md" target="_blank" rel="noreferrer">guia de design</a>.
