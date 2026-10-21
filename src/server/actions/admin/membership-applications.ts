@@ -123,3 +123,21 @@ export async function rejectMembershipApplicationAction(...args: Parameters<type
 export async function rejectAndBlockMembershipApplicantAction(...args: Parameters<typeof rejectAndBlockMembershipApplicantActionImpl>) {
     return captureAction(() => rejectAndBlockMembershipApplicantActionImpl(...args));
 }
+
+async function generateUserTemporaryPasswordActionImpl(userId: number) {
+    try {
+        const result = await actionFetchWrapper<TemporaryPasswordApproval>({
+            url: HttpAPIRoutes.ADMIN_USER_TEMPORARY_PASSWORD.replace('{userId}', String(userId)),
+            method: 'POST',
+            schema: temporaryPasswordApprovalSchema,
+        });
+        return result.data;
+    } catch (error) {
+        throw new ActionError(extractApiErrorMessage(error, 'Não foi possível gerar a senha provisória.'), { cause: error });
+    }
+}
+
+
+export async function generateUserTemporaryPasswordAction(...args: Parameters<typeof generateUserTemporaryPasswordActionImpl>) {
+    return captureAction(() => generateUserTemporaryPasswordActionImpl(...args));
+}
