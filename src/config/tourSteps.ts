@@ -51,7 +51,7 @@ export function getHomeTourSteps(): DriveStep[] {
             element: "#tour-home-member-btn",
             popover: {
                 title: createStepHeader("Acesso ao Painel do Clube", ICONS.logIn),
-                description: "Já é membro do Jeep Club Tamoios? Clique em <strong>'Sou membro'</strong> para entrar no painel exclusivo com Home, eventos e gestão administrativa.",
+                description: "Já tem uma conta no Jeep Club Tamoios? Clique em <strong>'Entrar'</strong> para acessar o sistema com seu login.",
                 side: "bottom",
                 align: "start",
             },
@@ -60,7 +60,7 @@ export function getHomeTourSteps(): DriveStep[] {
             element: "#tour-home-scroll-down",
             popover: {
                 title: createStepHeader("Conheça o Clube", ICONS.arrowDown),
-                description: "Ainda não é membro? Role a página para baixo e descubra a história, trilhas e o impacto social do clube antes de entrar em contato.",
+                description: "Conheça a história, as trilhas e o impacto social do clube. Para fazer parte, clique em <strong>'Quero ser sócio'</strong> e envie seu pedido para análise da diretoria.",
                 side: "top",
                 align: "center",
             },
@@ -250,7 +250,7 @@ export function getLoginTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-login-join",
             popover: {
                 title: createStepHeader("Novo Associado", ICONS.userPlus),
-                description: "Consulte os requisitos de filiação e o processo de admissão ao clube.",
+                description: "Quer ser sócio do Jeep Clube Tamoios? Clique em <strong>'Quero ser sócio'</strong> e preencha o formulário para a diretoria analisar seu pedido.",
                 side: "top",
                 align: "center",
             },
