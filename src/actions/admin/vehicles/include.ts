@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/admin/vehicles/include";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { includeVehicleMemberResponseSchema } from "@/schemas/vehicles/include";
-
-export async function includeVehicleAdminAction(memberId: number, data: IncludeVehicleMemberRequest) {
-    try {
-        await actionFetchWrapper({
-            url: `${HttpAPIRoutes.VEHICLES_INCLUDE_ADMIN}/${memberId}`,
-            method: 'POST',
-            schema: includeVehicleMemberResponseSchema,
-            body: JSON.stringify(data),
-        });
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao cadastrar veículo'), { cause: error });
-    }
+export async function includeVehicleAdminAction(...args: Parameters<typeof server.includeVehicleAdminAction>) {
+    return unwrapActionResult(await server.includeVehicleAdminAction(...args));
 }

@@ -1,21 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/authorization/create-role";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { roleResponseSchema } from "@/schemas/authorization/detail";
-
-export async function createRoleAction(data: CreateRoleRequest): Promise<RoleResponse> {
-    try {
-        const response = await actionFetchWrapper<RoleResponse>({
-            url: HttpAPIRoutes.AUTHORIZATION_ROLES,
-            method: 'POST',
-            schema: roleResponseSchema,
-            body: JSON.stringify(data),
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao criar role'), { cause: error });
-    }
+export async function createRoleAction(...args: Parameters<typeof server.createRoleAction>) {
+    return unwrapActionResult(await server.createRoleAction(...args));
 }

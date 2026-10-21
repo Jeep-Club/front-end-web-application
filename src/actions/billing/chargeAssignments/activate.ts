@@ -1,23 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/billing/chargeAssignments/activate";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { chargeAssignmentResponseSchema } from "@/schemas/billing/chargeAssignment";
-
-export async function activateChargeAssignmentAction(id: number): Promise<ChargeAssignment> {
-    try {
-        const response = await actionFetchWrapper<ChargeAssignment>({
-            url: `${HttpAPIRoutes.BILLING_CHARGE_ASSIGNMENTS}/${id}/activate`,
-            method: "PATCH",
-            schema: chargeAssignmentResponseSchema,
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(
-            extractApiErrorMessage(error, "Erro ao ativar atribuição de cobrança"),
-            { cause: error },
-        );
-    }
+export async function activateChargeAssignmentAction(...args: Parameters<typeof server.activateChargeAssignmentAction>) {
+    return unwrapActionResult(await server.activateChargeAssignmentAction(...args));
 }

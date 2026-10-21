@@ -1,25 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/tools/list";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { listToolsResponseSchema } from "@/schemas/tools/list";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-
-interface Props {
-    page?: number;
-    size?: number;
-}
-
-export async function listToolsAction({ page = 0, size = 10 }: Props = {}) {
-    size = Math.min(Math.max(size, 1), 50);
-    try {
-        const response = await actionFetchWrapper<ListToolsResponse>({
-            url: `${HttpAPIRoutes.TOOLS}?page=${page}&size=${size}`,
-            method: 'GET',
-            schema: listToolsResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao carregar ferramentas'), { cause: error });
-    }
+export async function listToolsAction(...args: Parameters<typeof server.listToolsAction>) {
+    return unwrapActionResult(await server.listToolsAction(...args));
 }

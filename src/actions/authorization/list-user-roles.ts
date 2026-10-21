@@ -1,20 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/authorization/list-user-roles";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { roleListResponseSchema } from "@/schemas/authorization/list";
-
-export async function listUserRolesAction(userId: number): Promise<RoleListResponse> {
-    try {
-        const response = await actionFetchWrapper<RoleListResponse>({
-            url: HttpAPIRoutes.USER_ROLES.replace("{id}", String(userId)),
-            method: 'GET',
-            schema: roleListResponseSchema,
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao listar papéis do usuário'), { cause: error });
-    }
+export async function listUserRolesAction(...args: Parameters<typeof server.listUserRolesAction>) {
+    return unwrapActionResult(await server.listUserRolesAction(...args));
 }

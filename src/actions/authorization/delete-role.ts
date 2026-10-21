@@ -1,18 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/authorization/delete-role";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { deleteRoleResponseSchema } from "@/schemas/authorization/delete";
-
-export async function deleteRoleAction(roleId: number) {
-    try {
-        await actionFetchWrapper({
-            url: `${HttpAPIRoutes.AUTHORIZATION_ROLES}/${roleId}`,
-            method: 'DELETE',
-            schema: deleteRoleResponseSchema,
-        });
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao excluir cargo'), { cause: error });
-    }
+export async function deleteRoleAction(...args: Parameters<typeof server.deleteRoleAction>) {
+    return unwrapActionResult(await server.deleteRoleAction(...args));
 }

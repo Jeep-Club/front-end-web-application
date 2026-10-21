@@ -1,23 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/billing/chargeAssignments/deactivate";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { chargeAssignmentResponseSchema } from "@/schemas/billing/chargeAssignment";
-
-export async function deactivateChargeAssignmentAction(id: number): Promise<ChargeAssignment> {
-    try {
-        const response = await actionFetchWrapper<ChargeAssignment>({
-            url: `${HttpAPIRoutes.BILLING_CHARGE_ASSIGNMENTS}/${id}/deactivate`,
-            method: "PATCH",
-            schema: chargeAssignmentResponseSchema,
-        });
-
-        return response.data;
-    } catch (error) {
-        throw new Error(
-            extractApiErrorMessage(error, "Erro ao desativar atribuição de cobrança"),
-            { cause: error },
-        );
-    }
+export async function deactivateChargeAssignmentAction(...args: Parameters<typeof server.deactivateChargeAssignmentAction>) {
+    return unwrapActionResult(await server.deactivateChargeAssignmentAction(...args));
 }

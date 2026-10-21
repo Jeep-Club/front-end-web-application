@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/tools/activate";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { toolDetailResponseSchema } from "@/schemas/tools/detail";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-
-export async function activateToolAction(toolId: number) {
-    try {
-        const response = await actionFetchWrapper<ToolDetail>({
-            url: `${HttpAPIRoutes.TOOLS}/${toolId}/activate`,
-            method: 'PATCH',
-            schema: toolDetailResponseSchema,
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao ativar ferramenta'), { cause: error });
-    }
+export async function activateToolAction(...args: Parameters<typeof server.activateToolAction>) {
+    return unwrapActionResult(await server.activateToolAction(...args));
 }

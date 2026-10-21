@@ -1,13 +1,27 @@
-'use server';
-import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { dependentResponseSchema,dependentsResponseSchema } from '@/schemas/dependents';
-import { medicalProfileResponseSchema } from '@/schemas/profile/medical-profile';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { z } from 'zod';
-export async function listDependentsAction():Promise<MemberDependent[]>{try{return(await actionFetchWrapper<MemberDependent[]>({url:HttpAPIRoutes.DEPENDENTS_MEMBER,method:'GET',schema:dependentsResponseSchema})).data}catch(error){throw new Error(extractApiErrorMessage(error,'Erro ao carregar dependentes'),{cause:error})}}
-export async function createDependentAction(data:CreateMemberDependentRequest):Promise<MemberDependent>{try{return(await actionFetchWrapper<MemberDependent>({url:HttpAPIRoutes.DEPENDENTS_MEMBER,method:'POST',schema:dependentResponseSchema,body:JSON.stringify(data)})).data}catch(error){throw new Error(extractApiErrorMessage(error,'Erro ao cadastrar dependente'),{cause:error})}}
-export async function getDependentMedicalProfileAction(id:number):Promise<MedicalProfile|null>{try{return(await actionFetchWrapper<MedicalProfile>({url:HttpAPIRoutes.MEDICAL_PROFILE_DEPENDENT.replace('{dependentId}',String(id)),method:'GET',schema:medicalProfileResponseSchema})).data}catch(error){if(error&&typeof error==='object'&&'status'in error&&error.status===404)return null;throw new Error(extractApiErrorMessage(error,'Erro ao carregar dados médicos do dependente'),{cause:error})}}
-export async function saveDependentMedicalProfileAction(id:number,data:MedicalProfileRequest):Promise<MedicalProfile>{try{return(await actionFetchWrapper<MedicalProfile>({url:HttpAPIRoutes.MEDICAL_PROFILE_DEPENDENT.replace('{dependentId}',String(id)),method:'PUT',schema:medicalProfileResponseSchema,body:JSON.stringify(data)})).data}catch(error){throw new Error(extractApiErrorMessage(error,'Erro ao salvar dados médicos do dependente'),{cause:error})}}
-export async function updateDependentAction(id:number,data:CreateMemberDependentRequest):Promise<MemberDependent>{try{return(await actionFetchWrapper<MemberDependent>({url:`${HttpAPIRoutes.DEPENDENTS_MEMBER}/${id}`,method:'PUT',schema:dependentResponseSchema,body:JSON.stringify(data)})).data}catch(error){throw new Error(extractApiErrorMessage(error,'Erro ao editar dependente'),{cause:error})}}
-export async function deleteDependentAction(id:number):Promise<void>{try{await actionFetchWrapper({url:`${HttpAPIRoutes.DEPENDENTS_MEMBER}/${id}`,method:'DELETE',schema:z.union([z.literal(''),z.null()])})}catch(error){throw new Error(extractApiErrorMessage(error,'Erro ao excluir dependente'),{cause:error})}}
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/dependents/index";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
+
+export async function listDependentsAction(...args: Parameters<typeof server.listDependentsAction>) {
+    return unwrapActionResult(await server.listDependentsAction(...args));
+}
+
+export async function createDependentAction(...args: Parameters<typeof server.createDependentAction>) {
+    return unwrapActionResult(await server.createDependentAction(...args));
+}
+
+export async function getDependentMedicalProfileAction(...args: Parameters<typeof server.getDependentMedicalProfileAction>) {
+    return unwrapActionResult(await server.getDependentMedicalProfileAction(...args));
+}
+
+export async function saveDependentMedicalProfileAction(...args: Parameters<typeof server.saveDependentMedicalProfileAction>) {
+    return unwrapActionResult(await server.saveDependentMedicalProfileAction(...args));
+}
+
+export async function updateDependentAction(...args: Parameters<typeof server.updateDependentAction>) {
+    return unwrapActionResult(await server.updateDependentAction(...args));
+}
+
+export async function deleteDependentAction(...args: Parameters<typeof server.deleteDependentAction>) {
+    return unwrapActionResult(await server.deleteDependentAction(...args));
+}
