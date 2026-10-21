@@ -10,6 +10,7 @@ Pré-requisitos:
 
 - Node.js compatível com as dependências instaladas. O Next.js 16.2.4 resolvido neste checkout declara Node `>=20.9.0`; isso é um requisito do pacote, **não uma versão oficial de suporte do projeto**. Não há versão de runtime fixada na configuração do projeto.
 - npm, utilizado com o `package-lock.json` versionado. Não há versão de npm fixada no projeto.
+- Para o Storybook com Vite 8: Node `^20.19.0 || >=22.12.0`, conforme o requisito do Vite instalado. Isso não fixa uma versão oficial de runtime do projeto.
 - Para login e operações integradas: API de desenvolvimento acessível, credencial de acesso quando exigida pelo backend e usuário de teste com as permissões correspondentes. O servidor frontend, sozinho, não fornece esses serviços.
 
 Na raiz do repositório:
@@ -49,6 +50,8 @@ Execute na raiz, após instalar as dependências:
 | Comando | Finalidade |
 | --- | --- |
 | `npm run dev` | Servidor de desenvolvimento |
+| `npm run storybook` | Componentes isolados em http://localhost:6006 |
+| `npm run build-storybook` | Build estático do catálogo em `storybook-static/` |
 | `npm run build` | Build de produção |
 | `npm start` | Executar o build de produção previamente gerado |
 | `npm run lint` | ESLint conforme a configuração existente |

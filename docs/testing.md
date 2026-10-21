@@ -10,6 +10,7 @@ Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o a
 | [ESLint](../eslint.config.mjs) | Regras Next core-web-vitals e TypeScript; o script lint usa ESLint CLI. Executar só arquivos alterados não equivale ao lint da raiz |
 | [TypeScript](../tsconfig.json) | Strict/noEmit, aliases e tipos Next gerados. Typecheck é comando direto; não há script typecheck. Não valida runtime/backend |
 | Build Next | Compilação/build de produção, dependente de ambiente/rede/fontes. Não substitui lint, Jest ou navegação |
+| [Storybook](../.storybook/main.ts) | Catálogo isolado de Button, Input e PageHeader com autodocs, controles e seletor de viewport. Não executa uma suíte visual ou E2E |
 
 O Jest coleta cobertura por padrão, com relatórios text/lcov/html em coverage. A coleta está restrita aos utilitários definidos na configuração, não à aplicação inteira. Os argumentos sem cobertura/cache no README evitam esses artefatos, mas testes individuais ainda podem escrever arquivos.
 
@@ -67,7 +68,9 @@ Para comparar falhas, registre revisão do código, diff, comando/flags e ambien
 
 ## Limites e registro de resultados
 
-Não há harness de navegador/E2E, suíte visual, automação de acessibilidade ou ambiente de integração real com backend configurado. Alguns testes combinam módulos com mocks; isso não equivale a integração completa. Storybook e Playwright não são dependências instaladas nem comandos disponíveis.
+Não há harness de navegador/E2E, suíte visual, automação de acessibilidade ou ambiente de integração real com backend configurado. Alguns testes combinam módulos com mocks; isso não equivale a integração completa. Playwright não está instalado. No Storybook, use o seletor de viewport para inspecionar mobile, tablet e desktop, controles para alterar props e navegação por teclado para conferir interação. As stories ficam junto aos componentes como *.stories.tsx; demonstre apenas estados suportados pela API existente. O Input usa register=false no piloto, sem integrar React Hook Form.
+
+O preview importa o CSS global e carrega as variáveis de Geist/Geist Mono como o layout. Preserva a resolução atual de font-sans, incluindo a divergência descrita em [design.md](design.md); não representa uma correção da tipografia da aplicação. O carregamento de fontes pode exigir rede.
 
 Para validação de interface, conferir interação, DOM, teclado, foco, zoom, conteúdo longo e diferentes viewports. Screenshots complementam essas verificações; não certificam acessibilidade nem substituem avaliação humana. Uma integração real precisa de API isolada, dados sintéticos, credenciais próprias e limpeza controlada.
 
