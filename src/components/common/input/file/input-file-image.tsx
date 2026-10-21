@@ -9,6 +9,7 @@ import { InputFileProps } from "./input-file";
 import { UploadCloud } from "lucide-react";
 import { FallBackFile } from "./fallback/fallback";
 import { ImageCropDialog } from "./image-crop-dialog";
+import type { FileRejection } from "react-dropzone";
 
 export type InputFileImageProps = Omit<InputFileProps, 'accept'>
 
@@ -48,7 +49,7 @@ export function InputFileImage({
         }
     };
 
-    const handleDrop = (acceptedFiles: File[], fileRejections: any[]) => {
+    const handleDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
         clearErrors(name);
 
         if (fileRejections.length > 0) {
@@ -77,7 +78,7 @@ export function InputFileImage({
 
     const handleRemove = (indexToRemove: number) => {
         const newFiles = currentFiles.filter((_, idx) => idx !== indexToRemove);
-        onChange(newFiles.length > 0 ? newFiles : undefined);
+        onChange(newFiles);
         if (error) clearErrors(name);
     };
 

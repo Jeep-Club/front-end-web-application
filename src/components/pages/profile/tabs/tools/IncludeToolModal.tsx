@@ -25,10 +25,10 @@ function ToolPhotoField({ storageKey }: { storageKey?: string | null }) {
     const removed = useWatch({ control, name: 'removePhoto' });
     const files = useWatch({ control, name: 'photo' });
     return <section className="w-full rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3">
-        {storageKey && !removed && !files?.length && <div className="mb-3">
+        {storageKey && !removed && !files?.length && <div className="relative mb-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={getMediaImageUrl(storageKey)} alt="Foto atual da ferramenta" className="mb-2 aspect-video w-full rounded-lg object-cover" />
-            <button type="button" onClick={() => setValue('removePhoto', true)} className="text-xs font-semibold text-red-600">Remover foto atual</button>
+            <button type="button" aria-label="Remover foto atual da ferramenta" title="Remover foto atual" onClick={() => setValue('removePhoto', true, { shouldDirty: true, shouldValidate: true })} className="absolute right-2 top-2 z-10 flex size-9 items-center justify-center rounded-full bg-white text-red-600 shadow-md transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"><X size={20} aria-hidden="true" /></button>
         </div>}
         {removed && <div className="mb-2 flex items-center justify-between gap-2 text-xs text-j-gray-600"><span>A foto será removida ao salvar.</span><button type="button" onClick={() => setValue('removePhoto', false)} className="font-bold text-j-blue-800">Desfazer</button></div>}
         <InputFile.Image name="photo" label="Foto da ferramenta (opcional)" maxFiles={1} maxSizeMB={5} cropShape="landscape" className="[&_label]:font-semibold [&_label]:!text-j-gray-700 [&_p]:!text-j-gray-600 [&_svg]:!text-j-gray-400 [&>div]:!border-j-gray-200 [&>div]:!bg-j-white [&>div]:py-4" />

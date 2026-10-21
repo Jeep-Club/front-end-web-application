@@ -9,6 +9,7 @@ import { InputFileProps } from "./input-file";
 import { Image as ImageIcon } from "lucide-react";
 import { RemoveFile } from "./actions/remove";
 import { ImageCropDialog } from "./image-crop-dialog";
+import type { FileRejection } from "react-dropzone";
 
 export type InputFileImageProps = Omit<InputFileProps, 'accept' | 'isFallback'>
 
@@ -33,7 +34,7 @@ export function InputFileImage2({
     const currentFiles: File[] = Array.isArray(value) ? value : (value ? [value] : []);
     const [filesToCrop, setFilesToCrop] = useState<File[] | null>(null);
 
-    const handleDrop = (acceptedFiles: File[], fileRejections: any[]) => {
+    const handleDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
         clearErrors(name);
 
         if (fileRejections.length > 0) {
@@ -63,7 +64,7 @@ export function InputFileImage2({
 
     const handleRemove = (indexToRemove: number) => {
         const newFiles = currentFiles.filter((_, idx) => idx !== indexToRemove);
-        onChange(newFiles.length > 0 ? newFiles : undefined);
+        onChange(newFiles);
         if (error) clearErrors(name);
     };
 
@@ -104,8 +105,9 @@ export function InputFileImage2({
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
                         <RemoveFile 
                             onClick={()=>{handleRemove(idx)}} 
-                            // iconSize={14}
-                            className="absolute top-1.5 right-1.5 text-j-gray-300"
+                            aria-label={`Remover imagem ${file.name}`}
+                            title="Remover imagem"
+                            className="absolute top-1.5 right-1.5 z-10 flex size-8 items-center justify-center rounded-full bg-white text-red-600 shadow-md hover:bg-red-50 hover:text-red-700"
                         />
                     </ImageThumbnail>
                 ))}

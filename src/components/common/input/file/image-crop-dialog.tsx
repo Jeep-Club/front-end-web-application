@@ -113,6 +113,22 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
         };
     };
 
+    const removeCurrentImage = () => {
+        if (isSaving) return;
+        if (index + 1 < files.length) {
+            setZoom(1);
+            setOffset({ x: 0, y: 0 });
+            setIsLoading(true);
+            setError(null);
+            dragRef.current = null;
+            setIndex((value) => value + 1);
+        } else if (completedFiles.current.length) {
+            onComplete(completedFiles.current);
+        } else {
+            onCancel();
+        }
+    };
+
     const applyCrop = async () => {
         const source = imageRef.current;
         if (!source || isSaving || !currentFile) return;
@@ -209,6 +225,17 @@ export function ImageCropDialog({ files, shape = "square", onComplete, onCancel 
                         style={cropMaskStyle}
                     />
                     {isLoading && <div className="absolute inset-0 flex items-center justify-center bg-[#191a1e] text-sm text-[#b5bac1]">Carregando imagem...</div>}
+                    <button
+                        type="button"
+                        aria-label="Remover imagem selecionada"
+                        title="Remover imagem selecionada"
+                        disabled={isSaving}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={removeCurrentImage}
+                        className="absolute right-2 top-2 z-10 flex size-9 items-center justify-center rounded-full bg-white text-red-600 shadow-md transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <X size={20} aria-hidden="true" />
+                    </button>
                 </div>
 
                 <div className="mx-auto mt-4 flex max-w-[400px] items-center gap-3 text-j-gray-500">
