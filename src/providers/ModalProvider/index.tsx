@@ -2,6 +2,7 @@
 
 import { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { ModalRoot } from '@/components/common/modal/root';
+import { useModalScrollCorners } from '@/hooks/useModalScrollCorners';
 
 interface ModalContextProps  {
     content: React.ReactNode;
@@ -20,6 +21,7 @@ const ModalContext = createContext<ModalContextProps>({
 });
 
 export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    useModalScrollCorners();
     const [content, setContent] = useState<React.ReactNode>(null);
     const [isOpen, setIsOpen] = useState(false);
 

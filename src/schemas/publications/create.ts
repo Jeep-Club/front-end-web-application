@@ -39,7 +39,7 @@ export const publicationFormSchema = z.object({
     }
     if (data.type === "SERVICE") {
         if (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || Number(data.amount.replace(",", ".")) < 0.01) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe um valor positivo com até duas casas decimais." });
-        if (!data.contactPhone.trim() || data.contactPhone.trim().length > 30) ctx.addIssue({ code: "custom", path: ["contactPhone"], message: "Informe um telefone com até 30 caracteres." });
+        if (!/^\d{1,30}$/.test(data.contactPhone)) ctx.addIssue({ code: "custom", path: ["contactPhone"], message: "Informe o telefone usando apenas números, com até 30 dígitos." });
     }
 });
 export type PublicationFormData = z.infer<typeof publicationFormSchema>;

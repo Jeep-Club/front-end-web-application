@@ -15,14 +15,14 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
     const { schema, headers, url, ...requestProps } = props;
 
 
+    const requestHeaders = new Headers(headers);
+    if (!requestHeaders.has('Accept')) requestHeaders.set('Accept', 'application/json');
+    if (!requestHeaders.has('Accept-Language')) requestHeaders.set('Accept-Language', 'pt-BR');
+    if (requestProps.body instanceof FormData) requestHeaders.delete('Content-Type');
+    else if (!requestHeaders.has('Content-Type')) requestHeaders.set('Content-Type', 'application/json');
     const response = await fetch(url, {
         ...requestProps,
-        headers: {
-            'Accept': 'application/json',
-            'Accept-Language': 'pt-BR',
-            ...headers,
-            'Content-Type': 'application/json'
-        },
+        headers: requestHeaders,
     });
     const status = response.status;
     const responseText = await response.text();

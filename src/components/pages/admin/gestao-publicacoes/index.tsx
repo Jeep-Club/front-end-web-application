@@ -11,8 +11,8 @@ import { parsePublicationPagination, updatePublicationPagination } from "@/utils
 
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { resolvePublicationTypes, togglePublicationType } from "@/utils/publications/typeFilters";
-import { CalendarDays, Megaphone, Wrench, Plus } from "lucide-react";
+import { resolvePublicationTypes } from "@/utils/publications/typeFilters";
+import { CalendarDays, Megaphone, Wrench, Plus, LayoutGrid } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { publicationManagementSections } from "@/config/publicationManagement";
 import { useUserStore } from "@/stores/userStore";
@@ -35,6 +35,8 @@ export default function PublicationManagement() {
         sections.map((section) => section.type),
         searchParams.getAll("type"),
     );
+    const allTypesSelected = sections.length > 0 && selectedTypes.length === sections.length;
+    const orderedSections = [...sections].sort((a, b) => ["SERVICE", "NOTICE", "EVENT"].indexOf(a.type) - ["SERVICE", "NOTICE", "EVENT"].indexOf(b.type));
     const selectedSections = sections.filter((section) => selectedTypes.includes(section.type));
 
     const publications = useQuery({
@@ -44,12 +46,10 @@ export default function PublicationManagement() {
         refetchOnWindowFocus: false,
     });
 
-    function toggleType(type: string) {
-        const nextTypes = togglePublicationType(selectedTypes, type);
-        if (nextTypes === selectedTypes) return;
+    function selectType(type?: string) {
         const params = new URLSearchParams(searchParams.toString());
         params.delete("type");
-        sections.filter((section) => nextTypes.includes(section.type)).forEach((section) => params.append("type", section.type));
+        if (type) params.append("type", type);
         params.delete("page");
         window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     }
@@ -67,10 +67,11 @@ export default function PublicationManagement() {
                 />
                 {sections.length > 0 || canCreate ? (
                     <>
-                        <nav aria-label="Filtrar por tipo de publicação" className={`grid gap-2 md:gap-3 ${sections.length === 3 ? "grid-cols-3" : sections.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
-                            {sections.map((section) => {
+                        <nav aria-label="Filtrar por tipo de publicação" className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+                            <button type="button" aria-pressed={allTypesSelected} aria-controls="publication-management-content" onClick={() => selectType()} className={`flex min-h-14 min-w-0 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 p-3 text-sm font-bold transition-colors ${allTypesSelected ? "border-j-blue-800 bg-j-blue-800 text-j-white shadow-md" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800"}`}><LayoutGrid size={20} aria-hidden="true" />Todos</button>
+                            {orderedSections.map((section) => {
                                 const Icon = sectionIcons[section.key as keyof typeof sectionIcons];
-                                const selected = selectedTypes.includes(section.type);
+                                const selected = !allTypesSelected && selectedTypes.includes(section.type);
                                 return (
                                     <button
                                         key={section.key}
@@ -78,8 +79,7 @@ export default function PublicationManagement() {
                                         title={section.title}
                                         aria-pressed={selected}
                                         aria-controls="publication-management-content"
-                                        aria-disabled={selected && selectedTypes.length === 1}
-                                        onClick={() => toggleType(section.type)}
+                                        onClick={() => selectType(section.type)}
                                         className={`flex min-w-0 cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 p-3 text-center transition-colors md:flex-row md:justify-center md:p-4 ${selected ? "border-j-blue-800 bg-j-blue-800 text-j-white shadow-md" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800"}`}
                                     >
                                         <Icon size={20} aria-hidden="true" className="shrink-0" />
@@ -90,7 +90,7 @@ export default function PublicationManagement() {
                         </nav>
                         <section id="publication-management-content" aria-labelledby="publication-management-title" className="rounded-xl border border-j-gray-200 bg-j-white p-6">
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <h2 id="publication-management-title" className="text-lg font-bold text-j-blue-800">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
+                                <h2 id="publication-management-title" className="text-center text-lg font-bold text-j-blue-800 sm:text-left">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
                                 {canCreate && (
                                     <Button onClick={() => { setContent(<CreatePublicationModal />); setOpen(); }} className="w-full sm:w-auto">
                                         <Plus size={18} />
@@ -98,23 +98,28 @@ export default function PublicationManagement() {
                                     </Button>
                                 )}
                             </div>
-                            <div className="mt-5 flex flex-col gap-2 sm:max-w-xs">
-                                <label htmlFor="publication-status-filter" className="text-sm font-bold text-j-gray-700">Estado da publicação</label>
-                                <select
-                                    id="publication-status-filter"
-                                    value={status}
-                                    onChange={(event) => {
-                                        const params = new URLSearchParams(searchParams.toString());
-                                        params.set("status", event.target.value);
-                                        params.delete("page");
-                                        window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
-                                    }}
-                                    aria-controls="publication-status-results"
-                                    className="w-full rounded-lg border border-j-gray-200 bg-j-white px-3 py-2.5 text-sm text-j-gray-700 focus-visible:outline-2 focus-visible:outline-j-blue-800"
-                                >
-                                    {publicationStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                                </select>
-                            </div>
+                            <fieldset className="mt-5 w-full min-w-0">
+                                <legend className="mb-3 text-base font-bold text-j-gray-700">Estado da publicação</legend>
+                                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    {publicationStatusOptions.map((option) => (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            aria-pressed={status === option.value}
+                                            aria-controls="publication-status-results"
+                                            onClick={() => {
+                                                const params = new URLSearchParams(searchParams.toString());
+                                                params.set("status", option.value);
+                                                params.delete("page");
+                                                window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+                                            }}
+                                            className={`min-h-14 w-full cursor-pointer rounded-xl border-2 px-4 py-3 text-base font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${status === option.value ? "border-j-blue-800 bg-j-blue-800 text-j-white shadow-sm" : "border-j-gray-300 bg-j-white text-j-gray-700 hover:border-j-blue-800 hover:bg-j-gray-100"}`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </fieldset>
                             <div id="publication-status-results">
                             <PublicationList
                                 page={publications.data}

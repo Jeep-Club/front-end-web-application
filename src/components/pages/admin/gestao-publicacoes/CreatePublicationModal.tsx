@@ -19,6 +19,8 @@ import { publicationCreationTypes } from "@/config/publicationCreation";
 import { publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
 import { createPublicationAction } from "@/actions/publications/create";
 import { uploadImageAction } from "@/actions/media/upload-image";
+import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
+import { unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
 
 function Fields() {
     const { setClose } = useModal();
@@ -47,8 +49,8 @@ function Fields() {
                     <p className="text-xs text-j-gray-500">Use o horário local. Este cadastro cria um evento sem cobranças.</p>
                 </>}
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">
-                    <InputRegister name="amount" label="Valor anunciado (R$)" inputMode="decimal" placeholder="100,00" required />
-                    <InputRegister name="contactPhone" label="Telefone de contato" type="tel" maxLength={30} required />
+                    <InputRegister name="amount" label="Valor anunciado (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="100,00" required />
+                    <InputRegister name="contactPhone" label="Telefone de contato" type="tel" inputMode="numeric" pattern="[0-9]*" mask={unMaskPhoneNumber} maxLength={30} required />
                 </div>}
                 </div>
                 <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
@@ -99,6 +101,14 @@ export function CreatePublicationModal() {
             return createPublicationAction(payload);
         },
         onSuccess: (result) => {
+            if (result.type === 'SERVICE') {
+                const params = new URLSearchParams(window.location.search);
+                params.set('status', 'ALL');
+                params.delete('type');
+                params.append('type', 'SERVICE');
+                params.delete('page');
+                window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+            }
             toast.success(result.type === "SERVICE" ? "Solicitação enviada para aprovação!" : "Rascunho criado com sucesso!");
             void queryClient.invalidateQueries({ queryKey: ["publications"] });
             setClose();
