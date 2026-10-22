@@ -8,13 +8,13 @@ import { HttpAPIRoutes } from "@/utils/http/api";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { includeVehicleMemberResponseSchema } from "@/schemas/vehicles/include";
 
-async function includeVehicleAdminActionImpl(memberId: number, data: IncludeVehicleMemberRequest) {
+async function includeVehicleAdminActionImpl(memberId: number, data: FormData) {
     try {
         await actionFetchWrapper({
             url: `${HttpAPIRoutes.VEHICLES_INCLUDE_ADMIN}/${memberId}`,
             method: 'POST',
             schema: includeVehicleMemberResponseSchema,
-            body: JSON.stringify(data),
+            body: data,
         });
     } catch (error) {
         throw new ActionError(extractApiErrorMessage(error, 'Erro ao cadastrar veículo'), { cause: error });

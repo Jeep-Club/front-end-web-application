@@ -82,7 +82,7 @@ export function VehiclesTabContent() {
                                 className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md"
                             >
                                 <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
-                                    <VehiclePhotoCarousel cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
+                                    <VehiclePhotoCarousel vehicleId={vehicle.id} cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">

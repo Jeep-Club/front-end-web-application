@@ -20,7 +20,7 @@ import { publicationFormSchema, type PublicationFormData, type CreatePublication
 import { createPublicationAction } from "@/actions/publications/create";
 import { uploadImageAction } from "@/actions/media/upload-image";
 import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
-import { unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
+import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
 
 function Fields() {
     const { setClose } = useModal();
@@ -50,7 +50,7 @@ function Fields() {
                 </>}
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">
                     <InputRegister name="amount" label="Valor anunciado (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="100,00" required />
-                    <InputRegister name="contactPhone" label="Telefone de contato" type="tel" inputMode="numeric" pattern="[0-9]*" mask={unMaskPhoneNumber} maxLength={30} required />
+                    <InputRegister name="contactPhone" label="Telefone de contato" type="tel" inputMode="numeric" mask={maskPhoneNumber} placeholder="(00) 00000-0000" maxLength={15} required />
                 </div>}
                 </div>
                 <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
@@ -96,7 +96,7 @@ export function CreatePublicationModal() {
             const payload: CreatePublicationRequest = data.type === "EVENT"
                 ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null }
                 : data.type === "SERVICE"
-                    ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: data.contactPhone }
+                    ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: unMaskPhoneNumber(data.contactPhone) }
                     : { ...common, type: "NOTICE" };
             return createPublicationAction(payload);
         },

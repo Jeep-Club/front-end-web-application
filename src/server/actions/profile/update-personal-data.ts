@@ -4,6 +4,7 @@ import { captureAction } from "@/utils/actions/captureAction";
 import { ActionError } from "@/utils/actions/actionResult";
 
 import { z } from 'zod';
+import { birthDateSchema } from '@/schemas/auth/user/birthDate';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { extractApiErrorMessage } from '@/utils/http/apiError';
 import { HttpAPIRoutes } from '@/utils/http/api';
@@ -17,6 +18,7 @@ interface UpdatePersonalDataRequest {
 }
 
 async function updatePersonalDataActionImpl(data: UpdatePersonalDataRequest): Promise<void> {
+    birthDateSchema.nullable().parse(data.birthDate);
     try {
         const { email, ...profile } = data;
         await actionFetchWrapper({

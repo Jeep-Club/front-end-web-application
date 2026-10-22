@@ -1,8 +1,11 @@
 'use client';
 
+import { vehicleYearSchema } from "@/schemas/vehicles/year";
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFormContext } from "react-hook-form";
+import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
 import toast from "react-hot-toast";
 import { X, Car, ArrowLeft, ArrowRight } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -14,7 +17,7 @@ import { SelectRegister } from "@/components/common/select/select-register";
 import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputFile } from "@/components/common/input/file";
 import { includeVehicleAdminAction } from "@/actions/admin/vehicles/include";
-import { uploadImageAction } from "@/actions/media/upload-image";
+import { createVehicleMultipart } from "@/utils/media/vehicleGallery";
 import { useModal } from "@/providers/ModalProvider";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
@@ -24,8 +27,6 @@ import { isValidRenavam } from "@/utils/validate/validateRenavam";
 import { FUEL_TYPE_OPTIONS } from "./vehicleDisplay";
 
 const PLATE_REGEX = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
-const CURRENT_YEAR = new Date().getFullYear();
-const MAX_MODEL_YEAR = CURRENT_YEAR + 2;
 
 export const createVehicleAdminFormSchema = z.object({
     memberId: z
@@ -34,7 +35,7 @@ export const createVehicleAdminFormSchema = z.object({
         .transform((value) => Number(value))
         .pipe(z.number().int().gt(0, { message: "ID do membro deve ser maior que zero" })),
     nickname: z.string().max(100, { message: "O apelido deve ter no máximo 100 caracteres" }).optional(),
-    photo: z.array(z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, { message: "Invalid image file" })).max(3, { message: "Envie no máximo 3 fotos" }).optional(),
+    photo: z.array(z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, { message: "Invalid image file" })).max(5, { message: "Envie no máximo 5 fotos" }).optional(),
     plate: z.string()
         .min(1, { message: "A placa é obrigatória" })
         .transform((value) => value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
@@ -45,22 +46,8 @@ export const createVehicleAdminFormSchema = z.object({
         .pipe(z.string().refine(isValidRenavam, { message: "Renavam inválido" })),
     brand: z.string().trim().min(1, { message: "A marca é obrigatória" }).max(50, { message: "A marca deve ter no máximo 50 caracteres" }),
     model: z.string().trim().min(1, { message: "O modelo é obrigatório" }).max(50, { message: "O modelo deve ter no máximo 50 caracteres" }),
-    manufacturingYear: z.string()
-        .min(1, { message: "O ano de fabricação é obrigatório" })
-        .transform((value) => Number(value))
-        .pipe(
-            z.number().int()
-                .min(1900, { message: "Ano de fabricação inválido" })
-                .max(CURRENT_YEAR + 1, { message: "Ano de fabricação inválido" })
-        ),
-    modelYear: z.string()
-        .min(1, { message: "O ano do modelo é obrigatório" })
-        .transform((value) => Number(value))
-        .pipe(
-            z.number().int()
-                .min(1900, { message: "Ano do modelo inválido" })
-                .max(MAX_MODEL_YEAR, { message: "Ano do modelo inválido" })
-        ),
+    manufacturingYear: vehicleYearSchema,
+    modelYear: vehicleYearSchema,
     color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }),
     seatingCapacity: z.string()
         .min(1, { message: "O nº assentos é obrigatório" })
@@ -114,24 +101,11 @@ interface CreateVehicleStepsProps {
 }
 
 function CreateVehicleSteps({ currentStep, onNext, onBack }: CreateVehicleStepsProps) {
-    const { trigger, formState: { errors } } = useFormContext();
-
-    const handleNext = async () => {
-        const fields = STEPS[currentStep - 1].fields;
-        const isValid = await trigger(fields as unknown as string[]);
-        if (isValid) onNext();
-    };
-
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-        if (event.key !== 'Enter') return;
-        if (currentStep < STEPS.length) {
-            event.preventDefault();
-            handleNext();
-        }
-    };
+    const { formState: { errors } } = useFormContext();
+    const { rootRef, handleNext } = useVehicleModalSteps(currentStep, STEPS, onNext);
 
     return (
-        <div onKeyDown={handleKeyDown} className="flex w-full flex-col items-center gap-5">
+        <div ref={rootRef} tabIndex={-1} className="flex w-full flex-col items-center gap-5 outline-none">
             <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-j-gray-100 p-1.5">
                 {STEPS.map(({ step, label, fields }) => {
                     const hasError = fields.some((field) => !!errors[field]);
@@ -286,11 +260,11 @@ function CreateVehicleSteps({ currentStep, onNext, onBack }: CreateVehicleStepsP
                 </div>
 
                 <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
-                    <p className="text-xs text-j-gray-500">Envie até 3 fotos do veículo.</p>
+                    <p className="text-xs text-j-gray-500">Envie até 5 fotos do veículo.</p>
                     <InputFile.Image
                         name="photo"
                         label="Foto do veículo"
-                        maxFiles={3}
+                        maxFiles={5}
                         cropShape="landscape"
                         className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
                     />
@@ -342,15 +316,8 @@ export function CreateVehicleModal() {
 
     const mutation = useMutation({
         mutationFn: async (data: CreateVehicleAdminFormData) => {
-            const photos = await Promise.all((data.photo ?? []).map(async (file) => {
-                const formData = new FormData();
-                formData.append("file", file);
-                return uploadImageAction(formData);
-            }));
-
             const payload: IncludeVehicleMemberRequest = {
                 nickname: data.nickname,
-                ...(photos.length ? { photos, photo: photos[0] } : {}),
                 plate: data.plate,
                 renavam: data.renavam,
                 brand: data.brand,
@@ -364,7 +331,7 @@ export function CreateVehicleModal() {
                 towing: data.towing,
             };
 
-            return includeVehicleAdminAction(data.memberId, payload);
+            return includeVehicleAdminAction(data.memberId, createVehicleMultipart(payload, data.photo ?? []));
         },
         onSuccess: () => {
             toast.success("Veículo cadastrado com sucesso!");
@@ -375,7 +342,7 @@ export function CreateVehicleModal() {
     });
 
     const handleSubmit = async (data: CreateVehicleAdminFormData) => {
-        mutation.mutateAsync(data);
+        try { await mutation.mutateAsync(data); } catch { /* onError presents the error. */ }
     };
 
     return (
@@ -412,7 +379,10 @@ export function CreateVehicleModal() {
             <Form<CreateVehicleAdminFormData>
                 schema={createVehicleAdminFormSchema as unknown as z.ZodType<CreateVehicleAdminFormData>}
                 onSubmit={handleSubmit}
-                onError={(errors) => console.log(errors)}
+                onError={(errors) => {
+                        const invalidStep = STEPS.find(({ fields }) => fields.some((field) => field in errors));
+                        if (invalidStep) setCurrentStep(invalidStep.step);
+                    }}
                 className="gap-5 px-5 py-5 md:px-8 md:py-6"
             >
                 <CreateVehicleSteps
