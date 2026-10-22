@@ -6,6 +6,19 @@ Frontend do Jeep Clube Tamoios com Next.js App Router, React, TypeScript,
 Tailwind CSS, TanStack Query e React Hook Form com Zod.
 O código, os schemas e as configurações são as referências executáveis.
 
+## Orquestração de subagentes
+
+O agente principal mantém a responsabilidade por implementação, integração e
+entrega. Use os agentes em `.codex/agents/` apenas quando a tarefa for
+delimitada e a delegação reduzir o custo total; tarefas triviais permanecem
+diretas e tarefas simples usam no máximo um agente quando houver ganho claro.
+Envie contexto e escopo mínimos, não repita investigação ou testes e execute no
+máximo dois subagentes simultaneamente. Prefira investigação,
+documentação, testes direcionados ou revisão independentes; preserve a ordem
+Investigar → Implementar → Documentar → Testar → Revisar → Corrigir → Validar.
+Modelos e esforços são escolhas explícitas dos arquivos TOML; não presuma
+troca automática do modelo do agente principal durante uma sessão.
+
 ## Documentação por tarefa
 
 Consulte apenas os guias relevantes ao trabalho, na profundidade necessária:
