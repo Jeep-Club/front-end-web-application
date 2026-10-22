@@ -25,6 +25,7 @@ const meta = {
     <InputFile {...args} accept={typeof acceptPreset === "string" ? acceptPresets[acceptPreset] : acceptPreset} />
   ),
   argTypes: {
+    variant: { control: "radio", options: ["white", "gray"], table: { defaultValue: { summary: '"white"' } } },
     name: { control: false, type: { name: "string", required: true }, table: { type: { summary: "string" }, defaultValue: { summary: "—" } } },
     label: { control: "text", type: "string", table: { type: { summary: "string" }, defaultValue: { summary: "undefined" } } },
     required: { control: "boolean", type: "boolean", table: { type: { summary: "boolean" }, defaultValue: { summary: "false" } } },
@@ -46,7 +47,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="max-w-xl rounded-lg bg-j-blue-950 p-4">
+      <div className="w-full max-w-xl p-4">
         <Form
           schema={z.object({ attachments: z.array(z.instanceof(File)).optional() })}
           formOptions={{ defaultValues: { attachments: [] } }}

@@ -2,6 +2,7 @@
 
 import { useFormContext, useController } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
+import type { InputVariant } from "./input";
 
 export interface RadioOption {
     label: string;
@@ -13,6 +14,7 @@ export interface BaseRadioGroupProps {
     options: RadioOption[];
     className?: string;
     optionClassName?: string;
+    variant?: InputVariant;
 }
 
 // ---------------------------------------------------------------------------
@@ -23,7 +25,7 @@ interface InputRadioGroupBaseProps extends BaseRadioGroupProps {
     onChange?: (value: string) => void;
 }
 
-export function InputRadioGroupBase({ name, options, value, onChange, className, optionClassName }: InputRadioGroupBaseProps) {
+export function InputRadioGroupBase({ name, options, value, onChange, className, optionClassName, variant = "white" }: InputRadioGroupBaseProps) {
     return (
         <div className={twMerge("flex flex-wrap items-center gap-4", className)}>
             {options.map((opt) => (
@@ -37,10 +39,10 @@ export function InputRadioGroupBase({ name, options, value, onChange, className,
                         className="peer sr-only"
                     />
                     {/* Estilo baseado no seu InputCheckbox, mas arredondado (Radio) */}
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-j-transparent-white bg-input-bg transition-colors peer-checked:border-j-yellow-400 peer-focus-visible:outline-2 peer-focus-visible:outline-j-yellow-400">
+                    <span className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-checked:border-j-yellow-400 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
                         <span className="h-2.5 w-2.5 rounded-full bg-j-blue-800 opacity-0 transition-opacity peer-checked:opacity-100" />
                     </span>
-                    <span className="text-sm font-medium text-j-white">{opt.label}</span>
+                    <span className="text-sm font-medium text-j-gray-700">{opt.label}</span>
                 </label>
             ))}
         </div>
@@ -54,7 +56,7 @@ interface InputRadioGroupRegisterProps extends BaseRadioGroupProps {
     defaultValue?: string;
 }
 
-export function InputRadioGroupRegister({ name, options, className, optionClassName, defaultValue }: InputRadioGroupRegisterProps) {
+export function InputRadioGroupRegister({ name, options, className, optionClassName, defaultValue, variant = "white" }: InputRadioGroupRegisterProps) {
     const { control } = useFormContext();
     const {
         field: { value, onChange, onBlur, ref }
@@ -73,10 +75,10 @@ export function InputRadioGroupRegister({ name, options, className, optionClassN
                         onBlur={onBlur}
                         className="peer sr-only"
                     />
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-j-transparent-white bg-input-bg transition-colors peer-checked:border-j-yellow-400 peer-focus-visible:outline-2 peer-focus-visible:outline-j-yellow-400">
+                    <span className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-checked:border-j-yellow-400 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
                         <span className="h-2.5 w-2.5 rounded-full bg-j-blue-800 opacity-0 transition-opacity peer-checked:opacity-100" />
                     </span>
-                    <span className="text-sm font-medium text-j-white">{opt.label}</span>
+                    <span className="text-sm font-medium text-j-gray-700">{opt.label}</span>
                 </label>
             ))}
         </div>

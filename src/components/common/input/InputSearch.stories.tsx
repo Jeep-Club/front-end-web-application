@@ -13,6 +13,7 @@ const meta = {
     onSubmit: fn(),
   },
   argTypes: {
+    variant: { control: "radio", options: ["white", "gray"] },
     value: { control: "text" },
     label: { control: "text" },
     placeholder: { control: "text" },
@@ -21,10 +22,10 @@ const meta = {
     disabled: { control: "boolean" },
   },
   parameters: {
-    controls: { include: ["value", "label", "placeholder", "submitOnChange", "isLoading", "disabled"] },
+    controls: { include: ["value", "label", "placeholder", "submitOnChange", "isLoading", "disabled", "variant"] },
   },
   decorators: [
-    (Story) => <div className="max-w-md rounded-lg bg-j-blue-950 p-4"><Story /></div>,
+    (Story) => <div className="w-full max-w-md p-4"><Story /></div>,
   ],
 } satisfies Meta<typeof InputSearch>;
 
@@ -45,6 +46,8 @@ export const Padrao: Story = {
 export const Carregando: Story = {
   args: { value: "Ana", isLoading: true },
 };
+
+export const Gray: Story = { args: { variant: "gray" } };
 
 export const AoConfirmar: Story = {
   args: { submitOnChange: false },

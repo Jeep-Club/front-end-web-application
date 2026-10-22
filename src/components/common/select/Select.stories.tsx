@@ -12,7 +12,7 @@ const OPTIONS = [
 const meta = {
     title: "Componentes/Select",
     component: Select,
-    tags: ["autodocs"],
+    tags: ["!autodocs"],
     args: {
         label: "Categoria",
         name: "category",

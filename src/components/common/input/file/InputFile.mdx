@@ -19,6 +19,59 @@ Não é necessário TanStack Query, sessão, serviço de upload ou provider glob
 
 ## Arquivos gerais
 
+`variant="white"` é o padrão em InputFile, Image e Image2: área branca com borda cinza, textos escuros e previews/lista coerentes com essa superfície. Use `variant="gray"` explicitamente para a área cinza. Todas as stories usam canvas neutro; o formato do recorte e os limites de seleção são independentes da variante.
+
+### Exemplo com formulário e validação
+
+```tsx
+'use client';
+
+import { z } from 'zod';
+import { Form } from '@/components/common/form';
+import { Button } from '@/components/common/button';
+import { InputFile } from '@/components/common/input/file';
+
+const schema = z.object({
+  attachments: z.array(z.instanceof(File))
+    .min(1, 'Selecione um comprovante.')
+    .max(2, 'Selecione no máximo dois arquivos.')
+    .optional()
+    .refine((files) => Boolean(files?.length), 'Selecione um comprovante.'),
+});
+
+function AttachmentForm() {
+  function handleSubmit(values: z.infer<typeof schema>) {
+    const body = new FormData();
+    for (const file of values.attachments ?? []) body.append('attachments', file);
+    // Entregue body à operação de envio definida pela tela.
+  }
+
+  return (
+    <Form
+      schema={schema}
+      formOptions={{ defaultValues: { attachments: [] } }}
+      onSubmit={handleSubmit}
+      onError={() => undefined}
+    >
+      <InputFile
+        name="attachments"
+        label="Comprovantes"
+        accept={{ 'application/pdf': ['.pdf'] }}
+        maxFiles={2}
+        maxSizeMB={5}
+        isFallback
+        required
+      />
+      <Button type="submit">Enviar comprovantes</Button>
+    </Form>
+  );
+}
+```
+
+O exemplo prepara FormData, mas não executa upload. `name` precisa corresponder ao schema e aos valores do formulário. O schema considera `undefined` após a remoção do último arquivo e o rejeita quando o campo é obrigatório. Para anexos opcionais, use `z.array(z.instanceof(File)).optional()` sem a regra de mínimo. Os limites de tamanho e formato do dropzone dão feedback local; valide também o contrato e o conteúdo na operação de envio.
+
+Não há modo `register=false`, prop `value` ou callback `onChange` nessa API. Leia os arquivos no submit ou pelas APIs do React Hook Form. URLs de arquivos já enviados não são Files locais: a apresentação de anexos remotos e sua manutenção em uma edição pertencem à tela.
+
 <Canvas of={FileStories.Vazio} />
 
 <div role="region" aria-label="Propriedades do Input File" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
@@ -53,6 +106,34 @@ O react-dropzone compara MIME **ou** extensão, aplica tamanho/quantidade por lo
 
 ## Imagens e casos de uso
 
+```tsx
+import { InputFile } from '@/components/common/input/file';
+
+// Dentro de Form, com campos File[] opcionais no schema e nos defaultValues.
+<InputFile.Image
+  name="avatar"
+  label="Foto de perfil"
+  cropShape="circle"
+  maxFiles={1}
+  isFallback
+/>
+<InputFile.Image
+  name="photos"
+  label="Fotos do veículo"
+  cropShape="landscape"
+  maxFiles={3}
+/>
+<InputFile.Image2 name="thumbnail" label="Miniatura" maxFiles={1} />
+```
+
+| Apresentação | Quando usar |
+| --- | --- |
+| `InputFile` | Documentos e anexos gerais, com `accept` configurável. |
+| `InputFile.Image` | Fotos com recorte, previews e mensagem vazia opcional. |
+| `InputFile.Image2` | Seleção de imagens com apresentação compacta; sem `isFallback`. |
+
+O diálogo permite ajustar a imagem antes de guardá-la no formulário. Confirme com “Usar foto” para aplicar o resultado; cancelar encerra o recorte sem adicionar as novas imagens. O arquivo resultante, não a URL de preview, é o valor que será entregue ao submit.
+
 As apresentações `InputFile.Image` e `InputFile.Image2` aceitam JPEG, PNG e WebP. O recorte suporta circle, square e landscape. PNG permanece PNG; as demais entradas são exportadas como JPEG. Image2 apresenta seleção compacta e miniaturas e não oferece isFallback.
 
 As duas apresentações fixam seus formatos internamente e não expõem accept. O seletor de presets pertence somente ao InputFile geral. O recorte e os previews são comportamentos da composição Jeep Club, não do react-dropzone. Ambas usam square quando cropShape é omitido; Avatar escolhe circle explicitamente.
@@ -61,7 +142,7 @@ Explore as [stories de imagens](?path=/docs/componentes-input-inputfile-imagens-
 
 ## Cuidados e limites atuais
 
-`required` só adiciona indicação visual; obrigatoriedade e validações adicionais precisam do schema do formulário. O label gera htmlFor, mas o ID não chega ao input criado pelo Dropzone: não é uma referência de associação acessível a reproduzir. As stories localizam o input por seletor apenas para operar essa implementação sem alterá-la.
+`required` só adiciona indicação visual; obrigatoriedade e validações adicionais precisam do schema do formulário. O label associa seu ID ao input do dropzone; a área interativa também recebe nome acessível e papel de botão. Acessibilidade completa do seletor nativo e do recorte ainda exige avaliação adicional.
 
 O estado de arraste depende de interação real; não há prop para forçá-lo. Nos testes, a rejeição de formato ignora somente o filtro de accept do simulador de seleção para deixar o react-dropzone rejeitar o arquivo de fato. O seletor nativo do sistema, gestos de arraste, foco completo do diálogo e acessibilidade integral exigem validação adicional.
 

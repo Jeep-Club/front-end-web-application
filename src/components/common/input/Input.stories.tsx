@@ -5,7 +5,9 @@ import { Input } from "./index";
 const meta = {
   title: "Componentes/Input/Input",
   component: Input,
+  tags: ["!autodocs"],
   argTypes: {
+    variant: { control: "radio", options: ["white", "gray"] },
     register: { control: false, table: { disable: true } },
     children: {
       control: false,
@@ -19,13 +21,13 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="max-w-md rounded-lg bg-j-blue-950 p-4">
+      <div className="w-full max-w-md p-4">
         <Story />
       </div>
     ),
   ],
   parameters: {
-    docs: { description: { component: "Modo register=false, sem React Hook Form. A superfície escura acompanha os estilos padrão do campo." } },
+    docs: { description: { component: "Modo register=false, sem React Hook Form. White é o padrão; gray preserva a superfície cinza." } },
   },
 } satisfies Meta<typeof Input>;
 
@@ -45,7 +47,7 @@ export const ComIcone: Story = {
       <Search
         aria-hidden="true"
         size={18}
-        className="pointer-events-none absolute left-3 text-j-transparent-white"
+        className="pointer-events-none absolute left-3 text-j-gray-500"
       />
     </Input>
   ),
@@ -54,6 +56,7 @@ export const ComErro: Story = {
   args: { required: true, error: "Informe o nome." },
 };
 export const Desabilitado: Story = { args: { disabled: true } };
+export const Gray: Story = { args: { variant: "gray" } };
 export const SomenteLeitura: Story = {
   args: { value: "Anuidade de associados", readOnly: true },
 };

@@ -5,6 +5,7 @@ import { PageHeader } from "./index";
 const meta = {
   title: "Componentes/PageHeader",
   component: PageHeader,
+  tags: ["!autodocs"],
   argTypes: { actions: { control: false } },
   args: {
     title: "Gestão de usuários",

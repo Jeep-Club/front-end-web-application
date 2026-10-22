@@ -25,7 +25,7 @@ export type InputDateProps = Omit<InputProps, "label" | "name" | "placeholder"> 
     name?: string,
 }
 
-export function InputDate({label="Data de Nascimento", name='birthData', className, value, mask, onChange, ...props}: InputDateProps){
+export function InputDate({label="Data de Nascimento", name='birthData', className, value, mask, onChange, variant = "white", disabled, ...props}: InputDateProps){
     const refLocal = useRef<HTMLInputElement>(null);
     
     const { control } = useFormContext();
@@ -43,6 +43,8 @@ export function InputDate({label="Data de Nascimento", name='birthData', classNa
     return(
             <Input 
                 {...props}
+                variant={variant}
+                disabled={disabled}
                 ref={(e)=>{ref(e);refLocal.current = e}}
                 type={'date'} 
                 label={label} 
@@ -68,7 +70,8 @@ export function InputDate({label="Data de Nascimento", name='birthData', classNa
                     aria-label={`Abrir calendário para selecionar ${label.toLowerCase()}`}
                     aria-haspopup="dialog"
                     title="Mostrar seletor de datas" 
-                    className="absolute left-2.5 text-j-transparent-white" 
+                    className={twMerge("absolute left-2.5", variant === "white" ? "text-j-gray-500" : "text-j-white/70")}
+                    disabled={disabled}
                     onClick={handleOpenPicker}
                 >
                 <Calendar size={20}/></ButtonIcon>

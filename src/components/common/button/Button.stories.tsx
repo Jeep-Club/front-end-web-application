@@ -5,6 +5,7 @@ import { Button } from "./Button";
 const meta = {
   title: "Componentes/Button",
   component: Button,
+  tags: ["!autodocs"],
   argTypes: {
     children: { control: "text" },
     type: {

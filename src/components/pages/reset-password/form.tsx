@@ -50,8 +50,8 @@ export default function FormResetPassword({ token }: FormResetPasswordProps) {
             >
                 <div className="w-full flex flex-col gap-4">
 
-                    <InputPassword name="password" placeholder="Nova Senha" />
-                    <InputPassword name="confirmPassword" placeholder="Confirme a Senha" />
+                    <InputPassword name="password" placeholder="Nova Senha" labelClassName="text-j-white" errorClassName="text-j-red-100" />
+                    <InputPassword name="confirmPassword" placeholder="Confirme a Senha" labelClassName="text-j-white" errorClassName="text-j-red-100" />
                 </div>
 
                 <Button

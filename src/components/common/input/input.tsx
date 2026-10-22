@@ -3,16 +3,20 @@
 import { twMerge } from "tailwind-merge";
 import { useId } from "react";
 
+export type InputVariant = "white" | "gray";
+
 export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' | 'defaultValue'> {
     label: string;
     name: string;
     error?: string;
     children?: React.ReactNode;
     labelClassName?: string;
+    errorClassName?: string;
+    variant?: InputVariant;
 }
 
 
-export function Input({label, error, name, value, className, labelClassName, type="text", children, required, ...props}: InputProps) {
+export function Input({label, error, name, value, className, labelClassName, errorClassName, variant = "white", type="text", children, required, ...props}: InputProps) {
     const id = useId();
     const isError = Boolean(error && error !== 'undefined');
     const errorId = id + '-error';
@@ -21,7 +25,7 @@ export function Input({label, error, name, value, className, labelClassName, typ
         <div className="w-full flex flex-col gap-1.5">
             <label
                 htmlFor={id}
-                className={twMerge("text-xs md:text-sm font-bold text-j-white", labelClassName)}
+                className={twMerge("text-xs md:text-sm font-bold text-j-gray-700", labelClassName)}
             >
                 {label} {required ? <span className="text-j-red-500">*</span> : null}
             </label>
@@ -46,9 +50,11 @@ export function Input({label, error, name, value, className, labelClassName, typ
                         focus:outline-j-yellow-400
                         disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
                         `,
+                        variant === "white"
+                            ? "border-j-gray-300 bg-j-white px-3 py-2.5 text-sm font-normal text-j-gray-700 placeholder:text-j-gray-500 focus:border-j-blue-500 focus:outline-j-blue-500 disabled:bg-j-gray-100 disabled:text-j-gray-500"
+                            : "placeholder:text-j-white/70",
                         `
-                            ${isError ? "border-input-border-error text-input-border-error" : "border-transparent text-input-text"} 
-                            ${isError ? "focus:outline-input-border-error focus:border-input-border-error" : "focus:outline-j-yellow-400 focus:border-j-yellow-400"}
+                            ${isError ? "border-j-red-500 focus:outline-j-red-500 focus:border-j-red-500" : ""}
                         `,
                         className
                     )}
@@ -56,7 +62,7 @@ export function Input({label, error, name, value, className, labelClassName, typ
                 {children}
             </div>
 
-            {isError ? <p id={errorId} className="text-j-red-300 text-sm">{error}</p> : null}
+            {isError ? <p id={errorId} className={twMerge("text-j-red-500 text-sm", errorClassName)}>{error}</p> : null}
         </div>
     );
 }

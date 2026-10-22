@@ -8,9 +8,11 @@ import { twMerge } from "tailwind-merge";
 import { UploadCloud } from "lucide-react";
 import { FallBackFile } from "./fallback/fallback";
 import type { FileRejection } from "react-dropzone";
+import type { InputVariant } from "../input";
 
 export type InputFileProps = {
     name: string;
+    variant?: InputVariant;
     label?: string;
     required?: boolean;
     multiple?: boolean;
@@ -36,7 +38,8 @@ export function InputFile({
     multiple = false || maxFiles > 1,
     accept,
     className,
-    isFallback = false
+    isFallback = false,
+    variant = "white",
 }: InputFileProps) {
     const id = useId();
     const { control, setError, clearErrors } = useFormContext();
@@ -88,36 +91,39 @@ export function InputFile({
     return (
         <div className={twMerge("w-full flex flex-col gap-2", className)}>
             {label && (
-                <label htmlFor={id} className="text-sm font-medium text-j-gray-300">
+                <label htmlFor={id} className="text-sm font-medium text-j-gray-700">
                     {label} {required && <span className="text-j-red-200">*</span>}
                 </label>
             )}
 
             <Dropzone
+                inputId={id}
+                inputLabel={label ?? "Selecionar arquivos"}
+                variant={variant}
                 onDrop={handleDrop}
                 multiple={multiple}
                 maxFiles={maxFiles > 0 ? maxFiles : undefined}
                 maxSize={maxSizeMB * 1024 * 1024}
                 accept={accept}
-                className={error ? "border-j-red-300 bg-j-red-300/10" : ""}
+                className={error ? "border-j-red-500 bg-j-red-100/10" : undefined}
             >
                 {/* Usando o Render Props para customizar as mensagens internas */}
                 {({ isDragActive, isDragReject }) => (
                     <div className="flex flex-col items-center justify-center w-full">
-                        <UploadCloud size={32} className={error || isDragReject ? "text-j-red-300 mb-2" : "text-j-gray-300 mb-2"} />
-                        <p className="text-sm text-center text-j-gray-300">
+                        <UploadCloud aria-hidden="true" size={32} className={twMerge("mb-2", error || isDragReject ? "text-j-red-500" : variant === "white" ? "text-j-gray-500" : "text-j-gray-300")} />
+                        <p className={twMerge("text-sm text-center", variant === "white" ? "text-j-gray-500" : "text-j-gray-300")}>
                             {isDragActive && !isDragReject ? (
-                                <span className="font-semibold text-j-yellow-400">Pode soltar os arquivos aqui...</span>
+                                <span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-400")}>Pode soltar os arquivos aqui...</span>
                             ) : isDragReject ? (
-                                <span className="font-semibold text-j-red-300">Formato de arquivo não suportado.</span>
+                                <span className="font-semibold text-j-red-500">Formato de arquivo não suportado.</span>
                             ) : error ? (
-                                <span className="font-semibold text-j-red-300">{String(error.message)}</span>
+                                <span className="font-semibold text-j-red-500">{String(error.message)}</span>
                             ) : (
-                                <><span className="font-semibold text-j-yellow-400">Clique</span> ou arraste os arquivos</>
+                                <><span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-400")}>Clique</span> ou arraste os arquivos</>
                             )}
                         </p>
                         {!error && (
-                            <p className="text-xs text-j-gray-400 mt-1">
+                            <p className={twMerge("text-xs mt-1", variant === "white" ? "text-j-gray-500" : "text-j-gray-300")}>
                                 Máximo: {maxSizeMB}MB {maxFiles > 0 ? `| Limite: ${maxFiles} arquivo(s)` : ''}
                             </p>
                         )}
@@ -127,9 +133,9 @@ export function InputFile({
 
             {/* Renderização Condicional da Lista ou Fallback */}
             {currentFiles.length > 0 ? (
-                <ListFile files={currentFiles} onRemove={handleRemove} />
+                <ListFile files={currentFiles} onRemove={handleRemove} variant={variant} />
             ) : isFallback ? (
-                <FallBackFile>Nenhum arquivo enviado.</FallBackFile>
+                <FallBackFile className={variant === "white" ? "border border-j-gray-300 bg-j-white text-j-gray-500" : undefined}>Nenhum arquivo enviado.</FallBackFile>
             ) : null}
         </div>
     );

@@ -10,6 +10,7 @@ const meta = {
   component: InputFile.Image,
   args: { name: "attachments", label: "Foto de perfil", maxFiles: 1, cropShape: "circle", isFallback: true },
   argTypes: {
+    variant: { control: "radio", options: ["white", "gray"], table: { defaultValue: { summary: '"white"' } } },
     name: { control: false, type: { name: "string", required: true }, table: { type: { summary: "string" }, defaultValue: { summary: "—" } } },
     label: { control: "text", type: "string", table: { type: { summary: "string" }, defaultValue: { summary: "undefined" } } },
     cropShape: { control: "select", options: ["circle", "square", "landscape"], table: { type: { summary: '"circle" | "square" | "landscape"' }, defaultValue: { summary: '"square"' } } },
@@ -34,7 +35,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="max-w-xl rounded-lg bg-j-blue-950 p-4">
+      <div className="w-full max-w-xl p-4">
         <Form
           schema={z.object({ attachments: z.array(z.instanceof(File)).optional() })}
           formOptions={{ defaultValues: { attachments: [] } }}
@@ -78,5 +79,5 @@ export const Veiculo: Story = {
 export const Compacta: Story = {
   args: { cropShape: "square", isFallback: undefined },
   parameters: { controls: { exclude: ["isFallback"] }, docs: { description: { story: "Renderiza InputFile.Image2. Em modo único, a área de seleção desaparece após o recorte; remover a miniatura permite selecionar novamente." } } },
-  render: (args) => <InputFile.Image2 name={args.name} label={args.label} required={args.required} multiple={args.multiple} maxFiles={args.maxFiles} maxSizeMB={args.maxSizeMB} cropShape={args.cropShape} className={args.className} />,
+  render: (args) => <InputFile.Image2 name={args.name} label={args.label} required={args.required} multiple={args.multiple} maxFiles={args.maxFiles} maxSizeMB={args.maxSizeMB} cropShape={args.cropShape} className={args.className} variant={args.variant} />,
 };

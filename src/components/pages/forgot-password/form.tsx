@@ -37,7 +37,7 @@ export default function FormForgotPassword() {
                 onSubmit={handleSubmit}
                 onError={(errors) => console.log(errors)}
             >
-                <InputCPF required />
+                <InputCPF required labelClassName="text-j-white" errorClassName="text-j-red-100" />
 
                 <Button
                     type="submit"

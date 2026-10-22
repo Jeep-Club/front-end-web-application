@@ -19,6 +19,40 @@ Não há TanStack Query, sessão, autenticação ou backend nas stories: os regi
 
 ## Uso completo e Controls
 
+Importe a composição pública e forneça colunas tipadas e registros. A configuração mínima não precisa de paginação, busca ou filtros:
+
+```tsx
+import { Table } from '@/components/common/table';
+import type { ColumnDef } from '@tanstack/react-table';
+
+type Member = { id: string; name: string };
+const columns: ColumnDef<Member>[] = [
+  { accessorKey: 'name', header: 'Nome', meta: { label: 'Nome' } },
+];
+
+<Table.Root columns={columns} data={members} getRowId={(member) => member.id}>
+  <Table.Header title="Membros" />
+  <Table.Content />
+</Table.Root>
+```
+
+`members` é a lista fornecida pela tela. Prefira IDs estáveis em `getRowId`. O renderizador padrão representa valores ausentes ou vazios por um traço; para badges, datas e ações, configure `cell` na coluna.
+
+| Parte | Como compor |
+| --- | --- |
+| Root | Recebe colunas, dados e estados; envolve todos os controles que consomem seu contexto. |
+| Header | Organiza título, descrição e ações/controles fornecidos por `children`. |
+| Search | Emite o termo por `onSubmit`; o consumidor aplica a busca e volta à primeira página quando necessário. |
+| Filters | Recebe os campos por `children`; mostra a limpeza quando há `onClear` e `hasActiveFilters`. |
+| Content | Renderiza dados ou estados; as primeiras duas colunas formam o resumo mobile e as demais aparecem ao expandir. |
+| Sortable | Recebe `field`, `label`, `sort` e `onSortChange`; comunica intenção, não reordena registros. |
+| Pagination | Usa a configuração de paginação do Root; `footer` permite posicioná-la fora do card mantendo o contexto. |
+| Skeleton | Apresenta a estrutura de carregamento, usada pelo Content no loading inicial. |
+
+Para ordenação, `sort` usa o formato `campo,asc` ou `campo,desc`. O callback recebe o campo clicado; cabe à tela implementar o ciclo crescente, decrescente e sem ordenação e entregar os dados na ordem correta.
+
+Na paginação manual, `pageIndex` começa em zero, `pageSize` define o tamanho e `pageCount` informa o total de páginas. `rowCount` informa o total de registros, não apenas o tamanho da página atual. Atualize a configuração em `onChange` e forneça a página correspondente em `data`. Root não recorta nem consulta a lista por conta própria.
+
 <Canvas of={TableStories.ComposicaoCompleta} />
 
 <div role="region" aria-label="Propriedades da tabela" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>

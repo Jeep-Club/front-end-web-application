@@ -1,0 +1,75 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './Select.stories';
+
+<Meta of={Stories} />
+
+# Select
+
+Campo para escolher opções fornecidas pelo consumidor. Use quando os valores permitidos já são conhecidos; para texto livre, use [Input](?path=/docs/componentes-input-input--docs). A seleção única é o padrão. `multiple` e `searchable` são independentes: é possível combinar seleção única ou múltipla, com ou sem busca.
+
+## Uso isolado e integração com formulário
+
+O export público `Select` é conectado ao React Hook Form e exige um provider, como o `Form` do projeto. `Select.Unregister` é a base sem registro, usada nas stories. O import direto de `./select` também aponta para a base; não confunda esse import com o export da família.
+
+```tsx
+import { Select } from '@/components/common/select';
+
+const options = [
+  { value: 'trilhas', label: 'Trilhas' },
+  { value: 'eventos', label: 'Eventos' },
+];
+
+// Sem provider: defaultValue define apenas a seleção inicial.
+<Select.Unregister
+  label="Categoria"
+  name="category"
+  options={options}
+  defaultValue="eventos"
+  labelClassName="text-j-gray-700"
+/>
+
+// Dentro de Form: o nome corresponde ao schema e aos defaultValues.
+<Select label="Categoria" name="category" options={options} required />
+```
+
+No modo controlado, mantenha `value` e atualize-o em `onValueChange`: o retorno é uma string para seleção única e um array de strings para múltipla. O adaptador registrado usa o valor e o erro do formulário. Inicialize arrays de seleção múltipla nos `formOptions.defaultValues` do Form e valide o mínimo de itens no schema.
+
+## Opções e busca local
+
+Cada opção recebe `value`, `label` e, opcionalmente, `disabled`. Use valores únicos, não vazios. O valor vazio é reservado ao placeholder. A compatibilidade com filhos `option` e fragments permanece; prefira `options` em novos usos e não forneça simultaneamente as duas fontes, pois `options` tem precedência.
+
+<Canvas of={Stories.Padrao} />
+
+<div role="region" aria-label="Propriedades do Select" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Padrao} />
+</div>
+
+A busca compara o texto do label sem diferenciar maiúsculas/minúsculas. Ela não remove acentos nem consulta endpoints. Labels compostos precisam conter texto para serem pesquisáveis. O consumidor fornece todas as opções; o componente não faz paginação nem carregamento remoto.
+
+<Canvas of={Stories.MultiplasComBusca} />
+
+Na seleção múltipla, clique novamente em uma opção marcada para removê-la. O trigger resume os labels selecionados, com truncamento; o menu identifica a seleção com check e `aria-selected`.
+
+<Canvas of={Stories.SemResultados} />
+
+## Superfícies, dimensões e estados
+
+`white` é a superfície padrão, alinhada aos campos claros do admin; `gray` mantém a superfície cinza. A cor do label pode ser ajustada com `labelClassName`: as stories usam label escuro em canvas neutro, enquanto o label base é branco.
+
+<Canvas of={Stories.White} />
+<Canvas of={Stories.Gray} />
+
+`maxWidth` limita o campo e o conteúdo. O campo ocupa a largura disponível, e a seta fica à direita. `maxHeight` limita a área de opções, com rolagem; textos longos são truncados. Confira a largura real do formulário em telas pequenas ao configurar limites.
+
+<Canvas of={Stories.ComErro} />
+<Canvas of={Stories.Desabilitado} />
+
+`error` apresenta a mensagem e associa seu ID ao controle. `required` sinaliza obrigatoriedade; no formulário, a regra de negócio deve estar no schema. Nos modos múltiplo/com busca, o campo oculto não oferece validação nativa de obrigatório: não dependa apenas desse atributo.
+
+## Interação e limites
+
+A seleção simples usa Radix Select; os modos com busca ou seleção múltipla usam Radix Popover com listbox. Enter abre o controle; as setas navegam nas opções, Enter/Espaço selecionam e Escape fecha. Na busca, seta para baixo move o foco para as opções. Não confunda estados acessíveis expostos com certificação completa de acessibilidade.
+
+`onChange` fornece um evento compatível com a integração existente, mas sintetizado, não um evento de um select nativo real. No modo múltiplo, o campo oculto serializa valores separados por vírgula; prefira o array do React Hook Form ou `onValueChange` para submissão, em vez de tratar esse texto como um contrato de transporte.
+
+As stories não incluem backend nem provider de formulário e não comprovam um fluxo completo de submissão. Veja o [guia de componentes e páginas](?path=/docs/documentação-componentes-e-páginas--docs) para compor formulários.

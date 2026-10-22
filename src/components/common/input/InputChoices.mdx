@@ -1,0 +1,59 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './InputChoices.stories';
+
+<Meta of={Stories} />
+
+# Checkbox e Radio
+
+Use InputCheckbox para uma escolha booleana independente e InputRadioGroup para uma escolha exclusiva entre opções. Ambos aceitam `variant="white"` por padrão e `variant="gray"` para a superfície cinza. Os rótulos permanecem escuros para leitura no canvas neutro; a cor de seleção acompanha a identidade do clube.
+
+## Formulário e valores
+
+```tsx
+import { InputCheckbox } from '@/components/common/input/input-checkbox';
+import { InputRadioGroup } from '@/components/common/input/input-radio-group';
+
+// Dentro de Form; inicialize accepted: false e contact: 'email'.
+<InputCheckbox name="accepted" label="Aceito receber avisos" />
+<fieldset>
+  <legend>Contato preferido</legend>
+  <InputRadioGroup name="contact" options={[
+    { value: 'email', label: 'E-mail' },
+    { value: 'phone', label: 'Telefone' },
+  ]} />
+</fieldset>
+```
+
+O checkbox usa contexto React Hook Form e grava boolean. O radio registrado grava o `value` textual da opção. Os nomes devem corresponder ao schema/defaultValues. As opções são locais, com valores únicos; não existe busca ou carregamento remoto. Use fieldset/legend para nomear o grupo, pois o componente não cria essa identificação sozinho.
+
+<Canvas of={Stories.Registrados} />
+
+O exemplo confirma os valores reais do formulário no output. Os campos não enviam dados a endpoints. Para consentimento obrigatório, valide o boolean no schema (por exemplo, `z.literal(true)`); `required` no checkbox não substitui a regra quando Form usa `noValidate`. Não há prop de erro ou disabled nessa API de escolhas; não passe atributos de Input textual presumindo suporte.
+
+<div role="region" aria-label="Propriedades das escolhas" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Registrados} />
+</div>
+
+<Canvas of={Stories.Gray} />
+
+## Radio fora de Form
+
+```tsx
+const [contact, setContact] = useState('email');
+
+<InputRadioGroup
+  register={false}
+  name="contact"
+  options={options}
+  value={contact}
+  onChange={setContact}
+/>
+```
+
+Esse modo exige manter `value` atualizado no consumidor. `defaultValue` pertence ao adaptador registrado, enquanto `value`/`onChange` pertencem ao modo sem registro. InputCheckbox não oferece esse modo isolado.
+
+<Canvas of={Stories.RadioIsolado} />
+
+## Teclado e apresentação
+
+As entradas nativas ficam visualmente ocultas, mantendo foco e estados de seleção acessíveis. Espaço alterna o checkbox; as setas mudam a opção do grupo de radios nativo. A borda de foco aparece no indicador visual. `className` estiliza o container; no radio, `optionClassName` estiliza cada label. Use rótulos textuais e mantenha contraste e foco ao compor overrides.
