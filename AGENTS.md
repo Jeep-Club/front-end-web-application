@@ -47,6 +47,8 @@ Durante a implementação:
 - Preserve contratos e validações; respeite autenticação, autorização e regras
   de negócio. Visibilidade de interface não substitui autorização da operação.
 - Siga o design documentado e considere mobile-first, estados e acessibilidade.
+- Em componentes interativos, use `cursor-pointer` para indicar a ação disponível; preserve um cursor de estado apropriado, como `cursor-not-allowed`, quando o controle estiver desabilitado.
+- Para superfícies alternativas de campos compartilhados, prefira `variant="white"` como padrão e `variant="gray"` para a versão cinza explícita; mantenha essa convenção também ao adaptar inputs.
 - Documente contratos e decisões não evidentes conforme [documentação no código](docs/development.md#documentação-no-código), incluindo testes e infraestrutura.
 - Mantenha stories e documentação interativa coerentes com mudanças relevantes de interface, seguindo [storybook-story](.agents/skills/storybook-story/SKILL.md).
 - Distinga limitações do código de padrões a reproduzir. Se um requisito exigir

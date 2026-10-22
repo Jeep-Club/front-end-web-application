@@ -47,6 +47,9 @@ Defina use client na fronteira interativa necessária. Função comum de servido
 
 Prefira children, props pequenas e callbacks significativos a muitas flags combináveis. Uma primitiva não deve conhecer API/regra de um domínio por causa de um consumidor. Identifique os demais usos antes de alterar contrato compartilhado; modal e campos possuem lacunas reais, não APIs novas unificadas.
 
+Componentes interativos devem usar `cursor-pointer` para indicar a ação disponível quando o cursor não comunica essa affordance por padrão. Para controles desabilitados, use o cursor correspondente ao estado, como `cursor-not-allowed`, sem sugerir uma ação executável.
+Campos compartilhados com superfícies alternativas devem preferir `variant="white"` como padrão e `variant="gray"` para a versão cinza explícita; mantenha essa convenção também ao adaptar inputs.
+
 ## Documentação no código
 
 Use JSDoc em funções, métodos e APIs compartilhadas quando o contrato ou a responsabilidade precisar de explicação além do nome e da tipagem. Aplique o mesmo critério a código de aplicação, testes, fixtures, utilitários e infraestrutura; não exija um bloco para cada símbolo exportado.
