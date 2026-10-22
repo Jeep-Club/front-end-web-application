@@ -42,12 +42,12 @@ function previewText(text: string, limit: number) {
     const characters = Array.from(text.replace(/\s+/g, " ").trim());
     return characters.length > limit ? `${characters.slice(0, limit - 1).join("").trimEnd()}…` : characters.join("");
 }
-const statuses = { DRAFT: "Rascunho", PUBLISHED: "Publicado", ARCHIVED: "Arquivado", PENDING: "Aguardando aprovação" };
+const statuses = { DRAFT: "Rascunho", PUBLISHED: "Publicado", ARCHIVED: "Arquivado", PENDING: "Rascunho" };
 const statusColors = {
     DRAFT: "bg-gray-100 text-gray-700",
     PUBLISHED: "bg-blue-100 text-blue-800",
     ARCHIVED: "bg-j-gray-100 text-j-gray-600",
-    PENDING: "bg-amber-100 text-amber-900",
+    PENDING: "bg-gray-100 text-gray-700",
 };
 
 /** Recebe uma página da API sem acoplar a apresentação a um endpoint específico. */
@@ -75,7 +75,6 @@ export function PublicationList({ page, pageIndex, pageSize, onPaginationChange,
                                     </div>
                                     <h3 title={item.title} className="line-clamp-2 break-words font-bold text-j-blue-800">{previewText(item.title, CARD_TITLE_LIMIT)}</h3>
                                     <p className="line-clamp-3 break-words text-sm text-j-gray-600">{previewText(publicationPlainText(item.content), CARD_CONTENT_LIMIT)}</p>
-                                    {item.serviceRequest && <p className="text-sm text-amber-900">Solicitação recebida. O serviço aparecerá no feed após aprovação.</p>}
                                 </div>
                                 <DraftPublicationCardActions publication={item} />
                                 <PublishedPublicationCardActions publication={item} />

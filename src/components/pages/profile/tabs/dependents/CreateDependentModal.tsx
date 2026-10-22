@@ -24,10 +24,6 @@ import { saveDependentWithPhotoAction, removeDependentPhotoAction } from '@/acti
 const NOT_APPLICABLE = 'Não se aplica';
 const light = '[&_button[aria-haspopup=dialog]]:!text-j-blue-800 [&_button[aria-haspopup=dialog]_svg]:!text-j-blue-800 [&_input]:!h-11 [&_input]:!py-2 [&_input]:!text-base [&_select]:!h-11 [&_select]:!py-2 [&_select]:!text-base [&_textarea]:!min-h-28 [&_textarea]:!py-3 [&_label]:!text-j-gray-700 [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!text-j-gray-700 [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!text-j-gray-700 [&_textarea]:!border-j-gray-200 [&_textarea]:!bg-j-gray-100 [&_textarea]:!text-j-gray-700';
 
-function localDateInputValue() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
 
 function DependentHealthField({ name, label, question, placeholder }: {
   name: 'medicalProfile.allergies' | 'medicalProfile.chronicDiseases' | 'medicalProfile.medications' | 'medicalProfile.medicalNotes';
@@ -103,7 +99,7 @@ function Fields({ dependent, isEdit, isSaving }: { dependent?: MemberDependent; 
         <InputRegister name="name" label="Nome completo" required />
       </div>
       <InputRegister name="cpf" label="CPF" mask={maskCPF} inputMode="numeric" disabled={isEdit} required />
-      <InputDate name="birthDate" label="Data de nascimento" max={localDateInputValue()} required />
+      <InputDate name="birthDate" label="Data de nascimento" required />
       <SelectRegister name="relationshipType" label="Parentesco" required><option value="" disabled hidden>Selecione</option><option value="CHILD">Filho(a)</option><option value="SPOUSE">Cônjuge</option><option value="PARENT">Pai/Mãe</option><option value="SIBLING">Irmão/Irmã</option><option value="GUEST">Convidado(a)</option><option value="OTHER">Outro</option></SelectRegister>
       <InputRegister name="phoneNumber" label="Telefone" mask={maskPhoneNumber} inputMode="tel" required />
     </div></section>

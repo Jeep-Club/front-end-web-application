@@ -10,8 +10,6 @@ type VehicleStatus = 'ACTIVE' | 'SOFT_DELETED' | 'INACTIVE' | 'PENDING';
 
 interface IncludeVehicleMemberRequest {
     nickname?: string;
-    photo?: string;
-    photos?: string[];
     plate: string;
     renavam: string;
     brand: string;

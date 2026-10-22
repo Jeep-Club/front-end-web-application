@@ -13,7 +13,7 @@ const common = { title: text.max(200), content: publicationContent, images };
 export const createPublicationSchema = z.discriminatedUnion("type", [
     z.object({ type: z.literal("NOTICE"), ...common }),
     z.object({ type: z.literal("EVENT"), ...common, startsAt: z.iso.datetime(), endsAt: z.iso.datetime().nullable() }),
-    z.object({ type: z.literal("SERVICE"), ...common, amount: z.number().min(0.01).max(9999999999999.99).refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.01, "Use até duas casas decimais."), contactPhone: text.max(30) }),
+    z.object({ type: z.literal("SERVICE"), ...common, amount: z.number().min(0.01).max(9999999999999.99).refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.01, "Use até duas casas decimais."), contactPhone: text.regex(/^\d{10,11}$/, "Informe um telefone com DDD.") }),
 ]).superRefine((data, ctx) => {
     if (data.type !== "EVENT") return;
     if (Date.parse(data.startsAt) <= Date.now()) ctx.addIssue({ code: "custom", path: ["startsAt"], message: "O início deve estar no futuro." });
@@ -39,7 +39,7 @@ export const publicationFormSchema = z.object({
     }
     if (data.type === "SERVICE") {
         if (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || Number(data.amount.replace(",", ".")) < 0.01) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe um valor positivo com até duas casas decimais." });
-        if (!/^\d{1,30}$/.test(data.contactPhone)) ctx.addIssue({ code: "custom", path: ["contactPhone"], message: "Informe o telefone usando apenas números, com até 30 dígitos." });
+        if (!/^\d{10,11}$/.test(data.contactPhone.replace(/\D/g, ""))) ctx.addIssue({ code: "custom", path: ["contactPhone"], message: "Informe o telefone usando apenas números, com até 30 dígitos." });
     }
 });
 export type PublicationFormData = z.infer<typeof publicationFormSchema>;

@@ -1,3 +1,4 @@
+import { birthDateSchema } from "@/schemas/auth/user/birthDate";
 import z from "zod";
 import { pageResponseSchema } from "../page";
 import { getMediaImageUrl } from '@/utils/media/imageUrl';
@@ -57,7 +58,7 @@ export const adminUserSearchParamsSchema = z.object({
         .regex(/^\d{10,11}$/)
         .optional(),
 
-    birthDate: z.iso.date().optional(),
+    birthDate: birthDateSchema.optional(),
 
     rg: z
         .string()

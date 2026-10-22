@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { useVehicleDetailsSteps } from "@/hooks/useVehicleDetailsSteps";
 import { useQuery } from "@tanstack/react-query";
 import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -53,8 +54,9 @@ interface ViewVehicleStepsProps {
 }
 
 function ViewVehicleSteps({ currentStep, onNext, onBack, onStepChange, onClose, vehicle }: ViewVehicleStepsProps) {
+    const rootRef = useVehicleDetailsSteps(currentStep, STEPS.length, onNext, onClose);
     return (
-        <div className="w-full flex flex-col items-center gap-5">
+        <div ref={rootRef} tabIndex={-1} className="w-full flex flex-col items-center gap-5 outline-none">
             <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-j-gray-100 p-1.5">
                 {STEPS.map(({ step, label }) => {
                     const isActive = step === currentStep;

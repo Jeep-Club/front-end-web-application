@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { birthDateSchema } from '@/schemas/auth/user/birthDate';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { dependentResponseSchema, relationshipSchema } from '@/schemas/dependents';
 import { captureAction } from '@/utils/actions/captureAction';
@@ -10,7 +11,7 @@ import { imageUploadErrorMessage } from '@/utils/media/uploadError';
 
 const payloadSchema = z.object({
     name: z.string().trim().min(3).max(150), cpf: z.string().regex(/^\d{11}$/),
-    birthDate: z.string().min(1), relationshipType: relationshipSchema,
+    birthDate: birthDateSchema, relationshipType: relationshipSchema,
     phoneNumber: z.string().regex(/^\d{10,11}$/),
 });
 

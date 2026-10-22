@@ -67,10 +67,10 @@ export default function Sidebar({
                 id="tour-sidebar"
                 className={twMerge(
                     `
-                    fixed inset-y-0 left-0 z-40 flex h-dvh min-h-0 w-64 flex-col
+                    fixed inset-y-0 left-0 z-40 flex h-dvh min-h-0 w-64 shrink-0 flex-col
                     overflow-x-hidden overflow-y-auto overscroll-contain border-r border-j-yellow-300 bg-j-blue-800
                     transition-transform duration-300
-                    md:sticky md:top-0 md:z-auto md:translate-x-0
+                    md:sticky md:top-0 md:z-20 md:translate-x-0
                     md:transition-[width]
                     `,
                     isMobileOpen
@@ -175,6 +175,7 @@ export default function Sidebar({
                         <Link
                             href={panelHref}
                             title={panelLabel}
+                            aria-label={panelLabel}
                             id="tour-admin-link"
                             aria-current={pathname.startsWith(panelHref) ? "page" : undefined}
                             onClick={() => {
@@ -185,7 +186,7 @@ export default function Sidebar({
                                 }
                             }}
                             className={twMerge(
-                                "mt-auto flex shrink-0 items-center gap-3 rounded-lg bg-j-yellow-300 px-4 py-3 text-xs font-bold text-j-blue-800 shadow-sm transition-colors hover:bg-j-yellow-300",
+                                "mt-auto flex shrink-0 cursor-pointer items-center gap-3 rounded-lg bg-j-yellow-300 px-4 py-3 text-xs font-bold text-j-blue-800 shadow-sm transition-colors hover:bg-j-yellow-300",
                                 isCollapsed && "md:justify-center md:px-0",
                             )}
                         >

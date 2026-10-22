@@ -1,3 +1,4 @@
+import { birthDateSchema } from "@/schemas/auth/user/birthDate";
 import { z } from 'zod';
 import { isValidCPF } from '@/utils/validate/validateCPF';
 
@@ -20,7 +21,7 @@ export const createDependentFormSchema = z.object({
   removePhoto: z.boolean().optional(),
   name: z.string().trim().min(3, 'Informe o nome completo').max(150),
   cpf: z.string().refine(isValidCPF, 'Informe um CPF válido'),
-  birthDate: z.string().min(1, 'Informe a data de nascimento').refine((value) => new Date(`${value}T12:00:00`) <= new Date(), 'A data não pode estar no futuro'),
+  birthDate: birthDateSchema,
   relationshipType: z.enum(['CHILD', 'GUEST', 'OTHER', 'PARENT', 'SIBLING', 'SPOUSE'], { error: 'Selecione o parentesco' }),
   phoneNumber: z.string().refine((value) => /^\d{10,11}$/.test(value.replace(/\D/g, '')), 'Informe um telefone com DDD'),
   medicalProfile: z.object({

@@ -5,7 +5,8 @@ export const vehicleDetailForEditResponseSchema: z.ZodType<VehicleDetailForEdit>
     id: z.number(),
     nickname: z.string().nullable(),
     photo: z.string().nullable(),
-    photos: z.array(z.string()).max(3).optional(),
+    images: z.array(z.object({ storageKey: z.string(), position: z.number().int().min(0), primary: z.boolean() })).max(5).optional(),
+    galleryRevision: z.number().int().min(0).optional(),
     plate: z.string(),
     renavam: z.string(),
     brand: z.string(),
@@ -17,4 +18,7 @@ export const vehicleDetailForEditResponseSchema: z.ZodType<VehicleDetailForEdit>
     fuelType: fuelTypeSchema,
     engineDisplacement: z.number(),
     towing: z.boolean().nullable(),
-});
+}).transform((vehicle) => ({
+    ...vehicle,
+    photos: vehicle.images === undefined ? undefined : [...vehicle.images].sort((a, b) => a.position - b.position).map((image) => image.storageKey),
+}));
