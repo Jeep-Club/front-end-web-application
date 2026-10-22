@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import styles from "./SettingsPage.module.css";
+import { useTheme } from "@/providers/ThemeProvider";
 import toast from "react-hot-toast";
 import { twMerge } from "tailwind-merge";
 
@@ -52,7 +53,6 @@ type OptionKey =
     | "support"
     | "legal";
 type MobileLevel = "sections" | "options" | "editor";
-type Theme = "light" | "dark" | "system";
 
 interface SettingOption {
     key: OptionKey;
@@ -164,7 +164,7 @@ function Toggle({
                 )}
             >
                 <span className={twMerge(
-                    "absolute left-0.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-j-white shadow-sm transition-transform motion-reduce:transition-none",
+                    "absolute left-0.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform motion-reduce:transition-none",
                     checked ? "translate-x-5" : "translate-x-0",
                 )} />
             </button>
@@ -181,7 +181,7 @@ export default function SettingsPage() {
     const [sectionKey, setSectionKey] = useState<SectionKey>("account");
     const [optionKey, setOptionKey] = useState<OptionKey>("personal-data");
     const [mobileLevel, setMobileLevel] = useState<MobileLevel>("sections");
-    const [theme, setTheme] = useState<Theme>("system");
+    const { theme, setTheme, saveTheme } = useTheme();
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [preferences, setPreferences] = useState({
         events: true,
@@ -236,6 +236,15 @@ export default function SettingsPage() {
     }
 
     function save() {
+        if (optionKey === "theme") {
+            try {
+                saveTheme();
+                toast.success("Tema salvo neste dispositivo.");
+            } catch {
+                toast.error("N" + String.fromCharCode(227) + "o foi poss" + String.fromCharCode(237) + "vel salvar o tema. Verifique se o navegador permite armazenamento local.");
+            }
+            return;
+        }
         toast.success("Preferências salvas neste protótipo.");
     }
 
@@ -409,7 +418,7 @@ export default function SettingsPage() {
                 return (
                     <div className="grid gap-3 p-5 sm:grid-cols-3">
                         {([["light", "Claro", Sun], ["dark", "Escuro", Moon], ["system", "Do dispositivo", Monitor]] as const).map(([value, label, Icon]) => (
-                            <button key={value} type="button" aria-pressed={theme === value} onClick={() => setTheme(value)} className={twMerge("flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 p-5 text-sm font-bold", theme === value ? "border-j-blue-800 bg-j-blue-50 text-j-blue-800" : "border-j-gray-200 text-j-gray-500")}>
+                            <button key={value} type="button" aria-pressed={theme === value} onClick={() => setTheme(value)} className={twMerge("flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 p-5 text-sm font-bold", theme === value ? "border-[var(--accent-text)] bg-j-blue-50 text-j-blue-800" : "border-j-gray-200 text-j-gray-500")}>
                                 <Icon size={24} />{label}
                             </button>
                         ))}
