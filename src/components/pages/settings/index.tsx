@@ -24,7 +24,9 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import useMediaQuery from "@/hooks/useMediaQuery";
+import styles from "./SettingsPage.module.css";
 import toast from "react-hot-toast";
 import { twMerge } from "tailwind-merge";
 
@@ -157,13 +159,13 @@ function Toggle({
                 aria-label={label}
                 onClick={onChange}
                 className={twMerge(
-                    "relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors",
+                    "relative h-11 w-14 shrink-0 cursor-pointer rounded-full border-[8px] border-transparent bg-clip-padding transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-400 motion-reduce:transition-none",
                     checked ? "bg-j-blue-800" : "bg-j-gray-300",
                 )}
             >
                 <span className={twMerge(
-                    "absolute left-1 top-1 h-4 w-4 rounded-full bg-j-white shadow-sm transition-transform",
-                    checked ? "translate-x-5" : "translate-x-1",
+                    "absolute left-0.5 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-j-white shadow-sm transition-transform motion-reduce:transition-none",
+                    checked ? "translate-x-5" : "translate-x-0",
                 )} />
             </button>
         </div>
@@ -172,6 +174,10 @@ function Toggle({
 
 export default function SettingsPage() {
     const router = useRouter();
+    const isDesktop = useMediaQuery("(min-width: 1024px)");
+    const panelRef = useRef<HTMLDivElement>(null);
+    const hasNavigated = useRef(false);
+    const [direction, setDirection] = useState<"forward" | "back">("forward");
     const [sectionKey, setSectionKey] = useState<SectionKey>("account");
     const [optionKey, setOptionKey] = useState<OptionKey>("personal-data");
     const [mobileLevel, setMobileLevel] = useState<MobileLevel>("sections");
@@ -193,15 +199,36 @@ export default function SettingsPage() {
     const section = SECTIONS.find((item) => item.key === sectionKey) ?? SECTIONS[0];
     const option = section.options.find((item) => item.key === optionKey) ?? section.options[0];
 
+    useEffect(() => {
+        if (!hasNavigated.current) return;
+        const panel = panelRef.current;
+        if (!panel) return;
+        const targetPanel = isDesktop ? (mobileLevel === "options" ? "options" : "editor") : mobileLevel;
+        const activePanel = panel.querySelector<HTMLElement>(`[data-settings-panel="${targetPanel}"]`);
+        const returnTarget = direction === "back"
+            ? activePanel?.querySelector<HTMLElement>(`[data-settings-key="${mobileLevel === "sections" ? sectionKey : optionKey}"]`)
+            : null;
+        (returnTarget ?? activePanel?.querySelector<HTMLElement>("h2"))?.focus({ preventScroll: true });
+        if (!isDesktop) panel.scrollIntoView({ block: "start", behavior: "instant" });
+    }, [mobileLevel, sectionKey, optionKey, isDesktop, direction]);
+
+    function navigateLevel(level: MobileLevel, nextDirection: "forward" | "back" = "forward") {
+        hasNavigated.current = true;
+        setDirection(nextDirection);
+        setMobileLevel(level);
+    }
+
     function chooseSection(nextSection: SettingSection) {
         setSectionKey(nextSection.key);
         setOptionKey(nextSection.options[0].key);
-        setMobileLevel("options");
+        setIsChangingPassword(false);
+        navigateLevel("options");
     }
 
     function chooseOption(nextOption: SettingOption) {
         setOptionKey(nextOption.key);
-        setMobileLevel("editor");
+        setIsChangingPassword(false);
+        navigateLevel("editor");
     }
 
     function toggle(key: keyof typeof preferences) {
@@ -216,18 +243,10 @@ export default function SettingsPage() {
         const Icon = option.icon;
         return (
             <header className="border-b border-j-gray-200 px-5 py-4">
-                <button
-                    type="button"
-                    onClick={() => setMobileLevel("options")}
-                    className="mb-3 flex cursor-pointer items-center gap-2 text-xs font-bold text-j-blue-800 lg:hidden"
-                >
-                    <ArrowLeft size={16} />
-                    Voltar para {section.label}
-                </button>
                 <div className="flex items-center gap-3">
                     <span className="rounded-xl bg-j-blue-50 p-2.5 text-j-blue-800"><Icon size={20} /></span>
                     <div>
-                        <h2 className="text-base font-extrabold text-j-gray-700">{option.label}</h2>
+                        <h2 tabIndex={-1} className="text-base font-extrabold text-j-gray-700 outline-none">{option.label}</h2>
                         <p className="mt-0.5 text-xs text-j-gray-400">{option.description}</p>
                     </div>
                 </div>
@@ -390,7 +409,7 @@ export default function SettingsPage() {
                 return (
                     <div className="grid gap-3 p-5 sm:grid-cols-3">
                         {([["light", "Claro", Sun], ["dark", "Escuro", Moon], ["system", "Do dispositivo", Monitor]] as const).map(([value, label, Icon]) => (
-                            <button key={value} type="button" onClick={() => setTheme(value)} className={twMerge("flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 p-5 text-sm font-bold", theme === value ? "border-j-blue-800 bg-j-blue-50 text-j-blue-800" : "border-j-gray-200 text-j-gray-500")}>
+                            <button key={value} type="button" aria-pressed={theme === value} onClick={() => setTheme(value)} className={twMerge("flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 p-5 text-sm font-bold", theme === value ? "border-j-blue-800 bg-j-blue-50 text-j-blue-800" : "border-j-gray-200 text-j-gray-500")}>
                                 <Icon size={24} />{label}
                             </button>
                         ))}
@@ -414,49 +433,67 @@ export default function SettingsPage() {
             <div className="flex w-full flex-col gap-6">
                 <PageHeader title="Configurações" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Configurações" }]} />
 
-                <div className="grid min-h-[calc(100vh-10.5rem)] w-full items-stretch overflow-hidden rounded-xl border border-j-gray-200 bg-j-white shadow-sm lg:grid-cols-[240px_290px_minmax(0,1fr)]">
-                    <aside className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>
-                        <div className="px-3 pb-4 pt-2 text-j-white">
-                            <p className="text-base font-black">Configurações</p>
-                            <p className="mt-1 text-xs text-j-white/60">Escolha uma categoria</p>
+                <div ref={panelRef} className="scroll-mt-3 rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                    <div className="sticky top-0 z-10 flex min-h-16 items-center gap-2 rounded-t-2xl border-b border-j-gray-200 bg-j-white/95 px-3 py-2 backdrop-blur-sm lg:hidden">
+                        {mobileLevel !== "sections" && <button
+                            type="button"
+                            onClick={() => navigateLevel(mobileLevel === "editor" ? "options" : "sections", "back")}
+                            aria-label={mobileLevel === "editor" ? `Voltar para ${section.label}` : "Voltar para categorias"}
+                            className={twMerge(styles.navigationButton, "flex size-11 shrink-0 items-center justify-center rounded-xl bg-j-gray-100 text-j-blue-800")}
+                        ><ArrowLeft size={20} aria-hidden="true" /></button>}
+                        <div className="min-w-0 flex-1" aria-live="polite" aria-atomic="true">
+                            <p className="truncate text-xs font-medium text-j-gray-500">{mobileLevel === "sections" ? "Suas preferências, do seu jeito" : mobileLevel === "options" ? "Configurações" : section.label}</p>
+                            <p className="truncate text-sm font-extrabold text-j-blue-800">{mobileLevel === "sections" ? "Categorias" : mobileLevel === "options" ? section.label : option.label}</p>
                         </div>
-                        <nav className="space-y-1">
-                            {SECTIONS.map((item) => {
-                                const Icon = item.icon;
-                                const active = item.key === sectionKey;
-                                return (
-                                    <button key={item.key} type="button" onClick={() => chooseSection(item)} className={twMerge("flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left", active ? "bg-j-yellow-300 text-j-blue-800" : "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>
-                                        <Icon size={18} /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className={twMerge("block truncate text-[11px]", active ? "text-j-blue-700" : "text-j-white/45")}>{item.description}</span></span><ChevronRight size={15} />
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    </aside>
-
-                    <aside className={twMerge("border-j-gray-200 bg-j-gray-100/50 p-3 lg:block lg:border-r", mobileLevel !== "options" && "hidden")}>
-                        <button type="button" onClick={() => setMobileLevel("sections")} className="mb-3 flex cursor-pointer items-center gap-2 px-2 pt-1 text-xs font-bold text-j-blue-800 lg:hidden"><ArrowLeft size={16} />Voltar às categorias</button>
-                        <div className="px-2 pb-3 pt-1">
-                            <p className="text-sm font-extrabold text-j-gray-700">{section.label}</p>
-                            <p className="mt-1 text-xs text-j-gray-400">Selecione o que deseja configurar</p>
+                        <div className="flex shrink-0 gap-1" aria-hidden="true">
+                            {["sections", "options", "editor"].map((level) => <span key={level} className={twMerge("h-1.5 rounded-full transition-[width,background-color] duration-200 motion-reduce:transition-none", mobileLevel === level ? "w-5 bg-j-blue-800" : "w-1.5 bg-j-gray-200")} />)}
                         </div>
-                        <nav className="space-y-2">
-                            {section.options.map((item) => {
-                                const Icon = item.icon;
-                                const active = item.key === option.key;
-                                return (
-                                    <button key={item.key} type="button" onClick={() => chooseOption(item)} className={twMerge("flex w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors", active ? "border-j-blue-800 bg-j-white text-j-blue-800 shadow-sm" : "border-transparent text-j-gray-600 hover:border-j-gray-200 hover:bg-j-white")}>
-                                        <Icon size={18} /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className="block text-[11px] text-j-gray-400">{item.description}</span></span><ChevronRight size={15} />
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    </aside>
+                    </div>
+                    <div className="overflow-clip rounded-b-2xl lg:rounded-2xl">
+                        <div key={`${mobileLevel}:${sectionKey}:${optionKey}`} data-direction={direction} className={twMerge(styles.pageTransition, "grid min-h-[min(65dvh,32rem)] w-full items-stretch lg:min-h-[calc(100dvh-10.5rem)] lg:grid-cols-[240px_290px_minmax(0,1fr)]")}>
+                            <aside data-settings-panel="sections" className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>
+                                <div className="px-3 pb-4 pt-2 text-j-white">
+                                    <h2 tabIndex={-1} className="text-base font-black outline-none">Configurações</h2>
+                                    <p className="mt-1 text-xs text-j-white/60">Escolha uma categoria</p>
+                                </div>
+                                <nav aria-label="Categorias de configurações" className="space-y-1">
+                                    {SECTIONS.map((item) => {
+                                        const Icon = item.icon;
+                                        const active = item.key === sectionKey;
+                                        return (
+                                            <button key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseSection(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left", active ? "bg-j-yellow-300 text-j-blue-800" : "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>
+                                                <Icon size={18} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className={twMerge("block truncate text-[11px]", active ? "text-j-blue-700" : "text-j-white/65")}>{item.description}</span></span><ChevronRight size={15} className="shrink-0" />
+                                            </button>
+                                        );
+                                    })}
+                                </nav>
+                            </aside>
 
-                    <main className={twMerge("min-w-0 bg-j-white lg:block", mobileLevel !== "editor" && "hidden")}>
-                        {renderEditorHeader()}
-                        {renderEditorContent()}
-                        {showSave && <footer className="flex justify-end border-t border-j-gray-200 bg-j-gray-100/50 px-5 py-4"><Button type="button" onClick={save} className="gap-2"><Save size={16} />Salvar alterações</Button></footer>}
-                    </main>
+                            <aside data-settings-panel="options" className={twMerge("border-j-gray-200 bg-j-gray-100/50 p-3 lg:block lg:border-r", mobileLevel !== "options" && "hidden")}>
+                                <div className="px-2 pb-3 pt-1">
+                                    <h2 tabIndex={-1} className="text-sm font-extrabold text-j-gray-700 outline-none">{section.label}</h2>
+                                    <p className="mt-1 text-xs text-j-gray-400">Selecione o que deseja configurar</p>
+                                </div>
+                                <nav aria-label={section.label} className="space-y-2">
+                                    {section.options.map((item) => {
+                                        const Icon = item.icon;
+                                        const active = item.key === option.key;
+                                        return (
+                                            <button key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseOption(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors", active ? "border-j-blue-800 bg-j-white text-j-blue-800 shadow-sm" : "border-transparent text-j-gray-600 hover:border-j-gray-200 hover:bg-j-white")}>
+                                                <Icon size={18} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className="block text-xs text-j-gray-500">{item.description}</span></span><ChevronRight size={15} className="shrink-0" />
+                                            </button>
+                                        );
+                                    })}
+                                </nav>
+                            </aside>
+
+                            <section data-settings-panel="editor" aria-label={option.label} className={twMerge("min-w-0 flex-col bg-j-white lg:block", mobileLevel === "editor" ? "flex" : "hidden")}>
+                                {renderEditorHeader()}
+                                {renderEditorContent()}
+                                {showSave && <footer className={twMerge(styles.saveBar, "sticky bottom-0 z-10 mt-auto flex justify-end border-t border-j-gray-200 bg-j-white/95 px-5 py-4 backdrop-blur-sm lg:static lg:bg-j-gray-100/50")}><Button type="button" onClick={save} className="gap-2"><Save size={16} />Salvar alterações</Button></footer>}
+                            </section>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

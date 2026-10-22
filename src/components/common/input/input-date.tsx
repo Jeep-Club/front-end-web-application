@@ -5,6 +5,7 @@ import { Calendar } from "lucide-react";
 import { ButtonIcon } from "../button";
 import { useFormContext, useController } from "react-hook-form"; 
 import { useRef } from "react";
+import { getBirthDateInputBounds } from "@/utils/validate/validateBirthDate";
 
 export type InputDateProps = Omit<InputProps, "label" | "name" | "placeholder"> & {
     label?: string,
@@ -26,6 +27,8 @@ export type InputDateProps = Omit<InputProps, "label" | "name" | "placeholder"> 
 }
 
 export function InputDate({label="Data de Nascimento", name='birthData', className, value, mask, onChange, ...props}: InputDateProps){
+    const isBirthDate = name === "birthDate" || name === "birthData";
+    const birthDateBounds = getBirthDateInputBounds();
     const refLocal = useRef<HTMLInputElement>(null);
     
     const { control } = useFormContext();
@@ -43,6 +46,8 @@ export function InputDate({label="Data de Nascimento", name='birthData', classNa
     return(
             <Input 
                 {...props}
+                min={isBirthDate ? birthDateBounds.min : props.min}
+                max={isBirthDate ? birthDateBounds.max : props.max}
                 ref={(e)=>{ref(e);refLocal.current = e}}
                 type={'date'} 
                 label={label} 

@@ -1,5 +1,8 @@
 'use client';
 
+import { useQuery } from "@tanstack/react-query";
+import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
+import { getVehicleDetailAdminAction } from "@/actions/admin/vehicles/detail";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { ButtonIcon } from "@/components/common/button";
@@ -10,10 +13,20 @@ interface VehiclePhotoCarouselProps {
     alt: string;
     className?: string;
     cover?: string | null;
+    vehicleId?: number;
+    admin?: boolean;
 }
 
-export function VehiclePhotoCarousel({ photos, cover, alt, className = "" }: VehiclePhotoCarouselProps) {
-    const images = [...new Set([cover, ...(photos ?? [])].filter((photo): photo is string => !!photo))].slice(0, 3);
+export function VehiclePhotoCarousel({ photos, cover, alt, className = "", vehicleId, admin = false }: VehiclePhotoCarouselProps) {
+    const [loadGallery, setLoadGallery] = useState(false);
+    const { data: detail } = useQuery({
+        queryKey: admin ? ["admin", "vehicles", "detail", vehicleId] : ["vehicles", "detail-member", vehicleId],
+        queryFn: () => admin ? getVehicleDetailAdminAction(vehicleId!) : getVehicleDetailAction(vehicleId!),
+        enabled: vehicleId !== undefined && photos === undefined && loadGallery,
+        staleTime: 60_000,
+    });
+    const galleryPhotos = detail?.photos ?? photos;
+    const images = [...new Set((galleryPhotos ?? [detail?.photo ?? cover]).filter((photo): photo is string => !!photo))].slice(0, 5);
     const [index, setIndex] = useState(0);
     const move = (direction: number) => setIndex((current) => (current + direction + images.length) % images.length);
 
@@ -22,7 +35,7 @@ export function VehiclePhotoCarousel({ photos, cover, alt, className = "" }: Veh
     }
 
     return (
-        <div className={`group relative overflow-hidden bg-j-gray-100 ${className}`} aria-label={`${images.length} fotos do veículo`}>
+        <div className={`group relative overflow-hidden bg-j-gray-100 ${className}`} onMouseEnter={() => setLoadGallery(true)} onFocus={() => setLoadGallery(true)} onTouchStart={() => setLoadGallery(true)} tabIndex={vehicleId !== undefined ? 0 : undefined} aria-label={`${images.length} fotos do veículo`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={getMediaImageUrl(images[Math.min(index, images.length - 1)])} alt={`${alt} — foto ${Math.min(index, images.length - 1) + 1} de ${images.length}`} className="h-full w-full object-cover" />
             {images.length > 1 && <>
