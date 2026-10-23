@@ -1,6 +1,5 @@
 import UserProvider from "@/providers/auth/UserProvider";
-import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
-import { verifyWithSchema } from "@/services/token/verify";
+import { verifyPermissions } from "@/services/token/permissions";
 import { getAuthCookies } from "@/utils/auth/get";
 import { haveRoutePermissions } from "@/utils/permission/routePermissions";
 import { hasAnyAdminAccess } from "@/config/adminModules";
@@ -35,10 +34,7 @@ export default async function AuthLayout({
   }
 
   const permissions =
-    await verifyWithSchema<PermissionModule[]>(
-      permissionsToken,
-      permissionModuleSchema.array(),
-    ).catch(() => {
+    await verifyPermissions(permissionsToken).catch(() => {
       redirect("/api/auth/logout");
     });
 
