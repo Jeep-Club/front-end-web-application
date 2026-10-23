@@ -1,6 +1,5 @@
 import { publicationManagementAccessActions } from "@/config/publicationManagement";
-import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
-import { verifyWithSchema } from "@/services/token/verify";
+import { verifyPermissions } from "@/services/token/permissions";
 
 /*
  * "all" (padrão): o usuário precisa satisfazer TODAS as entradas de
@@ -167,10 +166,7 @@ export const haveRoutePermissions = async ({
     onCatch,
 }: HaveRoutePermissionsProps): Promise<boolean> => {
     const permissions =
-        await verifyWithSchema<PermissionModule[]>(
-            permissionsToken,
-            permissionModuleSchema.array(),
-        ).catch(() => {
+        await verifyPermissions(permissionsToken).catch(() => {
             throw onCatch();
         });
 
