@@ -54,6 +54,16 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     MEMBERSHIP_MEMBERSHIP_REQUEST_REJECT: "Rejeitar solicitações de adesão",
     MEMBERSHIP_MEMBERSHIP_REQUEST_INVITE_RESEND: "Reenviar convite de adesão",
     MEMBERSHIP_MEMBERSHIP_APPLICANT_BLOCK: "Bloquear CPF de solicitante",
+
+    TOOLS_TOOL_READ: "Consultar ferramentas",
+    TOOLS_TOOL_CREATE: "Cadastrar ferramentas",
+    TOOLS_TOOL_UPDATE: "Atualizar ferramentas",
+    TOOLS_TOOL_DELETE: "Excluir ferramentas",
+    TOOLS_TOOL_ACTIVATE: "Ativar ferramentas",
+    TOOLS_TOOL_DEACTIVATE: "Desativar ferramentas",
+    TOOLS_TOOL_ARCHIVE: "Arquivar ferramentas",
+    TOOLS_TOOL_UNARCHIVE: "Desarquivar ferramentas",
+    TOOLS_TOOL_EXPORT: "Exportar ferramentas",
 };
 
 export function getPermissionName(permission: PermissionResponse): string {

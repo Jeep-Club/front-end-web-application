@@ -94,6 +94,18 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["VEHICLE_READ"],
         },
     ],
+    "/admin/ferramentas": [
+        {
+            module: "TOOLS",
+            actions: ["TOOL_READ"],
+        },
+    ],
+    "/admin/tools": [
+        {
+            module: "TOOLS",
+            actions: ["TOOL_READ"],
+        },
+    ],
 };
 
 function normalizeRule(config: RoutePermissionsConfig): RoutePermissionRule {
