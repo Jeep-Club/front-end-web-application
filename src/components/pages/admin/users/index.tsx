@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 
 import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
 import { PageHeader } from "@/components/common/page-header";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
@@ -263,6 +264,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         ]}
                     />
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
+                        <ManagementBackButton />
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
                         <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
                         <p className="mt-1 max-w-md text-sm text-j-gray-600">
@@ -287,7 +289,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     ]}
                 />
 
-                {(permissions.canReadUsers || canReadApplications) && <div className="flex gap-2 border-b border-j-gray-200">
+                {(permissions.canReadUsers || canReadApplications) && <div className="flex items-center gap-2 border-b border-j-gray-200">
+                    <ManagementBackButton />
                     {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
                     {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}
                 </div>}

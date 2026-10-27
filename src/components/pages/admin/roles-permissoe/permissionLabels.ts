@@ -69,3 +69,7 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
 export function getPermissionName(permission: PermissionResponse): string {
     return PERMISSION_NAME_LABELS[permission.code] ?? permission.description;
 }
+
+export function getPermissionDescription(permission: PermissionResponse): string {
+    return ENGLISH_DESCRIPTION_LABELS[permission.description] ?? permission.description;
+}
