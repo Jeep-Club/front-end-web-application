@@ -7,6 +7,7 @@ import { Eye, KeyRound, ListChecks, Lock, Pencil, Plus, Power, PowerOff, ShieldC
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
@@ -20,7 +21,7 @@ import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
 import { DeleteRoleModal } from "./DeleteRoleModal";
 import { RolePermissionsModal } from "./RolePermissionsModal";
 import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
-import { getModuleLabel, getPermissionName } from "./permissionLabels";
+import { getModuleLabel, getPermissionDescription, getPermissionName } from "./permissionLabels";
 import { UserRoleAssignmentsTab } from "./UserRoleAssignmentsTab";
 import { usePageTour } from "@/hooks/useTour";
 import { getRolesTourSteps } from "@/config/tourSteps";
@@ -183,7 +184,7 @@ export default function RolesPermissions() {
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
                     id="tour-roles-header"
-                    title="Cargos e permissões"
+                    title="Gestão de roles e permissões"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
@@ -228,11 +229,11 @@ export default function RolesPermissions() {
                     <div className="flex w-full flex-col gap-4">
                         <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                                <div>
-                                    <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
-                                    <p className="text-sm text-j-gray-600">
-                                        {isLoading ? "Carregando..." : `${roleCounts[roleStatusFilter]} ${roleStatusFilter === "DELETED" ? "excluído(s)" : "cargo(s)"}`}
-                                    </p>
+                                <div className="flex items-center gap-3">
+                                    <ManagementBackButton />
+                                    <div>
+                                        <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
+                                    </div>
                                 </div>
 
                                 {canCreateRole && (
@@ -393,11 +394,14 @@ export default function RolesPermissions() {
                 {activeTab === "permissions" && isTabVisible("permissions") && (
                     <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                            <div>
+                            <div className="flex items-center gap-3">
+                                <ManagementBackButton />
+                                <div>
                                 <h2 className="font-black text-j-blue-800">Permissões cadastradas</h2>
                                 <p className="text-sm text-j-gray-600">
                                     {isLoadingPermissions ? "Carregando..." : `${permissionsList?.length ?? 0} cadastrada(s)`}
                                 </p>
+                                </div>
                             </div>
 
                             <ShieldCheck size={24} className="text-j-gray-400" />
@@ -430,7 +434,7 @@ export default function RolesPermissions() {
                                                             {getPermissionName(permission)}
                                                         </p>
                                                         <p className="mt-0.5 text-sm text-j-gray-600">
-                                                            {permission.description}
+                                                            {getPermissionDescription(permission)}
                                                         </p>
                                                     </div>
                                                 </div>

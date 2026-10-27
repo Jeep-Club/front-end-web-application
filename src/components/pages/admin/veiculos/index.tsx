@@ -18,6 +18,7 @@ import { EditVehicleModal } from "./EditVehicleModal";
 import { CreateVehicleModal } from "./CreateVehicleModal";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 
 const PAGE_SIZE = 10;
 
@@ -74,10 +75,10 @@ export default function VehicleManagement() {
     return (
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
-                <PageHeader title="Administração de veículos" breadcrumbs={[
+                <PageHeader title="Gestão de veículos" breadcrumbs={[
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
-                    { label: "Administração de veículos" },
+                    { label: "Gestão de veículos" },
                 ]} />
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
@@ -88,7 +89,10 @@ export default function VehicleManagement() {
                 ) : (
                     <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
                         <div className="flex items-center justify-between gap-3">
-                            <h3 className="text-base font-bold text-j-gray-700">Veículos cadastrados</h3>
+                            <div className="flex min-w-0 items-center gap-3">
+                                <ManagementBackButton />
+                                <h3 className="text-base font-bold text-j-gray-700">Veículos cadastrados</h3>
+                            </div>
                             {canCreate && <Button onClick={handleOpenCreate} className="h-11 shrink-0 gap-2"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
                         </div>
                         {isLoading && <p className="text-sm text-j-gray-400">Carregando veículos...</p>}
@@ -102,14 +106,14 @@ export default function VehicleManagement() {
                                 <div className="divide-y divide-j-gray-100">
                                     {data?.content.map((vehicle) => (
                                         <div key={vehicle.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] xl:items-center xl:gap-3">
-                                            <div className="flex min-w-0 items-center gap-3">
-                                                <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-20 sm:w-36">
+                                            <div className="flex min-w-0 flex-col items-stretch gap-3 xl:flex-row xl:items-center">
+                                                <div className="flex h-48 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-56 xl:h-20 xl:w-36">
                                                     {vehicle.photo || vehicle.photos?.length ? (
                                                         <VehiclePhotoCarousel vehicleId={vehicle.id} admin cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="h-full w-full" />
                                                     ) : <Car size={24} aria-hidden="true" />}
                                                 </div>
-                                                <h4 className="min-w-0 truncate font-extrabold text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
-                                                    {vehicle.nickname?.trim() ? <><span className="text-lg">{vehicle.nickname.trim()}</span><span className="text-sm font-medium"> - {vehicle.model}</span></> : <span className="text-lg">{vehicle.model}</span>}
+                                                <h4 className="min-w-0 break-words font-extrabold text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
+                                                    {vehicle.nickname?.trim() ? <><span className="text-lg [overflow-wrap:anywhere]">{vehicle.nickname.trim()}</span><span className="ml-1 inline-block text-sm font-medium [overflow-wrap:anywhere]">- {vehicle.model}</span></> : <span className="text-lg [overflow-wrap:anywhere]">{vehicle.model}</span>}
                                                 </h4>
                                             </div>
                                             <p className="text-sm font-bold text-j-gray-600 xl:text-center"><span className="mr-1 text-xs xl:hidden">Placa:</span>{maskPlate(vehicle.plate)}</p>
