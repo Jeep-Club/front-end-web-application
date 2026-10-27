@@ -70,7 +70,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "roles-permissions",
-        title: "Roles e permissões",
+        title: "Gestão de roles e permissões",
         description:
             "Defina o que cada administrador pode acessar e fazer.",
         href: "/admin/roles-permissoes",
@@ -95,7 +95,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "vehicles",
-        title: "Administração de veículos",
+        title: "Gestão de veículos",
         description:
             "Visualize, cadastre e gerencie os veículos de todos os membros.",
         href: "/admin/veiculos",
