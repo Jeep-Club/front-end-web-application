@@ -6,6 +6,7 @@ import {
     UserRoundCheck,
     Users,
     WalletCards,
+    Wrench,
     type LucideIcon,
 } from "lucide-react";
 
@@ -103,6 +104,18 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "VEHICLES",
             action: "VEHICLE_READ",
+        },
+    },
+    {
+        key: "tools",
+        title: "Administração de ferramentas",
+        description:
+            "Visualize, cadastre e gerencie as ferramentas de todos os associados.",
+        href: "/admin/ferramentas",
+        icon: Wrench,
+        visibilityPermission: {
+            module: "TOOLS",
+            action: "TOOL_READ",
         },
     },
 ];

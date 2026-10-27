@@ -14,7 +14,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { resolvePublicationTypes } from "@/utils/publications/typeFilters";
 import { CalendarDays, Megaphone, Wrench, Plus, LayoutGrid } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { publicationManagementSections } from "@/config/publicationManagement";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -91,10 +90,7 @@ export default function PublicationManagement() {
                         </nav>
                         <section id="publication-management-content" aria-labelledby="publication-management-title" className="rounded-xl border border-j-gray-200 bg-j-white p-6">
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex min-w-0 items-center gap-3">
-                                    <ManagementBackButton />
-                                    <h2 id="publication-management-title" className="text-center text-lg font-bold text-j-blue-800 sm:text-left">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
-                                </div>
+                                <h2 id="publication-management-title" className="text-center text-lg font-bold text-j-blue-800 sm:text-left">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
                                 {canCreate && (
                                     <Button onClick={() => { setContent(<CreatePublicationModal />); setOpen(); }} className="w-full sm:w-auto">
                                         <Plus size={18} />
