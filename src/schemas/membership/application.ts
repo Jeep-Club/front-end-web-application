@@ -1,20 +1,38 @@
 import { z } from "zod";
-import { cpfSchema } from "@/schemas/auth/user";
+import { isValidCPF } from "@/utils/validate/validateCPF";
 import { isValidEmail } from "@/utils/validate/validateEmail";
 
+const CPF_FORMAT_REGEX = /^(\d{11}|\d{3}\.\d{3}\.\d{3}-\d{2})$/;
+const BR_MOBILE_PHONE_REGEX = /^(?:\+55\s?)?(?:\([1-9]{2}\)|[1-9]{2})\s?9\d{4}[-\s]?\d{4}$/;
+
 export const membershipApplicationFormSchema: z.ZodType<MembershipApplicationForm> = z.object({
-    name: z.string().trim().min(1, "Informe seu nome completo.").max(150, "Use até 150 caracteres."),
-    cpf: cpfSchema,
-    phoneNumber: z.string()
-        .min(1, "Informe seu celular com DDD.")
-        .max(20, "O celular informado é muito longo.")
-        .refine((value) => {
-            const digits = value.replace(/\D/g, "");
-            const nationalNumber = digits.length === 13 && digits.startsWith("55") ? digits.slice(2) : digits;
-            return /^[1-9]\d9\d{8}$/.test(nationalNumber);
-        }, "Informe um celular válido com DDD, incluindo o 9 inicial."),
-    email: z.string().max(180, "Use até 180 caracteres.").refine((value) => !value || isValidEmail(value), "Informe um e-mail válido."),
-    message: z.string().trim().min(1, "Conte um pouco sobre você e por que quer fazer parte do clube.").max(2000, "A apresentação pode ter até 2.000 caracteres."),
+    name: z
+        .string()
+        .trim()
+        .min(1, "Nome é obrigatório.")
+        .max(150, "Nome deve ter no máximo 150 caracteres."),
+    cpf: z
+        .string()
+        .trim()
+        .min(1, "CPF é obrigatório.")
+        .regex(CPF_FORMAT_REGEX, "CPF deve estar no formato 00000000000 ou 000.000.000-00.")
+        .refine((value) => isValidCPF(value), "CPF inválido."),
+    phoneNumber: z
+        .string()
+        .trim()
+        .min(1, "Telefone é obrigatório.")
+        .regex(BR_MOBILE_PHONE_REGEX, "Telefone deve ser um celular brasileiro com DDD."),
+    email: z
+        .string()
+        .trim()
+        .max(180, "E-mail deve ter no máximo 180 caracteres.")
+        .refine((value) => !value || isValidEmail(value.toLowerCase()), "E-mail inválido.")
+        .optional(),
+    message: z
+        .string()
+        .trim()
+        .max(2000, "Mensagem deve ter no máximo 2000 caracteres.")
+        .optional(),
 });
 
 export const membershipApplicationSubmissionSchema: z.ZodType<MembershipApplicationSubmission> = z.object({

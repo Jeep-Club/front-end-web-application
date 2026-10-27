@@ -14,13 +14,13 @@ const steps = [
     },
     {
         icon: FileText,
-        title: "Carta de apresenta??o",
-        description: "Conte sua hist?ria e por que deseja fazer parte do Jeep Clube Tamoios.",
+        title: "Carta de apresentação",
+        description: "Conte sua história e por que deseja fazer parte do Jeep Clube Tamoios.",
     },
     {
         icon: ClipboardCheck,
-        title: "An?lise da diretoria",
-        description: "A diretoria avalia o pedido e entra em contato com voc?.",
+        title: "Análise da diretoria",
+        description: "A diretoria avalia o pedido e entra em contato com você.",
     },
 ];
 
