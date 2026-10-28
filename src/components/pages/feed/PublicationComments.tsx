@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Send } from "lucide-react";
+import { ChevronDown, ChevronUp, Send } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -18,6 +18,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
     const canCreate = hasPermission(permissions, "PUBLICATIONS", "COMMENT_CREATE");
     const [page, setPage] = useState(0);
     const [text, setText] = useState("");
+    const [expanded, setExpanded] = useState(true);
     const id = useId();
     const client = useQueryClient();
     const comments = useQuery({ queryKey: ["publications", "comments", publicationId, page, permissions], queryFn: () => listPublicationCommentsAction({ id: publicationId, page }), enabled: canRead });
@@ -28,7 +29,13 @@ export function PublicationComments({ publicationId }: { publicationId: number }
     });
     if (!canRead && !canCreate) return null;
     return <section aria-label="Comentários" className="border-t border-j-gray-200 p-5 md:p-8">
-        <h3 className="font-bold text-j-blue-800">Comentários</h3>
+        <div className="flex items-center justify-between gap-3">
+            <h3 className="font-bold text-j-blue-800">Comentários</h3>
+            <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-j-blue-700 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800">
+                {expanded ? <><ChevronUp size={16} aria-hidden="true" />Ocultar</> : <><ChevronDown size={16} aria-hidden="true" />Mostrar</>}
+            </button>
+        </div>
+        {expanded && <>
         {canCreate && <form onSubmit={(event) => { event.preventDefault(); if (text.trim() && !mutation.isPending) mutation.mutate(); }} className="mt-4 flex flex-col gap-3">
             <label htmlFor={id} className="text-sm font-semibold text-j-gray-700">Seu comentário</label>
             <textarea id={id} value={text} disabled={mutation.isPending} onChange={(event) => setText(event.target.value)} rows={3} required placeholder="Escreva um comentário..." className="w-full resize-y rounded-xl border border-j-gray-200 bg-j-white p-3 text-sm text-j-gray-700 placeholder:text-j-gray-400 focus:outline-2 focus:outline-j-blue-700" />
@@ -53,5 +60,6 @@ export function PublicationComments({ publicationId }: { publicationId: number }
                 <Button disabled={comments.isFetching || comments.data.last} onClick={() => setPage((value) => value + 1)}>Próxima</Button>
             </div>}
         </div>}
+        </>}
     </section>;
 }
