@@ -1,15 +1,15 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { LoaderCircle,X } from "lucide-react";
 import toast from "react-hot-toast";
-import { LoaderCircle, X } from "lucide-react";
 
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { chargeDefinitionFormSchema } from "@/schemas/billing/chargeDefinition";
-import { getChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/get";
-import { updateChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/update";
+import { getChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/get";
+import { updateChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/update";
 import { ChargeDefinitionFormFields } from "./ChargeDefinitionFormFields";
 
 interface EditChargeDefinitionModalProps {
@@ -32,7 +32,7 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao atualizar definição de cobrança."),
+
     });
 
     const handleSubmit = async (data: ChargeDefinitionFormData) => {

@@ -1,16 +1,16 @@
 'use client';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { AlertCircle,KeyRound,LoaderCircle,Plus,Search,X } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AlertCircle, KeyRound, LoaderCircle, Plus, Search, X } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { listRolesAction } from "@/actions/authorization/list-roles";
-import { assignRoleToUserAction } from "@/actions/authorization/assign-role-to-user";
+import { assignRoleToUserAction } from "@/server/actions/authorization/assign-role-to-user";
+import { listRolesAction } from "@/server/actions/authorization/list-roles";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
 import { ROLE_STATUS_LABEL } from "../users/user-display";
 import { UserRolesViewModal } from "./UserRolesViewModal";
@@ -47,7 +47,7 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
             await queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
             backToRolesView();
         },
-        onError: (error) => toast.error(error.message || "Erro ao atribuir cargo."),
+
     });
 
     return (

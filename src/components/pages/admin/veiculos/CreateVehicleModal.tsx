@@ -2,28 +2,28 @@
 
 import { vehicleYearSchema } from "@/schemas/vehicles/year";
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFormContext } from "react-hook-form";
-import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
-import toast from "react-hot-toast";
-import { X, Car, ArrowLeft, ArrowRight } from "lucide-react";
-import { twMerge } from "tailwind-merge";
-import { z } from "zod";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { InputFile } from "@/components/common/input/file";
+import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputRegister } from "@/components/common/input/input-register";
 import { SelectRegister } from "@/components/common/select/select-register";
-import { InputCheckbox } from "@/components/common/input/input-checkbox";
-import { InputFile } from "@/components/common/input/file";
-import { includeVehicleAdminAction } from "@/actions/admin/vehicles/include";
-import { createVehicleMultipart } from "@/utils/media/vehicleGallery";
+import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
 import { useModal } from "@/providers/ModalProvider";
+import { includeVehicleAdminAction } from "@/server/actions/admin/vehicles/include";
+import { maskDecimal } from "@/utils/masks/maskDecimal";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
 import { maskYear } from "@/utils/masks/maskYear";
-import { maskDecimal } from "@/utils/masks/maskDecimal";
+import { createVehicleMultipart } from "@/utils/media/vehicleGallery";
 import { isValidRenavam } from "@/utils/validate/validateRenavam";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,X } from "lucide-react";
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import toast from "react-hot-toast";
+import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 import { FUEL_TYPE_OPTIONS } from "./vehicleDisplay";
 
 const PLATE_REGEX = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
@@ -338,7 +338,7 @@ export function CreateVehicleModal() {
             queryClient.invalidateQueries({ queryKey: ["admin", "vehicles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao cadastrar veículo."),
+
     });
 
     const handleSubmit = async (data: CreateVehicleAdminFormData) => {

@@ -1,20 +1,20 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFormContext } from "react-hook-form";
-import { Archive, Flag, Pencil, Send, Trash2, X, XCircle } from "lucide-react";
-import toast from "react-hot-toast";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { ConfirmButton } from "@/components/common/button/ConfirmButton";
 import { Form } from "@/components/common/form";
 import { InputRegister } from "@/components/common/input/input-register";
 import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister";
 import { useModal } from "@/providers/ModalProvider";
-import { draftEditorialSchema, draftMutationSchema, type DraftEditorialData } from "@/schemas/publications/draft";
-import { mutateDraftPublicationAction } from "@/actions/publications/draft";
-import styles from "./CreatePublicationModal.module.css";
+import { draftEditorialSchema,draftMutationSchema,type DraftEditorialData } from "@/schemas/publications/draft";
 import { publishedMutationSchema } from "@/schemas/publications/published";
-import { mutatePublishedPublicationAction } from "@/actions/publications/published";
+import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
+import { mutatePublishedPublicationAction } from "@/server/actions/publications/published";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { Archive,Flag,Pencil,Send,Trash2,X,XCircle } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import toast from "react-hot-toast";
+import styles from "./CreatePublicationModal.module.css";
 
 export interface DraftPublicationTarget { id: number; type: "NOTICE" | "EVENT" | "SERVICE"; status?: "DRAFT" | "PUBLISHED"; title: string; content: string }
 const actionDetails = {
@@ -61,7 +61,7 @@ export function DraftPublicationActionModal({ publication, action }: { publicati
             toast.success(details.success);
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Não foi possível concluir a ação."),
+
     });
     const confirm = () => {
         if (action !== "edit") mutation.mutate(undefined);

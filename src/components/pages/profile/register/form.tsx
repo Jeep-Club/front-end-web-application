@@ -1,28 +1,27 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useMutation } from '@tanstack/react-query';
-import {registerAction} from '@/actions/auth/registerAction';
-import toast from "react-hot-toast";
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
-import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
-import { ArrowRight, LoaderCircle } from "lucide-react";
-import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/import";
-import { User } from "lucide-react";
-import { Textarea } from "@/components/common/textarea/";
+import { Form } from "@/components/common/form";
+import { InputCPF,InputDate,InputEmail,InputFile,InputPassword,InputPhoneNumber,InputRegister } from "@/components/common/input/import";
 import { Select } from "@/components/common/select/";
+import { Textarea } from "@/components/common/textarea/";
+import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
+import { registerAction } from '@/server/actions/auth/registerAction';
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight,LoaderCircle,User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function FormRegister() {
     const router = useRouter();
 
-    const mutation = useMutation({ 
-        mutationFn: registerAction, 
+    const mutation = useMutation({
+        mutationFn: registerAction,
         onSuccess: (data) => {
             console.log(data);
             router.push("/feed");
             toast.success('Registro realizado com sucesso!');
-        }, 
+        },
     });
 
     const isLoading = mutation.isPending;
@@ -54,8 +53,8 @@ export default function FormRegister() {
                     <option value="abacate">Abacate</option>
                     <option value="morango">Morango</option>
                 </Select>
-                <Button 
-                    type="submit" 
+                <Button
+                    type="submit"
                     disabled={isLoading}
                     className="w-full mt-4"
                 >

@@ -2,14 +2,14 @@
 
 import { DependentPhoto } from './DependentPhoto';
 
-import { CalendarDays, HeartPulse, IdCard, Phone, X } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { getDependentMedicalProfileAction } from '@/actions/dependents';
 import { ButtonIcon } from '@/components/common/button';
 import { useModal } from '@/providers/ModalProvider';
+import { getDependentMedicalProfileAction } from '@/server/actions/dependents';
 import { maskCPF } from '@/utils/masks/maskCPF';
 import { maskDate } from '@/utils/masks/maskDate';
 import { maskPhoneNumber } from '@/utils/masks/maskPhoneNumber';
+import { useQuery } from '@tanstack/react-query';
+import { CalendarDays,HeartPulse,IdCard,Phone,X } from 'lucide-react';
 
 const RELATIONSHIP_LABELS: Record<MemberDependentRelationshipType, string> = { CHILD: 'Filho(a)', GUEST: 'Convidado(a)', OTHER: 'Outro', PARENT: 'Pai/Mãe', SIBLING: 'Irmão/Irmã', SPOUSE: 'Cônjuge' };
 const BLOOD_TYPES: Record<string, string> = { A_POSITIVE: 'A+', A_NEGATIVE: 'A-', B_POSITIVE: 'B+', B_NEGATIVE: 'B-', AB_POSITIVE: 'AB+', AB_NEGATIVE: 'AB-', O_POSITIVE: 'O+', O_NEGATIVE: 'O-' };

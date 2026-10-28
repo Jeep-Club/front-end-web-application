@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Button } from '@/components/common/button';
 import ClubBackground from '@/components/common/ClubBackground';
 import ClubFormHeader from '@/components/common/ClubFormHeader';
-import { useMutation } from '@tanstack/react-query';
-import { ArrowLeft, CheckCircle2, LoaderCircle, Send } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { Form } from '@/components/common/form';
-import { Button } from '@/components/common/button';
-import { InputRegister } from '@/components/common/input/input-register';
-import InputEmail from '@/components/common/input/input-email';
 import InputCPF from '@/components/common/input/input-cpf';
+import InputEmail from '@/components/common/input/input-email';
 import InputPhoneNumber from '@/components/common/input/input-phonenumber';
+import { InputRegister } from '@/components/common/input/input-register';
 import { TextareaRegister } from '@/components/common/textarea/textarea-register';
 import { membershipApplicationFormSchema } from '@/schemas/membership/application';
-import { submitMembershipApplicationAction } from '@/actions/membership/submit-application';
+import { submitMembershipApplicationAction } from '@/server/actions/membership/submit-application';
+import { useMutation } from '@tanstack/react-query';
+import { ArrowLeft,CheckCircle2,LoaderCircle,Send } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const fieldStyle = {
     labelClassName: 'text-sm font-semibold text-white',
@@ -28,14 +28,10 @@ export default function ApplyForm() {
     const mutation = useMutation({
         mutationFn: submitMembershipApplicationAction,
         onSuccess: (result) => {
-            if (!result.ok) {
-                toast.error(result.message);
-                return;
-            }
-            setSubmitted(result.data.id);
-            toast.success(result.data.created ? 'Solicitação enviada para análise.' : 'Sua solicitação pendente foi localizada.');
+            setSubmitted(result.id);
+            toast.success(result.created ? 'Solicitação enviada para análise.' : 'Sua solicitação pendente foi localizada.');
         },
-        onError: (error) => toast.error(error.message || 'Não foi possível enviar sua solicitação. Tente novamente.'),
+
     });
 
     return (

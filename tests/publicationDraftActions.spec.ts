@@ -1,4 +1,4 @@
-import { mutateDraftPublicationAction } from "@/actions/publications/draft";
+import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { draftMutationSchema } from "@/schemas/publications/draft";

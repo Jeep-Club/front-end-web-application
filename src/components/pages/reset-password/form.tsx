@@ -1,15 +1,15 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useMutation } from '@tanstack/react-query';
-import toast from "react-hot-toast";
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { Form } from "@/components/common/form";
 import InputPassword from "@/components/common/input/input-password";
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight,LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
-import resetPasswordAction from '@/actions/auth/reset-password';
-import { resetPasswordRequestSchema, ResetPasswordRequestType } from "@/schemas/auth/reset-password/resetPasswordRequest";
+import { resetPasswordRequestSchema,ResetPasswordRequestType } from "@/schemas/auth/reset-password/resetPasswordRequest";
+import resetPasswordAction from '@/server/actions/auth/reset-password';
 
 interface FormResetPasswordProps {
     token: string;
@@ -24,8 +24,7 @@ export default function FormResetPassword({ token }: FormResetPasswordProps) {
         onSuccess: () => {
             toast.success('Senha alterada com sucesso!');
             router.push("/login");
-        },
-        onError: (error) => toast.error(error.message || 'Erro ao alterar a senha.')
+        }
     });
 
     const isLoading = mutation.isPending;

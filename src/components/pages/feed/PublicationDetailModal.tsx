@@ -1,17 +1,17 @@
 "use client";
 
+import { Button,ButtonIcon } from "@/components/common/button";
+import { RichTextContent } from "@/components/common/rich-text/RichTextContent";
+import { useModal } from "@/providers/ModalProvider";
+import { getPublicationFeedDetailAction } from "@/server/actions/publications/feed";
+import { useUserStore } from "@/stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
-import { RichTextContent } from "@/components/common/rich-text/RichTextContent";
-import { getPublicationFeedDetailAction } from "@/actions/publications/feed";
-import { useModal } from "@/providers/ModalProvider";
-import { useUserStore } from "@/stores/userStore";
-import { PublicationPhotoCarousel } from "./PublicationPhotoCarousel";
+import { feedTypes } from "./feedDisplay";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationComments } from "./PublicationComments";
-import { feedTypes } from "./feedDisplay";
+import { PublicationPhotoCarousel } from "./PublicationPhotoCarousel";
 import { RelativeTime } from "./RelativeTime";
 
 export function PublicationDetailModal({ publicationId }: { publicationId: number }) {

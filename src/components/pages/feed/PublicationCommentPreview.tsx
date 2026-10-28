@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { listPublicationCommentsAction } from '@/actions/publications/feed';
+import { listPublicationCommentsAction } from '@/server/actions/publications/feed';
 import { useUserStore } from '@/stores/userStore';
 import { hasPermission } from '@/utils/permission/hasPermission';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect,useRef,useState } from 'react';
 import { RelativeTime } from './RelativeTime';
 
 /** The current API has no comment likes; its stable newest-first order is the fallback. */

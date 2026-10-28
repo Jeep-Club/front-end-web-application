@@ -1,118 +1,87 @@
-import { ActionError } from "@/utils/actions/actionResult";
+import { ActionError,getActionFailure } from '@/utils/http/ActionError';
 
-/**
- * Mensagem fixa lancada pelo actionFetchWrapper quando o access token (e o
- * refresh token) nao sao mais validos. Toda action envolve seus erros com
- * extractApiErrorMessage + um fallback proprio, entao precisamos que essa
- * mensagem especifica sobreviva a esse wrapping sem virar o fallback da
- * action — e' o que os handlers globais de erro do QueryProvider usam pra
- * saber quando redirecionar pro login.
- */
 export const SESSION_EXPIRED_MESSAGE = 'Sua sessão expirou. Faça login novamente.';
+const SESSION_INVALID_CODES = new Set(['INVALID_ACCESS_TOKEN', 'AUTHENTICATION_REQUIRED', 'SESSION_INVALID']);
+const FALLBACK = 'Não foi possível concluir a operação. Tente novamente.';
 
-/**
- * Codigos que indicam que o problema e' o access token em si (ausente,
- * invalido ou expirado) — so esses justificam tentar refresh e, se falhar,
- * derrubar a sessao. INVALID_CREDENTIALS (login errado), por exemplo,
- * tambem chega como 401 mas precisa aparecer no formulario, nao derrubar
- * a sessao — por isso a decisao usa `code`, nunca so o `status`.
- */
-const SESSION_INVALID_CODES = new Set([
-    'INVALID_ACCESS_TOKEN',
-    'AUTHENTICATION_REQUIRED',
-    'SESSION_INVALID',
-]);
-
-/**
- * Reconhece um corpo de erro no formato ApiProblem (RFC 9457). Nao depende
- * do Content-Type da resposta — o fetchWrapper ja faz JSON.parse de
- * qualquer corpo de erro, independente do header.
- */
 export function isApiProblem(value: unknown): value is ApiProblem {
-    if (!value || typeof value !== 'object') {
-        return false;
-    }
-
+    if (!value || typeof value !== 'object') return false;
     const problem = value as Partial<ApiProblem>;
-    return typeof problem.code === 'string'
-        && typeof problem.status === 'number'
-        && typeof problem.detail === 'string';
+    return typeof problem.code === 'string' && typeof problem.status === 'number' && typeof problem.detail === 'string';
 }
 
-/**
- * O fetchWrapper lanca { rawData, status } quando a resposta HTTP nao e'
- * 2xx (ou { zodError, rawData, status } quando o corpo de sucesso nao bate
- * o schema). Essa funcao extrai o ApiProblem de dentro desse envelope,
- * quando houver um reconhecivel.
- */
 export function getApiProblem(error: unknown): ApiProblem | undefined {
-    if (!error || typeof error !== 'object' || !('rawData' in error)) {
-        return undefined;
-    }
-
-    const rawData = (error as { rawData?: unknown }).rawData;
-    return isApiProblem(rawData) ? rawData : undefined;
+    if (!error || typeof error !== 'object') return undefined;
+    if ('rawData' in error && isApiProblem(error.rawData)) return error.rawData;
+    if (error instanceof ActionError && error.cause) return getApiProblem(error.cause);
+    return undefined;
 }
 
-/**
- * True quando o erro indica que o access token precisa ser renovado (ou a
- * sessao encerrada) — ver SESSION_INVALID_CODES.
- */
 export function isSessionInvalidError(error: unknown): boolean {
     const problem = getApiProblem(error);
-    return !!problem && SESSION_INVALID_CODES.has(problem.code);
+    const status = error && typeof error === 'object' && 'status' in error ? error.status : problem?.status;
+    // Permission and membership failures never invalidate a session, even with a bad code.
+    return status === 401 && !!problem && SESSION_INVALID_CODES.has(problem.code);
 }
 
-/**
- * Extrai a mensagem pra exibir ao usuario a partir de um erro lancado pelo
- * fetchWrapper, caindo pro fallback generico quando o corpo nao e' um
- * ApiProblem reconhecivel (ex.: falha de rede, HTML de erro 502 etc).
- */
-export function extractApiErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof Error && error.message === SESSION_EXPIRED_MESSAGE) {
-        return SESSION_EXPIRED_MESSAGE;
-    }
+export function extractApiErrorMessage(error: unknown, fallback = FALLBACK): string {
+    const failure = getActionFailure(error);
+    if (failure) return failure.message;
     if (error instanceof Error && /API_URL|API_FRONTEND_KEY/.test(error.message)) {
         return 'O serviço está indisponível no momento. Tente novamente mais tarde.';
     }
     if (error instanceof ActionError) return error.message;
-
+    if (error instanceof Error && error.message === SESSION_EXPIRED_MESSAGE) return SESSION_EXPIRED_MESSAGE;
     const problem = getApiProblem(error);
-    if (!problem) {
-        if (error instanceof TypeError && /fetch|network|failed to fetch/i.test(error.message)) {
-            return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
+    if (problem) {
+        if (Array.isArray(problem.errors)) {
+            const message = problem.errors.find(item => typeof item?.message === 'string' && item.message.trim())?.message;
+            if (message) return message;
         }
-        return fallback;
+        if (problem.detail.trim()) return problem.detail;
     }
-
-    if (problem.errors?.length) {
-        const firstError = problem.errors.find((item) => item.message?.trim());
-        if (firstError) return firstError.message;
-    }
-
-    if (problem.detail?.trim()) return problem.detail;
-
     const codeMessages: Record<string, string> = {
-        VALIDATION_ERROR: 'Confira os dados informados e tente novamente.',
-        INVALID_REQUEST: 'Confira os dados informados e tente novamente.',
+        MEMBERSHIP_PAYMENT_REQUIRED: 'Regularize o pagamento da sua membritude para continuar.',
+        MEMBERSHIP_CHARGE_UNAVAILABLE: 'A cobrança da membritude está indisponível. Tente novamente mais tarde.',
         INVALID_CREDENTIALS: 'Os dados informados não conferem. Verifique e tente novamente.',
-        ACCESS_DENIED: 'Você não tem permissão para realizar esta ação.',
-        FORBIDDEN: 'Você não tem permissão para realizar esta ação.',
-        NOT_FOUND: 'Não encontramos o registro solicitado.',
-        CONFLICT: 'Não foi possível concluir porque os dados já existem ou foram alterados. Atualize a página e tente novamente.',
-        INTERNAL_SERVER_ERROR: 'O servidor encontrou um problema. Tente novamente mais tarde.',
-        SERVICE_UNAVAILABLE: 'O serviço está temporariamente indisponível. Tente novamente mais tarde.',
-        TOO_MANY_REQUESTS: 'Muitas tentativas em pouco tempo. Aguarde um instante e tente novamente.',
+        INVALID_IMAGE: 'Esta imagem não pôde ser aceita. Escolha uma foto JPEG, PNG ou WebP de até 5 MiB e tente novamente.',
     };
-    if (codeMessages[problem.code]) return codeMessages[problem.code];
-    return problem.detail || fallback;
+    if (problem && codeMessages[problem.code]) return codeMessages[problem.code];
+    const status = error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
+    const statusMessages: Record<number, string> = {
+        400: 'Confira os dados informados e tente novamente.',
+        401: 'Não foi possível autenticar a solicitação. Verifique seus dados e tente novamente.',
+        402: codeMessages.MEMBERSHIP_PAYMENT_REQUIRED,
+        403: 'Você não tem permissão para realizar esta ação.',
+        404: 'Não encontramos o registro solicitado.',
+        409: 'Os dados já existem ou foram alterados. Atualize a página e tente novamente.',
+        413: 'O arquivo ultrapassa o limite aceito pelo servidor. Reduza o arquivo e tente novamente.',
+        415: 'Formato de arquivo não aceito. Confira o arquivo e tente novamente.',
+        429: 'Muitas tentativas em pouco tempo. Aguarde um instante e tente novamente.',
+        500: 'O servidor encontrou um problema. Tente novamente mais tarde.',
+        503: 'O serviço está temporariamente indisponível. Tente novamente mais tarde.',
+    };
+    if (status && statusMessages[status]) return statusMessages[status];
+    if (error instanceof TypeError && /fetch|network/i.test(error.message)) {
+        return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
+    }
+    return fallback;
 }
 
-/**
- * Extrai o `code` estavel do backend, pra decisoes programaticas que nao
- * devem depender de texto traduzido (ex.: distinguir ACCESS_DENIED de
- * outros 403, ou tratar codigos de negocio especificos por tela).
- */
+/** Normalization belongs to the HTTP boundary, never to individual actions. */
+export function toActionError(error: unknown): ActionError {
+    const sessionExpired = error instanceof Error && error.message === SESSION_EXPIRED_MESSAGE;
+    if (error instanceof ActionError && !sessionExpired && !/API_URL|API_FRONTEND_KEY/.test(error.message)) return error;
+    const problem = getApiProblem(error);
+    const status = sessionExpired ? 401 : error && typeof error === 'object' && 'status' in error ? Number(error.status) : problem?.status;
+    return new ActionError(extractApiErrorMessage(error), {
+        cause: error,
+        status,
+        code: sessionExpired ? 'SESSION_EXPIRED' : problem?.code ?? (status && status >= 200 && status < 300 ? 'INVALID_RESPONSE' : 'REQUEST_FAILED'),
+        errors: Array.isArray(problem?.errors) ? problem.errors.filter(item => item && typeof item.message === 'string' && typeof item.field === 'string' && typeof item.code === 'string') : undefined,
+    });
+}
+
 export function extractApiErrorCode(error: unknown): string | undefined {
-    return getApiProblem(error)?.code;
+    return getActionFailure(error)?.code ?? getApiProblem(error)?.code;
 }
