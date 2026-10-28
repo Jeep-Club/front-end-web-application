@@ -17,7 +17,9 @@ export function getModuleLabel(module: string): string {
         module
             .replaceAll("_", " ")
             .toLocaleLowerCase("pt-BR")
-            .replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase("pt-BR"))
+            .replace(/\b\p{L}/gu, (letter) =>
+                letter.toLocaleUpperCase("pt-BR"),
+            )
     );
 }
 
@@ -98,7 +100,7 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     PUBLICATIONS_EVENT_GUEST_REACTIVATE:
         "Reativar convidado na lista de espera",
     PUBLICATIONS_EVENT_GUEST_HISTORY_READ:
-        "Consultar histórico de participação do convidado",
+        "Consultar histórico de alterações do convidado",
     PUBLICATIONS_EVENT_GUEST_ADMIN_CREATE:
         "Cadastrar convidado como administrador",
     PUBLICATIONS_EVENT_GUEST_ADMIN_READ:
@@ -149,15 +151,20 @@ const ENGLISH_DESCRIPTION_LABELS: Record<string, string> = {
 
     "Event: create": "Criar eventos.",
     "Event: read": "Consultar eventos.",
-    "Event: read admin": "Consultar eventos na área administrativa.",
+    "Event: read admin":
+        "Consultar eventos na área administrativa.",
     "Event: update": "Atualizar eventos.",
     "Event: publish": "Publicar eventos.",
     "Event: cancel": "Cancelar eventos.",
     "Event: finish": "Finalizar eventos.",
     "Event: delete": "Excluir eventos.",
-    "Event: register": "Inscrever participantes em eventos.",
-    "Event: registration read": "Consultar inscrições em eventos.",
-    "Event: registration cancel": "Cancelar inscrições em eventos.",
+    "Event: register":
+        "Inscrever participantes em eventos.",
+    "Event: registration read":
+        "Consultar inscrições em eventos.",
+    "Event: registration cancel":
+        "Cancelar inscrições em eventos.",
+
     "Event: guest request create":
         "Solicitar a participação de convidados.",
     "Event: guest request read":
@@ -178,11 +185,17 @@ const ENGLISH_DESCRIPTION_LABELS: Record<string, string> = {
         "Cadastrar convidados pela área administrativa.",
     "Event: guest admin read":
         "Consultar convidados pela área administrativa.",
-    "Event: guest approve": "Aprovar solicitações de convidados.",
-    "Event: guest reject": "Rejeitar solicitações de convidados.",
-    "Event: ride offer read": "Consultar ofertas de carona.",
-    "Event: ride offer respond": "Responder a ofertas de carona.",
-    "Event: ride offer select": "Selecionar ofertas de carona.",
+    "Event: guest approve":
+        "Aprovar solicitações de convidados.",
+    "Event: guest reject":
+        "Rejeitar solicitações de convidados.",
+
+    "Event: ride offer read":
+        "Consultar ofertas de carona.",
+    "Event: ride offer respond":
+        "Responder a ofertas de carona.",
+    "Event: ride offer select":
+        "Selecionar ofertas de carona.",
     "Event: admin dashboard read":
         "Consultar o painel administrativo de eventos.",
     "Event: health emergency read":
@@ -202,7 +215,8 @@ export function getPermissionDescription(
     permission: PermissionResponse,
 ): string {
     const description = permission.description.trim().replace(/\s+/g, " ");
-    const normalizedDescription = description.toLocaleLowerCase("en-US");
+    const normalizedDescription =
+        description.toLocaleLowerCase("en-US");
 
     const translated = Object.entries(ENGLISH_DESCRIPTION_LABELS).find(
         ([english]) =>
