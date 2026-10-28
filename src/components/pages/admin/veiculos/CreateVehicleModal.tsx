@@ -98,9 +98,10 @@ interface CreateVehicleStepsProps {
     currentStep: number;
     onNext: () => void;
     onBack: () => void;
+    onStepChange: (step: number) => void;
 }
 
-function CreateVehicleSteps({ currentStep, onNext, onBack }: CreateVehicleStepsProps) {
+function CreateVehicleSteps({ currentStep, onNext, onBack, onStepChange }: CreateVehicleStepsProps) {
     const { formState: { errors } } = useFormContext();
     const { rootRef, handleNext } = useVehicleModalSteps(currentStep, STEPS, onNext);
 
@@ -112,11 +113,15 @@ function CreateVehicleSteps({ currentStep, onNext, onBack }: CreateVehicleStepsP
                     const isActive = step === currentStep;
                     const isCompleted = step < currentStep;
                     return (
-                        <div
+                        <button
+                            type="button"
+                            onClick={() => onStepChange(step)}
+                            aria-label={`Etapa ${step}: ${label}`}
+                            aria-current={isActive ? "step" : undefined}
                             key={step}
                             title={`Etapa ${step}`}
                             className={twMerge(
-                                "flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors md:text-sm",
+                                "flex min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700 md:text-sm",
                                 isActive
                                     ? "bg-j-blue-700 text-j-white shadow-sm"
                                     : isCompleted
@@ -132,7 +137,7 @@ function CreateVehicleSteps({ currentStep, onNext, onBack }: CreateVehicleStepsP
                                 {step}
                             </span>
                             <span className="hidden truncate sm:inline">{label}</span>
-                        </div>
+                        </button>
                     );
                 })}
             </div>
@@ -387,6 +392,7 @@ export function CreateVehicleModal() {
             >
                 <CreateVehicleSteps
                     currentStep={currentStep}
+                    onStepChange={setCurrentStep}
                     onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
                     onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
                 />
