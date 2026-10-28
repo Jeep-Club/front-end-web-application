@@ -1,3 +1,4 @@
+```tsx
 "use client";
 
 import Image from "next/image";
@@ -26,6 +27,7 @@ import { EventParticipation } from "./EventParticipation";
 
 const icons = { NOTICE: Megaphone, EVENT: CalendarDays, SERVICE: Wrench };
 
+
 function preview(value: string, max: number) {
     const text = Array.from(value);
     return text.length > max ? `${text.slice(0, max - 1).join("")}…` : value;
@@ -41,11 +43,14 @@ export default function Feed() {
     const permissions = useUserStore((state) => state.permissions);
     const canRead = hasPermission(permissions, "PUBLICATIONS", "FEED_READ");
     const canDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
+
+
     const canCreate = {
         EVENT: hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE"),
         NOTICE: hasPermission(permissions, "PUBLICATIONS", "NOTICE_CREATE"),
         SERVICE: hasPermission(permissions, "PUBLICATIONS", "SERVICE_REQUEST_CREATE"),
     };
+
     const { setContent, setOpen, setClose } = useModal();
     const params = useSearchParams();
     const typeResult = feedTypeSchema.safeParse(params.get("type"));
@@ -55,54 +60,94 @@ export default function Feed() {
     const creationLabel = creationType ? feedTypes[creationType].label.toLocaleLowerCase("pt-BR") : "publicação";
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const openedDeepLinkRef = useRef<number | null>(null);
+
     const query = useInfiniteQuery({
         queryKey: ["publications", "feed", "infinite", type, permissions],
-        queryFn: ({ pageParam }) => listPublicationFeedAction({ type, page: pageParam, size: 12 }),
+        queryFn: ({ pageParam }) =>
+            listPublicationFeedAction({
+                type,
+                page: pageParam,
+                size: 12,
+            }),
         initialPageParam: 0,
         getNextPageParam: nextFeedPage,
         enabled: canRead,
     });
+
     const publications = mergeFeedPages(query.data?.pages ?? []);
-    const { fetchNextPage, hasNextPage, isFetching, isFetchNextPageError } = query;
+
+    const {
+        fetchNextPage,
+        hasNextPage,
+        isFetching,
+        isFetchNextPageError,
+    } = query;
+
     const pageCount = query.data?.pages.length ?? 0;
 
     useEffect(() => {
         const sentinel = loadMoreRef.current;
-        if (!sentinel || !canRead || !hasNextPage || isFetching || isFetchNextPageError) return;
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                observer.disconnect();
-                void fetchNextPage({ cancelRefetch: false });
+
+        if (
+            !sentinel ||
+            !canRead ||
+            !hasNextPage ||
+            isFetching ||
+            isFetchNextPageError
+        ) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    observer.disconnect();
+                    void fetchNextPage({ cancelRefetch: false });
+                }
+            },
+            {
+                root: sentinel.closest("[data-dashboard-scroll]"),
+                rootMargin: "300px 0px",
             }
-        }, { root: sentinel.closest("[data-dashboard-scroll]"), rootMargin: "300px 0px" });
+        );
+
         observer.observe(sentinel);
+
         return () => observer.disconnect();
+
     }, [canRead, hasNextPage, isFetching, isFetchNextPageError, fetchNextPage, pageCount]);
+
 
     function closePublication() {
         const search = new URLSearchParams(window.location.search);
         search.delete("publication");
+
         window.history.replaceState(null, "", `${window.location.pathname}${search.size ? `?${search}` : ""}`);
+
         openedDeepLinkRef.current = null;
         setClose();
     }
 
     function openPublication(id: number) {
+
         setContent(<PublicationDetailModal publicationId={id} onClose={closePublication} />);
+
         setOpen();
     }
 
     useEffect(() => {
-        const id = Number(params.get("publication"));
+       const id = Number(params.get("publication"));
         if (!canDetail || !Number.isInteger(id) || id <= 0 || openedDeepLinkRef.current === id) return;
         openedDeepLinkRef.current = id;
         openPublication(id);
     // openPublication reads stable modal actions from the provider; the ref prevents re-opening on rerenders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [params, canDetail]);
 
     function filterType(next?: "NOTICE" | "EVENT" | "SERVICE") {
         const search = new URLSearchParams(params.toString());
+
         if (next) search.set("type", next); else search.delete("type");
         search.delete("page");
         search.delete("size");
@@ -194,6 +239,8 @@ export default function Feed() {
                 {query.isFetchingNextPage && <p role="status" className="py-4 text-center text-sm text-j-gray-500">Carregando mais publicações...</p>}
                 {query.isFetchNextPageError && <div role="alert" className="py-4 text-center"><p className="text-sm text-red-500">Não foi possível carregar mais publicações.</p><Button className="mt-3" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
             </>}
+
         </div>
-    </div>;
+    );
 }
+```

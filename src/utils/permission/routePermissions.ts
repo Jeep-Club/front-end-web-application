@@ -102,6 +102,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["TOOL_READ"],
         },
     ],
+    "/admin/dados-medicos": [{ module: "HEALTH", actions: ["MEDICAL_PROFILE_READ"] }],
     "/admin/tools": [
         {
             module: "TOOLS",

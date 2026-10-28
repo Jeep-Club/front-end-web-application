@@ -7,6 +7,7 @@ import {
     Users,
     WalletCards,
     Wrench,
+    HeartPulse,
     type LucideIcon,
 } from "lucide-react";
 import { paymentPermissions } from "@/config/paymentPermissions";
@@ -35,6 +36,14 @@ export interface AdminModuleConfig {
 }
 
 export const adminModules: AdminModuleConfig[] = [
+    {
+        key: "medical-profiles",
+        title: "Gestão de dados médicos",
+        description: "Consulte e gerencie os dados médicos de usuários e dependentes.",
+        href: "/admin/dados-medicos",
+        icon: HeartPulse,
+        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
+    },
     {
         key: "payments",
         title: "Análise de pagamentos",
