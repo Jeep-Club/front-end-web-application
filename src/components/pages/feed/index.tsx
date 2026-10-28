@@ -125,11 +125,11 @@ export default function Feed() {
             {!canRead ? <div role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600">Seu usuário não possui permissão para acessar o feed.</div> : <>
                 <h1 className="sr-only">Mural do clube</h1>
                 <div className="flex min-w-0 items-center gap-3">
-                    <nav aria-label="Tipos de publicação" className="flex min-w-0 flex-1 gap-2 overflow-x-auto rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm">
-                        <button type="button" onClick={() => filterType()} aria-pressed={!type} className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${!type ? "bg-j-blue-800 text-j-white shadow-sm" : "text-j-gray-600 hover:bg-j-gray-100"}`}><Newspaper size={17} aria-hidden="true" />Tudo</button>
+                    <nav aria-label="Tipos de publicação" className="grid min-w-0 flex-1 grid-cols-[repeat(4,minmax(max-content,1fr))] gap-2 overflow-x-auto rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm">
+                        <button type="button" onClick={() => filterType()} aria-pressed={!type} className={`flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${!type ? "bg-j-blue-800 text-j-white shadow-sm" : "text-j-gray-600 hover:bg-j-gray-100"}`}><Newspaper size={17} aria-hidden="true" />Tudo</button>
                         {(["SERVICE", "NOTICE", "EVENT"] as const).map((key) => {
                             const Icon = icons[key];
-                            return <button key={key} type="button" onClick={() => filterType(key)} aria-pressed={type === key} className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${type === key ? "bg-j-blue-800 text-j-white shadow-sm" : "text-j-gray-600 hover:bg-j-gray-100"}`}><Icon size={17} aria-hidden="true" />{feedTypes[key].plural}</button>;
+                            return <button key={key} type="button" onClick={() => filterType(key)} aria-pressed={type === key} className={`flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${type === key ? "bg-j-blue-800 text-j-white shadow-sm" : "text-j-gray-600 hover:bg-j-gray-100"}`}><Icon size={17} aria-hidden="true" />{feedTypes[key].plural}</button>;
                         })}
                     </nav>
                     {canCreateCurrentType && <button
