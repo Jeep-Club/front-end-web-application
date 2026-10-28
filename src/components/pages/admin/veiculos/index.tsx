@@ -17,7 +17,7 @@ import { VehicleDetailModal } from "./VehicleDetailModal";
 import { EditVehicleModal } from "./EditVehicleModal";
 import { CreateVehicleModal } from "./CreateVehicleModal";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
-import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 
 const PAGE_SIZE = 10;
 
@@ -104,9 +104,8 @@ export default function VehicleManagement() {
                                         <div key={vehicle.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] xl:items-center xl:gap-3">
                                             <div className="flex min-w-0 items-center gap-3">
                                                 <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-20 sm:w-36">
-                                                    {vehicle.photo ? (
-                                                        // eslint-disable-next-line @next/next/no-img-element
-                                                        <img src={getMediaImageUrl(vehicle.photo)} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="h-full w-full object-cover" />
+                                                    {vehicle.photo || vehicle.photos?.length ? (
+                                                        <VehiclePhotoCarousel vehicleId={vehicle.id} admin cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="h-full w-full" />
                                                     ) : <Car size={24} aria-hidden="true" />}
                                                 </div>
                                                 <h4 className="min-w-0 truncate font-extrabold text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>

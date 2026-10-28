@@ -4,6 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import Loading from "@/components/common/loading";
 import Providers from "@/providers";
+import { THEME_INIT_SCRIPT } from "@/utils/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} /></head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >

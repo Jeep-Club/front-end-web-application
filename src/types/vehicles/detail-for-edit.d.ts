@@ -6,6 +6,8 @@ interface VehicleDetailForEdit {
     nickname: string | null;
     photo: string | null;
     photos?: string[];
+    images?: { storageKey: string; position: number; primary: boolean }[];
+    galleryRevision?: number;
     plate: string;
     renavam: string;
     brand: string;

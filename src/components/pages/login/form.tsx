@@ -37,6 +37,7 @@ export default function FormLogin() {
         <div className="w-full flex flex-col items-center justify-center gap-5 px-5">
             <Form<LoginRequestType>
                 schema={loginRequestSchema}
+                className="gap-3"
                 onSubmit={handleSubmit}
                 onError={() => toast.error('Confira o CPF e a senha informados.')}
             >

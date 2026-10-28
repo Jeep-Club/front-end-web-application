@@ -1,6 +1,6 @@
-import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
-import { verifyWithSchema } from "@/services/token/verify";
 import { paymentPermissions } from "@/config/paymentPermissions";
+import { publicationManagementAccessActions } from "@/config/publicationManagement";
+import { verifyPermissions } from "@/services/token/permissions";
 
 /*
  * "all" (padrão): o usuário precisa satisfazer TODAS as entradas de
@@ -32,6 +32,9 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/profile": [],
     "/eventos": [],
     "/avisos": [],
+    "/tutoriais": [],
+    "/servicos": [],
+    "/agenda": [],
     "/financeiro": [],
 
 
@@ -74,6 +77,19 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         },
     ],
 
+    "/admin/gestao-publicacoes": {
+        match: "any",
+        permissions: publicationManagementAccessActions.map((action) => ({
+            module: "PUBLICATIONS",
+            actions: [action],
+        })),
+    },
+    "/admin/gestao-eventos": [
+        {
+            module: "PUBLICATIONS",
+            actions: ["EVENT_READ_ADMIN"],
+        },
+    ],
     "/admin/veiculos": [
         {
             module: "VEHICLES",
@@ -152,10 +168,7 @@ export const haveRoutePermissions = async ({
     onCatch,
 }: HaveRoutePermissionsProps): Promise<boolean> => {
     const permissions =
-        await verifyWithSchema<PermissionModule[]>(
-            permissionsToken,
-            permissionModuleSchema.array(),
-        ).catch(() => {
+        await verifyPermissions(permissionsToken).catch(() => {
             throw onCatch();
         });
 

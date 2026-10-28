@@ -21,8 +21,9 @@ export function ListFileImage({ files, onRemove, className }: ListImageProps) {
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
                     <RemoveFile 
                         onClick={()=>{onRemove(idx)}} 
-                        // iconSize={14}
-                        className="absolute top-1.5 right-1.5 text-j-gray-300"
+                        aria-label={`Remover imagem ${file.name}`}
+                        title="Remover imagem"
+                        className="absolute top-1.5 right-1.5 z-10 flex size-8 items-center justify-center rounded-full bg-white text-red-600 shadow-md hover:bg-red-50 hover:text-red-700"
                     />
                 </ImageThumbnail>
             ))}

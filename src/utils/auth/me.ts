@@ -1,3 +1,4 @@
+import { signPermissions } from "@/services/token/permissions";
 import { sign } from "@/services/token/sign";
 import { verifyWithSchema } from "@/services/token/verify";
 import { cookies } from "next/headers";
@@ -17,7 +18,7 @@ export async function me(
     }
 
     const permissions = mapMePermissionToModule(authorization.authorities)
-    const permissionsToken = await sign(permissions);
+    const permissionsToken = await signPermissions(permissions);
     const meToSign: MeCookie = {
         userName: identity.name,
         profilePhotoStorageKey: identity.profilePhotoStorageKey,

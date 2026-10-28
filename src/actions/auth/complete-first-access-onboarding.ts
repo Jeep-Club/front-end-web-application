@@ -1,19 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/auth/complete-first-access-onboarding";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import { cookies } from "next/headers";
-import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
-import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
-
-export async function completeFirstAccessOnboardingAction() {
-    const [vehicles, medicalProfile] = await Promise.all([
-        listVehiclesMemberAction({ page: 0, size: 1 }),
-        getMedicalProfileAction(),
-    ]);
-    if (vehicles.content.length === 0 || !medicalProfile) {
-        throw new Error("Cadastre pelo menos um veículo e seus dados médicos antes de continuar.");
-    }
-
-    const cookieStore = await cookies();
-    cookieStore.delete("FirstAccessOnboardingUserId");
-    return { success: true };
+export async function completeFirstAccessOnboardingAction(...args: Parameters<typeof server.completeFirstAccessOnboardingAction>) {
+    return unwrapActionResult(await server.completeFirstAccessOnboardingAction(...args));
 }

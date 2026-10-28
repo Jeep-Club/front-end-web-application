@@ -1,0 +1,66 @@
+.fields label {
+    color: var(--color-j-gray-700);
+    font-weight: 700;
+}
+
+.fields :is(input:not([type="file"]), select, textarea) {
+    color-scheme: light;
+    background-color: var(--color-j-white);
+    color: var(--color-j-gray-700);
+    padding: 0.75rem 1rem;
+}
+
+.fields select {
+    padding-right: 2.5rem;
+}
+
+.fields :is(input, textarea)::placeholder {
+    color: var(--color-j-gray-400);
+}
+
+.fields :is(input, select, textarea):not([class*="border-input-border-error"]) {
+    border-color: var(--color-j-gray-200);
+}
+
+.fields :is(input, select, textarea):not([class*="border-input-border-error"]):focus {
+    border-color: var(--color-j-blue-700);
+    outline-color: var(--color-j-blue-700);
+}
+
+.fields :is(input, select, textarea)[class*="border-input-border-error"] {
+    color: var(--color-j-gray-700);
+}
+
+.fields :is(input, select, textarea):disabled {
+    background-color: var(--color-j-gray-100);
+    color: var(--color-j-gray-500);
+}
+
+.gallery > div[role="presentation"] {
+    min-height: 11rem;
+    background-color: var(--color-j-white);
+}
+
+.gallery > div[role="presentation"]:not([class*="border-j-red"]):not([class*="border-j-green"]):not([class*="border-j-yellow"]) {
+    border-color: var(--color-j-gray-300);
+}
+
+.gallery > div[role="presentation"]:hover:not([class*="border-j-red"]) {
+    border-color: var(--color-j-blue-400);
+}
+
+.gallery [class*="text-j-gray-300"] {
+    color: var(--color-j-gray-600);
+}
+
+.gallery [class*="text-j-gray-400"] {
+    color: var(--color-j-gray-500);
+}
+
+.gallery [class*="text-j-yellow-400"] {
+    color: var(--color-j-blue-700);
+}
+
+.gallery > div:last-child:not([role="presentation"]) {
+    flex-wrap: wrap;
+}

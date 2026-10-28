@@ -1,6 +1,6 @@
+import { signPermissions } from "@/services/token/permissions";
 import { NextRequest, NextResponse } from "next/server";
 import fetchRefreshToken from "./utils/auth/refresh";
-import { permissionModuleSchema } from "./schemas/auth/permission/permissionModule";
 import { verifyWithSchema } from "./services/token/verify";
 import { routePermissions } from "./utils/permission/routePermissions";
 import {
@@ -59,7 +59,7 @@ export async function proxy(request: NextRequest) {
         }
 
         const permissions = mapMePermissionToModule(authorization.authorities)
-        const permissionsToken = await sign(permissions);
+        const permissionsToken = await signPermissions(permissions);
 
         const meToSign: MeCookie = {
             userId: session.userId,

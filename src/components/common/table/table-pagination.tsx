@@ -26,11 +26,11 @@ export function TablePagination({ showPageSize = true, showCount = true, classNa
     const buttonClass = "flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-j-gray-200 bg-j-white text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-40";
 
     return (
-        <footer className={twMerge("grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-3 pt-4 lg:grid-cols-[1fr_auto_1fr]", className)}>
-            <p className="text-sm tabular-nums text-j-gray-500">
+        <footer className={twMerge("grid grid-cols-1 items-center gap-x-3 gap-y-3 pt-4 sm:grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr]", className)}>
+            <p className="text-center text-sm tabular-nums text-j-gray-500 sm:text-left">
                 {showCount && typeof totalElements === "number" && `${itemCount.toLocaleString("pt-BR")} de ${totalElements.toLocaleString("pt-BR")} itens`}
             </p>
-            <div className="col-span-2 row-start-2 flex items-center justify-center gap-1 lg:col-span-1 lg:col-start-2 lg:row-start-1">
+            <div className="row-start-2 flex items-center justify-center gap-1 sm:col-span-2 lg:col-span-1 lg:col-start-2 lg:row-start-1">
                 <button type="button" className={buttonClass} onClick={() => table.setPageIndex(0)} disabled={disabled || !table.getCanPreviousPage()} aria-label="Primeira página">
                     <ChevronsLeft size={16} aria-hidden="true" />
                 </button>
@@ -52,7 +52,7 @@ export function TablePagination({ showPageSize = true, showCount = true, classNa
                 onChange={(event) => table.setPageSize(Number(event.target.value))}
                 disabled={disabled}
                 aria-label="Itens por página"
-                className="col-start-2 row-start-1 justify-self-end rounded-lg border border-j-gray-200 bg-j-white px-2 py-1.5 text-sm text-j-gray-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-60 lg:col-start-3"
+                className="col-start-1 row-start-3 justify-self-center rounded-lg border border-j-gray-200 bg-j-white px-2 py-1.5 text-sm text-j-gray-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-60 sm:col-start-2 sm:row-start-1 sm:justify-self-end lg:col-start-3"
             >
                 {pageSizeOptions.map((size) => <option key={size} value={size}>{size} por página</option>)}
             </select>}

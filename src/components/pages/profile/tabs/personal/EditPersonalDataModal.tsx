@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { getBirthDateInputBounds } from "@/utils/validate/validateBirthDate";
 
 import {
     CalendarDays,
@@ -331,6 +332,7 @@ export function EditPersonalDataModal({
                         type="date"
                         label="Data de nascimento"
                         name="birthDate"
+                        {...getBirthDateInputBounds()}
                         labelClassName="text-j-gray-700"
                         className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 focus:bg-j-white"
                     />

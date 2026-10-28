@@ -1,27 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/admin/medical-profile/put";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from '@/utils/http/api';
-import { putMedicalProfileResponseSchema } from "@/schemas/admin/medical-profile";
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-
-interface Props {
-    id: number;
-    ownerType: string;
-    data: PutMedicalProfileUserRequest | PutMedicalProfileDependentRequest;
-}
-
-export async function putMedicalProfileAction({ id, ownerType, data }: Props) {
-    try {
-            const ownerPath = ownerType === 'DEPENDENT' ? 'dependents' : 'users';
-            const response = await actionFetchWrapper<PutMedicalProfileResponse>({
-                url: HttpAPIRoutes.ADMIN_MEDICAL_PROFILES + '/' + ownerPath + '/' + id,
-                method: 'PUT',
-                schema: putMedicalProfileResponseSchema,
-                body: JSON.stringify(data)
-            });
-            return response.data;
-        } catch (error) {
-            throw new Error(extractApiErrorMessage(error, 'Erro ao atualizar perfil médico'), { cause: error });
-        }
+export async function putMedicalProfileAction(...args: Parameters<typeof server.putMedicalProfileAction>) {
+    return unwrapActionResult(await server.putMedicalProfileAction(...args));
 }

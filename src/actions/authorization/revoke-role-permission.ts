@@ -1,18 +1,7 @@
-'use server';
+// Client-safe adapter: expected failures cross the server boundary as data.
+import * as server from "@/server/actions/authorization/revoke-role-permission";
+import { unwrapActionResult } from "@/utils/actions/actionResult";
 
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { rolePermissionMutationResponseSchema } from "@/schemas/authorization/rolePermission";
-
-export async function revokePermissionFromRoleAction(roleId: number, permissionId: number) {
-    try {
-        await actionFetchWrapper({
-            url: `${HttpAPIRoutes.AUTHORIZATION_ROLES}/${roleId}/permissions/${permissionId}`,
-            method: 'DELETE',
-            schema: rolePermissionMutationResponseSchema,
-        });
-    } catch (error) {
-        throw new Error(extractApiErrorMessage(error, 'Erro ao remover permissão do cargo'), { cause: error });
-    }
+export async function revokePermissionFromRoleAction(...args: Parameters<typeof server.revokePermissionFromRoleAction>) {
+    return unwrapActionResult(await server.revokePermissionFromRoleAction(...args));
 }

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { type DefaultValues, useController, useFormContext } from 'react-hook-form';
+import { type DefaultValues, useController, useFormContext, useWatch } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { HeartPulse, ShieldCheck, UserPlus, X } from 'lucide-react';
 import { createDependentAction, getDependentMedicalProfileAction, saveDependentMedicalProfileAction, updateDependentAction } from '@/actions/dependents';
@@ -17,14 +17,13 @@ import { useModal } from '@/providers/ModalProvider';
 import { createDependentFormSchema, editDependentFormSchema } from '@/schemas/dependents';
 import { maskCPF, unMaskCPF } from '@/utils/masks/maskCPF';
 import { maskPhoneNumber, unMaskPhoneNumber } from '@/utils/masks/maskPhoneNumber';
+import { InputFile } from '@/components/common/input/file';
+import { DependentPhoto } from './DependentPhoto';
+import { saveDependentWithPhotoAction, removeDependentPhotoAction } from '@/actions/dependents/photo';
 
 const NOT_APPLICABLE = 'Não se aplica';
 const light = '[&_button[aria-haspopup=dialog]]:!text-j-blue-800 [&_button[aria-haspopup=dialog]_svg]:!text-j-blue-800 [&_input]:!h-11 [&_input]:!py-2 [&_input]:!text-base [&_select]:!h-11 [&_select]:!py-2 [&_select]:!text-base [&_textarea]:!min-h-28 [&_textarea]:!py-3 [&_label]:!text-j-gray-700 [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!text-j-gray-700 [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!text-j-gray-700 [&_textarea]:!border-j-gray-200 [&_textarea]:!bg-j-gray-100 [&_textarea]:!text-j-gray-700';
 
-function localDateInputValue() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
 
 function DependentHealthField({ name, label, question, placeholder }: {
   name: 'medicalProfile.allergies' | 'medicalProfile.chronicDiseases' | 'medicalProfile.medications' | 'medicalProfile.medicalNotes';
@@ -52,7 +51,9 @@ function DependentHealthField({ name, label, question, placeholder }: {
 }
 
 function Fields({ dependent, isEdit, isSaving }: { dependent?: MemberDependent; isEdit: boolean; isSaving: boolean }) {
-  const { formState, setValue } = useFormContext<CreateMemberDependentFormData>();
+  const { formState, setValue, control } = useFormContext<CreateMemberDependentFormData>();
+  const photo = useWatch({ control, name: 'photo' });
+  const removePhoto = useWatch({ control, name: 'removePhoto' });
 
   useEffect(() => {
     if (!dependent) return;
@@ -69,12 +70,36 @@ function Fields({ dependent, isEdit, isSaving }: { dependent?: MemberDependent; 
   }, [dependent, setValue]);
 
   return <>
+    <section
+      className="w-full cursor-pointer rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-j-blue-800"
+      tabIndex={0}
+      aria-label="Selecionar foto do dependente"
+      onClick={(event) => {
+        const target = event.target as HTMLElement;
+        if (!event.currentTarget.contains(target) || target.closest('button, input, a, [role="dialog"]')) return;
+        event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+      }}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget || !['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+      }}
+    >
+      <h3 className="mb-3 text-sm font-extrabold text-j-blue-800">Foto do dependente</h3>
+      {dependent?.photoUrl && !removePhoto && !photo?.length && <div className="relative mb-3 w-fit">
+        <DependentPhoto dependent={dependent} className="h-28 w-28 rounded-full text-xl" />
+        <button type="button" aria-label="Remover foto atual do dependente" title="Remover foto" onClick={() => setValue('removePhoto', true, { shouldDirty: true })} className="absolute right-0 top-0 flex size-9 items-center justify-center rounded-full bg-white text-red-600 shadow-md"><X size={20} /></button>
+      </div>}
+      {removePhoto && !photo?.length && <div className="mb-3 flex items-center justify-between gap-3 text-sm text-j-gray-600"><p>A foto será removida ao salvar.</p><button type="button" onClick={() => setValue('removePhoto', false)} className="font-bold text-j-blue-800">Desfazer</button></div>}
+      <InputFile.Image name="photo" label="Selecionar foto (opcional)" maxFiles={1} maxSizeMB={5} cropShape="circle" className="[&_label]:font-semibold [&_label]:!text-j-gray-700 [&_p]:!text-j-gray-600 [&_svg]:!text-j-gray-400 [&>div]:!border-j-gray-200 [&>div]:!bg-j-white [&>div]:py-4" />
+      <p className="mt-2 text-xs text-j-gray-500">JPEG, PNG ou WebP de até 5 MiB. Ajuste o enquadramento antes de salvar.</p>
+    </section>
     <section className="w-full"><h3 className="mb-2 text-sm font-extrabold text-j-blue-800">Dados pessoais</h3><div className={`grid gap-3 sm:grid-cols-2 ${light}`}>
       <div className="min-w-0 sm:col-span-2">
         <InputRegister name="name" label="Nome completo" required />
       </div>
       <InputRegister name="cpf" label="CPF" mask={maskCPF} inputMode="numeric" disabled={isEdit} required />
-      <InputDate name="birthDate" label="Data de nascimento" max={localDateInputValue()} required />
+      <InputDate name="birthDate" label="Data de nascimento" required />
       <SelectRegister name="relationshipType" label="Parentesco" required><option value="" disabled hidden>Selecione</option><option value="CHILD">Filho(a)</option><option value="SPOUSE">Cônjuge</option><option value="PARENT">Pai/Mãe</option><option value="SIBLING">Irmão/Irmã</option><option value="GUEST">Convidado(a)</option><option value="OTHER">Outro</option></SelectRegister>
       <InputRegister name="phoneNumber" label="Telefone" mask={maskPhoneNumber} inputMode="tel" required />
     </div></section>
@@ -108,8 +133,18 @@ export function CreateDependentModal({ dependent }: { dependent?: MemberDependen
   const isEdit = !!dependent;
   const mutation = useMutation({
     mutationFn: async (data: CreateMemberDependentFormData) => {
-      const request: CreateMemberDependentRequest = { ...data, cpf: unMaskCPF(data.cpf), phoneNumber: unMaskPhoneNumber(data.phoneNumber) };
-      const saved = isEdit ? await updateDependentAction(dependent.id, request) : await createDependentAction(request);
+      const request: CreateMemberDependentRequest = { name: data.name, cpf: unMaskCPF(data.cpf), phoneNumber: unMaskPhoneNumber(data.phoneNumber), birthDate: data.birthDate, relationshipType: data.relationshipType };
+      const photo = data.photo?.[0];
+      let saved: MemberDependent;
+      if (photo) {
+        const form = new FormData();
+        form.set('dependent', JSON.stringify(request));
+        form.set('photo', photo, photo.name);
+        saved = await saveDependentWithPhotoAction(form, dependent?.id);
+      } else {
+        saved = isEdit ? await updateDependentAction(dependent.id, request) : await createDependentAction(request);
+        if (isEdit && data.removePhoto && dependent.photoUrl) saved = await removeDependentPhotoAction(saved.id);
+      }
       try {
         const health = data.medicalProfile;
         await saveDependentMedicalProfileAction(saved.id, {
@@ -135,6 +170,7 @@ export function CreateDependentModal({ dependent }: { dependent?: MemberDependen
     relationshipType: dependent?.relationshipType, phoneNumber: dependent?.phoneNumber ? maskPhoneNumber(dependent.phoneNumber) : '',
     medicalProfile: { bloodType: undefined, allergies: NOT_APPLICABLE, chronicDiseases: NOT_APPLICABLE, medications: NOT_APPLICABLE, medicalNotes: NOT_APPLICABLE },
     consentAccepted: false,
+    photo: [], removePhoto: false,
   };
 
   return <div className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
