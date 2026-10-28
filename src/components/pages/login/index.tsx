@@ -6,6 +6,7 @@ import FormLogin from "./form";
 import { Logo } from "@/components/common/logo";
 import { useModal } from "@/providers/ModalProvider";
 import { JoinClubModal } from "./JoinClubModal";
+import LegalLinks from "@/components/common/legal-links";
 
 
 export default function Login() {
@@ -54,6 +55,7 @@ export default function Login() {
                     <div className="w-full flex flex-col items-center">
                         <FormLogin />
                         <p className="text-[10px]  md:text-xs text-j-transparent-white text-center">Quer fazer parte do clube? <button type="button" onClick={handleOpenJoinClub} className="text-j-gray-200 pt-2 pb-4 underline hover:text-j-yellow-300 transition-colors duration-300 hover:cursor-pointer">Conheça o caminho</button></p>
+                        <LegalLinks className="px-5 pt-3 text-j-gray-200" />
                         <p className="text-j-white pt-3 pb-4 text-[8px] md:text-xs text-center">&copy; 2026 JEEP CLUBE TAMOIOS • OFF-ROAD</p>
                     </div>
                     

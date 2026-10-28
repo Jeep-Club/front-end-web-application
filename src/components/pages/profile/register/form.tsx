@@ -12,6 +12,7 @@ import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhon
 import { User } from "lucide-react";
 import { Textarea } from "@/components/common/textarea/";
 import { Select } from "@/components/common/select/";
+import Link from "next/link";
 
 export default function FormRegister() {
     const router = useRouter();
@@ -19,7 +20,6 @@ export default function FormRegister() {
     const mutation = useMutation({ 
         mutationFn: registerAction, 
         onSuccess: (data) => {
-            console.log(data);
             router.push("/feed");
             toast.success('Registro realizado com sucesso!');
         }, 
@@ -54,6 +54,12 @@ export default function FormRegister() {
                     <option value="abacate">Abacate</option>
                     <option value="morango">Morango</option>
                 </Select>
+                <p className="text-left text-xs leading-6 text-j-gray-200">
+                    Os dados de identificação e contato são utilizados para criar e administrar sua conta.
+                    Consulte os <Link href="/termos-de-uso" target="_blank" rel="noopener noreferrer" className="text-j-yellow-300 underline underline-offset-4">Termos de Uso (abre em nova aba)</Link> e
+                    a <Link href="/politica-de-privacidade" target="_blank" rel="noopener noreferrer" className="text-j-yellow-300 underline underline-offset-4">Política de Privacidade (abre em nova aba)</Link> antes de enviar.
+                    O cadastro não autoriza publicidade nem o uso de dados de saúde.
+                </p>
                 <Button 
                     type="submit" 
                     disabled={isLoading}

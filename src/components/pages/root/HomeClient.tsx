@@ -1,13 +1,14 @@
 "use client";
 
 import { Logo } from "@/components/common/logo";
+import LegalLinks from "@/components/common/legal-links";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
   FaGift,
-  FaWhatsapp,
+  FaEnvelope,
   FaIdCard,
   FaUsers,
   FaChevronRight,
@@ -19,8 +20,8 @@ import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md"
 export default function HomeClient() {
   const router = useRouter();
 
-  const handleWhatsApp = () => {
-    window.open("https://wa.me/NUMEROMATEHUS", "_blank");
+  const handleContact = () => {
+    router.push("/contato");
   };
 
   const handleLogin = () => {
@@ -76,10 +77,10 @@ export default function HomeClient() {
           </div>
 
           <button
-            onClick={handleWhatsApp}
+            onClick={handleContact}
             className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
           >
-            <FaWhatsapp size={20} />
+            <FaEnvelope size={20} />
             Entre em Contato
             <FaChevronRight size={12} />
           </button>
@@ -247,14 +248,8 @@ export default function HomeClient() {
             <GiJeep size={24} className="text-yellow-400" />
             <p className="text-lg text-white font-bold tracking-tight">Jeep Club Tamoios</p>
           </div>
-          <p className="text-xs text-white/30 mb-8">© 2026 Todos os direitos reservados.</p>
-          <div className="flex flex-wrap justify-center gap-6">
-            {["Política de Privacidade", "Termos de Uso", "Contato"].map((link) => (
-              <a key={link} href="#" className="text-xs text-white/40 hover:text-yellow-400 transition-colors font-medium">
-                {link}
-              </a>
-            ))}
-          </div>
+          <p className="text-xs text-j-gray-300 mb-8">© 2026 Todos os direitos reservados.</p>
+          <LegalLinks className="text-j-gray-200 font-medium" />
         </div>
       </footer>
     </main>

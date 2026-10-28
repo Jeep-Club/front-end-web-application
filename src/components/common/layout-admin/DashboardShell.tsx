@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "@/components/common/layout-admin/Sidebar";
 import Topbar from "@/components/common/layout-admin/Topbar";
+import LegalLinks from "@/components/common/legal-links";
 
 interface DashboardShellProps {
     fullName: string;
@@ -29,8 +30,11 @@ export default function DashboardShell({ fullName, children }: DashboardShellPro
                     onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
                     fullName={fullName}
                 />
-                <div className="flex-1 overflow-y-auto bg-j-gray-100">
-                    {children}
+                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-j-gray-100">
+                    <div className="flex-1">{children}</div>
+                    <footer className="shrink-0 bg-j-blue-800 px-4 py-5 text-j-gray-200">
+                        <LegalLinks />
+                    </footer>
                 </div>
             </div>
         </div>

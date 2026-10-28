@@ -3,3 +3,11 @@ NEXT_PUBLIC_API_URL=""
 ACCESS=""
 NODE_ENV="PRODUCTION"
 NODE_SECURE="HTTPS"
+
+# Identificação pública do responsável e canais oficiais (não são credenciais).
+# Um controlador pode ser pessoa física ou jurídica; CNPJ não é obrigatório para pessoa física.
+LEGAL_CONTROLLER_NAME=""
+LEGAL_CONTROLLER_DOCUMENT=""
+LEGAL_CONTROLLER_ADDRESS=""
+LEGAL_PRIVACY_EMAIL=""
+LEGAL_SUPPORT_EMAIL=""
