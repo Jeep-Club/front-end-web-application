@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useController, useFormContext, useWatch } from "react-hook-form";
+import { MemberSelector, type MemberOption } from "@/components/pages/admin/MemberSelector";
 import toast from "react-hot-toast";
 import { X, Wrench, LoaderCircle, AlertCircle } from "lucide-react";
 import { Form } from "@/components/common/form";
@@ -21,13 +22,37 @@ import { updateToolPhotoAdminAction } from "@/actions/admin/tools/photo";
 import { uploadImageAction } from "@/actions/media/upload-image";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
+function ToolOwnerField() {
+    const { control } = useFormContext<CreateAdminToolFormData>();
+    const { field, fieldState } = useController({ name: "userId", control });
+    const [member, setMember] = useState<MemberOption | null>(null);
+    return <div className="flex flex-col gap-2">
+        <MemberSelector value={member} onChange={next => { setMember(next); field.onChange(next?.id ?? ""); }} />
+        {fieldState.error && <p role="alert" className="text-sm text-red-500">Pesquise e selecione o associado.</p>}
+    </div>;
+}
+
 function ToolPhotoField({ storageKey }: { storageKey?: string | null }) {
     const { control, setValue } = useFormContext<CreateAdminToolFormData | UpdateToolFormData>();
     const removed = useWatch({ control, name: "removePhoto" });
     const files = useWatch({ control, name: "photo" });
 
     return (
-        <section className="w-full rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3">
+        <section
+            tabIndex={0}
+            aria-label="Selecionar foto da ferramenta"
+            onClick={event => {
+                if (event.currentTarget.closest('fieldset:disabled') || (event.target as Element).closest('[data-file-dropzone], button, input')) return;
+                event.preventDefault();
+                event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+            }}
+            onKeyDown={event => {
+                if (!event.currentTarget.closest('fieldset:disabled') && event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                    event.preventDefault();
+                    event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+                }
+            }}
+            className="w-full cursor-pointer rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700">
             {storageKey && !removed && !files?.length && (
                 <div className="relative mb-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -222,15 +247,7 @@ export function IncludeAdminToolModal({ toolId }: IncludeAdminToolModalProps) {
                                 valueClassName="border-j-gray-200 bg-j-gray-100 text-j-gray-700"
                             />
                         ) : (
-                            <InputRegister
-                                type="number"
-                                label="ID do associado (Proprietário)"
-                                name="userId"
-                                placeholder="Ex: 7"
-                                required
-                                labelClassName="text-j-gray-700"
-                                className={LIGHT_FIELD_CLASS}
-                            />
+                            <ToolOwnerField />
                         )}
 
                         <InputRegister

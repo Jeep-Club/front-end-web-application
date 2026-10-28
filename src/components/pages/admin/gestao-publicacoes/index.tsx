@@ -62,7 +62,7 @@ export default function PublicationManagement() {
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
-                        { label: "Gestão de publicações" },
+                        { label: "Publicações" },
                     ]}
                 />
                 {sections.length > 0 || canCreate ? (

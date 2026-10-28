@@ -125,7 +125,7 @@ export default function ToolManagement() {
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
-                        { label: "Gestão de ferramentas" },
+                        { label: "Ferramentas" },
                     ]}
                 />
 

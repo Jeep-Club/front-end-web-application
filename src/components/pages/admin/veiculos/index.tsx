@@ -78,7 +78,7 @@ export default function VehicleManagement() {
                 <PageHeader title="Gestão de veículos" breadcrumbs={[
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
-                    { label: "Gestão de veículos" },
+                    { label: "Veículos" },
                 ]} />
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">

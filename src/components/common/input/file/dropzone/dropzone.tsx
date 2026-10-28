@@ -23,6 +23,7 @@ export function Dropzone({ className, dStyle = true, children,...dropzoneOptions
     return (
         <div 
             {...getRootProps()} 
+            data-file-dropzone
             className={twMerge(
                 dStyle && 
                 `
