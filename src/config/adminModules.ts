@@ -117,7 +117,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "tools",
-        title: "Administração de ferramentas",
+        title: "Gestão de ferramentas",
         description:
             "Visualize, cadastre e gerencie as ferramentas de todos os associados.",
         href: "/admin/ferramentas",

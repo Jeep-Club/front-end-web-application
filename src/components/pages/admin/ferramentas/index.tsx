@@ -6,6 +6,7 @@ import { Eye, Pencil, Plus, Power, RotateCcw, ShieldX, Trash2, Wrench } from "lu
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
 import { InputSearch } from "@/components/common/input/input-search";
 import { ListPagination } from "@/components/common/table/ListPagination";
@@ -120,11 +121,11 @@ export default function ToolManagement() {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
-                    title="Administração de ferramentas"
+                    title="Gestão de ferramentas"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
-                        { label: "Administração de ferramentas" },
+                        { label: "Gestão de ferramentas" },
                     ]}
                 />
 
@@ -139,13 +140,16 @@ export default function ToolManagement() {
                 ) : (
                     <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
+                            <div className="flex min-w-0 items-center gap-3">
+                                <ManagementBackButton />
+                                <div>
                                 <h3 className="text-base font-bold text-j-gray-700">
                                     Ferramentas cadastradas
                                 </h3>
                                 <p className="text-xs text-j-gray-500">
                                     Consulte e gerencie ferramentas vinculadas aos associados do clube.
                                 </p>
+                                </div>
                             </div>
 
                             {canCreate && (
