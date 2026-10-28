@@ -10,7 +10,7 @@ import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { createPublicationCommentAction, listPublicationCommentsAction } from "@/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
-import { RelativeTime } from "./RelativeTime";
+import { PublicationCommentAuthor } from "./PublicationCommentAuthor";
 
 export function PublicationComments({ publicationId }: { publicationId: number }) {
     const permissions = useUserStore((state) => state.permissions);
@@ -39,10 +39,11 @@ export function PublicationComments({ publicationId }: { publicationId: number }
                 : comments.isError ? <div role="alert"><p className="text-sm text-red-500">{comments.error.message}</p><Button onClick={() => void comments.refetch()} className="mt-2">Tentar novamente</Button></div>
                 : !comments.data?.content.length ? <p className="text-sm text-j-gray-500">Ainda não há comentários.</p>
                 : comments.data.content.map((comment) => <article key={comment.id} className="rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        {comment.authorName && <span className="text-sm font-bold text-j-blue-800">{comment.authorName}</span>}
-                        <RelativeTime value={comment.createdAt} className="text-xs text-j-gray-500" />
-                    </div>
+                    <PublicationCommentAuthor
+                        name={comment.authorName}
+                        photo={comment.authorPhotoStorageKey ?? comment.authorProfilePhotoStorageKey ?? comment.authorPhotoUrl ?? comment.authorProfilePhotoUrl}
+                        createdAt={comment.createdAt}
+                    />
                     <p className="mt-2 whitespace-pre-wrap break-words text-sm text-j-gray-700">{comment.text}</p>
                     {comment.images.length > 0 && <div className="mt-3 grid grid-cols-2 gap-2">{comment.images.map((image) => <div key={image.storageKey} className="relative aspect-video overflow-hidden rounded-lg"><Image src={getMediaImageUrl(image.storageKey)} alt="Imagem do comentário" fill unoptimized sizes="40vw" className="object-cover" /></div>)}</div>}
                 </article>)}
