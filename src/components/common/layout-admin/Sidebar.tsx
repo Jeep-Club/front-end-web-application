@@ -46,7 +46,6 @@ export default function Sidebar({
     isMobileOpen,
     onCloseMobile,
     fullName,
-    role,
 }: SidebarProps) {
     const pathname = usePathname();
 
@@ -114,10 +113,6 @@ export default function Sidebar({
                 <div className="flex shrink-0 flex-col items-center gap-0.5 border-b border-j-blue-700 p-4 md:hidden">
                     <span className="text-sm font-bold text-j-white">
                         {fullName}
-                    </span>
-
-                    <span className="text-xs text-j-transparent-white">
-                        {role}
                     </span>
                 </div>
 

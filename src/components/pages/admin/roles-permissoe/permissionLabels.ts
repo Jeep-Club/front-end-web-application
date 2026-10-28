@@ -19,6 +19,9 @@ export function getModuleLabel(module: string): string {
         .replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase("pt-BR"));
 }
 const PERMISSION_NAME_LABELS: Record<string, string> = {
+    BILLING_PAYMENT_READ: "Consultar pagamentos e comprovantes",
+    BILLING_PAYMENT_CONFIRM: "Confirmar pagamentos",
+    BILLING_PAYMENT_REJECT: "Rejeitar pagamentos",
     IDENTITY_USER_READ: "Consultar usuários",
     IDENTITY_USER_CREATE: "Criar usuários",
     IDENTITY_USER_UPDATE: "Atualizar usuários",
