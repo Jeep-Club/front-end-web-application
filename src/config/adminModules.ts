@@ -6,6 +6,7 @@ import {
     UserRoundCheck,
     Users,
     WalletCards,
+    Wrench,
     type LucideIcon,
 } from "lucide-react";
 import { paymentPermissions } from "@/config/paymentPermissions";
@@ -79,7 +80,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "roles-permissions",
-        title: "Roles e permissões",
+        title: "Gestão de roles e permissões",
         description:
             "Defina o que cada administrador pode acessar e fazer.",
         href: "/admin/roles-permissoes",
@@ -104,7 +105,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "vehicles",
-        title: "Administração de veículos",
+        title: "Gestão de veículos",
         description:
             "Visualize, cadastre e gerencie os veículos de todos os membros.",
         href: "/admin/veiculos",
@@ -112,6 +113,18 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "VEHICLES",
             action: "VEHICLE_READ",
+        },
+    },
+    {
+        key: "tools",
+        title: "Gestão de ferramentas",
+        description:
+            "Visualize, cadastre e gerencie as ferramentas de todos os associados.",
+        href: "/admin/ferramentas",
+        icon: Wrench,
+        visibilityPermission: {
+            module: "TOOLS",
+            action: "TOOL_READ",
         },
     },
 ];

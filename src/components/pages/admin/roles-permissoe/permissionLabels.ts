@@ -57,8 +57,76 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     MEMBERSHIP_MEMBERSHIP_REQUEST_REJECT: "Rejeitar solicitações de adesão",
     MEMBERSHIP_MEMBERSHIP_REQUEST_INVITE_RESEND: "Reenviar convite de adesão",
     MEMBERSHIP_MEMBERSHIP_APPLICANT_BLOCK: "Bloquear CPF de solicitante",
+
+    TOOLS_TOOL_READ: "Consultar ferramentas",
+    TOOLS_TOOL_CREATE: "Cadastrar ferramentas",
+    TOOLS_TOOL_UPDATE: "Atualizar ferramentas",
+    TOOLS_TOOL_DELETE: "Excluir ferramentas",
+    TOOLS_TOOL_ACTIVATE: "Ativar ferramentas",
+    TOOLS_TOOL_DEACTIVATE: "Desativar ferramentas",
+    TOOLS_TOOL_ARCHIVE: "Arquivar ferramentas",
+    TOOLS_TOOL_UNARCHIVE: "Desarquivar ferramentas",
+    TOOLS_TOOL_EXPORT: "Exportar ferramentas",
+    PUBLICATIONS_SERVICE_REQUEST_REJECT: "Rejeitar solicitação inicial de serviço",
+    PUBLICATIONS_NOTICE_CREATE: "Criar avisos",
+    PUBLICATIONS_NOTICE_READ: "Consultar avisos",
+    PUBLICATIONS_NOTICE_UPDATE: "Editar avisos",
+    PUBLICATIONS_NOTICE_PUBLISH: "Publicar avisos",
+    PUBLICATIONS_NOTICE_ARCHIVE: "Arquivar avisos",
+    PUBLICATIONS_NOTICE_DELETE: "Excluir avisos com histórico",
+    PUBLICATIONS_EVENT_GUEST_REQUEST_CANCEL: "Cancelar solicitação própria de convidado",
+    PUBLICATIONS_EVENT_GUEST_ALLOCATE: "Alocar ou realocar convidado em transporte",
+    PUBLICATIONS_EVENT_GUEST_UNASSIGN: "Remover convidado do transporte",
+    PUBLICATIONS_EVENT_GUEST_CANCEL: "Cancelar participação de convidado",
+    PUBLICATIONS_EVENT_GUEST_REACTIVATE: "Reativar convidado na lista de espera",
+    PUBLICATIONS_EVENT_GUEST_HISTORY_READ: "Consultar histórico de alterações do convidado",
+};
+
+const ENGLISH_DESCRIPTION_LABELS: Record<string, string> = {
+    "Publication: like and unlike": "Curtir e remover curtida de publicações.",
+    "Publication: create comment": "Criar comentários em publicações.",
+    "Publication: read comments": "Consultar comentários de publicações.",
+    "Publication: read feed": "Consultar o mural de publicações.",
+    "Publication: read detail": "Consultar os detalhes de uma publicação.",
+    "Event: create": "Criar eventos.",
+    "Event: read": "Consultar eventos.",
+    "Event: read admin": "Consultar eventos na área administrativa.",
+    "Event: update": "Atualizar eventos.",
+    "Event: publish": "Publicar eventos.",
+    "Event: cancel": "Cancelar eventos.",
+    "Event: finish": "Finalizar eventos.",
+    "Event: delete": "Excluir eventos.",
+    "Event: register": "Inscrever participantes em eventos.",
+    "Event: registration read": "Consultar inscrições em eventos.",
+    "Event: registration cancel": "Cancelar inscrições em eventos.",
+    "Event: guest request create": "Solicitar a participação de convidados.",
+    "Event: guest request read": "Consultar solicitações de convidados.",
+    "Event: cancel own personal guest": "Cancelar a própria solicitação de convidado.",
+    "Event: directly allocate or relocate administrative guest": "Alocar ou realocar convidados em transportes.",
+    "Event: unassign administrative guest transport": "Remover convidados de transportes.",
+    "Event: cancel guest participation": "Cancelar a participação de convidados.",
+    "Event: reactivate administrative guest to standby": "Reativar convidados na lista de espera.",
+    "Event: read retained guest transition history": "Consultar o histórico de alterações dos convidados.",
+    "Event: guest admin create": "Cadastrar convidados pela área administrativa.",
+    "Event: guest admin read": "Consultar convidados pela área administrativa.",
+    "Event: guest approve": "Aprovar solicitações de convidados.",
+    "Event: guest reject": "Rejeitar solicitações de convidados.",
+    "Event: ride offer read": "Consultar ofertas de carona.",
+    "Event: ride offer respond": "Responder a ofertas de carona.",
+    "Event: ride offer select": "Selecionar ofertas de carona.",
+    "Event: admin dashboard read": "Consultar o painel administrativo de eventos.",
+    "Event: health emergency read": "Consultar dados médicos de emergência em eventos.",
 };
 
 export function getPermissionName(permission: PermissionResponse): string {
-    return PERMISSION_NAME_LABELS[permission.code] ?? permission.description;
+    const code = permission.code.trim().toLocaleUpperCase("pt-BR");
+    return PERMISSION_NAME_LABELS[code] ?? getPermissionDescription(permission);
+}
+
+export function getPermissionDescription(permission: PermissionResponse): string {
+    const description = permission.description.trim().replace(/\s+/g, " ");
+    const translated = Object.entries(ENGLISH_DESCRIPTION_LABELS).find(
+        ([english]) => english.toLocaleLowerCase("en-US") === description.toLocaleLowerCase("en-US"),
+    )?.[1];
+    return translated ?? description;
 }
