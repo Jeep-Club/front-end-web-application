@@ -34,6 +34,7 @@ export function EventParticipation({ eventId, eventStatus, compact = false }: { 
             toast.error(error.message || "Não foi possível confirmar sua participação.");
         },
 
+
     });
     const cancel = useMutation({
         mutationFn: () => cancelMyEventRegistrationAction(eventId),
@@ -67,13 +68,13 @@ export function EventParticipation({ eventId, eventStatus, compact = false }: { 
     }
 
 
+
     if (currentRegistration?.status === "CANCELLED") return <div className={`flex flex-col gap-1.5 ${compact ? "w-full" : ""}`}>
         <span role="status" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-j-gray-100 px-4 text-sm font-bold text-j-gray-600">
             <X size={17} aria-hidden="true" />Inscrição cancelada
         </span>
         <p className="text-xs leading-relaxed text-j-gray-500">Após cancelar, não dá para se inscrever novamente neste evento. Fale com a administração se quiser voltar.</p>
     </div>;
-
     if (!canRegister || eventStatus !== "OPEN") return null;
     if (canReadOwnRegistration && registration.isLoading) return <button type="button" disabled className={buttonClass}>Verificando inscrição...</button>;
 
