@@ -31,6 +31,7 @@ export function PublicationCommentPreview({ publicationId, count, onOpen }: { pu
     });
     if (!canRead || !count) return null;
     return <section ref={ref} aria-label="Comentários recentes" className="border-t border-j-gray-200 pt-3">
+
         <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-j-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">
             {expanded ? <><ChevronUp size={16} aria-hidden="true" />Ocultar comentários</> : <><ChevronDown size={16} aria-hidden="true" />Mostrar comentários ({count})</>}
         </button>
@@ -49,5 +50,6 @@ export function PublicationCommentPreview({ publicationId, count, onOpen }: { pu
             </div>
             {count > 3 && onOpen && <button type="button" onClick={onOpen} className="mt-2 min-h-11 text-sm font-bold text-j-blue-700 hover:underline">Ver todos os comentários</button>}
         </>}
+
     </section>;
 }

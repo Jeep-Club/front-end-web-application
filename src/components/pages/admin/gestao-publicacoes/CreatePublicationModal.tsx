@@ -150,6 +150,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
                 <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm"><Newspaper size={20} /></span><h2 id="create-publication-title" className="text-xl font-extrabold text-j-blue-800 md:text-2xl">{title}</h2></div>
                 <p className="mt-2 text-sm text-j-gray-500">{description}</p>
+
             </header>
             <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="px-5 py-5 md:px-8 md:py-6">
                 <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} />

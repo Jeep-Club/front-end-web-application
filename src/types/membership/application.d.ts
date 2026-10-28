@@ -4,8 +4,8 @@ interface MembershipApplicationForm {
     name: string;
     cpf: string;
     phoneNumber: string;
-    email: string;
-    message: string;
+    email?: string;
+    message?: string;
 }
 
 interface MembershipApplicationSubmission {

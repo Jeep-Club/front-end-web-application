@@ -41,11 +41,13 @@ export default function Feed() {
     const permissions = useUserStore((state) => state.permissions);
     const canRead = hasPermission(permissions, "PUBLICATIONS", "FEED_READ");
     const canDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
+
     const canCreate = {
         EVENT: hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE"),
         NOTICE: hasPermission(permissions, "PUBLICATIONS", "NOTICE_CREATE"),
         SERVICE: hasPermission(permissions, "PUBLICATIONS", "SERVICE_REQUEST_CREATE"),
     };
+
     const { setContent, setOpen, setClose } = useModal();
     const params = useSearchParams();
     const typeResult = feedTypeSchema.safeParse(params.get("type"));
@@ -110,13 +112,16 @@ export default function Feed() {
         window.history.replaceState(null, "", `/feed${search.size ? `?${search}` : ""}`);
     }
 
+
     function openCreatePublication() {
         setContent(<CreatePublicationModal initialType={creationType} publishEventImmediately />);
+
         setOpen();
     }
 
     return <div className="min-h-full w-full px-3 py-4 md:px-6 md:py-6">
         <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-5 md:gap-6">
+
             {!canRead ? <div role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600">Seu usuário não possui permissão para acessar o feed.</div> : <>
                 <h1 className="sr-only">Mural do clube</h1>
                 <div className="flex min-w-0 items-center gap-3">
@@ -139,6 +144,7 @@ export default function Feed() {
                 {query.isLoading ? <div role="status" aria-label="Carregando feed" className="grid grid-cols-1 gap-5">{Array.from({ length: 5 }, (_, index) => <div key={index} className="h-80 animate-pulse rounded-3xl bg-j-gray-200" />)}</div>
                     : query.isError && !publications.length ? <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-6"><p className="text-sm text-red-500">{query.error.message}</p><Button className="mt-4" onClick={() => void query.refetch()}>Tentar novamente</Button></div>
                     : !publications.length ? <div role="status" className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center shadow-sm"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-j-yellow-300/30 text-j-blue-800"><Newspaper size={27} aria-hidden="true" /></span><h2 className="mt-4 text-lg font-extrabold text-j-blue-800">{type ? `Nenhum ${feedTypes[type].label.toLocaleLowerCase("pt-BR")} publicado ainda` : "Nenhuma publicação por aqui"}</h2><p className="mt-2 max-w-sm text-sm leading-relaxed text-j-gray-500">{type ? `As publicações de ${feedTypes[type].plural.toLocaleLowerCase("pt-BR")} aparecem aqui quando forem publicadas.` : "Avisos, eventos e serviços do clube aparecem aqui quando forem publicados."}</p></div>
+
                     : <div className="grid grid-cols-1 gap-5">{publications.map((publication) => {
                         const Icon = icons[publication.type];
                         const isEvent = publication.type === "EVENT";
@@ -157,7 +163,9 @@ export default function Feed() {
                                     openPublication(publication.id);
                                 }
                             }}
+
                             className={`flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md ${canDetail ? "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800" : ""}`}
+
                         >
                             {publication.primaryImage && <div className="relative aspect-[16/9] bg-j-gray-100"><Image src={getMediaImageUrl(publication.primaryImage.storageKey)} alt={publication.title} fill unoptimized sizes="(min-width: 800px) 768px, 100vw" className="object-cover" />{isEvent && <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-j-yellow-300 px-3 py-1.5 text-xs font-extrabold text-j-blue-900 shadow-md"><CalendarDays size={14} aria-hidden="true" />Próximo evento</span>}</div>}
                             <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
