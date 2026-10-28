@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { listPublicationCommentsAction } from '@/actions/publications/feed';
 import { useUserStore } from '@/stores/userStore';
 import { hasPermission } from '@/utils/permission/hasPermission';
-import { RelativeTime } from './RelativeTime';
+import { PublicationCommentAuthor } from './PublicationCommentAuthor';
 
 /** The current API has no comment likes; its stable newest-first order is the fallback. */
 export function PublicationCommentPreview({ publicationId, count, onOpen }: { publicationId: number; count: number; onOpen?: () => void }) {
@@ -33,10 +33,11 @@ export function PublicationCommentPreview({ publicationId, count, onOpen }: { pu
         {query.isError && <button type="button" onClick={() => void query.refetch()} className="min-h-11 text-sm font-semibold text-j-blue-700">Tentar carregar comentários novamente</button>}
         <div className="flex flex-col gap-3">
             {query.data?.content.map(comment => <div key={comment.id} className="rounded-xl bg-j-gray-100/60 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                    {comment.authorName && <span className="text-sm font-bold text-j-blue-800">{comment.authorName}</span>}
-                    <RelativeTime value={comment.createdAt} className="text-xs text-j-gray-500" />
-                </div>
+                <PublicationCommentAuthor
+                    name={comment.authorName}
+                    photo={comment.authorPhotoStorageKey ?? comment.authorProfilePhotoStorageKey ?? comment.authorPhotoUrl ?? comment.authorProfilePhotoUrl}
+                    createdAt={comment.createdAt}
+                />
                 <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm text-j-gray-700">{comment.text}</p>
             </div>)}
         </div>
