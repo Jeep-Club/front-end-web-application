@@ -3,6 +3,7 @@ import z from 'zod'
 export interface FetchWrapperProps<T> extends RequestInit {
     url: string;
     schema: z.ZodType<T>;
+    responseType?: "json" | "blob";
 }
 
 export interface FetchWrapperResponse<T> {
@@ -12,7 +13,7 @@ export interface FetchWrapperResponse<T> {
 
 export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<FetchWrapperResponse<T>> {
 
-    const { schema, headers, url, ...requestProps } = props;
+    const { schema, headers, url, responseType = "json", ...requestProps } = props;
 
 
     const requestHeaders = new Headers(headers);
@@ -25,6 +26,12 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
         headers: requestHeaders,
     });
     const status = response.status;
+    if (response.ok && responseType === "blob") {
+        const rawData = await response.blob();
+        const data = schema.safeParse(rawData);
+        if (!data.success) throw { zodError: data.error, rawData, status };
+        return { status, data: data.data };
+    }
     const responseText = await response.text();
     let rawData: unknown = responseText;
 

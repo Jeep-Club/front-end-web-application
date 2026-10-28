@@ -18,6 +18,7 @@ import { EditVehicleModal } from "./EditVehicleModal";
 import { CreateVehicleModal } from "./CreateVehicleModal";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 
 const PAGE_SIZE = 10;
 
