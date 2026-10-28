@@ -9,6 +9,7 @@ import {
     Wrench,
     type LucideIcon,
 } from "lucide-react";
+import { paymentPermissions } from "@/config/paymentPermissions";
 
 /**
  * Permissão de leitura que decide se o módulo existe para o usuário.
@@ -34,6 +35,14 @@ export interface AdminModuleConfig {
 }
 
 export const adminModules: AdminModuleConfig[] = [
+    {
+        key: "payments",
+        title: "Análise de pagamentos",
+        description: "Consulte comprovantes e confirme ou rejeite pagamentos.",
+        href: "/admin/pagamentos",
+        icon: WalletCards,
+        visibilityPermission: { module: paymentPermissions.module, action: paymentPermissions.read },
+    },
     {
         key: "publication-management",
         title: "Gestão de publicações",

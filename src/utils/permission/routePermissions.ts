@@ -1,3 +1,4 @@
+import { paymentPermissions } from "@/config/paymentPermissions";
 import { publicationManagementAccessActions } from "@/config/publicationManagement";
 import { verifyPermissions } from "@/services/token/permissions";
 
@@ -16,6 +17,7 @@ interface RoutePermissionRule {
 type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
 
 export const routePermissions: Record<string, RoutePermissionsConfig> = {
+    "/admin/pagamentos": [{ module: paymentPermissions.module, actions: [paymentPermissions.read] }],
     "/register": [
         {
             module: "IDENTITY",
