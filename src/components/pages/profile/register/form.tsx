@@ -4,6 +4,7 @@ import { Button } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { InputCPF,InputDate,InputEmail,InputFile,InputPassword,InputPhoneNumber,InputRegister } from "@/components/common/input/import";
 import { Select } from "@/components/common/select/";
+import Link from "next/link";
 import { Textarea } from "@/components/common/textarea/";
 import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
 import { registerAction } from '@/server/actions/auth/registerAction';
@@ -53,6 +54,10 @@ export default function FormRegister() {
                     <option value="abacate">Abacate</option>
                     <option value="morango">Morango</option>
                 </Select>
+                <p className="text-left text-xs leading-6 text-j-gray-600">
+                    Os dados de identificação e contato são utilizados para criar e administrar sua conta.
+                    Consulte os <Link href="/termos-de-uso" target="_blank" rel="noopener noreferrer" className="text-j-blue-700 underline underline-offset-4">Termos de Uso (abre em nova aba)</Link> e a <Link href="/politica-de-privacidade" target="_blank" rel="noopener noreferrer" className="text-j-blue-700 underline underline-offset-4">Política de Privacidade</Link>.
+                </p>
                 <Button
                     type="submit"
                     disabled={isLoading}
