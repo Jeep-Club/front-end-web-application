@@ -48,3 +48,6 @@ next-env.d.ts
 # Playwright local reports
 /test-results/
 /playwright-report/
+
+# Storybook
+debug-storybook.log*
