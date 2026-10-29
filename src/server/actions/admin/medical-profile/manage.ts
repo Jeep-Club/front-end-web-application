@@ -29,9 +29,17 @@ export async function deleteMedicalProfileAction(id: number) {
     return true;
 }
 export async function getMedicalOwnerAction(id: number) {
-    await allowed(medicalPermissions.read);
-    z.number().int().positive().parse(id);
-    return (await actionFetchWrapper({ url: `${base}/${id}/owner`, schema: z.object({ name: z.string().nullable(), responsibleName: z.string().nullable() }), cache: "no-store" })).data;
+    const profile = await getMedicalProfileAdminAction(id);
+    const canReadUsers = await haveActionPermission('IDENTITY', 'USER_READ');
+    const readName = async (userId: number) => (await actionFetchWrapper({
+        url: `identity/admin/users/${userId}`, schema: z.object({ name: z.string() }), cache: 'no-store',
+    })).data.name;
+    if (profile.ownerType === 'USER') {
+        return { name: canReadUsers ? await readName(profile.ownerId) : null, responsibleName: null };
+    }
+    // Administrative dependent reads require the responsible userId in the route.
+    // MedicalProfileResponse exposes only the dependent's ownerId, so retain the ID fallback.
+    return { name: null, responsibleName: null };
 }
 export async function exportMedicalProfilesAction(format: "CSV" | "PDF", profileId?: number, history = false) {
     await allowed(medicalPermissions.export);

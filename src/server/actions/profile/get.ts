@@ -20,6 +20,7 @@ export async function getUserProfileAction(): Promise<GetUserProfileResponse> {
         name: user.name,
         birthDate: user.birthDate,
         email: user.email ?? '',
+        membershipNumber: user.membershipNumber,
         cpf: user.cpf,
         rg: user.rg,
         phoneNumber: user.phoneNumber,

@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "jest",
     "test:production-errors": "node tests/productionServerActionErrors.mjs",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:e2e:contracts": "playwright test tests/e2e/controller-contracts.spec.mjs tests/e2e/http-contracts.spec.mjs --workers=1",
+    "seed:e2e:contracts": "node tests/e2e/seed-contract-audit.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -49,6 +51,7 @@
     "@types/react-scroll": "^1.8.10",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^30.4.2",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.11",

@@ -10,6 +10,8 @@ interface IdentityMeResponse {
     name: string;
     birthDate: string | null;
     email: string | null;
+    membershipNumber?: string | null;
+    profileCompletionPending?: boolean;
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;
