@@ -9,6 +9,8 @@ import { listDependentsAction } from "@/server/actions/dependents";
 import { useModal } from "@/providers/ModalProvider";
 import { maskCPF } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validate/validateCPF";
+import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
 
 export interface EventRegistrationFormData {
     vehicleId: number;
@@ -77,10 +79,17 @@ export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
             <form onSubmit={submit} className="flex flex-col gap-5 p-5 sm:p-6">
                 <fieldset>
                     <legend className="mb-2 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><CarFront size={17} />Seu veículo <span className="text-j-red-500">*</span></legend>
-                    {vehicles.length ? <select required value={vehicleId} onChange={(event) => setVehicleId(event.target.value)} className="min-h-12 w-full rounded-xl border border-j-gray-300 bg-j-white px-3 text-sm text-j-gray-700 focus:border-j-blue-700 focus:outline-none focus:ring-2 focus:ring-j-blue-100">
-                        <option value="">Selecione um veículo</option>
-                        {vehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.nickname || `${vehicle.model} • ${vehicle.plate}`}</option>)}
-                    </select> : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Você ainda não tem um veículo ativo cadastrado. <Link href="/profile" onClick={setClose} className="font-bold underline">Cadastrar veículo</Link></p>}
+                    {vehicles.length ? <div role="radiogroup" aria-label="Selecione seu veículo" className="grid gap-2 sm:grid-cols-2">
+                        {vehicles.map((vehicle) => {
+                            const photos = vehiclePhotoKeys(vehicle);
+                            const label = vehicle.nickname || `${vehicle.model} • ${vehicle.plate}`;
+                            const selected = vehicleId === String(vehicle.id);
+                            return <button key={vehicle.id} type="button" role="radio" aria-checked={selected} onClick={() => setVehicleId(String(vehicle.id))} className={`flex min-w-0 items-center gap-3 rounded-xl border p-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-800 ${selected ? "border-j-blue-700 bg-blue-50 ring-2 ring-j-blue-100" : "border-j-gray-200 hover:border-j-blue-300 hover:bg-j-gray-100"}`}>
+                                <VehiclePhotoCarousel photos={photos.length ? photos : undefined} cover={vehicle.photo} alt={`Foto do veículo ${label}`} className="h-16 w-20 shrink-0 rounded-lg" />
+                                <span className="min-w-0"><span className="block truncate text-sm font-extrabold text-j-blue-900">{label}</span><span className="mt-1 block truncate text-xs text-j-gray-500">{vehicle.plate} · {vehicle.modelYear}</span></span>
+                            </button>;
+                        })}
+                    </div> : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Você ainda não tem um veículo ativo cadastrado. <Link href="/profile" onClick={setClose} className="font-bold underline">Cadastrar veículo</Link></p>}
                 </fieldset>
 
                 <fieldset>
