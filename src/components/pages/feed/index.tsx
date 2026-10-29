@@ -22,6 +22,7 @@ import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
+import { FeedSidebar } from "./FeedSidebar";
 
 import Image from "next/image";
 
@@ -234,7 +235,8 @@ export default function Feed() {
 
     return (
         <div className="min-h-full w-full px-3 py-4 md:px-6 md:py-6">
-            <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-5 md:gap-6">
+            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+              <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                 {!canRead ? (
                     <div
                         role="status"
@@ -669,6 +671,8 @@ export default function Feed() {
                         )}
                     </>
                 )}
+              </div>
+              {canRead && <FeedSidebar />}
             </div>
         </div>
     );
