@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { CalendarDays, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
+import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { listPublicationFeedAction } from "@/actions/publications/feed";
 import { feedTypeSchema } from "@/schemas/publications/feed";
@@ -69,6 +69,29 @@ export default function Feed() {
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const openedDeepLinkRef = useRef<number | null>(null);
+    const filterNavRef = useRef<HTMLElement>(null);
+    const [showFilterHint, setShowFilterHint] = useState(false);
+
+    useEffect(() => {
+        const nav = filterNavRef.current;
+        if (!nav) return;
+
+        const updateHint = () => {
+            setShowFilterHint(
+                nav.scrollWidth > nav.clientWidth + 1 &&
+                    nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1
+            );
+        };
+
+        updateHint();
+        nav.addEventListener("scroll", updateHint, { passive: true });
+        const resizeObserver = new ResizeObserver(updateHint);
+        resizeObserver.observe(nav);
+        return () => {
+            nav.removeEventListener("scroll", updateHint);
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     const query = useInfiniteQuery({
         queryKey: ["publications", "feed", "infinite", type, permissions],
@@ -223,50 +246,73 @@ export default function Feed() {
                         <h1 className="sr-only">Mural do clube</h1>
 
                         <div className="flex min-w-0 items-center gap-3">
-                            <nav
-                                aria-label="Tipos de publicação"
-                                className="flex min-w-0 flex-1 gap-2 overflow-x-auto rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm"
-                            >
-                                <button
-                                    type="button"
-                                    onClick={() => filterType()}
-                                    aria-pressed={!type}
-                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
-                                        !type
-                                            ? "bg-j-blue-800 text-j-white shadow-sm"
-                                            : "text-j-gray-600 hover:bg-j-gray-100"
-                                    }`}
+                            <div className="relative min-w-0 flex-1">
+                                <nav
+                                    ref={filterNavRef}
+                                    aria-label="Tipos de publicação"
+                                    aria-describedby="feed-filter-swipe-hint"
+                                    className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                                 >
-                                    <Newspaper size={17} aria-hidden="true" />
-                                    Tudo
-                                </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => filterType()}
+                                        aria-pressed={!type}
+                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                            !type
+                                                ? "bg-j-blue-800 text-j-white shadow-sm"
+                                                : "text-j-gray-600 hover:bg-j-gray-100"
+                                        }`}
+                                    >
+                                        <Newspaper size={17} aria-hidden="true" />
+                                        Tudo
+                                    </button>
 
-                                {(["SERVICE", "NOTICE", "EVENT"] as const).map(
-                                    (key) => {
-                                        const Icon = icons[key];
+                                    {(["SERVICE", "NOTICE", "EVENT"] as const).map(
+                                        (key) => {
+                                            const Icon = icons[key];
 
-                                        return (
-                                            <button
-                                                key={key}
-                                                type="button"
-                                                onClick={() => filterType(key)}
-                                                aria-pressed={type === key}
-                                                className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
-                                                    type === key
-                                                        ? "bg-j-blue-800 text-j-white shadow-sm"
-                                                        : "text-j-gray-600 hover:bg-j-gray-100"
-                                                }`}
-                                            >
-                                                <Icon
-                                                    size={17}
-                                                    aria-hidden="true"
-                                                />
-                                                {feedTypes[key].plural}
-                                            </button>
-                                        );
-                                    }
+                                            return (
+                                                <button
+                                                    key={key}
+                                                    type="button"
+                                                    onClick={() => filterType(key)}
+                                                    aria-pressed={type === key}
+                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                                        type === key
+                                                            ? "bg-j-blue-800 text-j-white shadow-sm"
+                                                            : "text-j-gray-600 hover:bg-j-gray-100"
+                                                    }`}
+                                                >
+                                                    <Icon
+                                                        size={17}
+                                                        aria-hidden="true"
+                                                    />
+                                                    {feedTypes[key].plural}
+                                                </button>
+                                            );
+                                        }
+                                    )}
+                                </nav>
+
+                                <span
+                                    id="feed-filter-swipe-hint"
+                                    className="sr-only"
+                                >
+                                    Deslize horizontalmente para ver mais tipos
+                                    de publicação.
+                                </span>
+
+                                {showFilterHint && (
+                                    <div
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute inset-y-0 right-0 flex items-center rounded-r-2xl bg-gradient-to-l from-j-white via-j-white/95 to-transparent pl-5 pr-2 md:hidden"
+                                    >
+                                        <span className="inline-flex items-center gap-0.5 rounded-full bg-j-white/90 py-1 pl-2 pr-1 text-[10px] font-bold text-j-blue-700 shadow-sm">
+                                            Deslize <ChevronRight size={14} />
+                                        </span>
+                                    </div>
                                 )}
-                            </nav>
+                            </div>
 
                             {canCreateCurrentType && (
                                 <button
@@ -328,21 +374,25 @@ export default function Feed() {
 
                                 <h2 className="mt-4 text-lg font-extrabold text-j-blue-800">
                                     {type
-                                        ? `Nenhum ${feedTypes[
-                                              type
-                                          ].label.toLocaleLowerCase(
-                                              "pt-BR"
-                                          )} publicado ainda`
+                                        ? `Nenhum ${
+                                              feedTypes[
+                                                  type
+                                              ].label.toLocaleLowerCase(
+                                                  "pt-BR"
+                                              )
+                                          } publicado ainda`
                                         : "Nenhuma publicação por aqui"}
                                 </h2>
 
                                 <p className="mt-2 max-w-sm text-sm leading-relaxed text-j-gray-500">
                                     {type
-                                        ? `As publicações de ${feedTypes[
-                                              type
-                                          ].plural.toLocaleLowerCase(
-                                              "pt-BR"
-                                          )} aparecem aqui quando forem publicadas.`
+                                        ? `As publicações de ${
+                                              feedTypes[
+                                                  type
+                                              ].plural.toLocaleLowerCase(
+                                                  "pt-BR"
+                                              )
+                                          } aparecem aqui quando forem publicadas.`
                                         : "Avisos, eventos e serviços do clube aparecem aqui quando forem publicados."}
                                 </p>
                             </div>
