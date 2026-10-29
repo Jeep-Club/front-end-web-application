@@ -253,6 +253,7 @@ export default function Feed() {
                                     aria-describedby="feed-filter-swipe-hint"
                                     className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 
+
                                 >
                                 <button
                                     type="button"
@@ -263,6 +264,7 @@ export default function Feed() {
                                             ? "bg-j-blue-800 text-j-white shadow-sm"
                                             : "text-j-gray-600 hover:bg-j-gray-100"
                                     }`}
+
 
 
                                 >
@@ -325,6 +327,7 @@ export default function Feed() {
                                         </span>
                                     </div>
                                 )}
+
 
 
                                 </nav>
