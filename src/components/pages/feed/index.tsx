@@ -264,7 +264,7 @@ export default function Feed() {
                                         type="button"
                                         onClick={() => filterType()}
                                         aria-pressed={!type}
-                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                             !type
                                                 ? "bg-j-blue-800 text-j-white shadow-sm"
                                                 : "text-j-gray-600 hover:bg-j-gray-100"
@@ -284,7 +284,7 @@ export default function Feed() {
                                                     type="button"
                                                     onClick={() => filterType(key)}
                                                     aria-pressed={type === key}
-                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                                         type === key
                                                             ? "bg-j-blue-800 text-j-white shadow-sm"
                                                             : "text-j-gray-600 hover:bg-j-gray-100"

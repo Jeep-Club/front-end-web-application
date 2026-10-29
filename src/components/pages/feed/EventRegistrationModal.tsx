@@ -10,12 +10,10 @@ import { useModal } from "@/providers/ModalProvider";
 import { maskCPF } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validate/validateCPF";
 
-
-
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
 
-        
+
 export interface EventRegistrationFormData {
     vehicleId: number;
     dependentIds: number[];
