@@ -28,14 +28,28 @@ export async function getMyEventRegistrationAction(eventId: number) {
     }
 }
 
-export async function registerForEventAction(eventId: number) {
+export async function registerForEventAction(eventId: number, input: { vehicleId: number; dependentIds: number[] }) {
     const id = idSchema.parse(eventId);
+    const data = z.object({ vehicleId: idSchema, dependentIds: z.array(idSchema) }).parse(input);
     await requirePermission("EVENT_REGISTER");
     const result = await actionFetchWrapper({
         url: `events/${id}/registrations`,
         method: "POST",
-        body: JSON.stringify({ allocations: [], dependentIds: [] }),
+        body: JSON.stringify({ allocations: [{ vehicleId: data.vehicleId, member: true, dependentIds: data.dependentIds }], dependentIds: [] }),
         schema: eventRegistrationSchema,
+    });
+    return result.data;
+}
+
+export async function requestEventGuestAction(eventId: number, input: { vehicleId: number; cpf: string; guestName: string }) {
+    const id = idSchema.parse(eventId);
+    const data = z.object({ vehicleId: idSchema, cpf: z.string().regex(/^\d{11}$/), guestName: z.string().trim().min(2).max(150) }).parse(input);
+    await requirePermission("EVENT_GUEST_REQUEST_CREATE");
+    const result = await actionFetchWrapper({
+        url: `events/${id}/guest-requests`,
+        method: "POST",
+        body: JSON.stringify(data),
+        schema: z.object({ id: idSchema, eventId: idSchema, guestName: z.string(), status: z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"]) }),
     });
     return result.data;
 }

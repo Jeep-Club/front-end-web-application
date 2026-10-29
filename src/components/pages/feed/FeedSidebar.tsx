@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Users, Wrench } from "lucide-react";
+
+import { Avatar } from "@/components/common/avatar";
+
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
@@ -74,9 +77,29 @@ export function FeedSidebar() {
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
+                            const participants = event.details.participants ?? [];
+                            const participantCount = event.details.registrationCount ?? participants.length;
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}
-                                <div className="min-w-0"><p className="line-clamp-2 text-sm font-bold text-j-blue-900">{event.title}</p><p className="mt-1 text-xs text-j-gray-500">{dateLabel(event.details.startsAt)}</p></div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="line-clamp-2 text-sm font-bold text-j-blue-900">{event.title}</p>
+                                    <p className="mt-1 text-xs text-j-gray-500">{dateLabel(event.details.startsAt)}</p>
+                                    {participantCount > 0 && <div className="mt-2 flex items-center gap-2" aria-label={`${participantCount} ${participantCount === 1 ? "participante inscrito" : "participantes inscritos"}`}>
+                                        <div className="flex shrink-0 items-center" aria-hidden="true">
+                                            {participants.slice(0, 4).map((participant, index) => {
+                                                const photo = getMediaImageUrl(participant.profilePhotoStorageKey ?? participant.profilePhotoUrl ?? participant.photoStorageKey ?? participant.photoUrl);
+                                                const initials = participant.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => Array.from(part)[0]?.toLocaleUpperCase("pt-BR")).join("");
+                                                return <span key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className={index ? "-ml-2" : ""} title={participant.name}>
+                                                    {photo ? <Avatar src={photo} alt="" className="h-7 w-7 border-2 border-j-white bg-j-gray-200" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 text-[9px] font-bold text-j-white">{initials || "A"}</span>}
+                                                </span>;
+                                            })}
+                                        </div>
+                                        <p className="truncate text-[11px] text-j-gray-500">
+                                            {participants.length ? `${participants.slice(0, 2).map((participant) => participant.name.split(" ")[0]).join(", ")}${participantCount > 2 ? ` +${participantCount - Math.min(participants.length, 2)}` : ""}` : `${participantCount} ${participantCount === 1 ? "inscrito" : "inscritos"}`}
+                                        </p>
+                                    </div>}
+                                </div>
+
                             </li>;
                         })}
                     </ul>
