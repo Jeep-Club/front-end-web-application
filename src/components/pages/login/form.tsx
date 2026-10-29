@@ -50,7 +50,7 @@ export default function FormLogin() {
                         <InputPassword required autoComplete="current-password" />
                         <span
                             id="tour-login-forgot"
-                            className="text-xs md:text-sm text-j-transparent-white absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
+                            className="text-xs md:text-sm text-white/80 absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
                             onClick={() => router.push('/forgot-password')}
                         >
                             Esqueceu a senha?

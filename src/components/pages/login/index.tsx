@@ -58,16 +58,16 @@ export default function Login() {
                 <div className="w-full flex flex-col items-center justify-between">
                     <div className="w-full flex flex-col items-center">
                         <FormLogin />
-                        <p id="tour-login-join" className="px-5 pt-3 pb-2 text-center text-[10px] text-j-transparent-white md:text-xs">
+                        <p id="tour-login-join" className="px-5 pt-3 pb-2 text-center text-[10px] text-white/80 md:text-xs">
                             Não é sócio?{" "}
                             <Link
                                 href="/membership/apply"
-                                className="text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400"
+                                className="text-white underline decoration-white/60 underline-offset-2 transition-colors duration-300 hover:text-j-yellow-300 hover:decoration-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400"
                             >
                                 Quero ser sócio
                             </Link>
                         </p>
-                        <LegalLinks className="px-5 pt-2 text-j-gray-200" />
+                        <LegalLinks className="px-5 pt-2 text-white/75" />
                     </div>
                 </div>
             </div>
