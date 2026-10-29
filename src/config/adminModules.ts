@@ -1,11 +1,16 @@
+import { publicationManagementAccessActions } from "@/config/publicationManagement";
 import {
+    Newspaper,
     Car,
     KeyRound,
     UserRoundCheck,
     Users,
     WalletCards,
+    Wrench,
+    HeartPulse,
     type LucideIcon,
 } from "lucide-react";
+import { paymentPermissions } from "@/config/paymentPermissions";
 
 /**
  * Permissão de leitura que decide se o módulo existe para o usuário.
@@ -32,6 +37,34 @@ export interface AdminModuleConfig {
 
 export const adminModules: AdminModuleConfig[] = [
     {
+        key: "medical-profiles",
+        title: "Gestão de dados médicos",
+        description: "Consulte e gerencie os dados médicos de usuários e dependentes.",
+        href: "/admin/dados-medicos",
+        icon: HeartPulse,
+        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
+    },
+    {
+        key: "payments",
+        title: "Análise de pagamentos",
+        description: "Consulte comprovantes e confirme ou rejeite pagamentos.",
+        href: "/admin/pagamentos",
+        icon: WalletCards,
+        visibilityPermission: { module: paymentPermissions.module, action: paymentPermissions.read },
+    },
+    {
+        key: "publication-management",
+        title: "Gestão de publicações",
+        description: "Gerencie eventos, avisos e anúncios de serviços do clube.",
+        href: "/admin/gestao-publicacoes",
+        icon: Newspaper,
+        visibilityPermission: {
+            module: "PUBLICATIONS",
+            action: publicationManagementAccessActions[0],
+            alternativeActions: publicationManagementAccessActions.slice(1),
+        },
+    },
+    {
         key: "users",
         title: "Gestão de usuários",
         description:
@@ -56,7 +89,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "roles-permissions",
-        title: "Roles e permissões",
+        title: "Gestão de roles e permissões",
         description:
             "Defina o que cada administrador pode acessar e fazer.",
         href: "/admin/roles-permissoes",
@@ -81,7 +114,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "vehicles",
-        title: "Administração de veículos",
+        title: "Gestão de veículos",
         description:
             "Visualize, cadastre e gerencie os veículos de todos os membros.",
         href: "/admin/veiculos",
@@ -89,6 +122,18 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "VEHICLES",
             action: "VEHICLE_READ",
+        },
+    },
+    {
+        key: "tools",
+        title: "Gestão de ferramentas",
+        description:
+            "Visualize, cadastre e gerencie as ferramentas de todos os associados.",
+        href: "/admin/ferramentas",
+        icon: Wrench,
+        visibilityPermission: {
+            module: "TOOLS",
+            action: "TOOL_READ",
         },
     },
 ];

@@ -1,23 +1,24 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { ShieldX } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname,useRouter,useSearchParams } from "next/navigation";
+import { useCallback,useMemo,useState,useTransition } from "react";
 import toast from "react-hot-toast";
 
-import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
 import { PageHeader } from "@/components/common/page-header";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
+import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
 import { useUserStore } from "@/stores/userStore";
-import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
+import { unMaskCPF,unMaskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { isValidCPF } from "@/utils/validate";
-import { UserManagementView } from "./UserManagementView";
-import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 import { MembershipApplicationsTab } from "./MembershipApplicationsTab";
 import { NewAdminUserPage } from "./new";
+import { UserManagementView } from "./UserManagementView";
+import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 
 type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
 
@@ -263,6 +264,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         ]}
                     />
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
+                        <ManagementBackButton />
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
                         <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
                         <p className="mt-1 max-w-md text-sm text-j-gray-600">
@@ -273,7 +275,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
             </div>
         );
     }
-
 
     return (
         <div className="min-h-full w-full p-3 md:p-4">
@@ -287,7 +288,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     ]}
                 />
 
-                {(permissions.canReadUsers || canReadApplications) && <div className="flex gap-2 border-b border-j-gray-200">
+                {(permissions.canReadUsers || canReadApplications) && <div className="flex items-center gap-2 border-b border-j-gray-200">
+                    <ManagementBackButton />
                     {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
                     {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}
                 </div>}

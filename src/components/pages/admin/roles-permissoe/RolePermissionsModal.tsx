@@ -1,11 +1,11 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { X, ShieldCheck, LoaderCircle } from "lucide-react";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { listRolePermissionsAction } from "@/actions/authorization/list-role-permissions";
-import { getModuleLabel, getPermissionName } from "./permissionLabels";
+import { listRolePermissionsAction } from "@/server/actions/authorization/list-role-permissions";
+import { useQuery } from "@tanstack/react-query";
+import { LoaderCircle,ShieldCheck,X } from "lucide-react";
+import { getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
 
 interface RolePermissionsModalProps {
     roleId: number;
@@ -91,7 +91,7 @@ export function RolePermissionsModal({ roleId, roleName }: RolePermissionsModalP
                                                     {getPermissionName(permission)}
                                                 </p>
                                                 <p className="mt-0.5 text-sm text-j-gray-600">
-                                                    {permission.description}
+                                                    {getPermissionDescription(permission)}
                                                 </p>
                                             </div>
                                         </div>

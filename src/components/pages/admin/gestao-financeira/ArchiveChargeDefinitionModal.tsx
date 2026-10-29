@@ -1,12 +1,12 @@
 'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle,X } from "lucide-react";
 import toast from "react-hot-toast";
-import { AlertTriangle, X } from "lucide-react";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { archiveChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/archive";
+import { archiveChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/archive";
 
 interface ArchiveChargeDefinitionModalProps {
     chargeDefinitionId: number;
@@ -27,7 +27,7 @@ export function ArchiveChargeDefinitionModal({
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao arquivar definição de cobrança."),
+
     });
 
     return (

@@ -1,19 +1,17 @@
 'use client';
 
-import { useState } from "react";
-import { ListPagination } from "@/components/common/table/ListPagination";
-import { useQuery } from "@tanstack/react-query";
-import { Plus, Eye, Pencil, Trash2, CalendarDays, Palette } from "lucide-react";
 import { Button } from "@/components/common/button";
+import { ListPagination } from "@/components/common/table/ListPagination";
 import { useModal } from "@/providers/ModalProvider";
-import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
+import { listVehiclesMemberAction } from "@/server/actions/vehicles/list-member";
 import { maskPlate } from "@/utils/masks/maskPlate";
-import { IncludeVehicleModal } from "./IncludeVehicleModal";
+import { useQuery } from "@tanstack/react-query";
+import { CalendarDays,Eye,Palette,Pencil,Plus,Trash2 } from "lucide-react";
+import { useState } from "react";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
-import { ViewVehicleModal } from "./ViewVehicleModal";
+import { IncludeVehicleModal } from "./IncludeVehicleModal";
 import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
-
-
+import { ViewVehicleModal } from "./ViewVehicleModal";
 
 export function VehiclesTabContent() {
     const { setContent, setOpen } = useModal();
@@ -82,15 +80,16 @@ export function VehiclesTabContent() {
                                 className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md"
                             >
                                 <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
-                                    <VehiclePhotoCarousel photos={vehicle.photos?.length ? vehicle.photos : [vehicle.photo]} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
+                                    <VehiclePhotoCarousel vehicleId={vehicle.id} cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
                                     <div className="flex min-w-0 items-center justify-between gap-3">
                                         <div className="min-w-0 flex-1">
-                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800">
-                                                {vehicle.model}
-
+                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
+                                                {vehicle.nickname?.trim()
+                                                    ? <>{vehicle.nickname.trim()}<span className="text-sm font-medium"> - {vehicle.model}</span></>
+                                                    : vehicle.model}
                                             </h4>
                                         </div>
 

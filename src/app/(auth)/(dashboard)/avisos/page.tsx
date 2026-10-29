@@ -1,3 +1,5 @@
-export default function AvisosPage() {
-    return null;
+import { redirect } from "next/navigation";
+
+export default function Page() {
+    redirect("/feed?type=NOTICE");
 }

@@ -7,7 +7,8 @@ interface MemberDependent {
   relationshipType: MemberDependentRelationshipType;
   phoneNumber: string | null;
   userId: number;
-  status: 'ACTIVE' | 'DISABLED';
+  status: 'ACTIVE' | 'DISABLED' | 'INACTIVE' | 'ARCHIVED';
+  photoUrl?: string | null;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -19,6 +20,8 @@ interface CreateMemberDependentRequest {
   phoneNumber: string;
 }
 interface CreateMemberDependentFormData extends CreateMemberDependentRequest {
+  photo?: File[];
+  removePhoto?: boolean;
   medicalProfile: {
     bloodType: MedicalProfileBloodType;
     allergies: string;

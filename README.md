@@ -8,7 +8,7 @@ Construído com Next.js (App Router), React e TypeScript; utiliza Tailwind CSS, 
 
 Pré-requisitos:
 
-- Node.js compatível com as dependências instaladas. O Next.js 16.2.4 resolvido neste checkout declara Node `>=20.9.0`; isso é um requisito do pacote, **não uma versão oficial de suporte do projeto**. Não há versão de runtime fixada na configuração do projeto.
+- Node.js compatível com as dependências instaladas. O Next.js 16.4.3 declarado no package.json declara Node `>=20.9.0`; isso é um requisito do pacote, **não uma versão oficial de suporte do projeto**. Não há versão de runtime fixada na configuração do projeto.
 - npm, utilizado com o `package-lock.json` versionado. Não há versão de npm fixada no projeto.
 - Para o Storybook com Vite 8: Node `^20.19.0 || >=22.12.0`, conforme o requisito do Vite instalado. Isso não fixa uma versão oficial de runtime do projeto.
 - Para login e operações integradas: API de desenvolvimento acessível, credencial de acesso quando exigida pelo backend e usuário de teste com as permissões correspondentes. O servidor frontend, sozinho, não fornece esses serviços.
@@ -58,6 +58,7 @@ Execute na raiz, após instalar as dependências:
 | `node node_modules/typescript/bin/tsc --noEmit --incremental false` | Verificação de tipos sem emitir arquivos ou cache incremental; não há script `typecheck` |
 | `npm test -- --runInBand --coverage=false --cache=false` | Jest completo sem cobertura/cache de testes |
 | `npm test -- tests/useTour.spec.ts --runInBand --coverage=false --cache=false` | Exemplo de execução de uma suíte existente |
+| `npm run test:production-errors` | Contrato de erros de Server Actions em modo de produção; veja [o guia](deploy/server-action-errors.md) |
 | `npm run test:coverage -- --runInBand` | Jest com relatório de cobertura em `coverage/` |
 | `npm run test:browser` | Pilotos de Table/Storybook e login em Chromium, Firefox e WebKit, nas três larguras |
 | `npm run test:browser -- --project="firefox-*"` | Apenas Firefox nas três larguras; aceita também `chromium-*` e `webkit-*` |
@@ -77,6 +78,21 @@ A execução dos testes não instala navegadores automaticamente. O comando inst
 O Playwright inicia Next em `PLAYWRIGHT_APP_URL` e Storybook em `PLAYWRIGHT_STORYBOOK_URL`, definidos no `.env`; essas portas devem estar livres. Se houver conflito, altere as variáveis e reinicie a execução. A prontidão dos servidores, a navegação e a lista de origens permitidas usam esses mesmos valores, sem escolha automática de outra porta. Encerre outro `next dev` deste checkout antes de executar, pois o Next compartilha o diretório `.next`. O carregamento das fontes pode exigir rede. Não é necessário configurar credenciais de backend para esses pilotos. Veja o [guia de testes](docs/testing.md#testes-de-navegador) para escopo, capturas e limitações.
 
 As origens locais `APP_URL`, `STORYBOOK_URL`, `PLAYWRIGHT_APP_URL`, `PLAYWRIGHT_STORYBOOK_URL` e `PLAYWRIGHT_API_URL` são documentadas no `.env.example`. Use somente origens HTTP locais, sem caminhos; nos testes, mantenha o destino da API isolado e sem serviço. Rotas como `/login` e `/iframe.html` permanecem relativas.
+
+## Análise administrativa de pagamentos
+
+Acesse **Painel administrativo → Análise de pagamentos** (`/admin/pagamentos`).
+O backend configurado em `API_URL` deve expor `/billing/member-payments`.
+
+- `BILLING_PAYMENT_READ`: libera o módulo, a listagem, os detalhes e os comprovantes.
+- `BILLING_PAYMENT_CONFIRM` e `BILLING_PAYMENT_REJECT`: liberam cada decisão separadamente, junto à leitura.
+- A listagem usa o filtro de status disponível na API, com paginação de 10, 20 ou 50 itens e parâmetros preservados na URL.
+- Apenas pagamentos `PENDING_VALIDATION` podem ser decididos. Rejeitar exige motivo de até 500 caracteres.
+- Comprovantes PDF, JPEG, PNG e WebP são consultados pela rota autenticada `/api/payments/{id}/receipt`.
+
+Para validar manualmente, compare um usuário somente com leitura e outro com permissões de decisão; filtre pagamentos pendentes, abra um comprovante e confirme ou rejeite. Confira o novo status nos detalhes e na listagem. Uma decisão concorrente deve exibir o erro da API e recarregar o estado atual.
+
+Testes do fluxo: `npm test -- --runInBand --coverage=false payment`.
 
 ## Documentação
 

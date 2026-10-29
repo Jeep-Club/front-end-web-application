@@ -16,8 +16,8 @@ const nextConfig: NextConfig = {
 
   experimental: {
     serverActions: {
-      // O limite de arquivo continua em 5 MiB; a margem cobre o envelope multipart do Server Action.
-      bodySizeLimit: "8mb",
+      // O limite de arquivo continua em 5 MiB; cinco arquivos mais o envelope multipart cabem em 30 MiB.
+      bodySizeLimit: "30mb",
       allowedOrigins: [
         ...localOrigins,
         "*.app.github.dev",

@@ -1,19 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
-import { Check, CheckCheck, ListChecks, LoaderCircle, Search, Save, X, XCircle } from 'lucide-react';
-import { twMerge } from 'tailwind-merge';
 import { ButtonIcon } from '@/components/common/button';
 import { useModal } from '@/providers/ModalProvider';
+import { assignPermissionToRoleAction } from '@/server/actions/authorization/assign-role-permission';
+import { listPermissionsAction } from '@/server/actions/authorization/list-permissions';
+import { listRolePermissionsAction } from '@/server/actions/authorization/list-role-permissions';
+import { revokePermissionFromRoleAction } from '@/server/actions/authorization/revoke-role-permission';
 import { useUserStore } from '@/stores/userStore';
 import { hasPermission } from '@/utils/permission/hasPermission';
-import { listPermissionsAction } from '@/actions/authorization/list-permissions';
-import { listRolePermissionsAction } from '@/actions/authorization/list-role-permissions';
-import { assignPermissionToRoleAction } from '@/actions/authorization/assign-role-permission';
-import { revokePermissionFromRoleAction } from '@/actions/authorization/revoke-role-permission';
-import { getModuleLabel, getPermissionName } from './permissionLabels';
+import { useQuery,useQueryClient } from '@tanstack/react-query';
+import { Check,CheckCheck,ListChecks,LoaderCircle,Save,Search,X,XCircle } from 'lucide-react';
+import { useMemo,useState } from 'react';
+import toast from 'react-hot-toast';
+import { twMerge } from 'tailwind-merge';
+import { getModuleLabel,getPermissionDescription,getPermissionName } from './permissionLabels';
 
 interface Props { roleId: number; roleName: string; roleKind: RoleKind }
 
@@ -25,7 +25,7 @@ function PermissionRow({ permission, checked, disabled, isSaving, onToggle }: {
     <span className={twMerge('mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors', checked ? 'border-j-blue-800 bg-j-blue-800 text-j-yellow-300' : 'border-j-gray-300 bg-j-white text-transparent')}>
       {isSaving ? <LoaderCircle size={12} className="animate-spin text-j-gray-400" /> : <Check size={14} strokeWidth={3} />}
     </span>
-    <span className="min-w-0"><span className="block text-sm font-black text-j-blue-800">{getPermissionName(permission)}</span><span className="mt-0.5 block text-xs text-j-gray-600">{permission.description}</span></span>
+    <span className="min-w-0"><span className="block text-sm font-black text-j-blue-800">{getPermissionName(permission)}</span><span className="mt-0.5 block text-xs text-j-gray-600">{getPermissionDescription(permission)}</span></span>
   </label>;
 }
 
@@ -55,7 +55,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return (catalog ?? []).filter((permission) => (moduleFilter === 'all' || permission.module === moduleFilter)
-      && (!query || `${getPermissionName(permission)} ${permission.description} ${getModuleLabel(permission.module)}`.toLocaleLowerCase().includes(query)));
+      && (!query || `${getPermissionName(permission)} ${getPermissionDescription(permission)} ${getModuleLabel(permission.module)}`.toLocaleLowerCase().includes(query)));
   }, [catalog, moduleFilter, search]);
   const grouped = useMemo(() => filtered.reduce<Record<string, PermissionResponse[]>>((groups, permission) => {
     (groups[permission.module] ??= []).push(permission);

@@ -1,3 +1,4 @@
+import { birthDateSchema } from "@/schemas/auth/user/birthDate";
 import z from "zod";
 
 export const editPersonalDataFormSchema =
@@ -14,19 +15,7 @@ export const editPersonalDataFormSchema =
                     "O nome deve ter no máximo 150 caracteres",
             }),
 
-        birthDate: z
-            .string()
-            .refine(
-                (value) =>
-                    value === "" ||
-                    !Number.isNaN(
-                        Date.parse(value),
-                    ),
-                {
-                    message:
-                        "Data de nascimento inválida",
-                },
-            ),
+        birthDate: birthDateSchema.or(z.literal("")),
 
         email: z
             .string()

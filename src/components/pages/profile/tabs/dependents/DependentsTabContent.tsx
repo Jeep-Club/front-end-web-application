@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { ListPagination } from '@/components/common/table/ListPagination';
-import { useQuery } from '@tanstack/react-query';
-import { Eye,Pencil,Plus,RefreshCw,Trash2,UserRound } from 'lucide-react';
-import { listDependentsAction } from '@/actions/dependents';
 import { Button } from '@/components/common/button';
+import { ListPagination } from '@/components/common/table/ListPagination';
 import { useModal } from '@/providers/ModalProvider';
+import { listDependentsAction } from '@/server/actions/dependents';
+import { maskCPF,maskPhoneNumber } from '@/utils/masks';
+import { useQuery } from '@tanstack/react-query';
+import { Eye,Pencil,Plus,RefreshCw,Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { CreateDependentModal } from './CreateDependentModal';
 import { DeleteDependentModal } from './DeleteDependentModal';
+import { DependentPhoto } from './DependentPhoto';
 import { ViewDependentModal } from './ViewDependentModal';
-import { maskCPF, maskPhoneNumber } from '@/utils/masks';
 
 const RELATIONSHIP_LABELS:Record<MemberDependentRelationshipType,string>={
     CHILD:'Filho(a)',GUEST:'Convidado(a)',OTHER:'Outro',PARENT:'Pai/Mãe',SIBLING:'Irmão/Irmã',SPOUSE:'Cônjuge',
@@ -38,7 +39,7 @@ export function DependentsTabContent(){
                 <span>Dependente</span><span className="text-center">CPF</span><span className="text-center">Telefone</span><span className="text-center">Parentesco</span><span className="text-center">Ações</span>
             </div>
             <div className="divide-y divide-j-gray-100">{visibleDependents.map(dependent=><div key={dependent.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.4fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(110px,0.7fr)_280px] xl:items-center xl:gap-3">
-                <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300"><UserRound size={19}/></span><div className="min-w-0"><p className="truncate font-extrabold text-j-blue-800">{dependent.name}</p><p className="text-xs text-j-gray-400 xl:hidden">{RELATIONSHIP_LABELS[dependent.relationshipType]}</p></div></div>
+                <div className="flex min-w-0 items-center gap-3"><DependentPhoto dependent={dependent} /><div className="min-w-0"><p className="truncate font-extrabold text-j-blue-800">{dependent.name}</p><p className="text-xs text-j-gray-400 xl:hidden">{RELATIONSHIP_LABELS[dependent.relationshipType]}</p></div></div>
                 <p className="text-sm text-j-gray-600 xl:text-center"><span className="mr-1 text-xs font-bold xl:hidden">CPF:</span>{maskCPF(dependent.cpf)}</p>
                 <p className="text-sm text-j-gray-600 xl:text-center"><span className="mr-1 text-xs font-bold xl:hidden">Telefone:</span>{dependent.phoneNumber ? maskPhoneNumber(dependent.phoneNumber) : '—'}</p>
                 <span className="hidden w-fit justify-self-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-j-blue-700 xl:inline-flex">{RELATIONSHIP_LABELS[dependent.relationshipType]}</span>

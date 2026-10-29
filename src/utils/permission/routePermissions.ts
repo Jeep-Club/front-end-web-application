@@ -1,5 +1,6 @@
-import { permissionModuleSchema } from "@/schemas/auth/permission/permissionModule";
-import { verifyWithSchema } from "@/services/token/verify";
+import { paymentPermissions } from "@/config/paymentPermissions";
+import { publicationManagementAccessActions } from "@/config/publicationManagement";
+import { verifyPermissions } from "@/services/token/permissions";
 
 /*
  * "all" (padrão): o usuário precisa satisfazer TODAS as entradas de
@@ -16,6 +17,7 @@ interface RoutePermissionRule {
 type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
 
 export const routePermissions: Record<string, RoutePermissionsConfig> = {
+    "/admin/pagamentos": [{ module: paymentPermissions.module, actions: [paymentPermissions.read] }],
     "/register": [
         {
             module: "IDENTITY",
@@ -30,6 +32,9 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/profile": [],
     "/eventos": [],
     "/avisos": [],
+    "/tutoriais": [],
+    "/servicos": [],
+    "/agenda": [],
     "/financeiro": [],
 
 
@@ -72,10 +77,36 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         },
     ],
 
+    "/admin/gestao-publicacoes": {
+        match: "any",
+        permissions: publicationManagementAccessActions.map((action) => ({
+            module: "PUBLICATIONS",
+            actions: [action],
+        })),
+    },
+    "/admin/gestao-eventos": [
+        {
+            module: "PUBLICATIONS",
+            actions: ["EVENT_READ_ADMIN"],
+        },
+    ],
     "/admin/veiculos": [
         {
             module: "VEHICLES",
             actions: ["VEHICLE_READ"],
+        },
+    ],
+    "/admin/ferramentas": [
+        {
+            module: "TOOLS",
+            actions: ["TOOL_READ"],
+        },
+    ],
+    "/admin/dados-medicos": [{ module: "HEALTH", actions: ["MEDICAL_PROFILE_READ"] }],
+    "/admin/tools": [
+        {
+            module: "TOOLS",
+            actions: ["TOOL_READ"],
         },
     ],
 };
@@ -150,10 +181,7 @@ export const haveRoutePermissions = async ({
     onCatch,
 }: HaveRoutePermissionsProps): Promise<boolean> => {
     const permissions =
-        await verifyWithSchema<PermissionModule[]>(
-            permissionsToken,
-            permissionModuleSchema.array(),
-        ).catch(() => {
+        await verifyPermissions(permissionsToken).catch(() => {
             throw onCatch();
         });
 

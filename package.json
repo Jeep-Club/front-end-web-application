@@ -13,7 +13,8 @@
     "test:browser:report": "playwright show-report",
     "test:a11y": "playwright test --project=a11y-*",
     "storybook": "node scripts/local-server.mjs storybook",
-    "build-storybook": "storybook build --disable-telemetry"
+    "build-storybook": "storybook build --disable-telemetry",
+    "test:production-errors": "node tests/productionServerActionErrors.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -28,9 +29,9 @@
     "js-cookie": "^3.0.5",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.14.0",
-    "next": "^16.2.3",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.75.0",
     "react-hot-toast": "^2.6.0",
@@ -39,7 +40,11 @@
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.12",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/react": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "htmlparser2": "^10.1.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.1",
@@ -49,11 +54,11 @@
     "@tailwindcss/postcss": "^4",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "@types/react-scroll": "^1.8.10",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "eslint-config-next": "16.4.3",
     "jest": "^30.4.2",
     "storybook": "10.6.3",
     "tailwindcss": "^4",

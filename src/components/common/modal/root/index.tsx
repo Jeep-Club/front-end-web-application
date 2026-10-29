@@ -37,6 +37,7 @@ export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true, 
         >
             <div
                 ref={ref}
+                data-modal-content
                 className={twMerge("flex w-full max-w-3xl justify-center", contentClassName)}
                 onClick={ref ? undefined : (event) => event.stopPropagation()}
             >

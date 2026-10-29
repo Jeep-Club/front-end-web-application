@@ -1,21 +1,21 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useMutation } from '@tanstack/react-query';
-import loginAction from '@/actions/auth/login';
-import toast from "react-hot-toast";
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
-import { loginRequestSchema, LoginRequestType } from "@/schemas/auth/login/loginRequest";
-import { AlertCircle, ArrowRight, LoaderCircle } from "lucide-react";
-import InputPassword from "@/components/common/input/input-password";
+import { Form } from "@/components/common/form";
 import InputCPF from "@/components/common/input/input-cpf";
+import InputPassword from "@/components/common/input/input-password";
+import { loginRequestSchema,LoginRequestType } from "@/schemas/auth/login/loginRequest";
+import loginAction from '@/server/actions/auth/login';
+import { useMutation } from '@tanstack/react-query';
+import { AlertCircle,ArrowRight,LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function FormLogin() {
     const router = useRouter();
 
-    const mutation = useMutation({ 
-        mutationFn: loginAction, 
+    const mutation = useMutation({
+        mutationFn: loginAction,
         onSuccess: (result) => {
             if ("passwordChangeToken" in result || result.status === "PASSWORD_CHANGE_REQUIRED" || result.status === "FIRST_ACCESS_PASSWORD_CHANGE_REQUIRED") {
                 router.push("/first-access/password");
@@ -23,8 +23,8 @@ export default function FormLogin() {
             }
             router.push("/feed");
             toast.success('Login realizado com sucesso!');
-        }, 
-        onError: (error) => toast.error(error.message || 'CPF ou senha inválidos. Confira os dados e tente novamente.'),
+        },
+
     });
 
     const isLoading = mutation.isPending;
@@ -37,6 +37,7 @@ export default function FormLogin() {
         <div className="w-full flex flex-col items-center justify-center gap-5 px-5">
             <Form<LoginRequestType>
                 schema={loginRequestSchema}
+                className="gap-3"
                 onSubmit={handleSubmit}
                 onError={() => toast.error('Confira o CPF e a senha informados.')}
             >
@@ -64,9 +65,9 @@ export default function FormLogin() {
                     </div>
                 )}
 
-                <Button 
+                <Button
                     id="tour-login-submit"
-                    type="submit" 
+                    type="submit"
                     disabled={isLoading}
                     className="w-full"
                 >

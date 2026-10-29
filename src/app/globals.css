@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "driver.js/dist/driver.css";
 
+/* Keep scrollbar edges straight only while a modal has vertical overflow. */
+[data-modal-scroll] {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
 :root {
   /* Colors */
   --transparent-black: rgba(0, 0, 0, 0.48);
@@ -73,7 +79,11 @@
 
 /* Theme ****************************** */
 /* Apenas um exemplo de variaveis reutilizaveis */
-:root/*[data-theme="light"]*/ {
+:root {
+  color-scheme: light;
+  --surface: #ffffff;
+  --accent-text: #061e50;
+  --accent-surface: #edf3ff;
    /* Background */
   --background: var(--white);
   --background-secondary: var(--gray-100);
@@ -169,6 +179,7 @@
   --color-j-yellow-600: var(--yellow-600);
   --color-j-yellow-700: var(--yellow-700);
 
+  --color-j-blue-50: var(--accent-surface);
   --color-j-blue-100: var(--blue-100);
   --color-j-blue-200: var(--blue-200);
   --color-j-blue-300: var(--blue-300);
@@ -406,3 +417,54 @@ body {
     transform-origin: center;
   }
 }
+
+
+/* Application appearance. Brand backgrounds and literal white remain stable. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #111c2e;
+  --background: #0b1220;
+  --background-secondary: #182438;
+  --background-tertiary: #26354c;
+  --gray-100: #182438;
+  --gray-200: #334155;
+  --gray-300: #52627a;
+  --gray-400: #9baac0;
+  --gray-500: #bac7d9;
+  --gray-600: #d9e2ef;
+  --gray-700: #f1f5f9;
+  --text-primary: #f1f5f9;
+  --text-secondary: #d9e2ef;
+  --text-tertiary: #bac7d9;
+  --text-disabled: #9baac0;
+  --accent-text: #a8ccff;
+  --accent-surface: #1b3154;
+  --button-primary-text: #061e50;
+  --button-primary-text-hover: #061e50;
+  --button-outline-border: #9baac0;
+  --button-outline-text: #d9e2ef;
+  --button-text-disabled: #bac7d9;
+  --input-bg: #182438;
+  --input-bg-focus: #26354c;
+  --input-bg-disabled: #26354c;
+  --input-text: #f1f5f9;
+  --input-text-focus: #f1f5f9;
+  --input-text-disabled: #9baac0;
+  --input-border: #52627a;
+  --input-border-hover: #9baac0;
+}
+
+@layer utilities {
+  .bg-j-white { background-color: var(--surface); }
+  .bg-j-white\/95 { background-color: color-mix(in srgb, var(--surface) 95%, transparent); }
+  .bg-j-white\/90 { background-color: color-mix(in srgb, var(--surface) 90%, transparent); }
+  .bg-j-white\/80 { background-color: color-mix(in srgb, var(--surface) 80%, transparent); }
+  .text-j-blue-800, .text-j-blue-700, .text-j-blue-900 { color: var(--accent-text); }
+  .bg-j-yellow-300, .bg-button-primary-bg { --accent-text: #061e50; }
+}
+
+:root[data-theme="dark"] .driver-popover {
+  background-color: var(--surface) !important;
+  color: var(--text-primary) !important;
+}
+:root[data-theme="dark"] .driver-popover-title { color: var(--accent-text) !important; }

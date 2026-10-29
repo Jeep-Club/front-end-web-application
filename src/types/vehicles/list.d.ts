@@ -9,6 +9,8 @@ interface VehicleListItem {
     plate: string;
     photo: string | null;
     photos?: string[];
+    images?: { storageKey: string; position: number; primary: boolean }[];
+    galleryRevision?: number;
     modelYear: number;
     model: string;
     color: string;

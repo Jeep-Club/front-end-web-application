@@ -30,6 +30,7 @@ export function Dropzone({ className, dStyle = true, children, inputId, inputLab
         <input {...getInputProps({ id: inputId, style: { display: "none" } })} />
         <div 
             {...getRootProps({ role: "button", "aria-label": inputLabel })}
+            data-file-dropzone
             className={twMerge(
                 dStyle && 
                 `

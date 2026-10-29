@@ -1,34 +1,35 @@
 'use client';
+import { ActionError } from '@/utils/http/ActionError';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { X, Wrench, LoaderCircle } from "lucide-react";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { InputFile } from '@/components/common/input/file';
 import { InputRegister } from "@/components/common/input/input-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
 import { createToolFormSchema } from "@/schemas/tools/create";
-import { createToolAction } from "@/actions/tools/create";
 import { editToolFormSchema } from "@/schemas/tools/update";
-import { updateToolAction } from "@/actions/tools/update";
-import { getToolDetailAction } from "@/actions/tools/detail";
-import { useRef } from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
-import { InputFile } from '@/components/common/input/file';
-import { uploadImageAction } from '@/actions/media/upload-image';
-import { updateToolPhotoAction } from '@/actions/tools/photo';
+import { uploadImageAction } from '@/server/actions/media/upload-image';
+import { createToolAction } from "@/server/actions/tools/create";
+import { getToolDetailAction } from "@/server/actions/tools/detail";
+import { updateToolPhotoAction } from '@/server/actions/tools/photo';
+import { updateToolAction } from "@/server/actions/tools/update";
 import { getMediaImageUrl } from '@/utils/media/imageUrl';
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { LoaderCircle,Wrench,X } from "lucide-react";
+import { useRef } from 'react';
+import { useFormContext,useWatch } from 'react-hook-form';
+import toast from "react-hot-toast";
 
 function ToolPhotoField({ storageKey }: { storageKey?: string | null }) {
     const { control, setValue } = useFormContext<CreateToolFormData>();
     const removed = useWatch({ control, name: 'removePhoto' });
     const files = useWatch({ control, name: 'photo' });
     return <section className="w-full rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3">
-        {storageKey && !removed && !files?.length && <div className="mb-3">
+        {storageKey && !removed && !files?.length && <div className="relative mb-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={getMediaImageUrl(storageKey)} alt="Foto atual da ferramenta" className="mb-2 aspect-video w-full rounded-lg object-cover" />
-            <button type="button" onClick={() => setValue('removePhoto', true)} className="text-xs font-semibold text-red-600">Remover foto atual</button>
+            <button type="button" aria-label="Remover foto atual da ferramenta" title="Remover foto atual" onClick={() => setValue('removePhoto', true, { shouldDirty: true, shouldValidate: true })} className="absolute right-2 top-2 z-10 flex size-9 items-center justify-center rounded-full bg-white text-red-600 shadow-md transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"><X size={20} aria-hidden="true" /></button>
         </div>}
         {removed && <div className="mb-2 flex items-center justify-between gap-2 text-xs text-j-gray-600"><span>A foto será removida ao salvar.</span><button type="button" onClick={() => setValue('removePhoto', false)} className="font-bold text-j-blue-800">Desfazer</button></div>}
         <InputFile.Image name="photo" label="Foto da ferramenta (opcional)" maxFiles={1} maxSizeMB={5} cropShape="landscape" className="[&_label]:font-semibold [&_label]:!text-j-gray-700 [&_p]:!text-j-gray-600 [&_svg]:!text-j-gray-400 [&>div]:!border-j-gray-200 [&>div]:!bg-j-white [&>div]:py-4" />
@@ -71,7 +72,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
                 try {
                     return await updateToolPhotoAction(saved.id, storageKey ?? null);
                 } catch (error) {
-                    throw new Error(`Os dados da ferramenta foram salvos, mas a foto não. Tente salvar novamente. ${error instanceof Error ? error.message : ''}`);
+                    throw new ActionError('Os dados da ferramenta foram salvos, mas a foto não. Tente salvar novamente.', { cause: error });
                 }
             }
             return saved;
@@ -82,7 +83,7 @@ export function IncludeToolModal({ toolId }: IncludeToolModalProps) {
             queryClient.invalidateQueries({ queryKey: ["tools", "detail"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || (isEditMode ? "Erro ao editar ferramenta." : "Erro ao cadastrar ferramenta.")),
+
     });
 
     return (

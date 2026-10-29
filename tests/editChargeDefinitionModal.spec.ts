@@ -6,19 +6,23 @@ import { Form } from "@/components/common/form";
 import { useModal } from "@/providers/ModalProvider";
 import { ModalRoot } from "@/components/common/modal/root";
 import { EditChargeDefinitionModal } from "@/components/pages/admin/gestao-financeira/EditChargeDefinitionModal";
-import { updateChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/update";
-import { createChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/create";
+import { updateChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/update";
+import { createChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/create";
 import { CreateChargeDefinitionModal } from "@/components/pages/admin/gestao-financeira/CreateChargeDefinitionModal";
 import toast from "react-hot-toast";
+import { mutationErrorHandler } from "@/providers/QueryProvider/handlers/mutation/onError";
 
 jest.mock("@tanstack/react-query", () => ({ useQuery: jest.fn(), useMutation: jest.fn(), useQueryClient: jest.fn() }));
 jest.mock("@/providers/ModalProvider", () => ({ useModal: jest.fn() }));
 jest.mock("@/components/common/form", () => ({ Form: () => null }));
 jest.mock("@/components/pages/admin/gestao-financeira/ChargeDefinitionFormFields", () => ({ ChargeDefinitionFormFields: () => null }));
-jest.mock("@/actions/billing/chargeDefinitions/get", () => ({ getChargeDefinitionAction: jest.fn() }));
-jest.mock("@/actions/billing/chargeDefinitions/update", () => ({ updateChargeDefinitionAction: jest.fn() }));
-jest.mock("@/actions/billing/chargeDefinitions/create", () => ({ createChargeDefinitionAction: jest.fn() }));
-jest.mock("react-hot-toast", () => ({ __esModule: true, default: { success: jest.fn(), error: jest.fn() } }));
+jest.mock("@/server/actions/billing/chargeDefinitions/get", () => ({ getChargeDefinitionAction: jest.fn() }));
+jest.mock("@/server/actions/billing/chargeDefinitions/update", () => ({ updateChargeDefinitionAction: jest.fn() }));
+jest.mock("@/server/actions/billing/chargeDefinitions/create", () => ({ createChargeDefinitionAction: jest.fn() }));
+jest.mock("react-hot-toast", () => {
+    const toast = { success: jest.fn(), error: jest.fn() };
+    return { __esModule: true, default: toast, toast };
+});
 
 const close = jest.fn();
 const refetch = jest.fn();
@@ -143,7 +147,7 @@ describe.each([
     ["creation", () => CreateChargeDefinitionModal(), jest.mocked(createChargeDefinitionAction)],
     ["editing", () => EditChargeDefinitionModal({ chargeDefinitionId: 7 }), jest.mocked(updateChargeDefinitionAction)],
 ] as const)("definition metrics after %s", (_label, renderModal, action) => {
-    const { QueryClient } = jest.requireActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+    const { QueryClient, MutationCache } = jest.requireActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
     const metricKey = ["billing", "dashboard", "Definições cadastradas"];
     const definitionKeys = [
         ["billing", "charge-definitions", { page: "0", size: "10" }],
@@ -156,7 +160,8 @@ describe.each([
     ];
 
     it.each([true, false])("invalidates affected consumers only on success (success=%s)", async (success) => {
-        const client = new QueryClient({ defaultOptions: {
+        // Match the production provider: HTTP failures are rendered by the shared cache handler.
+        const client = new QueryClient({ mutationCache: new MutationCache({ onError: mutationErrorHandler }), defaultOptions: {
             queries: { staleTime: 30_000, gcTime: Infinity },
             mutations: { retry: false, gcTime: Infinity },
         } });

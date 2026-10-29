@@ -1,30 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect,useState } from "react";
 
-import { Eye, KeyRound, ListChecks, Lock, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Eye,KeyRound,ListChecks,Lock,Pencil,Plus,Power,PowerOff,ShieldCheck,Trash2,Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/common/button";
+import { PageHeader } from "@/components/common/page-header";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
+import { getRolesTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { useModal } from "@/providers/ModalProvider";
+import { listPermissionsAction } from "@/server/actions/authorization/list-permissions";
+import { listRolesAction } from "@/server/actions/authorization/list-roles";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { listRolesAction } from "@/actions/authorization/list-roles";
-import { listPermissionsAction } from "@/actions/authorization/list-permissions";
 import { CreateRoleModal } from "./CreateRoleModal";
-import { ViewRoleModal } from "./ViewRoleModal";
-import { EditRoleModal } from "./EditRoleModal";
-import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
 import { DeleteRoleModal } from "./DeleteRoleModal";
-import { RolePermissionsModal } from "./RolePermissionsModal";
+import { EditRoleModal } from "./EditRoleModal";
 import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
-import { getModuleLabel, getPermissionName } from "./permissionLabels";
+import { getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
+import { RolePermissionsModal } from "./RolePermissionsModal";
+import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
 import { UserRoleAssignmentsTab } from "./UserRoleAssignmentsTab";
-import { usePageTour } from "@/hooks/useTour";
-import { getRolesTourSteps } from "@/config/tourSteps";
-import TourHelpButton from "@/components/common/tour/TourHelpButton";
+import { ViewRoleModal } from "./ViewRoleModal";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
@@ -183,7 +184,7 @@ export default function RolesPermissions() {
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
                     id="tour-roles-header"
-                    title="Cargos e permissões"
+                    title="Gestão de roles e permissões"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
@@ -228,11 +229,11 @@ export default function RolesPermissions() {
                     <div className="flex w-full flex-col gap-4">
                         <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                                <div>
-                                    <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
-                                    <p className="text-sm text-j-gray-600">
-                                        {isLoading ? "Carregando..." : `${roleCounts[roleStatusFilter]} ${roleStatusFilter === "DELETED" ? "excluído(s)" : "cargo(s)"}`}
-                                    </p>
+                                <div className="flex items-center gap-3">
+                                    <ManagementBackButton />
+                                    <div>
+                                        <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
+                                    </div>
                                 </div>
 
                                 {canCreateRole && (
@@ -330,7 +331,7 @@ export default function RolesPermissions() {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleOpenViewRole(role.id)}
-                                                    className="flex items-center gap-2.5 rounded-lg bg-blue-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
+                                                    className="flex items-center gap-2.5 rounded-lg bg-blue-100/10 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
                                                 >
                                                     <Eye size={16} className="text-j-blue-800" />
                                                     Visualizar
@@ -349,7 +350,7 @@ export default function RolesPermissions() {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenManageRolePermissions(role)}
-                                                        className="flex items-center gap-2.5 rounded-lg bg-purple-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-purple-100"
+                                                        className="flex items-center gap-2.5 rounded-lg bg-purple-100/10 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-purple-100"
                                                     >
                                                         <ListChecks size={16} className="text-purple-600" />
                                                         Gerenciar permissões
@@ -393,11 +394,14 @@ export default function RolesPermissions() {
                 {activeTab === "permissions" && isTabVisible("permissions") && (
                     <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                            <div>
+                            <div className="flex items-center gap-3">
+                                <ManagementBackButton />
+                                <div>
                                 <h2 className="font-black text-j-blue-800">Permissões cadastradas</h2>
                                 <p className="text-sm text-j-gray-600">
                                     {isLoadingPermissions ? "Carregando..." : `${permissionsList?.length ?? 0} cadastrada(s)`}
                                 </p>
+                                </div>
                             </div>
 
                             <ShieldCheck size={24} className="text-j-gray-400" />
@@ -430,7 +434,7 @@ export default function RolesPermissions() {
                                                             {getPermissionName(permission)}
                                                         </p>
                                                         <p className="mt-0.5 text-sm text-j-gray-600">
-                                                            {permission.description}
+                                                            {getPermissionDescription(permission)}
                                                         </p>
                                                     </div>
                                                 </div>
