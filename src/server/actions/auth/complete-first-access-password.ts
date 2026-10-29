@@ -1,21 +1,19 @@
 'use server';
 
-import { captureAction } from "@/utils/actions/captureAction";
-import { ActionError } from "@/utils/actions/actionResult";
+import { ActionError } from "@/utils/http/ActionError";
 
-import { cookies } from "next/headers";
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { completeFirstAccessResponseSchema } from "@/schemas/auth/complete-first-access";
-import { HttpAPIRoutes } from "@/utils/http/api";
-import { login } from "@/utils/auth/login";
-import { me } from "@/utils/auth/me";
-import { authCookieOptions } from "@/utils/auth/cookieOptions";
-import { meResponseSchema, identityMeResponseSchema, authorizationMeResponseSchema } from "@/schemas/auth/me/me";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { logout } from "@/utils/auth/logout";
 import type { FirstAccessPasswordForm } from "@/schemas/auth/first-access-password";
+import { authorizationMeResponseSchema,identityMeResponseSchema,meResponseSchema } from "@/schemas/auth/me/me";
+import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
+import { authCookieOptions } from "@/utils/auth/cookieOptions";
+import { login } from "@/utils/auth/login";
+import { logout } from "@/utils/auth/logout";
+import { me } from "@/utils/auth/me";
+import { HttpAPIRoutes } from "@/utils/http/api";
+import { cookies } from "next/headers";
 
-async function completeFirstAccessPasswordActionImpl(data: FirstAccessPasswordForm) {
+export async function completeFirstAccessPasswordAction(data: FirstAccessPasswordForm) {
     const cookieStore = await cookies();
     const passwordChangeToken = cookieStore.get("FirstAccessPasswordChangeToken")?.value;
     if (!passwordChangeToken) throw new ActionError("O prazo para criar sua senha expirou. Entre novamente com a senha temporária.");
@@ -53,11 +51,6 @@ async function completeFirstAccessPasswordActionImpl(data: FirstAccessPasswordFo
         return { firstAccess };
     } catch (error) {
         await logout();
-        throw new ActionError(extractApiErrorMessage(error, "Não foi possível salvar a nova senha. Tente novamente."), { cause: error });
+        throw error;
     }
-}
-
-
-export async function completeFirstAccessPasswordAction(...args: Parameters<typeof completeFirstAccessPasswordActionImpl>) {
-    return captureAction(() => completeFirstAccessPasswordActionImpl(...args));
 }

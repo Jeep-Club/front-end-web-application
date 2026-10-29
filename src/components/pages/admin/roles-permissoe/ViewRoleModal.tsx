@@ -1,13 +1,13 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { X, KeyRound, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
-import { getRoleAction } from "@/actions/authorization/get-role";
+import { getRoleAction } from "@/server/actions/authorization/get-role";
 import { maskDate } from "@/utils/masks";
+import { useQuery } from "@tanstack/react-query";
+import { KeyRound,LoaderCircle,X } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",

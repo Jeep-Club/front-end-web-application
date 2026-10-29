@@ -72,13 +72,29 @@ async function main() {
                 signal: AbortSignal.timeout(10000),
             });
             const body = await response.text();
-            assert.equal(response.status, 200); // RPC succeeded; the business failure is data.
-            const result = JSON.parse(body.split('\n').find(line => line.startsWith('1:')).slice(2));
-            assert.equal(result.ok, false);
-            assert.equal(result.error.message, message);
+            assert.ok([200, 500].includes(response.status)); // Streaming can commit HTTP 200 before rejection.
+            const frame = body.split('\n').find(line => line.startsWith('1:')).slice(2);
+            assert.ok(frame.startsWith('E')); // Native rejected action, without an application envelope.
+            const error = JSON.parse(frame.slice(1));
+            const prefix = 'JEEP_API_ERROR_V1:';
+            assert.ok(error.digest.startsWith(prefix));
+            const failure = JSON.parse(decodeURIComponent(error.digest.slice(prefix.length)));
+            assert.equal(failure.message, message);
             assert.ok(!body.includes('An error occurred in the Server Components render'));
             console.log(`Production Server Action passed: ${message}`);
         }
+        // A programming exception still receives the framework's opaque digest in the upgraded runtime.
+        const unexpected = await fetch(`${baseUrl}/login`, {
+            method: 'POST',
+            headers: { 'Next-Action': actionId, 'Content-Type': 'text/plain;charset=UTF-8', Accept: 'text/x-component' },
+            body: JSON.stringify([null]),
+        });
+        const unexpectedBody = await unexpected.text();
+        const frame = unexpectedBody.split('\n').find(line => line.startsWith('1:')).slice(2);
+        assert.ok(frame.startsWith('E'));
+        assert.ok(!JSON.parse(frame.slice(1)).digest.startsWith('JEEP_API_ERROR_V1:'));
+        assert.ok(!unexpectedBody.includes('Cannot destructure'));
+        console.log('Production Server Action passed: unexpected exceptions remain redacted');
     } finally {
         if (child.exitCode === null) {
             const exited = once(child, 'exit');

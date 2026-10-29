@@ -1,12 +1,12 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
-import { getVehicleDetailAdminAction } from "@/actions/admin/vehicles/detail";
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { ButtonIcon } from "@/components/common/button";
+import { getVehicleDetailAdminAction } from "@/server/actions/admin/vehicles/detail";
+import { getVehicleDetailAction } from "@/server/actions/vehicles/detail-member";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft,ChevronRight,Images } from "lucide-react";
+import { useState } from "react";
 
 interface VehiclePhotoCarouselProps {
     photos?: (string | null | undefined)[];

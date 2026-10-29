@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { User, Settings, LogOut, LoaderCircle, HelpCircle, WalletCards } from "lucide-react";
 import { Avatar } from "@/components/common/avatar";
-import logoutAction from "@/actions/auth/logout";
 import { TourContext } from "@/components/common/tour/TourContext";
 import { resetAllTours } from "@/hooks/useTour";
-import { useContext } from "react";
 import { useModal } from "@/providers/ModalProvider";
+import logoutAction from "@/server/actions/auth/logout";
+import { useMutation } from "@tanstack/react-query";
+import { HelpCircle,LoaderCircle,LogOut,Settings,User,WalletCards } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useContext,useEffect,useRef,useState } from "react";
 import { LogoutConfirmationModal } from "./LogoutConfirmationModal";
 
 interface AvatarMenuProps {
@@ -29,7 +27,7 @@ export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
     const logoutMutation = useMutation({
         mutationFn: logoutAction,
         onSuccess: () => router.push('/'),
-        onError: () => toast.error('Erro ao sair. Tente novamente.'),
+
     });
 
     useEffect(() => {

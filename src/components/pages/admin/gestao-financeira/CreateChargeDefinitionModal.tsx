@@ -1,14 +1,14 @@
 'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import toast from "react-hot-toast";
 
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { chargeDefinitionFormSchema } from "@/schemas/billing/chargeDefinition";
-import { createChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/create";
+import { createChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/create";
 import { ChargeDefinitionFormFields } from "./ChargeDefinitionFormFields";
 
 export function CreateChargeDefinitionModal() {
@@ -22,7 +22,7 @@ export function CreateChargeDefinitionModal() {
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao criar definição de cobrança."),
+
     });
 
     const handleSubmit = async (data: ChargeDefinitionFormData) => {

@@ -1,28 +1,29 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
-import { listPublicationFeedAction } from "@/actions/publications/feed";
-import { feedTypeSchema } from "@/schemas/publications/feed";
-import { useUserStore } from "@/stores/userStore";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { useModal } from "@/providers/ModalProvider";
+import { feedTypeSchema } from "@/schemas/publications/feed";
+import { listPublicationFeedAction } from "@/server/actions/publications/feed";
+import { useUserStore } from "@/stores/userStore";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
-import { nextFeedPage, mergeFeedPages } from "@/utils/publications/infiniteFeed";
+import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
+import { feedTypes } from "./feedDisplay";
 import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
 import { PublicationDetailModal } from "./PublicationDetailModal";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
-import { feedTypes } from "./feedDisplay";
-import { RelativeTime } from "./RelativeTime";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
+import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
+
+import Image from "next/image";
 
 const icons = {
     NOTICE: Megaphone,
@@ -255,6 +256,7 @@ export default function Feed() {
 
 
 
+
                                 >
                                 <button
                                     type="button"
@@ -265,7 +267,6 @@ export default function Feed() {
                                             ? "bg-j-blue-800 text-j-white shadow-sm"
                                             : "text-j-gray-600 hover:bg-j-gray-100"
                                     }`}
-
 
 
 
@@ -333,6 +334,7 @@ export default function Feed() {
 
 
 
+
                                 </nav>
                                 <span id="feed-filter-swipe-hint" className="sr-only">
                                     Deslize horizontalmente para ver mais tipos de publicação.
@@ -344,6 +346,7 @@ export default function Feed() {
                                         </span>
                                     </div>
                                 )}
+
 
 
 

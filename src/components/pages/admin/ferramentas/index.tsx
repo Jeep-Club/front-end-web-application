@@ -14,7 +14,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
-import { listToolsAdminAction } from "@/actions/admin/tools/list";
+import { listToolsAdminAction } from "@/server/actions/admin/tools/list";
 
 import { ToolDetailModal } from "./ToolDetailModal";
 import { IncludeAdminToolModal } from "./IncludeAdminToolModal";
