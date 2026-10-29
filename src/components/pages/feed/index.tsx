@@ -253,6 +253,17 @@ export default function Feed() {
                                     aria-describedby="feed-filter-swipe-hint"
                                     className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                                 >
+                                <button
+                                    type="button"
+                                    onClick={() => filterType()}
+                                    aria-pressed={!type}
+                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                        !type
+                                            ? "bg-j-blue-800 text-j-white shadow-sm"
+                                            : "text-j-gray-600 hover:bg-j-gray-100"
+                                    }`}
+
+                                >
                                     <button
                                         type="button"
                                         onClick={() => filterType()}
@@ -312,6 +323,19 @@ export default function Feed() {
                                         </span>
                                     </div>
                                 )}
+
+                                </nav>
+                                <span id="feed-filter-swipe-hint" className="sr-only">
+                                    Deslize horizontalmente para ver mais tipos de publicação.
+                                </span>
+                                {showFilterHint && (
+                                    <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 flex items-center rounded-r-2xl bg-gradient-to-l from-j-white via-j-white/95 to-transparent pl-5 pr-2 md:hidden">
+                                        <span className="inline-flex items-center gap-0.5 rounded-full bg-j-white/90 py-1 pl-2 pr-1 text-[10px] font-bold text-j-blue-700 shadow-sm">
+                                            Deslize <ChevronRight size={14} />
+                                        </span>
+                                    </div>
+                                )}
+
                             </div>
 
                             {canCreateCurrentType && (
