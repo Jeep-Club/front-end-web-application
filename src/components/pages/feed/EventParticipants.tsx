@@ -25,6 +25,7 @@ function participantInitials(name: string) {
 }
 
 
+
 function ParticipantAvatar({ participant, compact = false }: { participant: Participant; compact?: boolean }) {
     const photo = participantPhoto(participant);
     const size = compact ? "h-8 w-8" : "h-9 w-9";
@@ -41,6 +42,7 @@ export function EventParticipants({ details }: { details: EventDetails }) {
     const count = details.registrationCount ?? participants.length;
 
     const preview = participants.slice(0, Math.min(3, count));
+
 
     if (details.registrationCount === undefined && !participants.length) return null;
 
