@@ -2,6 +2,7 @@
 import { ActionError } from "@/utils/http/ActionError";
 
 import { pageResponseSchema } from "@/schemas/page";
+import { adminPublicationSchema as publicationSchema, adminEventSchema as eventSchema, pendingServiceRequestSchema as pendingServiceSchema } from '@/schemas/publications/admin';
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { parsePublicationExportIds } from "@/utils/publications/exportCsv";
@@ -9,11 +10,6 @@ import { parsePublicationPagination } from "@/utils/publications/pagination";
 import { parsePublicationStatus,type PublicationStatusFilter } from "@/utils/publications/statusFilters";
 import { z } from "zod";
 
-const imageSchema = z.object({ storageKey: z.string(), position: z.number(), primary: z.boolean() });
-const statusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
-const publicationSchema = z.object({ id: z.number(), title: z.string(), content: z.string(), status: statusSchema, images: z.array(imageSchema), eventStatus: z.enum(["OPEN", "IN_PROGRESS", "FINISHED", "CANCELLED"]).optional() });
-const eventSchema = publicationSchema.omit({ status: true }).extend({ publicationStatus: statusSchema });
-const pendingServiceSchema = publicationSchema.omit({ status: true }).extend({ status: z.literal("PENDING") });
 const resources = {
     NOTICE: { path: "admin/notices", action: "NOTICE_READ" },
     EVENT: { path: "admin/events", action: "EVENT_READ_ADMIN" },
@@ -21,7 +17,7 @@ const resources = {
 } as const;
 type PublicationType = keyof typeof resources;
 type PendingService = z.infer<typeof pendingServiceSchema>;
-type AdminListItem = Omit<z.infer<typeof publicationSchema>, 'status'> & { type: PublicationType; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING'; serviceRequest?: boolean };
+type AdminListItem = Omit<z.infer<typeof publicationSchema>, 'status'> & { type: PublicationType; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING'; eventStatus?: z.infer<typeof eventSchema>['eventStatus']; serviceRequest?: boolean };
 
 export async function listAdminPublicationsAction(input: { types: string[]; page: number; size: number; status?: PublicationStatusFilter }) {
     const status = parsePublicationStatus(input.status);

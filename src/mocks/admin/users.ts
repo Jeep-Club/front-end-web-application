@@ -50,8 +50,8 @@ const roles: AdminRole[] = [
     {
         id: 5,
         name: "Auditoria antiga",
-        description: "Papel excluído e preservado para histórico.",
-        status: "DELETED",
+        description: "Papel arquivado e preservado para histórico.",
+        status: "ARCHIVED",
         createdAt: "2023-04-03T12:00:00.000Z",
         updatedAt: "2024-10-10T16:00:00.000Z",
         deletedAt: "2025-02-01T12:00:00.000Z",
@@ -225,8 +225,8 @@ export function createMockAdminUsersDataSource(
                 const alreadyLinked = current.roles.some((item) => item.id === roleId);
                 if (!alreadyLinked && role.status !== "ACTIVE") {
                     throw createProblem(
-                        role.status === "DELETED" ? "DELETED_ROLE_CANNOT_BE_CHANGED" : "INACTIVE_ROLE_CANNOT_BE_USED",
-                        "Papéis inativos ou excluídos não podem ser atribuídos.",
+                        role.status === "ARCHIVED" ? "ARCHIVED_ROLE_CANNOT_BE_CHANGED" : "INACTIVE_ROLE_CANNOT_BE_USED",
+                        "Papéis inativos ou arquivados não podem ser atribuídos.",
                         409,
                     );
                 }

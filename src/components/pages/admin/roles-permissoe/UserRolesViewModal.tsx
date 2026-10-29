@@ -137,7 +137,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                                     {role.description}
                                 </span>
 
-                                {canRevoke && role.kind === "CUSTOM" && role.status !== "DELETED" && (
+                                {canRevoke && role.kind === "CUSTOM" && role.status !== "ARCHIVED" && (
                                     <div className="mt-1 flex justify-end border-t border-j-gray-100 pt-2">
                                         <button
                                             type="button"
