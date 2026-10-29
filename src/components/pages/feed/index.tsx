@@ -69,6 +69,7 @@ export default function Feed() {
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const openedDeepLinkRef = useRef<number | null>(null);
+
     const filterNavRef = useRef<HTMLElement>(null);
     const [showFilterHint, setShowFilterHint] = useState(false);
 
@@ -246,6 +247,7 @@ export default function Feed() {
                         <h1 className="sr-only">Mural do clube</h1>
 
                         <div className="flex min-w-0 items-center gap-3">
+
                             <div className="relative min-w-0 flex-1">
                                 <nav
                                     ref={filterNavRef}
@@ -253,6 +255,7 @@ export default function Feed() {
                                     aria-describedby="feed-filter-swipe-hint"
                                     className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                                 >
+
                                 <button
                                     type="button"
                                     onClick={() => filterType()}
@@ -292,6 +295,7 @@ export default function Feed() {
                                         );
                                     }
                                 )}
+
                                 </nav>
                                 <span id="feed-filter-swipe-hint" className="sr-only">
                                     Deslize horizontalmente para ver mais tipos de publicação.
@@ -304,6 +308,7 @@ export default function Feed() {
                                     </div>
                                 )}
                             </div>
+
 
                             {canCreateCurrentType && (
                                 <button
