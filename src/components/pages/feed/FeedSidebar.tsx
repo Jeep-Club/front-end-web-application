@@ -4,7 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Users, Wrench } from "lucide-react";
+
 import { Avatar } from "@/components/common/avatar";
+
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
@@ -75,6 +77,7 @@ export function FeedSidebar() {
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
+
                             const participants = event.details.participants ?? [];
                             const participantCount = event.details.registrationCount ?? participants.length;
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
@@ -97,6 +100,7 @@ export function FeedSidebar() {
                                         </p>
                                     </div>}
                                 </div>
+
                             </li>;
                         })}
                     </ul>

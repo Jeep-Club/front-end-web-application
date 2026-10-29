@@ -9,8 +9,10 @@ import { listDependentsAction } from "@/server/actions/dependents";
 import { useModal } from "@/providers/ModalProvider";
 import { maskCPF } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validate/validateCPF";
+
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
+
 
 export interface EventRegistrationFormData {
     vehicleId: number;
@@ -79,6 +81,7 @@ export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
             <form onSubmit={submit} className="flex flex-col gap-5 p-5 sm:p-6">
                 <fieldset>
                     <legend className="mb-2 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><CarFront size={17} />Seu veículo <span className="text-j-red-500">*</span></legend>
+
                     {vehicles.length ? <div role="radiogroup" aria-label="Selecione seu veículo" className="grid gap-2 sm:grid-cols-2">
                         {vehicles.map((vehicle) => {
                             const photos = vehiclePhotoKeys(vehicle);
@@ -90,6 +93,8 @@ export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
                             </button>;
                         })}
                     </div> : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Você ainda não tem um veículo ativo cadastrado. <Link href="/profile" onClick={setClose} className="font-bold underline">Cadastrar veículo</Link></p>}
+
+
                 </fieldset>
 
                 <fieldset>
