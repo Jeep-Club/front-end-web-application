@@ -23,12 +23,18 @@ Não distorça nem recorte o emblema para preencher um container. Fotos informat
 | Contexto | Diretriz e referência |
 | --- | --- |
 | Público editorial | Fotografias, fundos escuros, títulos expressivos e seções amplas, como na Home. Não transferir escala de hero e CTA de campanha para CRUD |
-| Autenticação | Superfície navy, campos escuros e ação amarela; [Login](../src/components/pages/login/index.tsx) concentra ajuda e acesso. Isso não estabelece dark mode global |
+| Autenticação | Superfície institucional navy, campos resolvidos pelo tema e ação amarela; [Login](../src/components/pages/login/index.tsx) ajusta labels e erros ao fundo. Não confundir fundo de marca com a preferência global de aparência |
 | Público transacional | Formulários longos podem usar superfície clara, como [ApplyForm](../src/components/pages/membership/ApplyForm.tsx), com cabeçalho institucional |
-| Dashboard/admin | Navegação azul, detalhe amarelo, conteúdo cinza claro e cards brancos; [DashboardShell](../src/components/common/layout-admin/DashboardShell.tsx) e [PageHeader](../src/components/common/page-header/index.tsx) são referências |
+| Dashboard/admin | Navegação azul e detalhe amarelo, com superfícies e textos resolvidos pelo tema; [DashboardShell](../src/components/common/layout-admin/DashboardShell.tsx) e [PageHeader](../src/components/common/page-header/index.tsx) são referências |
 | Documento/exportação | Carteirinha mantém proporção, fonte e composição próprias, conforme seção de exportação |
 
 Os contextos compartilham marca e semântica de cor, mas variam densidade e composição. Não uniformizar fundos e escalas de tarefas diferentes.
+
+## Tema da aplicação
+
+O [resolvedor](../src/utils/theme/index.ts) aceita preferências claro, escuro e sistema. O layout inicializa `data-theme` na raiz antes da hidratação; o [ThemeProvider](../src/providers/ThemeProvider/index.tsx) acompanha a preferência e mudanças do sistema. Aplicar o tema e salvar a preferência são operações distintas. Cores dos controles vêm de tokens CSS sob esse atributo, inclusive nos portais; não exigir `white`/`gray` ou props de detecção do tema em novos campos.
+
+`globals.css` também adapta aliases `j-gray-*`, superfícies `bg-j-white` e texto de destaque azul. Branco literal e fundos de marca têm usos próprios. Avalie a superfície real antes de substituir cores em massa. O Storybook aplica o mesmo resolvedor pela toolbar de tema; a interface do gerenciador do catálogo permanece independente do canvas.
 
 ## Cores por papel
 
@@ -59,12 +65,12 @@ Table.Root combina borda, rounded-2xl e shadow-sm; modais financeiros usam round
 | Lista administrativa | [AdminUsersPage](../src/components/pages/admin/users/index.tsx) coordena navegação/ações; [UserManagementView](../src/components/pages/admin/users/UserManagementView.tsx) compõe PageHeader e família [Table](../src/components/common/table/index.ts) |
 | Formulário financeiro claro | [ChargeDefinitionFormFields](../src/components/pages/admin/gestao-financeira/ChargeDefinitionFormFields.tsx) é compartilhado por criação/edição; adapta InputRegister, TextareaRegister e Select com labels e campos claros |
 | Filtros | UserManagementView usa Select e labels claros dentro de Table.Header/Filters. A API de variantes não está unificada entre todos os campos |
-| Campos | [Input](../src/components/common/input/input.tsx), [Select](../src/components/common/select/select.tsx) e [Form](../src/components/common/form/index.tsx) são referências. Campos claros em superfícies claras e escuros em escuras preservam comportamento, label, ajuda, erro e foco |
+| Campos | [Input](../src/components/common/input/input.tsx), [Select](../src/components/common/select/select.tsx) e [Form](../src/components/common/form/index.tsx) são referências. Os tokens CSS resolvidos por `data-theme` definem a aparência; preserve label, ajuda, erro e foco ao compor campos em cada superfície |
 | Ações | [Button](../src/components/common/button/Button.tsx) e [ButtonIcon](../src/components/common/button/ButtonIcon.tsx) oferecem base de estados; ações por ícone precisam de nome acessível |
 | Cards de dados | [FinancialDashboard](../src/components/pages/admin/gestao-financeira/FinancialDashboard.tsx) distingue título, métrica, descrição e ação; não fazer card informativo parecer clicável sem indicar interação |
 | Modais | [ModalRoot](../src/components/common/modal/root/index.tsx) fornece overlay/Escape; o [modal financeiro](../src/components/pages/admin/gestao-financeira/EditChargeDefinitionModal.tsx) limita altura, permite scroll e mantém fechamento |
 
-Há campos claros por overrides e uma família [SelectField](../src/components/common/SelectField.tsx) paralela. Reutilize o consumidor adequado; não crie outra família só para obter a superfície correta. A aparência não garante semântica: Select usa texto do erro em aria-describedby em vez de ID, e ModalRoot não centraliza papel/nome, foco inicial/contenção/retorno ou fundo inerte.
+Há campos legados com variantes explícitas e uma família [SelectField](../src/components/common/SelectField.tsx) paralela. `white`/`gray` permanecem por compatibilidade nos consumidores existentes; a escolha de superfície pertence aos tokens CSS definidos por `data-theme`, não a uma convenção obrigatória de props. Reutilize o consumidor adequado quando isso servir ao contexto, sem migração compulsória. Aparência não garante semântica: verifique o contrato acessível de cada controle e as limitações documentadas de [ModalRoot](../src/components/common/modal/root/index.tsx), que não centraliza papel/nome, foco inicial/contenção/retorno ou fundo inerte.
 
 ## Estados e interação
 

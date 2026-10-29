@@ -110,20 +110,20 @@ export function InputFile({
                 {/* Usando o Render Props para customizar as mensagens internas */}
                 {({ isDragActive, isDragReject }) => (
                     <div className="flex flex-col items-center justify-center w-full">
-                        <UploadCloud aria-hidden="true" size={32} className={twMerge("mb-2", error || isDragReject ? "text-j-red-500" : variant === "white" ? "text-j-gray-500" : "text-j-gray-300")} />
-                        <p className={twMerge("text-sm text-center", variant === "white" ? "text-j-gray-500" : "text-j-gray-300")}>
+                        <UploadCloud aria-hidden="true" size={32} className={twMerge("mb-2", error || isDragReject ? "text-j-red-500" : variant === "white" ? "text-j-gray-500" : "text-input-legacy-text")} />
+                        <p className={twMerge("text-sm text-center", variant === "white" ? "text-j-gray-500" : "text-input-legacy-text")}>
                             {isDragActive && !isDragReject ? (
-                                <span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-400")}>Pode soltar os arquivos aqui...</span>
+                                <span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-300")}>Pode soltar os arquivos aqui...</span>
                             ) : isDragReject ? (
                                 <span className="font-semibold text-j-red-500">Formato de arquivo não suportado.</span>
                             ) : error ? (
                                 <span className="font-semibold text-j-red-500">{String(error.message)}</span>
                             ) : (
-                                <><span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-400")}>Clique</span> ou arraste os arquivos</>
+                                <><span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-300")}>Clique</span> ou arraste os arquivos</>
                             )}
                         </p>
                         {!error && (
-                            <p className={twMerge("text-xs mt-1", variant === "white" ? "text-j-gray-500" : "text-j-gray-300")}>
+                            <p className={twMerge("text-xs mt-1", variant === "white" ? "text-j-gray-500" : "text-input-legacy-text")}>
                                 Máximo: {maxSizeMB}MB {maxFiles > 0 ? `| Limite: ${maxFiles} arquivo(s)` : ''}
                             </p>
                         )}
@@ -135,7 +135,7 @@ export function InputFile({
             {currentFiles.length > 0 ? (
                 <ListFile files={currentFiles} onRemove={handleRemove} variant={variant} />
             ) : isFallback ? (
-                <FallBackFile className={variant === "white" ? "border border-j-gray-300 bg-j-white text-j-gray-500" : undefined}>Nenhum arquivo enviado.</FallBackFile>
+                <FallBackFile className={variant === "white" ? "border border-j-gray-300 bg-j-white text-j-gray-500" : "bg-input-legacy-bg text-input-legacy-text"}>Nenhum arquivo enviado.</FallBackFile>
             ) : null}
         </div>
     );

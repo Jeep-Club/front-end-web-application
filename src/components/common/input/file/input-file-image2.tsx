@@ -91,7 +91,7 @@ export function InputFileImage2({
                         maxFiles={maxFiles > 0 ? maxFiles : undefined}
                         maxSize={maxSizeMB * 1024 * 1024}
                         accept={accept}
-                        className={twMerge(variant === "gray" && "bg-input-bg", error && "border-j-red-500 bg-j-red-100/10")}
+                        className={twMerge(variant === "gray" && "bg-input-legacy-bg", error && "border-j-red-500 bg-j-red-100/10")}
                     >
                         {({ isDragReject }) => (
                             <>

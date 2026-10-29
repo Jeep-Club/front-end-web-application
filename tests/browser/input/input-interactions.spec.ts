@@ -6,7 +6,7 @@ function storyUrl(id: string) {
   return new URL(`/iframe.html?id=${id}&viewMode=story&embed=true`, storybookUrl).href;
 }
 
-test("Input: white padrão, edição, foco e limite do viewport", async ({ page }) => {
+test("Input: aparência padrão, edição, foco e limite do viewport", async ({ page }) => {
   await page.goto(storyUrl("componentes-input-input--padrao"));
   const input = page.getByRole("textbox", { name: "Nome" });
   await expect(input).toHaveCSS("background-color", "rgb(255, 255, 255)");
@@ -83,7 +83,7 @@ for (const presentation of ["avatar", "compacta"]) {
     await dialog.getByRole("button", { name: "Usar foto" }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByAltText("Visualização do arquivo: foto.png")).toBeVisible();
-    await page.getByRole("button", { name: "Remover arquivo" }).click();
+    await page.getByRole("button", { name: "Remover imagem foto.png", exact: true }).click();
     await expect(page.getByAltText("Visualização do arquivo: foto.png")).toBeHidden();
     await expect(page.getByRole("button", { name: "Foto de perfil", exact: true })).toBeVisible();
   });

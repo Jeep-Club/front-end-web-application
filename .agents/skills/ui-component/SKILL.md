@@ -15,10 +15,18 @@ Consulte [design](../../../docs/design.md) para contexto visual, [desenvolviment
 
 1. Localize o consumidor e procure equivalentes em `src/components/common` e na pasta da tela. Inspecione implementação, story existente, props, exports e estados antes de criar outra implementação. Determine qual comportamento precisa mudar.
 2. Decida a responsabilidade: common para apresentação/interação sem regra de domínio; components/pages para coordenação específica. Prefira compor; extraia quando houver reuso ou ganho concreto. Um componente principal por TSX admite helpers privados coesos, como os de Table.Content.
-3. Use o contexto visual e a primitiva existente. [Table](../../../src/components/common/table/index.ts) oferece composição de listas; [ChargeDefinitionFormFields](../../../src/components/pages/admin/gestao-financeira/ChargeDefinitionFormFields.tsx) compartilha campos entre criação/edição sem virar formulário universal. Não adicionar variante só para um consumidor se composição local resolver.
+3. Use o contexto visual e avalie a primitiva existente. [Table](../../../src/components/common/table/index.ts) oferece composição de listas; [ChargeDefinitionFormFields](../../../src/components/pages/admin/gestao-financeira/ChargeDefinitionFormFields.tsx) compartilha campos entre criação/edição sem virar formulário universal. Um controle local pode permanecer local quando sua função ou aparência justificar; não migrar páginas inteiras apenas para eliminar duplicação. Não adicionar variante só para um consumidor se composição local resolver.
 4. Preserve atributos nativos, labels, erros e nomes acessíveis. Defina loading, erro, vazio, sucesso e disabled quando pertinentes. Comece pela menor largura e confira conteúdo longo, teclado e foco; limite de altura/scroll não comprova acessibilidade de modal. Consulte as lacunas de Select/ModalRoot no guia antes de reproduzi-las.
 5. Revise os consumidores afetados pela mudança de props/estilo. Mantenha dados e operações com seus donos atuais; não levar uma Action de domínio para uma primitiva nem criar fetch duplicado para preencher o componente.
 6. Quando a mudança afetar props, aparência, estados, interação ou composição, siga [storybook-story](../storybook-story/SKILL.md) para criar ou atualizar a documentação interativa e validar as stories afetadas. Mudança exclusivamente interna sem impacto no contrato ou nos exemplos não exige uma story artificial; não documente componentes alheios à tarefa.
+
+## Padrões também para controles locais
+
+A aparência dos campos deve vir dos tokens CSS resolvidos por `data-theme`, sem exigir `white`/`gray` ou uma prop `isDark`. Variantes legadas podem permanecer por compatibilidade; não são a seleção do tema nem requisito para novos componentes. Confira os dois temas, inclusive menus/portais e estados de erro/foco/disabled.
+
+Mesmo sem usar a família global, conserve elemento nativo adequado, nome acessível, label/ajuda/erro ligados por IDs, teclado/foco visível e estados reais de disabled/pending. Ações disponíveis usam `cursor-pointer`; bloqueadas indicam indisponibilidade. Inputs de texto preservam cursor de edição. Não confundir estilo de link com navegação ou esconder uma operação importante apenas em hover.
+
+Informação essencial deve ficar visível ou associada ao controle. Use tooltip como ajuda complementar para ícones/ações ambíguas: deve funcionar por foco e hover, permitir Escape e leitura do conteúdo, sem substituir nome acessível, instrução ou erro. `title` nativo sozinho não comprova esse comportamento. Não criar tooltips redundantes para cada botão textual; reutilize um mecanismo acessível quando já houver um adequado.
 
 ## Verificação e entrega
 

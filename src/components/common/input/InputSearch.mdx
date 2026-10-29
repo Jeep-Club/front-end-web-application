@@ -83,12 +83,11 @@ Uma alteração externa de `value` alimenta os valores do RHF. No modo de confir
   value={search}
   onSubmit={handleSearch}
   label="Buscar associados"
-  variant="white"
   labelClassName="not-sr-only text-j-gray-700"
 />
 ```
 
-`variant="white"` é o padrão e inclui os ícones e o botão de limpar em tons escuros. `variant="gray"` preserva a superfície cinza. O label dá nome ao searchbox mesmo oculto; placeholder é uma dica, não seu substituto. Enter envia pelo formulário, e o botão “Limpar busca” é alcançável por teclado. O spinner é decorativo e não anuncia sozinho uma atualização para leitores de tela; a listagem deve comunicar seus resultados e estados.
+O campo padrão acompanha os tokens de `data-theme`; use a toolbar para alternar a aparência. `white`/`gray` permanecem como compatibilidade, não como escolha de tema. O label dá nome ao searchbox mesmo oculto; placeholder é uma dica, não seu substituto. Enter envia pelo formulário, e o botão “Limpar busca” é alcançável por teclado. O spinner é decorativo e não anuncia sozinho uma atualização para leitores de tela; a listagem deve comunicar seus resultados e estados.
 
 <Canvas of={InputSearchStories.Gray} />
 

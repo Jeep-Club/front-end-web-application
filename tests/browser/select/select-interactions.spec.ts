@@ -8,6 +8,24 @@ function storyUrl(id: string) {
 }
 
 test.describe("Select", () => {
+    test("busca navega por teclado pulando opções desabilitadas", async ({ page }) => {
+        await page.goto(storyUrl("componentes-select--com-opcoes-desabilitadas"));
+        const trigger = page.getByRole("combobox").first();
+        await trigger.click();
+        await expect(page.getByRole("option", { name: "Indisponível no início" })).toHaveCSS("opacity", "0.5");
+        await page.getByRole("searchbox").press("ArrowDown");
+        await expect(page.getByRole("option", { name: "Trilhas", exact: true })).toBeFocused();
+        await page.keyboard.press("ArrowDown");
+        await expect(page.getByRole("option", { name: "Eventos", exact: true })).toBeFocused();
+        await page.keyboard.press("Home");
+        await expect(page.getByRole("option", { name: "Trilhas", exact: true })).toBeFocused();
+        await page.keyboard.press("End");
+        await expect(page.getByRole("option", { name: "Eventos", exact: true })).toBeFocused();
+        await page.keyboard.press("Enter");
+        await expect(page.getByRole("option", { name: "Eventos", exact: true })).toHaveAttribute("aria-selected", "true");
+        await page.keyboard.press("Escape");
+        await expect(trigger).toBeFocused();
+    });
     test("abre a seleção simples, permite escolher por teclado e fecha devolvendo o foco", async ({ page }) => {
         await page.goto(storyUrl("componentes-select--padrao"));
 

@@ -13,7 +13,7 @@ Aplica a máscara de CPF ao digitar. A máscara não verifica os dígitos: valid
 import { InputCPF } from '@/components/common/input/input-cpf';
 
 // Dentro do Form do projeto, com schema e defaultValues correspondentes.
-<InputCPF name="cpf" label="CPF" variant="white" />
+<InputCPF name="cpf" label="CPF" />
 ```
 
 Este componente exige FormProvider, como o fornecido por Form. Não possui modo `register=false`. Inicialize o valor como string em `formOptions.defaultValues` e use o mesmo `name` no schema. O erro exibido vem do React Hook Form. `required` sinaliza a obrigatoriedade; Form usa `noValidate`, por isso declare a regra no schema.
@@ -22,7 +22,7 @@ O padrão é `name="cpf"` e autocomplete de username. Use nome explícito para a
 
 ## Aparência e controles
 
-`variant="white"` é o padrão, com superfície branca, borda cinza e texto escuro. `variant="gray"` mantém o campo cinza. `className` e `labelClassName` permitem compor o contexto. Os ícones não substituem o label.
+A superfície acompanha os tokens de `data-theme`; alterne claro/escuro na toolbar. Não é necessário escolher variante de cor. `white`/`gray` permanecem por compatibilidade, como descrito em [Input](?path=/docs/componentes-input-input--docs). `className` e `labelClassName` ajustam o contexto. Os ícones não substituem o label.
 
 <Canvas of={Stories.Padrao} />
 

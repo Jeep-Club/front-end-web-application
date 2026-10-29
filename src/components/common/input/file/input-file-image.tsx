@@ -105,20 +105,20 @@ export function InputFileImage({
             >
                 {({ isDragActive, isDragReject }) => (
                     <div className="flex flex-col items-center justify-center w-full">
-                        <UploadCloud aria-hidden="true" size={32} className={twMerge("mb-2", error || isDragReject ? "text-j-red-500" : variant === "white" ? "text-j-gray-500" : "text-j-gray-300")} />
-                        <p className={twMerge("text-sm text-center", variant === "white" ? "text-j-gray-500" : "text-j-gray-300")}>
+                        <UploadCloud aria-hidden="true" size={32} className={twMerge("mb-2", error || isDragReject ? "text-j-red-500" : variant === "white" ? "text-j-gray-500" : "text-input-legacy-text")} />
+                        <p className={twMerge("text-sm text-center", variant === "white" ? "text-j-gray-500" : "text-input-legacy-text")}>
                             {isDragActive && !isDragReject ? (
-                                <span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-400")}>Pode soltar as imagens aqui...</span>
+                                <span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-300")}>Pode soltar as imagens aqui...</span>
                             ) : isDragReject ? (
                                 <span className="font-semibold text-j-red-500">Formato de imagem não suportado.</span>
                             ) : error ? (
                                 <span className="font-semibold text-j-red-500">{String(error.message)}</span>
                             ) : (
-                                <><span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-400")}>Clique</span> ou arraste as imagens</>
+                                <><span className={twMerge("font-semibold", variant === "white" ? "text-j-blue-700" : "text-j-yellow-300")}>Clique</span> ou arraste as imagens</>
                             )}
                         </p>
                         {!error && (
-                            <p className={twMerge("text-xs mt-1", variant === "white" ? "text-j-gray-500" : "text-j-gray-300")}>
+                            <p className={twMerge("text-xs mt-1", variant === "white" ? "text-j-gray-500" : "text-input-legacy-text")}>
                                 Máximo por imagem: {maxSizeMB} MiB {maxFiles > 0 ? `| Limite: ${maxFiles} imagem(ns)` : ''}
                             </p>
                         )}
@@ -130,7 +130,7 @@ export function InputFileImage({
             {currentFiles.length > 0 ? (
                 <ListFileImage files={currentFiles} onRemove={handleRemove} variant={variant}/>
             ) : isFallback ? (
-                <FallBackFile className={variant === "white" ? "border border-j-gray-300 bg-j-white text-j-gray-500" : undefined}>
+                <FallBackFile className={variant === "white" ? "border border-j-gray-300 bg-j-white text-j-gray-500" : "bg-input-legacy-bg text-input-legacy-text"}>
                     Nenhuma imagem enviada.
                 </FallBackFile>
             ) : null}

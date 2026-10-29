@@ -38,10 +38,11 @@ export function Dropzone({ className, dStyle = true, children, inputId, inputLab
                   w-full   
                 `,
                 dStyle && variant === "white" && "border-j-gray-300 bg-j-white text-j-gray-700",
+                dStyle && variant === "gray" && "bg-input-legacy-bg text-input-legacy-text",
                 isDragActive && !isDragReject && "border-j-yellow-400 bg-j-yellow-400/10",
                 isDragReject && "border-j-red-300 bg-j-red-300/10",
                 isDragAccept && "border-j-green-300 bg-j-green-300/10",
-                !isDragActive && (variant === "white" ? "border-j-gray-300 text-j-gray-700 hover:border-j-blue-500" : "border-transparent text-input-text hover:border-j-gray-200"),
+                !isDragActive && (variant === "white" ? "border-j-gray-300 text-j-gray-700 hover:border-j-blue-500" : "border-transparent text-input-legacy-text hover:border-j-gray-200"),
                 
                 // Desabilita visualmente se a prop disabled for passada no hook
                 dropzoneOptions.disabled && "opacity-50 pointer-events-none",

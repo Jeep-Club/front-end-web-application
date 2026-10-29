@@ -47,8 +47,11 @@ Defina use client na fronteira interativa necessária. Função comum de servido
 
 Prefira children, props pequenas e callbacks significativos a muitas flags combináveis. Uma primitiva não deve conhecer API/regra de um domínio por causa de um consumidor. Identifique os demais usos antes de alterar contrato compartilhado; modal e campos possuem lacunas reais, não APIs novas unificadas.
 
-Componentes interativos devem usar `cursor-pointer` para indicar a ação disponível quando o cursor não comunica essa affordance por padrão. Para controles desabilitados, use o cursor correspondente ao estado, como `cursor-not-allowed`, sem sugerir uma ação executável.
-Campos compartilhados com superfícies alternativas devem preferir `variant="white"` como padrão e `variant="gray"` para a versão cinza explícita; mantenha essa convenção também ao adaptar inputs.
+Use `cursor-pointer` em ações clicáveis quando a affordance não estiver clara; não force cursor de ação em campos de texto. Um controle desabilitado deve comunicar visual e semanticamente seu estado.
+
+Os tokens CSS resolvidos por `data-theme` determinam a superfície dos campos. Props `variant="white"`/`variant="gray"` mantidas por componentes legados continuam válidas para seus consumidores; não as exija em novos campos nem migre telas em massa. Prefira reuso quando adequado ao contexto, não como requisito de uniformização.
+
+Todo controle interativo precisa da semântica apropriada, nome acessível e descrição quando necessária, operação por teclado e foco visível. Inclua estados disabled/pending tanto na apresentação quanto na semântica compatível com o elemento. Disponibilize ajuda relevante junto ao campo ou ação; tooltip é complemento útil para ações ambíguas e deve responder a foco e hover, fechar com Escape e não substituir nome acessível, instruções persistentes ou mensagens de validação.
 
 ## Documentação no código
 

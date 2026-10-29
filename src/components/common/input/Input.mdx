@@ -39,13 +39,13 @@ Inicialize campos registrados em `formOptions.defaultValues` do Form. O adaptado
 
 `children` aparece como irmão do input em um container relativo. Reserve espaço no campo com `className`, como o padding à esquerda dessa story, para o ícone não sobrepor o texto. Ícones decorativos devem usar `aria-hidden` e não interceptar o clique. Não passe JSX como um objeto JSON pelo Controls.
 
-`className` estiliza o input e `labelClassName` estiliza o label. `variant="white"` é o padrão, com borda cinza, fundo branco e foco azul, seguindo o Select. `variant="gray"` mantém a superfície cinza; o label permanece escuro para leitura em superfícies claras. Em um formulário escuro, ajuste `labelClassName="text-j-white"`. As stories usam canvas neutro para ambas as variantes.
+O campo usa os tokens CSS resolvidos por `data-theme`; não é necessário passar uma variante de cor. Alterne **Claro/Escuro/Sistema** na toolbar para conferir o mesmo exemplo. `className` e `labelClassName` permitem ajustes próprios do contexto. `white`/`gray` permanecem como compatibilidade de apresentação para consumidores existentes, sem representar temas.
 
 <Canvas of={Stories.Gray} />
 
 As apresentações registradas herdam a variante: CPF, e-mail, telefone, senha e data. Consulte também [checkbox e radio](?path=/docs/componentes-input-checkbox-e-radio--docs), que têm contratos próprios de escolha e não herdam todos os atributos do Input textual.
 
-Para uma superfície externa escura, ajuste também `errorClassName="text-j-red-100"`; a mensagem padrão usa vermelho escuro, adequado ao canvas claro. A variante controla o campo, não detecta automaticamente a cor do formulário ao redor.
+O texto de erro padrão acompanha o tema. Um fundo institucional que permaneça escuro independentemente do tema pode precisar de `labelClassName`/`errorClassName` próprios; verifique o contraste na superfície real, sem escolher a variante pelo tema.
 
 ## Erro, obrigatório e bloqueio
 
@@ -60,6 +60,12 @@ Para uma superfície externa escura, ajuste também `errorClassName="text-j-red-
 
 ## Acessibilidade e limites
 
-O componente gera um ID para ligar label e input e combina o texto de ajuda informado em `aria-describedby` com o erro. Placeholder não substitui label. O `id` interno é gerado pelo componente; não dependa de um `id` passado por props para associar ajuda externa.
+O componente respeita `id` explícito ou gera um ID, liga o label ao input e combina os IDs de ajuda em `aria-describedby` com o ID do erro. Placeholder não substitui label. O exemplo abaixo mantém ajuda e erro simultaneamente associados.
+
+<Canvas of={Stories.IdEAjuda} />
+
+## Onde é usado
+
+InputRegister e os campos CPF/senha/data compõem esta base. Consumidores incluem cadastro de associados, login e `ChargeDefinitionFormFields` na gestão financeira. Essas integrações continuam responsáveis por schema e operação; a documentação das outras famílias está na navegação de Componentes/Input.
 
 As stories demonstram apresentação isolada e conteúdo com ícone. Elas não comprovam submissão, máscaras específicas ou integrações autenticadas. Veja o [guia de componentes e páginas](?path=/docs/documentação-componentes-e-páginas--docs) para compor Form, schema e operação de envio.

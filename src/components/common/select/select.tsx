@@ -5,7 +5,6 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, Search } from "lucide-react";
 import {
     forwardRef,
-    useEffect,
     useId,
     useMemo,
     useRef,
@@ -36,6 +35,7 @@ export interface SelectProps extends Omit<SelectTriggerProps, "children" | "valu
     options?: SelectOption[];
     multiple?: boolean;
     searchable?: boolean;
+    /** @deprecated Compatibilidade visual; novos usos seguem data-theme. */
     variant?: "white" | "gray";
     placeholder?: string;
     maxWidth?: CSSProperties["maxWidth"];
@@ -129,14 +129,16 @@ function optionIsSelected(option: SelectOption, values: string[]) {
 
 const baseTriggerClassName = `
     flex min-h-10 w-full min-w-0 items-center gap-2 rounded-lg border-2 border-transparent
-    p-2.5 text-left font-light transition-colors duration-300 cursor-pointer
-    outline-none focus:border-j-yellow-400 focus:outline-2 focus:outline-j-yellow-400
-    disabled:cursor-not-allowed disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
+    px-3 py-2.5 text-left text-sm font-normal transition-colors duration-300 cursor-pointer
+    border-input-border bg-input-bg text-input-text
+    outline-none focus:border-input-border-focus focus:outline-2 focus:outline-input-border-focus
+    disabled:cursor-not-allowed disabled:bg-input-bg-disabled disabled:text-input-text-disabled
 `;
 
 const optionClassName = `
     relative flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2.5
-    text-left text-sm text-j-gray-800 outline-none data-[highlighted]:bg-j-blue-100
+    text-left text-sm text-primary outline-none data-[highlighted]:bg-background-secondary
+    focus-visible:bg-background-secondary focus-visible:outline-2 focus-visible:outline-input-border-focus
     data-[state=checked]:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50
 `;
 
@@ -153,7 +155,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     options,
     multiple = false,
     searchable = false,
-    variant = "white",
+    variant,
     placeholder,
     maxWidth,
     maxHeight = "18rem",
@@ -191,9 +193,16 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
         return availableOptions.filter((option) => option.textValue.toLocaleLowerCase("pt-BR").includes(normalizedQuery));
     }, [availableOptions, query]);
 
-    useEffect(() => {
-        optionRefs.current = [];
-    }, [query, open]);
+    // Ref callbacks track the rendered options. Clearing them in an effect loses
+    // the live nodes after opening/filtering and breaks keyboard navigation.
+    function focusOption(start: number, direction: 1 | -1 = 1) {
+        for (let index = start; index >= 0 && index < filteredOptions.length; index += direction) {
+            if (!filteredOptions[index].disabled) {
+                optionRefs.current[index]?.focus();
+                return;
+            }
+        }
+    }
 
     const setValue = (nextValues: string[]) => {
         if (!controlled) setInternalValue(nextValues);
@@ -220,16 +229,13 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
         .filter(Boolean)
         .join(" ") || undefined;
     const variantTriggerClassName = variant === "gray"
-        ? "bg-input-bg text-input-text"
-        : "border-j-gray-300 bg-j-white px-3 py-2.5 text-sm font-normal text-j-gray-800 focus:border-j-blue-500 focus:outline-none disabled:bg-j-gray-100 disabled:text-j-gray-500";
-    const variantSearchClassName = variant === "white"
-        ? "border-j-gray-300 bg-j-white text-j-gray-800 focus:border-j-blue-500 focus:bg-j-white"
+        ? "border-transparent bg-input-legacy-bg text-input-legacy-text"
         : "";
     const triggerClassName = twMerge(
         baseTriggerClassName,
         variantTriggerClassName,
         hasError
-            ? "border-input-border-error text-input-border-error focus:border-input-border-error focus:outline-input-border-error"
+            ? "border-input-border-error focus:border-input-border-error focus:outline-input-border-error"
             : "",
         className,
     );
@@ -263,8 +269,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     };
     return (
         <div className="flex w-full min-w-0 flex-col gap-2" style={{ maxWidth }}>
-            <label htmlFor={id} className={twMerge("text-xs font-bold text-j-white md:text-sm", labelClassName)}>
-                {label} {required ? <span className="text-j-red-200">*</span> : null}
+            <label htmlFor={id} className={twMerge("text-xs font-bold text-primary md:text-sm", labelClassName)}>
+                {label} {required ? <span aria-hidden="true" className="text-input-error-text">*</span> : null}
             </label>
 
             {isCustom ? (
@@ -296,7 +302,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                             onOpenAutoFocus={(event) => {
                                 event.preventDefault();
                                 if (searchable) searchRef.current?.focus();
-                                else optionRefs.current[0]?.focus();
+                                else focusOption(0);
                             }}
                             className="z-50 w-[var(--radix-popover-trigger-width)] min-w-48 max-w-[calc(100vw-1rem)] rounded-lg border border-j-gray-200 bg-j-white p-1.5 shadow-xl outline-none"
                             style={{ maxWidth, maxHeight }}
@@ -312,7 +318,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                                         onKeyDown={(event) => {
                                             if (event.key === "ArrowDown") {
                                                 event.preventDefault();
-                                                optionRefs.current[0]?.focus();
+                                                focusOption(0);
                                             }
                                             if (event.key === "Escape") {
                                                 event.preventDefault();
@@ -321,7 +327,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                                         }}
                                         placeholder={`Pesquisar ${label}`}
                                         aria-label={`Pesquisar ${label}`}
-                                        className={twMerge("h-9 w-full rounded-md border border-j-gray-200 bg-j-gray-100 pl-8 pr-2 text-sm text-j-gray-800 outline-none placeholder:text-j-gray-400 focus:border-j-blue-400 focus:bg-j-white", variantSearchClassName)}
+                                        className="h-9 w-full rounded-md border border-input-border bg-input-bg pl-8 pr-2 text-sm text-input-text outline-none placeholder:text-input-placeholder focus:outline-2 focus:outline-input-border-focus"
                                     />
                                 </div>
                             ) : null}
@@ -342,6 +348,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                                             role="option"
                                             aria-selected={selected}
                                             aria-disabled={option.disabled || undefined}
+                                            data-disabled={option.disabled ? "" : undefined}
                                             tabIndex={option.disabled ? -1 : 0}
                                             className={twMerge(optionClassName, selected && "font-bold text-j-blue-800", option.disabled && "cursor-not-allowed")}
                                             onClick={() => selectOption(option)}
@@ -349,12 +356,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                                                 if (event.key === "ArrowDown" || event.key === "ArrowUp") {
                                                     event.preventDefault();
                                                     const direction = event.key === "ArrowDown" ? 1 : -1;
-                                                    const nextIndex = Math.min(filteredOptions.length - 1, Math.max(0, index + direction));
-                                                    optionRefs.current[nextIndex]?.focus();
+                                                    focusOption(index + direction, direction);
                                                 }
                                                 if (event.key === "Home" || event.key === "End") {
                                                     event.preventDefault();
-                                                    optionRefs.current[event.key === "Home" ? 0 : filteredOptions.length - 1]?.focus();
+                                                    focusOption(event.key === "Home" ? 0 : filteredOptions.length - 1, event.key === "Home" ? 1 : -1);
                                                 }
                                                 if (event.key === "Enter" || event.key === " ") {
                                                     event.preventDefault();
@@ -387,12 +393,21 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
             ) : (
                 <SelectPrimitive.Root
                     name={name}
+                    open={open}
+                    onOpenChange={setOpen}
                     value={selectedValues[0] || undefined}
                     onValueChange={(nextValue) => setValue([nextValue])}
                     disabled={disabled}
                     required={required}
                 >
-                    <SelectPrimitive.Trigger {...commonTriggerProps} className={triggerClassName} aria-label={undefined}>
+                    <SelectPrimitive.Trigger
+                        {...commonTriggerProps}
+                        className={triggerClassName}
+                        aria-label={undefined}
+                        // Radix hides the outside tree while the menu owns focus.
+                        // Keep its hidden trigger out of the tab order until close.
+                        tabIndex={open ? -1 : triggerProps.tabIndex}
+                    >
                         <span className="min-w-0 flex-1 truncate text-left">
                             <SelectPrimitive.Value placeholder={placeholderText} />
                         </span>
@@ -442,7 +457,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                     readOnly
                 />
             ) : null}
-            {hasError ? <p id={errorId} className="text-sm text-j-red-300">{error}</p> : null}
+            {hasError ? <p id={errorId} className="text-sm text-input-error-text">{error}</p> : null}
         </div>
     );
 });

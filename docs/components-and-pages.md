@@ -39,7 +39,7 @@ Keys/opções ainda estão distribuídas nos componentes; confira os consumidore
 
 Localize a Action/função e seus chamadores antes de criar outra. Verifique entrada, schema de resposta, método e permissões por operação. Reutilize serviço/URL já existente; mantenha segredos no servidor. A escolha entre função comum de leitura e função remota deve respeitar o contexto de cookies descrito em architecture.md, não o sufixo Action.
 
-Na gestão financeira, [create](../src/actions/billing/chargeDefinitions/create.ts) e [update](../src/actions/billing/chargeDefinitions/update.ts) serializam ChargeDefinitionRequest e validam a resposta. Isso **não** comprova validação de entrada/ID no servidor. As funções atuais não fazem parse próprio desses parâmetros. Não criar BFF/serviço paralelo ou aplicar transformação de formulário duas vezes para contornar a pendência.
+Na gestão financeira, [create](../src/server/actions/billing/chargeDefinitions/create.ts) e [update](../src/server/actions/billing/chargeDefinitions/update.ts) serializam ChargeDefinitionRequest e validam a resposta. Isso **não** comprova validação de entrada/ID no servidor. As funções atuais não fazem parse próprio desses parâmetros. Não criar BFF/serviço paralelo ou aplicar transformação de formulário duas vezes para contornar a pendência.
 
 Confirme as limitações de erro/refresh descritas na arquitetura antes de reutilizar a operação. Não transportar cause como contrato público nem transformar retorno de erro em sucesso. Mudança de contrato precisa preservar os consumidores e ter comportamento definido.
 
@@ -47,10 +47,10 @@ Confirme as limitações de erro/refresh descritas na arquitetura antes de reuti
 
 1. Localizar schema, tipos, formulário e campos equivalentes. Separar entrada digitada, output transformado e DTO; conferir defaults e dados carregados antes de preencher edição.
 2. Compor Form existente e campos RHF, com nomes correspondentes ao contrato. InputRegister usa contexto/controller; Select exportado pela família é o adaptador registrado, e Select.Unregister é a base sem registro.
-3. Usar a superfície do contexto definido em design.md. O formulário financeiro já compartilha LIGHT_FIELD_CLASS e labels escuras; reutilizar essa composição do domínio sem copiar overrides para todos os campos do projeto.
+3. Usar os tokens de aparência resolvidos por `data-theme`, conforme design.md. Props de variante `white`/`gray` existentes são legado de compatibilidade; não são requisito para campos novos nem motivo para migração em massa. Reutilizar a composição financeira quando apropriada, sem espalhar overrides do domínio.
 4. Compartilhar somente os campos realmente comuns, como criação/edição financeira. useWatch em ChargeDefinitionFormFields mostra dias de tolerância conforme política; preservar regra/valores do contrato, sem inferir autorização a partir de visibilidade.
 5. Conectar submit à operação/useMutation existente, indicar pending, impedir envio duplicado e preservar valores em falha. Verificar sucesso/falha antes de fechar ou mostrar confirmação.
-6. Conferir label/required/erro/ajuda e comportamento de teclado. Input já associa erro por ID; Select tem lacuna conhecida em aria-describedby. Reutilizar não comprova acessibilidade completa nem autoriza perpetuar o defeito em contrato novo.
+6. Conferir semântica, label/required/erro/ajuda, descrição acessível, foco e comportamento de teclado também em controles locais que não usam componentes compartilhados. Mensagens de erro devem ser associadas por descrição acessível. Reuso não comprova acessibilidade completa.
 
 Referências: [CreateChargeDefinitionModal](../src/components/pages/admin/gestao-financeira/CreateChargeDefinitionModal.tsx), [EditChargeDefinitionModal](../src/components/pages/admin/gestao-financeira/EditChargeDefinitionModal.tsx) e [schema](../src/schemas/billing/chargeDefinition.ts). Casts atuais do schema/resolver e a transformação string→número são limitações a avaliar, não padrão para copiar. Confirme a entrada e a saída esperadas antes de reutilizar esse schema.
 
@@ -71,13 +71,13 @@ Table.Root/Content/Pagination já oferecem composição/estados; inspecione os c
 
 Mapeie visibilidade, acesso direto à rota e autorização por operação separadamente. Consulte helpers/configuração existentes; não ampliar permissão para liberar UI nem considerar `enabled: canRead` uma barreira de segurança. Menu, rota e checagem local por operação não estão uniformizados na gestão financeira; confira as diferenças descritas na arquitetura.
 
-Use [UserStatusConfirmationModal](../src/components/pages/admin/users/UserStatusConfirmationModal.tsx) como referência de confirmação com identificação do usuário, consequência e indicação de operação em andamento. [patchUserStatusAction](../src/actions/admin/users/patchStatus.ts) é a operação conectada na tela. Reutilizar intenção não significa copiar cegamente bloqueio de fechamento, toast ou foco; conferir as limitações do modal e o comportamento esperado. Nunca depender apenas da cor vermelha para explicar risco. Não criar confirmação destrutiva onde o fluxo não exige, nem mudar regra de negócio por estilo.
+Use [UserStatusConfirmationModal](../src/components/pages/admin/users/UserStatusConfirmationModal.tsx) como referência de confirmação com identificação do usuário, consequência e indicação de operação em andamento. [patchUserStatusAction](../src/server/actions/admin/users/patchStatus.ts) é a operação conectada na tela. Reutilizar intenção não significa copiar cegamente bloqueio de fechamento, toast ou foco; conferir as limitações do modal e o comportamento esperado. Nunca depender apenas da cor vermelha para explicar risco. Não criar confirmação destrutiva onde o fluxo não exige, nem mudar regra de negócio por estilo.
 
 ## 9. Apresentação, mobile-first e acessibilidade
 
 Siga contexto e fontes executáveis de design.md; o Design System atual consiste nas primitivas/tokens existentes, com contratos ainda em evolução. Geist é a fonte de referência, mas o mapeamento global ainda não está alinhado.
 
-Comece com fluxo vertical e ações essenciais alcançáveis; aumente colunas quando houver espaço de conteúdo. Escolha ordem/resumo da tabela mobile conscientemente, sem remover função só para caber. Verifique texto longo, valores, zoom, erros, vazio e altura com teclado virtual. Teste foco/teclado/nome acessível, scroll e fechamento de modal/drawer no ambiente disponível; ModalRoot não garante foco/inert completos. Verifique o contrato executável e seus consumidores ao modificar modal ou variantes de campos.
+Comece com fluxo vertical e ações essenciais alcançáveis; aumente colunas quando houver espaço de conteúdo. Escolha ordem/resumo da tabela mobile conscientemente, sem remover função só para caber. Verifique texto longo, valores, zoom, erros, vazio e altura com teclado virtual. Todo controle, inclusive o implementado localmente, deve oferecer semântica, nome/descrição acessíveis conforme necessidade, operação por teclado, foco visível e estados disabled/pending comunicados. Ajuda importante deve estar visível ou ser descrita; tooltips para ações ambíguas precisam funcionar por foco/hover e Escape, como complemento. Verifique também scroll e fechamento de modal/drawer; ModalRoot não garante foco/inert completos. Consulte o contrato executável ao modificar componentes ou variantes legadas.
 
 ## 10. Validar e entregar
 

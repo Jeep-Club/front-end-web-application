@@ -60,8 +60,9 @@ Durante a implementação:
 - Preserve contratos e validações; respeite autenticação, autorização e regras
   de negócio. Visibilidade de interface não substitui autorização da operação.
 - Siga o design documentado e considere mobile-first, estados e acessibilidade.
-- Em componentes interativos, use `cursor-pointer` para indicar a ação disponível; preserve um cursor de estado apropriado, como `cursor-not-allowed`, quando o controle estiver desabilitado.
-- Para superfícies alternativas de campos compartilhados, prefira `variant="white"` como padrão e `variant="gray"` para a versão cinza explícita; mantenha essa convenção também ao adaptar inputs.
+- Em ações interativas, sinalize a affordance com `cursor-pointer`; controles desabilitados devem comunicar seu estado. Não aplique cursor de ação a campos de texto.
+- Os tokens CSS selecionados por `data-theme` definem a aparência dos campos compartilhados. Variantes `white`/`gray` existentes são compatibilidade legada; não são padrão obrigatório para novos campos nem justificam migração em massa. Reutilize componentes quando adequado, preservando acessibilidade e o contrato local.
+- Controles interativos, inclusive os locais que não usam componentes compartilhados, precisam de semântica apropriada, nome e descrição acessíveis quando pertinentes, operação por teclado, foco visível e estados disabled/pending comunicados. Ajuda relevante deve permanecer visível ou ser descrita; tooltips podem esclarecer ações ambíguas se funcionarem por foco/hover e Escape, sem substituir nome acessível ou validação.
 - Documente contratos e decisões não evidentes conforme [documentação no código](docs/development.md#documentação-no-código), incluindo testes e infraestrutura.
 - Mantenha stories e documentação interativa coerentes com mudanças relevantes de interface, seguindo [storybook-story](.agents/skills/storybook-story/SKILL.md).
 - Distinga limitações do código de padrões a reproduzir. Se um requisito exigir

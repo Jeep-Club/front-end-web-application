@@ -51,4 +51,8 @@ Não há prop `loading`: a tela deve indicar o andamento no conteúdo e decidir 
 
 O botão nativo responde a Enter/Espaço e recebe foco visível. `tabIndex` é zero por padrão; evite valores positivos. Não aninhe links ou outros botões no conteúdo. Ao usar somente um ícone, esconda o SVG decorativo de leitores de tela e nomeie o botão.
 
+Alterne o tema na toolbar para conferir os tokens de cor e os estados. Ações disponíveis indicam `cursor-pointer`; controles desabilitados indicam indisponibilidade. Um botão local pode manter função e aparência próprias, mas precisa conservar semântica nativa, nome acessível, foco visível e bloqueio real quando desabilitado. Não é necessário substituir todas as ações da aplicação por Button.
+
+Ajuda importante deve permanecer visível ou associada ao controle. Tooltip pode complementar uma ação por ícone, desde que funcione com foco/hover e Escape e permita ler seu conteúdo; `title` sozinho não comprova essas condições e não substitui `aria-label`. O catálogo não fornece uma implementação compartilhada de tooltip nesta família.
+
 Button é usado nas ações do [PageHeader](?path=/docs/componentes-pageheader--docs). A tela permanece responsável por permissões, validação, efeitos e tratamento de erros.

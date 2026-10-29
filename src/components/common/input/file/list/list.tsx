@@ -31,14 +31,14 @@ export function ListFile({ files, onRemove, className, variant = "white" }: List
             {files.map((file, idx) => (
                 <li 
                     key={`${file.name}-${idx}`} 
-                    className={twMerge("flex items-center justify-between p-3 rounded-lg border transition-colors", variant === "white" ? "border-j-gray-300 bg-j-white" : "bg-input-bg border-input-border hover:border-input-border-hover")}
+                    className={twMerge("flex items-center justify-between p-3 rounded-lg border transition-colors", variant === "white" ? "border-j-gray-300 bg-j-white" : "bg-input-legacy-bg border-input-border hover:border-input-border-hover")}
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className={twMerge("w-10 h-10 flex items-center justify-center rounded-md shrink-0", variant === "white" ? "bg-j-gray-100 text-j-gray-500" : "bg-background text-j-gray-400")}>
                             {getFileIcon(file.type)}
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                            <span className={twMerge("text-sm font-medium truncate", variant === "white" ? "text-j-gray-700" : "text-input-text")} title={file.name}>
+                            <span className={twMerge("text-sm font-medium truncate", variant === "white" ? "text-j-gray-700" : "text-input-legacy-text")} title={file.name}>
                                 {file.name}
                             </span>
                             <span className={twMerge("text-xs", variant === "white" ? "text-j-gray-500" : "text-j-white/70")}>

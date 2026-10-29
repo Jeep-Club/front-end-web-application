@@ -16,14 +16,13 @@ const meta = {
     args: {
         label: "Categoria",
         name: "category",
-        labelClassName: "text-j-gray-700",
         options: OPTIONS,
         onChange: fn(),
     },
     argTypes: {
         multiple: { control: "boolean" },
         searchable: { control: "boolean" },
-        variant: { control: "radio", options: ["white", "gray"] },
+        variant: { control: "radio", options: ["white", "gray"], description: "Compatibilidade de superfície; use a toolbar para escolher o tema.", table: { category: "Compatibilidade" } },
         required: { control: "boolean" },
         disabled: { control: "boolean" },
         maxWidth: { control: "text" },
@@ -90,4 +89,18 @@ export const White: Story = {
 
 export const Gray: Story = {
     args: { variant: "gray" },
+};
+
+export const ComOpcoesDesabilitadas: Story = {
+    args: {
+        multiple: true,
+        searchable: true,
+        options: [
+            { value: "blocked-first", label: "Indisponível no início", disabled: true },
+            { value: "trilhas", label: "Trilhas" },
+            { value: "blocked-middle", label: "Indisponível no meio", disabled: true },
+            { value: "eventos", label: "Eventos" },
+            { value: "blocked-last", label: "Indisponível no fim", disabled: true },
+        ],
+    },
 };

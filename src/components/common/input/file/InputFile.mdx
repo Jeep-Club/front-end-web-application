@@ -15,11 +15,11 @@ Seleciona arquivos locais por clique ou arrastar e soltar, mantém os valores no
 - **RemoveFile/ButtonIcon:** remoção com nome acessível “Remover arquivo”. Não usa o Button comum e não depende de sua story.
 - **ImageCropDialog:** nas apresentações de imagem, abre dialog nativo via portal e usa canvas para aplicar o recorte.
 
-Não é necessário TanStack Query, sessão, serviço de upload ou provider global. O adaptador Next.js, CSS e fontes já vêm do preview. Files dos testes são sintéticos, criados no navegador, sem mocks do componente ou do dropzone.
+Não é necessário TanStack Query, sessão, serviço de upload ou provider global. O adaptador Next.js, CSS e tema já vêm do preview. Files dos testes são sintéticos, criados no navegador, sem mocks do componente ou do dropzone.
 
 ## Arquivos gerais
 
-`variant="white"` é o padrão em InputFile, Image e Image2: área branca com borda cinza, textos escuros e previews/lista coerentes com essa superfície. Use `variant="gray"` explicitamente para a área cinza. Todas as stories usam canvas neutro; o formato do recorte e os limites de seleção são independentes da variante.
+InputFile, Image e Image2 usam tokens que acompanham `data-theme`, inclusive na superfície padrão. `white`/`gray` continuam aceitos como opções legadas de apresentação; não é preciso escolhê-los para alternar tema. Use a toolbar Claro/Escuro para comparar os cenários. Formato do recorte e limites de seleção são independentes da aparência.
 
 ### Exemplo com formulário e validação
 

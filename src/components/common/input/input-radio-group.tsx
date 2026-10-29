@@ -39,8 +39,8 @@ export function InputRadioGroupBase({ name, options, value, onChange, className,
                         className="peer sr-only"
                     />
                     {/* Estilo baseado no seu InputCheckbox, mas arredondado (Radio) */}
-                    <span className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-checked:border-j-yellow-400 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
-                        <span className="h-2.5 w-2.5 rounded-full bg-j-blue-800 opacity-0 transition-opacity peer-checked:opacity-100" />
+                    <span aria-hidden="true" className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-checked:border-j-yellow-400 peer-checked:[&>span]:opacity-100 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
+                        <span className="h-2.5 w-2.5 rounded-full bg-j-blue-800 opacity-0 transition-opacity" />
                     </span>
                     <span className="text-sm font-medium text-j-gray-700">{opt.label}</span>
                 </label>
@@ -75,8 +75,8 @@ export function InputRadioGroupRegister({ name, options, className, optionClassN
                         onBlur={onBlur}
                         className="peer sr-only"
                     />
-                    <span className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-checked:border-j-yellow-400 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
-                        <span className="h-2.5 w-2.5 rounded-full bg-j-blue-800 opacity-0 transition-opacity peer-checked:opacity-100" />
+                    <span aria-hidden="true" className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors peer-checked:border-j-yellow-400 peer-checked:[&>span]:opacity-100 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
+                        <span className="h-2.5 w-2.5 rounded-full bg-j-blue-800 opacity-0 transition-opacity" />
                     </span>
                     <span className="text-sm font-medium text-j-gray-700">{opt.label}</span>
                 </label>
