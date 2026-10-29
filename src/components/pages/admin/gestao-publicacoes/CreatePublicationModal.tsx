@@ -1,27 +1,28 @@
 "use client";
 
-import { useRef } from "react";
-import styles from "./CreatePublicationModal.module.css";
-import { useFormContext } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { Newspaper, X } from "lucide-react";
-import { Form } from "@/components/common/form";
 import { Button, ButtonIcon } from "@/components/common/button";
-import { InputRegister } from "@/components/common/input/input-register";
-import { SelectRegister } from "@/components/common/select/select-register";
-import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister";
+import { Form } from "@/components/common/form";
 import { InputFile } from "@/components/common/input/file";
-import { useModal } from "@/providers/ModalProvider";
-import { useUserStore } from "@/stores/userStore";
-import { hasPermission } from "@/utils/permission/hasPermission";
+import { InputRegister } from "@/components/common/input/input-register";
+import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister";
+import { SelectRegister } from "@/components/common/select/select-register";
 import { publicationCreationTypes } from "@/config/publicationCreation";
-import { publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
-import { createPublicationAction } from "@/actions/publications/create";
-import { mutateDraftPublicationAction } from "@/actions/publications/draft";
-import { uploadImageAction } from "@/actions/media/upload-image";
-import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
+import { useModal } from "@/providers/ModalProvider";
+import { publicationFormSchema, type CreatePublicationRequest, type PublicationFormData } from "@/schemas/publications/create";
+import { uploadImageAction } from "@/server/actions/media/upload-image";
+import { createPublicationAction } from "@/server/actions/publications/create";
+import { useUserStore } from "@/stores/userStore";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
+import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
+import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
+import { hasPermission } from "@/utils/permission/hasPermission";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Newspaper, X } from "lucide-react";
+import { useRef } from "react";
+import { useFormContext } from "react-hook-form";
+
+import toast from "react-hot-toast";
+import styles from "./CreatePublicationModal.module.css";
 
 function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
     const { setClose } = useModal();
@@ -133,7 +134,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             void queryClient.invalidateQueries({ queryKey: ["publications"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Não foi possível criar a publicação."),
+
     });
     if (!types.length) return null;
     const title = initialType === "EVENT" ? "Criar evento" : initialType === "NOTICE" ? "Criar aviso" : initialType === "SERVICE" ? "Criar serviço" : "Criar publicação";

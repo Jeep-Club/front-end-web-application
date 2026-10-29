@@ -1,12 +1,12 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { X, Wrench, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { getToolDetailAction } from "@/actions/tools/detail";
+import { getToolDetailAction } from "@/server/actions/tools/detail";
 import { getMediaImageUrl } from '@/utils/media/imageUrl';
+import { useQuery } from "@tanstack/react-query";
+import { LoaderCircle,Wrench,X } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",

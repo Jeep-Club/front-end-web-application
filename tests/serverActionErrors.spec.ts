@@ -1,81 +1,77 @@
-import { captureAction } from '@/utils/actions/captureAction';
-import { ActionError, unwrapActionResult } from '@/utils/actions/actionResult';
-import { extractApiErrorMessage, SESSION_EXPIRED_MESSAGE } from '@/utils/http/apiError';
+import { ActionError, getActionFailure } from '@/utils/http/ActionError';
+import { extractApiErrorMessage, SESSION_EXPIRED_MESSAGE, toActionError } from '@/utils/http/apiError';
 import { mutationErrorHandler } from '@/providers/QueryProvider/handlers/mutation/onError';
+import { queryErrorHandler } from '@/providers/QueryProvider/handlers/query/onError';
+import { QueryClient, MutationCache, QueryCache } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { saveMedicalProfileAction } from '@/actions/profile/medical-profile';
-import { saveMedicalProfileAction as saveMedicalProfileTransport } from '@/server/actions/profile/medical-profile';
-import { z } from 'zod';
+import { saveMedicalProfileAction } from '@/server/actions/profile/medical-profile';
 
 jest.mock('react-hot-toast', () => ({ toast: { error: jest.fn() } }));
 jest.mock('@/services/fetchWrapper/actionFetchWrapper', () => ({ __esModule: true, default: jest.fn() }));
-
-const problem = {
-    code: 'CONFLICT', status: 409, detail: 'Este cadastro já existe.',
-    title: 'Conflito', timestamp: '2026-10-21T00:00:00Z',
-};
-
+const problem = { code: 'CONFLICT', status: 409, detail: 'Este cadastro já existe.' };
+const redacted = (error: ActionError) => Object.assign(new Error('An error occurred in the Server Components render.'), { digest: error.digest });
 beforeEach(() => jest.clearAllMocks());
 
-it('preserves backend detail instead of replacing it with a generic code message', () => {
+it('preserves backend detail and prioritizes field validation messages', () => {
     expect(extractApiErrorMessage({ rawData: problem }, 'fallback')).toBe(problem.detail);
+    expect(extractApiErrorMessage({ rawData: { ...problem, errors: [{ field: 'cpf', code: 'INVALID', message: 'Informe um CPF válido.' }] } }, 'fallback')).toBe('Informe um CPF válido.');
 });
 
-it('prioritizes the backend field validation message', () => {
-    expect(extractApiErrorMessage({ rawData: { ...problem, errors: [
-        { field: 'cpf', code: 'INVALID', message: 'Informe um CPF válido.' },
-    ] } }, 'fallback')).toBe('Informe um CPF válido.');
+it('the action propagates the HTTP error unchanged without an adapter or result envelope', async () => {
+    const failure = toActionError({ rawData: problem, status: 409 });
+    jest.mocked(actionFetchWrapper).mockRejectedValue(failure);
+    await expect(saveMedicalProfileAction({} as MedicalProfileRequest)).rejects.toBe(failure);
 });
 
-it('transports a real action failure as plain JSON and reconstructs it only in the caller', async () => {
-    jest.mocked(actionFetchWrapper).mockRejectedValue({ rawData: problem, status: 409 });
-    const result = await saveMedicalProfileTransport({} as MedicalProfileRequest);
-    expect(result).toEqual({ ok: false, error: {
-        message: problem.detail, code: 'CONFLICT', status: 409, errors: undefined,
-    } });
-    const serialized = JSON.parse(JSON.stringify(result));
-    expect(() => unwrapActionResult(serialized)).toThrow(problem.detail);
-    await expect(saveMedicalProfileAction({} as MedicalProfileRequest)).rejects.toThrow(problem.detail);
+it('only public fields survive production error transport', () => {
+    const failure = new ActionError(problem.detail, { code: problem.code, status: 409, cause: { rawData: 'private server response', stack: 'server paths' }, errors: [{ field: 'cpf', code: 'INVALID', message: 'Confira o CPF.' }] });
+    const transported = redacted(failure);
+    expect(getActionFailure(transported)).toEqual({ message: problem.detail, code: 'CONFLICT', status: 409, errors: [{ field: 'cpf', code: 'INVALID', message: 'Confira o CPF.' }] });
+    expect(decodeURIComponent(failure.digest)).not.toMatch(/private server response|server paths|rawData|cause/);
 });
 
-it('preserves successful values including null, void and an existing ok:false application result', async () => {
-    for (const value of [null, undefined, { ok: false, message: 'Confira os dados.' }, { id: 1 }]) {
-        expect(unwrapActionResult(await captureAction(async () => value))).toEqual(value);
-    }
-});
-
-it('preserves session expiration through serialization and nested action handlers', async () => {
-    const result = await captureAction(async () => { throw new ActionError(SESSION_EXPIRED_MESSAGE); });
-    expect(result).toMatchObject({ ok: false, error: { code: 'SESSION_EXPIRED', message: SESSION_EXPIRED_MESSAGE } });
-    expect(() => unwrapActionResult(JSON.parse(JSON.stringify(result)))).toThrow(SESSION_EXPIRED_MESSAGE);
-});
-
-it('does not expose unexpected exception details or raw Zod diagnostics', async () => {
-    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
-    try {
-        const result = await captureAction(async () => { throw new Error('private connection credentials'); });
-        expect(JSON.stringify(result)).not.toContain('private connection credentials');
-        expect(result).toMatchObject({ ok: false, error: { code: 'UNEXPECTED_ERROR' } });
-        const validation = await captureAction(async () => z.number().parse('invalid'));
-        expect(validation).toMatchObject({ ok: false, error: { code: 'VALIDATION_ERROR' } });
-    } finally { log.mockRestore(); }
-});
-
-it('keeps framework redirects out of the error envelope', async () => {
-    const redirect = Object.assign(new Error('NEXT_REDIRECT'), { digest: 'NEXT_REDIRECT;replace;/login;307;' });
-    await expect(captureAction(async () => { throw redirect; })).rejects.toBe(redirect);
-});
-
-it('does not display a second global toast when a mutation has a local handler', () => {
-    mutationErrorHandler(new ActionError(problem.detail), true);
-    expect(toast.error).not.toHaveBeenCalled();
-    mutationErrorHandler(new ActionError(problem.detail));
+it('a global mutation handler restores metadata before the local callback and emits one toast', async () => {
+    const client = new QueryClient({ mutationCache: new MutationCache({ onError: mutationErrorHandler }) });
+    const failure = redacted(toActionError({ rawData: problem, status: 409 }));
+    const local = jest.fn((error: Error) => expect(error.message).toBe(problem.detail));
+    const mutation = client.getMutationCache().build(client, { mutationFn: async () => { throw failure; }, onError: local, retry: false });
+    await expect(mutation.execute(undefined)).rejects.toBe(failure);
+    expect(failure).toMatchObject({ message: problem.detail, code: 'CONFLICT', status: 409 });
+    expect(local).toHaveBeenCalledTimes(1);
     expect(toast.error).toHaveBeenCalledTimes(1);
     expect(toast.error).toHaveBeenCalledWith(problem.detail);
+    client.clear();
 });
 
-it('does not expose missing environment variable names to users', async () => {
-    const result = await captureAction(async () => { throw new ActionError('API_FRONTEND_KEY is not configured'); });
-    expect(JSON.stringify(result)).not.toContain('API_FRONTEND_KEY');
+it('a global query handler restores the message used by query.error and its toast', async () => {
+    const client = new QueryClient({ queryCache: new QueryCache({ onError: queryErrorHandler }), defaultOptions: { queries: { retry: false } } });
+    const failure = redacted(toActionError({ rawData: problem, status: 409 }));
+    await expect(client.fetchQuery({ queryKey: ['contract'], queryFn: async () => { throw failure; } })).rejects.toBe(failure);
+    expect(client.getQueryState(['contract'])?.error).toMatchObject({ message: problem.detail, status: 409 });
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith(problem.detail);
+    client.clear();
+});
+
+it('session expiration survives native error redaction', () => {
+    const failure = redacted(toActionError(new Error(SESSION_EXPIRED_MESSAGE)));
+    expect(getActionFailure(failure)).toMatchObject({ code: 'SESSION_EXPIRED', status: 401, message: SESSION_EXPIRED_MESSAGE });
+});
+
+it('partial-save context preserves API metadata and cannot hide an expired session', () => {
+    const permission = redacted(toActionError({ rawData: { ...problem, status: 403, code: 'ACCESS_DENIED' }, status: 403 }));
+    expect(getActionFailure(new ActionError('Dados salvos, mas a foto não.', { cause: permission }))).toMatchObject({ status: 403, code: 'ACCESS_DENIED', message: `Dados salvos, mas a foto não. ${problem.detail}` });
+    const expired = redacted(toActionError(new Error(SESSION_EXPIRED_MESSAGE)));
+    expect(getActionFailure(new ActionError('Foto não salva.', { cause: expired }))).toMatchObject({ status: 401, code: 'SESSION_EXPIRED', message: SESSION_EXPIRED_MESSAGE });
+});
+
+it.each(['12345', 'NEXT_REDIRECT;replace;/login;307;', 'JEEP_API_ERROR_V1:%', 'JEEP_API_ERROR_V1:%7B%22message%22%3A42%7D'])('ignores opaque or malformed digest %s', digest => {
+    expect(getActionFailure(Object.assign(new Error('private'), { digest }))).toBeUndefined();
+});
+
+it('does not expose unexpected exception details or environment variable names', () => {
+    expect(extractApiErrorMessage(new Error('private connection credentials'), 'safe fallback')).toBe('safe fallback');
+    const failure = new ActionError('API_FRONTEND_KEY is not configured');
+    expect(decodeURIComponent(failure.digest)).not.toContain('API_FRONTEND_KEY');
 });

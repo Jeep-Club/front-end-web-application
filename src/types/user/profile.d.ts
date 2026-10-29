@@ -36,7 +36,7 @@ interface MeProfileResponse {
     id: number;
     name: string;
     birthDate: string | null;
-    email: string;
+    email: string | null;
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;

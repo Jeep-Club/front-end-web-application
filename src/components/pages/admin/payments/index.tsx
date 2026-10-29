@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, ShieldX } from "lucide-react";
-import { listPaymentsAction } from "@/actions/payments";
+import { listPaymentsAction } from "@/server/actions/payments";
 import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";

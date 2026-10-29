@@ -1,5 +1,5 @@
 import { availablePublishedActions } from "@/config/publicationPublishedActions";
-import { mutatePublishedPublicationAction } from "@/actions/publications/published";
+import { mutatePublishedPublicationAction } from "@/server/actions/publications/published";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 

@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { BadgeCheck, CalendarCheck, X } from "lucide-react";
-import { cancelMyEventRegistrationAction, getMyEventRegistrationAction, registerForEventAction } from "@/actions/publications/event-registration";
+import { cancelMyEventRegistrationAction, getMyEventRegistrationAction, registerForEventAction } from "@/server/actions/publications/event-registration";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 

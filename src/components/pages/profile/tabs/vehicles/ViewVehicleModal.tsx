@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from "react";
-import { useVehicleDetailsSteps } from "@/hooks/useVehicleDetailsSteps";
-import { useQuery } from "@tanstack/react-query";
-import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
+import { useVehicleDetailsSteps } from "@/hooks/useVehicleDetailsSteps";
 import { useModal } from "@/providers/ModalProvider";
-import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
+import { getVehicleDetailAction } from "@/server/actions/vehicles/detail-member";
 import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { useState } from "react";
+import { twMerge } from "tailwind-merge";
 import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 
 const FUEL_TYPE_LABELS: Record<FuelType, string> = {

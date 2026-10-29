@@ -1,16 +1,16 @@
 ﻿"use client";
 
 import {
-    useQuery,
-    useQueryClient,
+	useQuery,
+	useQueryClient,
 } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 
-import { getUserProfileAction } from "@/actions/profile/get";
-import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
+import { getUserProfileAction } from "@/server/actions/profile/get";
+import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
+import { maskCPF,maskDate,maskPhoneNumber } from "@/utils/masks";
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";

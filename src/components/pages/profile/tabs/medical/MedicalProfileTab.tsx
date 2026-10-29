@@ -1,22 +1,22 @@
 "use client";
 
-import type { ElementType } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-    Activity,
-    Ambulance,
-    ClipboardPlus,
-    Edit3,
-    HeartPulse,
-    Pill,
-    Plus,
-    RefreshCw,
-    ShieldPlus,
+	Activity,
+	Ambulance,
+	ClipboardPlus,
+	Edit3,
+	HeartPulse,
+	Pill,
+	Plus,
+	RefreshCw,
+	ShieldPlus,
 } from "lucide-react";
+import type { ElementType } from "react";
 
-import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
+import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
 import { EditMedicalProfileModal } from "./EditMedicalProfileModal";
 
 const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string> = {
