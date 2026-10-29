@@ -4,7 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Users, Wrench } from "lucide-react";
+
 import { Avatar } from "@/components/common/avatar";
+
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
@@ -97,6 +99,7 @@ export function FeedSidebar() {
                                         </p>
                                     </div>}
                                 </div>
+
                             </li>;
                         })}
                     </ul>

@@ -9,8 +9,10 @@ import { listDependentsAction } from "@/server/actions/dependents";
 import { useModal } from "@/providers/ModalProvider";
 import { maskCPF } from "@/utils/masks";
 import { isValidCPF } from "@/utils/validate/validateCPF";
+
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
+
 
 export interface EventRegistrationFormData {
     vehicleId: number;
@@ -90,6 +92,7 @@ export function EventRegistrationModal({ eventId, onSubmit, canRequestGuest }: {
                             </button>;
                         })}
                     </div> : <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Você ainda não tem um veículo ativo cadastrado. <Link href="/profile" onClick={setClose} className="font-bold underline">Cadastrar veículo</Link></p>}
+
                 </fieldset>
 
                 <fieldset>
