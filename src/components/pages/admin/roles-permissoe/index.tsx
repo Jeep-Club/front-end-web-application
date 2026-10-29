@@ -1,20 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect,useState } from "react";
 
-import { Eye, KeyRound, Pencil, Plus, ShieldCheck, Users } from "lucide-react";
+import { Eye,KeyRound,ListChecks,Lock,Pencil,Plus,Power,PowerOff,ShieldCheck,Trash2,Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
+import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
-import { Button, ButtonIcon } from "@/components/common/button";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
+import { getRolesTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { useModal } from "@/providers/ModalProvider";
+import { listPermissionsAction } from "@/server/actions/authorization/list-permissions";
+import { listRolesAction } from "@/server/actions/authorization/list-roles";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { listRolesAction } from "@/actions/authorization/list-roles";
 import { CreateRoleModal } from "./CreateRoleModal";
-import { ViewRoleModal } from "./ViewRoleModal";
+import { DeleteRoleModal } from "./DeleteRoleModal";
 import { EditRoleModal } from "./EditRoleModal";
+import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
+import { getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
+import { RolePermissionsModal } from "./RolePermissionsModal";
+import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
+import { UserRoleAssignmentsTab } from "./UserRoleAssignmentsTab";
+import { ViewRoleModal } from "./ViewRoleModal";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
@@ -22,10 +33,10 @@ const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     DELETED: "Excluído",
 };
 
-const ROLE_STATUS_STYLE: Record<RoleStatus, string> = {
-    ACTIVE: "bg-j-green-100 text-j-green-700",
-    INACTIVE: "bg-j-gray-200 text-j-gray-600",
-    DELETED: "bg-red-100 text-red-600",
+const ROLE_STATUS_DOT_STYLE: Record<RoleStatus, string> = {
+    ACTIVE: "bg-j-green-500",
+    INACTIVE: "bg-j-gray-400",
+    DELETED: "bg-red-500",
 };
 
 const TABS = [
@@ -35,6 +46,13 @@ const TABS = [
 ] as const;
 
 type TabKey = typeof TABS[number]["key"];
+type RoleStatusFilter = RoleStatus;
+const ROLE_FILTERS: Array<{ key: RoleStatusFilter; label: string }> = [
+    { key: "ACTIVE", label: "Ativos" },
+    { key: "INACTIVE", label: "Inativos" },
+    { key: "DELETED", label: "Excluídos" },
+];
+const deletedDateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" });
 
 const TABS_GRID_COLS: Record<number, string> = {
     1: "grid-cols-1",
@@ -46,6 +64,12 @@ export default function RolesPermissions() {
     const permissions = useUserStore((state) => state.permissions);
     const canCreateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_CREATE");
     const canUpdateRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_UPDATE");
+    const canEnableRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_ENABLE");
+    const canDisableRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_DISABLE");
+    const canDeleteRole = hasPermission(permissions, "AUTHORIZATION", "ROLE_DELETE");
+    const canReadPermission = hasPermission(permissions, "AUTHORIZATION", "PERMISSION_READ");
+    const canAssignPermission = hasPermission(permissions, "AUTHORIZATION", "PERMISSION_ASSIGN");
+    const canRevokePermission = hasPermission(permissions, "AUTHORIZATION", "PERMISSION_REVOKE");
 
     const visibleTabs = TABS.filter((tab) =>
         hasPermission(permissions, tab.module, tab.action)
@@ -58,6 +82,26 @@ export default function RolesPermissions() {
     const [activeTab, setActiveTab] = useState<TabKey>(
         () => visibleTabs[0]?.key ?? TABS[0].key
     );
+    const [roleStatusFilter, setRoleStatusFilter] = useState<RoleStatusFilter>("ACTIVE");
+
+    // Tour do módulo de Roles e Permissões (Mobile e Desktop)
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_admin_roles",
+        steps: getRolesTourSteps,
+        autoStartOnFirstVisit: true,
+        enabled: permissions.length > 0,
+    });
+
+    const handleRestartTour = () => {
+        if (activeTab !== "roles") {
+            setActiveTab("roles");
+            setTimeout(() => {
+                restartTour();
+            }, 100);
+        } else {
+            restartTour();
+        }
+    };
 
     useEffect(() => {
         if (!isTabVisible(activeTab)) {
@@ -71,6 +115,26 @@ export default function RolesPermissions() {
         queryFn: listRolesAction,
         enabled: activeTab === "roles" && isTabVisible("roles"),
     });
+    const filteredRoles = (roles ?? []).filter((role) => role.status === roleStatusFilter);
+    const roleCounts = ROLE_FILTERS.reduce<Record<RoleStatusFilter, number>>((counts, filter) => {
+        counts[filter.key] = (roles ?? []).filter((role) => role.status === filter.key).length;
+        return counts;
+    }, { ACTIVE: 0, INACTIVE: 0, DELETED: 0 });
+
+    const {
+        data: permissionsList,
+        isLoading: isLoadingPermissions,
+        isError: isPermissionsError,
+    } = useQuery({
+        queryKey: ["authorization", "permissions"],
+        queryFn: listPermissionsAction,
+        enabled: activeTab === "permissions" && isTabVisible("permissions"),
+    });
+
+    const permissionsByModule = (permissionsList ?? []).reduce<Record<string, PermissionResponse[]>>((acc, permission) => {
+        (acc[permission.module] ??= []).push(permission);
+        return acc;
+    }, {});
 
     const activeTabLabel = TABS.find((tab) => tab.key === activeTab)?.label;
 
@@ -89,17 +153,53 @@ export default function RolesPermissions() {
         setOpen();
     };
 
+    const handleOpenToggleRoleStatus = (role: RoleResponse) => {
+        setContent(
+            <ToggleRoleStatusModal
+                roleId={role.id}
+                roleName={role.name}
+                nextStatus={role.status === "ACTIVE" ? "DEACTIVATE" : "ACTIVATE"}
+            />
+        );
+        setOpen();
+    };
+
+    const handleOpenDeleteRole = (role: RoleResponse) => {
+        setContent(<DeleteRoleModal roleId={role.id} roleName={role.name} />);
+        setOpen();
+    };
+
+    const handleOpenRolePermissions = (role: RoleResponse) => {
+        setContent(<RolePermissionsModal roleId={role.id} roleName={role.name} />);
+        setOpen();
+    };
+
+    const handleOpenManageRolePermissions = (role: RoleResponse) => {
+        setContent(<ManageRolePermissionsModal roleId={role.id} roleName={role.name} roleKind={role.kind} />);
+        setOpen();
+    };
+
     return (
-        <div className="h-full w-full p-3 md:p-4">
+        <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
-                    title="Cargos e permissões"
+                    id="tour-roles-header"
+                    title="Gestão de roles e permissões"
                     breadcrumbs={[
-                        { label: "Início", href: "/feed" },
-                        { label: "Painel admin", href: "/admin" },
-                        { label: "Gestão" },
+                        { label: "Home", href: "/feed" },
+                        { label: "Gestão Administrativa", href: "/admin" },
                         { label: activeTabLabel ?? "" },
                     ]}
+                    actions={
+                        activeTab === "roles" ? (
+                            <TourHelpButton
+                                id="tour-roles-help-btn"
+                                onClick={handleRestartTour}
+                                label="Como gerenciar cargos?"
+                                className="w-full justify-center sm:w-auto"
+                            />
+                        ) : undefined
+                    }
                 />
 
                 <div className={twMerge("grid gap-2 md:gap-3", TABS_GRID_COLS[visibleTabs.length] ?? "grid-cols-1")}>
@@ -127,21 +227,30 @@ export default function RolesPermissions() {
 
                 {activeTab === "roles" && isTabVisible("roles") && (
                     <div className="flex w-full flex-col gap-4">
-                        <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                        <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                                <div>
-                                    <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
-                                    <p className="text-sm text-j-gray-600">
-                                        {isLoading ? "Carregando..." : `${roles?.length ?? 0} cadastrado(s)`}
-                                    </p>
+                                <div className="flex items-center gap-3">
+                                    <ManagementBackButton />
+                                    <div>
+                                        <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
+                                    </div>
                                 </div>
 
                                 {canCreateRole && (
-                                    <Button onClick={handleOpenCreateRole}>
+                                    <Button id="tour-create-role-btn" onClick={handleOpenCreateRole}>
                                         <Plus size={18} />
                                         Criar cargo
                                     </Button>
                                 )}
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 border-b border-j-gray-200 px-4 py-3 md:px-6" role="tablist" aria-label="Filtrar cargos por situação">
+                                {ROLE_FILTERS.map(({ key, label }) => (
+                                    <button key={key} type="button" role="tab" aria-selected={roleStatusFilter === key} onClick={() => setRoleStatusFilter(key)}
+                                        className={twMerge("inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors", roleStatusFilter === key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800")}>
+                                        {label}<span className={twMerge("rounded-full px-2 py-0.5 text-xs", roleStatusFilter === key ? "bg-j-white/15" : "bg-j-gray-100")}>{roleCounts[key]}</span>
+                                    </button>
+                                ))}
                             </div>
 
                             {isError && (
@@ -150,9 +259,9 @@ export default function RolesPermissions() {
                                 </p>
                             )}
 
-                            {!isLoading && !isError && roles && roles.length > 0 && (
+                            {!isLoading && !isError && roles && filteredRoles.length > 0 && (
                                 <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 md:p-6">
-                                    {roles.map((role) => (
+                                    {filteredRoles.map((role, index) => (
                                         <article
                                             key={role.id}
                                             className="rounded-xl border border-j-gray-200 p-4"
@@ -164,52 +273,117 @@ export default function RolesPermissions() {
 
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center justify-between gap-2">
-                                                        <h3 className="font-black text-j-blue-800">{role.name}</h3>
-                                                        <span className={twMerge("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", ROLE_STATUS_STYLE[role.status])}>
+                                                        <div className="flex min-w-0 items-center gap-1.5">
+                                                            <h3 className="truncate font-black text-j-blue-800">{role.name}</h3>
+                                                            {role.kind === "ROOT" && (
+                                                                <Lock size={13} className="shrink-0 text-j-gray-400" />
+                                                            )}
+                                                        </div>
+                                                        <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-j-black">
+                                                            <span className={twMerge("h-1.5 w-1.5 rounded-full", ROLE_STATUS_DOT_STYLE[role.status])} />
                                                             {ROLE_STATUS_LABEL[role.status]}
                                                         </span>
                                                     </div>
                                                     <p className="mt-1 text-sm text-j-gray-600">
                                                         {role.description ?? "Sem descrição."}
                                                     </p>
+                                                    {role.status === "DELETED" && role.deletedAt && (
+                                                        <p className="mt-2 text-xs font-semibold text-j-gray-500">
+                                                            Excluído em {deletedDateFormatter.format(new Date(role.deletedAt))}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 flex items-center justify-end gap-2 border-t border-j-gray-100 pt-3">
-                                                {canUpdateRole && (
-                                                    <ButtonIcon
-                                                        onClick={() => handleOpenEditRole(role.id)}
-                                                        title="Editar"
-                                                        className="rounded-lg border-none bg-yellow-400 p-3 text-yellow-950 hover:bg-yellow-500 hover:text-yellow-950"
-                                                    >
-                                                        <Pencil size={20} />
-                                                    </ButtonIcon>
+                                            <div
+                                                id={index === 0 ? "tour-role-actions" : undefined}
+                                                className="mt-3 grid grid-cols-1 gap-0.5 border-t border-j-gray-100 pt-3 sm:grid-cols-2"
+                                            >
+                                                {role.status !== "DELETED" && !(role.kind === "ROOT" && role.status === "ACTIVE") && (
+                                                    (role.status === "ACTIVE" ? canDisableRole : canEnableRole) && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleOpenToggleRoleStatus(role)}
+                                                            className={twMerge(
+                                                                "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors",
+                                                                role.status === "ACTIVE"
+                                                                    ? "bg-red-50 hover:bg-red-100"
+                                                                    : "bg-green-50 hover:bg-green-100"
+                                                            )}
+                                                        >
+                                                            {role.status === "ACTIVE"
+                                                                ? <PowerOff size={16} className="text-red-500" />
+                                                                : <Power size={16} className="text-j-green-600" />}
+                                                            {role.status === "ACTIVE" ? "Desativar" : "Ativar"}
+                                                        </button>
+                                                    )
                                                 )}
-                                                <ButtonIcon
+                                                {role.status !== "DELETED" && canUpdateRole && role.kind !== "ROOT" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenEditRole(role.id)}
+                                                        className="flex items-center gap-2.5 rounded-lg bg-yellow-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-yellow-100"
+                                                    >
+                                                        <Pencil size={16} className="text-yellow-500" />
+                                                        Editar
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type="button"
                                                     onClick={() => handleOpenViewRole(role.id)}
-                                                    title="Visualizar"
-                                                    className="rounded-lg border-none bg-j-blue-800 p-3 text-white hover:bg-j-blue-500 hover:text-white"
+                                                    className="flex items-center gap-2.5 rounded-lg bg-blue-100/10 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
                                                 >
-                                                    <Eye size={20} />
-                                                </ButtonIcon>
+                                                    <Eye size={16} className="text-j-blue-800" />
+                                                    Visualizar
+                                                </button>
+                                                {canReadPermission && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenRolePermissions(role)}
+                                                        className="flex items-center gap-2.5 rounded-lg bg-j-gray-100/60 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-j-gray-100"
+                                                    >
+                                                        <ShieldCheck size={16} className="text-j-gray-500" />
+                                                        Ver permissões
+                                                    </button>
+                                                )}
+                                                {role.status !== "DELETED" && (canAssignPermission || canRevokePermission) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenManageRolePermissions(role)}
+                                                        className="flex items-center gap-2.5 rounded-lg bg-purple-100/10 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-purple-100"
+                                                    >
+                                                        <ListChecks size={16} className="text-purple-600" />
+                                                        Gerenciar permissões
+                                                    </button>
+                                                )}
+                                                {canDeleteRole && role.status !== "DELETED" && role.kind !== "ROOT" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenDeleteRole(role)}
+                                                        className="flex items-center gap-2.5 rounded-lg bg-red-50 px-2.5 py-2 text-left text-sm font-bold text-red-500 transition-colors hover:bg-red-100"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                        Excluir
+                                                    </button>
+                                                )}
                                             </div>
                                         </article>
                                     ))}
                                 </div>
                             )}
 
-                            {!isLoading && !isError && roles && roles.length === 0 && (
+                            {!isLoading && !isError && roles && filteredRoles.length === 0 && (
                                 <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
                                     <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
                                         <KeyRound size={31} />
                                     </div>
 
                                     <h3 className="text-lg font-black text-j-blue-800">
-                                        Nenhum cargo cadastrado
+                                        {roleStatusFilter === "DELETED" ? "Nenhum cargo excluído" : roleStatusFilter === "INACTIVE" ? "Nenhum cargo inativo" : "Nenhum cargo ativo"}
                                     </h3>
 
                                     <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                        Crie um cargo para começar a configurar os acessos.
+                                        {roleStatusFilter === "DELETED" ? "Cargos removidos aparecerão aqui para consulta." : roleStatusFilter === "INACTIVE" ? "Cargos desativados aparecerão aqui." : "Crie um cargo para começar a configurar os acessos."}
                                     </p>
                                 </div>
                             )}
@@ -220,55 +394,77 @@ export default function RolesPermissions() {
                 {activeTab === "permissions" && isTabVisible("permissions") && (
                     <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                            <div>
-                                <h2 className="font-black text-j-blue-800">Permissões</h2>
+                            <div className="flex items-center gap-3">
+                                <ManagementBackButton />
+                                <div>
+                                <h2 className="font-black text-j-blue-800">Permissões cadastradas</h2>
                                 <p className="text-sm text-j-gray-600">
-                                    Atribua permissões aos cargos cadastrados.
+                                    {isLoadingPermissions ? "Carregando..." : `${permissionsList?.length ?? 0} cadastrada(s)`}
                                 </p>
+                                </div>
                             </div>
 
                             <ShieldCheck size={24} className="text-j-gray-400" />
                         </div>
 
-                        <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
-                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
-                                <ShieldCheck size={31} />
-                            </div>
-
-                            <h3 className="text-lg font-black text-j-blue-800">Em construção</h3>
-
-                            <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                A atribuição de permissões aos cargos vai aparecer aqui.
+                        {isPermissionsError && (
+                            <p className="p-4 text-sm text-red-600 md:px-6">
+                                Não foi possível carregar as permissões.
                             </p>
-                        </div>
+                        )}
+
+                        {!isLoadingPermissions && !isPermissionsError && permissionsList && permissionsList.length > 0 && (
+                            <div className="flex flex-col divide-y divide-j-gray-100">
+                                {Object.entries(permissionsByModule).map(([module, items]) => (
+                                    <div key={module} className="p-4 md:px-6">
+                                        <h3 className="mb-3 text-sm font-black text-j-blue-800">
+                                            {getModuleLabel(module)}
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                            {items.map((permission) => (
+                                                <div
+                                                    key={permission.id}
+                                                    className="flex items-start gap-3 rounded-xl border border-j-gray-200 p-3"
+                                                >
+                                                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-j-blue-800 text-j-yellow-300">
+                                                        <ShieldCheck size={18} />
+                                                    </span>
+                                                    <div className="min-w-0">
+                                                        <p className="text-base font-black text-j-blue-800">
+                                                            {getPermissionName(permission)}
+                                                        </p>
+                                                        <p className="mt-0.5 text-sm text-j-gray-600">
+                                                            {getPermissionDescription(permission)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {!isLoadingPermissions && !isPermissionsError && permissionsList && permissionsList.length === 0 && (
+                            <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
+                                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
+                                    <ShieldCheck size={31} />
+                                </div>
+
+                                <h3 className="text-lg font-black text-j-blue-800">
+                                    Nenhuma permissão cadastrada
+                                </h3>
+
+                                <p className="mt-1 max-w-md text-sm text-j-gray-600">
+                                    As permissões sincronizadas pelo sistema vão aparecer aqui.
+                                </p>
+                            </div>
+                        )}
                     </section>
                 )}
 
                 {activeTab === "users" && isTabVisible("users") && (
-                    <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                        <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                            <div>
-                                <h2 className="font-black text-j-blue-800">Permissões</h2>
-                                <p className="text-sm text-j-gray-600">
-                                    Veja e gerencie o cargo de cada usuário administrativo.
-                                </p>
-                            </div>
-
-                            <Users size={24} className="text-j-gray-400" />
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
-                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
-                                <Users size={31} />
-                            </div>
-
-                            <h3 className="text-lg font-black text-j-blue-800">Em construção</h3>
-
-                            <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                A lista de usuários e seus cargos vai aparecer aqui.
-                            </p>
-                        </div>
-                    </section>
+                    <UserRoleAssignmentsTab />
                 )}
             </div>
         </div>

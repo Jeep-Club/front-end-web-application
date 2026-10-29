@@ -9,6 +9,7 @@ export interface SelectProps extends Omit<React.ComponentProps<'select'>, 'name'
     name: string;
     error?: string;
     required?: boolean;
+    labelClassName?: string;
 }
 
 export function Select({
@@ -19,16 +20,17 @@ export function Select({
     className,
     required,
     children,
+    labelClassName,
     ...props
 }: SelectProps) {
     const id = useId();
     const isError = error !== 'undefined' && error !== undefined && error !== null;
-    
+
     return (
         <div className="w-full flex flex-col gap-2">
             <label
                 htmlFor={id}
-                className="text-xs md:text-sm font-bold text-j-white"
+                className={twMerge("text-xs md:text-sm font-bold text-j-white", labelClassName)}
             >
                 {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>

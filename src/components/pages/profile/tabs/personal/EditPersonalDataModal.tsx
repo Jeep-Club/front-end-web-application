@@ -1,28 +1,36 @@
 "use client";
 
-import type { ElementType } from "react";
+import { getBirthDateInputBounds } from "@/utils/validate/validateBirthDate";
+import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
+
+import { uploadImageAction } from "@/server/actions/media/upload-image";
+import { getUserProfileAction } from "@/server/actions/profile/get";
+import { updatePersonalDataAction } from "@/server/actions/profile/update-personal-data";
+import { updateProfilePhotoAction } from "@/server/actions/profile/update-photo";
 import {
-    CalendarDays,
-    Camera,
-    Save,
-    ShieldCheck,
-    UserRound,
-    UserRoundPen,
-    X,
+	CalendarDays,
+	Camera,
+	Save,
+	ShieldCheck,
+	UserRound,
+	UserRoundPen,
+	X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
-    Button,
-    ButtonIcon,
+	Button,
+	ButtonIcon,
 } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { InputFile } from "@/components/common/input/file";
 import { InputRegister } from "@/components/common/input/input-register";
+import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
 import {
-    editPersonalDataFormSchema,
-    type EditPersonalDataFormData,
+	editPersonalDataFormSchema,
+	type EditPersonalDataFormData,
 } from "@/schemas/profile/edit-personal-data";
 
 interface EditPersonalDataModalProps {
@@ -45,71 +53,6 @@ const statusLabels: Record<
         "Primeiro acesso pendente",
 };
 
-function fileToBase64(
-    file: File,
-): Promise<string> {
-    return new Promise(
-        (resolve, reject) => {
-            const reader =
-                new FileReader();
-
-            reader.onload = () => {
-                if (
-                    typeof reader.result !==
-                    "string"
-                ) {
-                    reject(
-                        new Error(
-                            "Não foi possível processar a imagem",
-                        ),
-                    );
-
-                    return;
-                }
-
-                resolve(reader.result);
-            };
-
-            reader.onerror = () => {
-                reject(
-                    new Error(
-                        "Erro ao carregar imagem",
-                    ),
-                );
-            };
-
-            reader.readAsDataURL(file);
-        },
-    );
-}
-
-function formatDate(
-    value: string | null,
-) {
-    if (!value) {
-        return "Não informado";
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return "Não informado";
-    }
-
-    return new Intl.DateTimeFormat(
-        "pt-BR",
-        {
-            dateStyle: "short",
-            ...(value.includes("T")
-                ? {
-                      timeStyle:
-                          "short" as const,
-                  }
-                : {}),
-        },
-    ).format(date);
-}
-
 function formatCpf(value: string) {
     const digits =
         value.replace(/\D/g, "");
@@ -130,48 +73,56 @@ export function EditPersonalDataModal({
 }: EditPersonalDataModalProps) {
     const { setClose } = useModal();
 
-    const handleSubmit = async (
-        data: EditPersonalDataFormData,
-    ) => {
-        try {
-            const selectedPhoto =
-                data.profilePhoto?.[0];
+    const photoSectionRef = useRef<HTMLElement>(null);
+    const openPhotoPicker = () => {
+        if (!isSaving) photoSectionRef.current?.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+    };
 
-            const profilePhotoUrl =
-                selectedPhoto
-                    ? await fileToBase64(
-                          selectedPhoto,
-                      )
-                    : personalData.profilePhotoUrl;
-
-            onSave({
-                ...personalData,
-                name: data.name.trim(),
-                birthDate:
-                    data.birthDate || null,
-                email: data.email.trim(),
-                rg:
-                    data.rg.trim() ||
-                    null,
-                phoneNumber:
-                    data.phoneNumber.trim() ||
-                    null,
-                profilePhotoUrl,
-            });
-
-            toast.success(
-                "Dados atualizados com sucesso!",
-            );
-
+    const removedPhoto = useMutation({
+        mutationFn: async () => {
+            await updateProfilePhotoAction(null);
+            return getUserProfileAction();
+        },
+        onSuccess: (profile) => {
+            onSave(profile);
+            toast.success("Foto de perfil removida.");
             setClose();
-        } catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : "Erro ao atualizar os dados";
-
-            toast.error(message);
+        },
+    });
+    const savedProfile = useMutation({
+        mutationFn: async (data: EditPersonalDataFormData) => {
+            await updatePersonalDataAction({
+                name: data.name.trim(), birthDate: data.birthDate || null,
+                email: data.email.trim(), rg: data.rg.trim() || null,
+                phoneNumber: data.phoneNumber.replace(/\D/g, "") || null,
+            });
+            const selectedPhoto = data.profilePhoto?.[0];
+            if (selectedPhoto) {
+                const uploadForm = new FormData();
+                uploadForm.set("file", selectedPhoto);
+                await updateProfilePhotoAction(await uploadImageAction(uploadForm));
+            }
+            return getUserProfileAction();
+        },
+        onSuccess: (profile) => {
+            onSave(profile);
+            toast.success("Dados atualizados com sucesso!");
+            setClose();
+        },
+    });
+    const isSaving = savedProfile.isPending || removedPhoto.isPending;
+    const handleRemovePhoto = () => removedPhoto.mutate();
+    const handleSubmit = (data: EditPersonalDataFormData) => {
+        const photo = data.profilePhoto?.[0];
+        if (photo && photo.size > 5 * 1024 * 1024) {
+            toast.error("A foto excede o limite de 5 MiB. Escolha uma imagem menor e tente novamente.");
+            return;
         }
+        if (photo && !["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
+            toast.error("Formato não aceito. Envie uma foto JPEG, PNG ou WebP.");
+            return;
+        }
+        savedProfile.mutate(data);
     };
 
     return (
@@ -179,22 +130,23 @@ export function EditPersonalDataModal({
             <ButtonIcon
                 type="button"
                 onClick={setClose}
+                disabled={isSaving}
                 title="Fechar"
                 className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
                 <X size={22} />
             </ButtonIcon>
 
-            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+            <header className="border-b border-j-gray-200 px-4 py-4 pr-14 md:px-6 md:py-5 md:pr-20">
+                <div className="flex items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-j-yellow-300 text-j-blue-800 shadow-sm">
                         <UserRoundPen
                             size={20}
                         />
                     </span>
 
                     <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                        <h2 className="text-lg font-extrabold text-j-blue-800 md:text-2xl">
                             Editar dados pessoais
                         </h2>
 
@@ -206,16 +158,17 @@ export function EditPersonalDataModal({
                 </div>
             </header>
 
-            <div className="mx-5 mt-5 grid gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-100/10 p-4 sm:grid-cols-2 md:mx-8 md:mt-6">
-                <ReadOnlyItem
+            <div className="mx-4 mt-3 grid grid-cols-2 gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100 p-2 md:mx-6 md:mt-4 md:p-3">
+                <ReadOnlyField
                     label="CPF"
                     value={formatCpf(
                         personalData.cpf,
                     )}
                     icon={ShieldCheck}
+                    variant="summary"
                 />
 
-                <ReadOnlyItem
+                <ReadOnlyField
                     label="Status"
                     value={
                         statusLabels[
@@ -223,9 +176,9 @@ export function EditPersonalDataModal({
                         ]
                     }
                     icon={ShieldCheck}
+                    variant="summary"
                 />
 
-                
             </div>
 
             <Form<EditPersonalDataFormData>
@@ -258,11 +211,28 @@ export function EditPersonalDataModal({
                         errors,
                     );
                 }}
-                className="items-stretch gap-5 px-5 pt-5 md:px-8 md:pt-6"
+                className="items-stretch gap-3 px-4 pt-3 md:gap-4 md:px-6 md:pt-4"
             >
-                <section className="grid gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:grid-cols-[minmax(0,1fr)_minmax(240px,0.9fr)] md:items-center md:p-5">
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-j-white bg-j-blue-800 shadow-md ring-2 ring-j-blue-100">
+                <section
+                    ref={photoSectionRef}
+                    tabIndex={isSaving ? -1 : 0}
+                    aria-label="Selecionar nova foto de perfil"
+                    onClick={(event) => {
+                        if ((event.target as HTMLElement).closest('[data-photo-picker] [tabindex], button, input')) return;
+                        event.preventDefault();
+                        openPhotoPicker();
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.target !== event.currentTarget) return;
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openPhotoPicker();
+                        }
+                    }}
+                    className="grid cursor-pointer gap-2 rounded-xl border border-j-gray-200 bg-j-gray-100/60 p-3 transition-colors hover:border-j-blue-300 focus-visible:outline-2 focus-visible:outline-j-blue-700 md:grid-cols-[minmax(0,1fr)_minmax(240px,0.9fr)] md:items-center md:p-4"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-14 w-14 shrink-0 md:h-16 md:w-16 items-center justify-center overflow-hidden rounded-full border-4 border-j-white bg-j-gray-200 shadow-md ring-2 ring-j-gray-200">
                             {personalData.profilePhotoUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
@@ -277,7 +247,7 @@ export function EditPersonalDataModal({
                             ) : (
                                 <UserRound
                                     size={38}
-                                    className="text-j-blue-100"
+                                    className="text-j-gray-400"
                                 />
                             )}
                         </div>
@@ -286,7 +256,7 @@ export function EditPersonalDataModal({
                             <div className="flex items-center gap-2">
                                 <Camera
                                     size={17}
-                                    className="text-j-blue-700"
+                                    className="text-j-gray-500"
                                 />
 
                                 <h3 className="text-sm font-extrabold text-j-blue-800">
@@ -306,12 +276,23 @@ export function EditPersonalDataModal({
                         name="profilePhoto"
                         label="Selecionar nova foto"
                         maxFiles={1}
-                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:bg-j-white [&>div]:py-4"
+                        cropShape="circle"
+                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-j-white [&>div]:py-4"
                     />
+                    {personalData.profilePhotoUrl && (
+                        <button
+                            type="button"
+                            onClick={handleRemovePhoto}
+                            disabled={isSaving}
+                            className="text-left text-xs font-semibold text-j-red-500 hover:text-j-red-700 disabled:opacity-50"
+                        >
+                            Remover foto atual
+                        </button>
+                    )}
                 </section>
 
-                <div className="flex items-center gap-2 border-b border-j-gray-200 pb-3">
-                    <CalendarDays size={17} className="text-j-blue-700" />
+                <div className="flex items-center gap-2 border-b border-j-gray-200 pb-2">
+                    <CalendarDays size={17} className="text-j-gray-500" />
                     <h3 className="text-sm font-extrabold text-j-blue-800">
                         Informações pessoais
                     </h3>
@@ -323,16 +304,17 @@ export function EditPersonalDataModal({
                     placeholder="Nome completo"
                     required
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                 />
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                     <InputRegister
                         type="date"
                         label="Data de nascimento"
                         name="birthDate"
+                        {...getBirthDateInputBounds()}
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 focus:bg-j-white"
                     />
 
                     <InputRegister
@@ -340,11 +322,11 @@ export function EditPersonalDataModal({
                         name="rg"
                         placeholder="00.000.000-0"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                     <InputRegister
                         type="email"
                         label="E-mail"
@@ -352,7 +334,7 @@ export function EditPersonalDataModal({
                         placeholder="nome@email.com"
                         required
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
 
                     <InputRegister
@@ -361,11 +343,11 @@ export function EditPersonalDataModal({
                         name="phoneNumber"
                         placeholder="(12) 99999-9999"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
                 </div>
 
-                <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-j-blue-100 bg-j-blue-100/10 px-5 py-5 sm:flex-row sm:items-center sm:justify-end md:-mx-8 md:px-8">
+                <div className="-mx-4 mt-1 flex flex-row items-center justify-end gap-2 border-t border-j-gray-200 bg-j-gray-100 px-4 py-3 md:-mx-6 md:px-6">
                     <Button
                         type="button"
                         onClick={setClose}
@@ -376,44 +358,14 @@ export function EditPersonalDataModal({
 
                     <Button
                         type="submit"
-                        className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white"
+                        disabled={isSaving}
+                        className="gap-2 px-6"
                     >
                         <Save size={16} />
-                        Salvar alterações
+                        {isSaving ? "Salvando..." : "Salvar alterações"}
                     </Button>
                 </div>
             </Form>
-        </div>
-    );
-}
-
-interface ReadOnlyItemProps {
-    label: string;
-    value: string;
-    icon: ElementType;
-}
-
-function ReadOnlyItem({
-    label,
-    value,
-    icon: Icon,
-}: ReadOnlyItemProps) {
-    return (
-        <div className="flex items-center gap-3 rounded-xl bg-j-white/80 px-3 py-2.5">
-            <Icon
-                size={17}
-                className="shrink-0 text-j-blue-600"
-            />
-
-            <div className="min-w-0">
-                <span className="block text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                    {label}
-                </span>
-
-                <span className="block truncate text-sm font-semibold text-j-gray-700">
-                    {value}
-                </span>
-            </div>
         </div>
     );
 }

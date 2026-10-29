@@ -1,32 +1,31 @@
-"use client";
+﻿"use client";
 
 import {
-    useQuery,
-    useQueryClient,
+	useQuery,
+	useQueryClient,
 } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 
-import { getUserProfileAction } from "@/actions/profile/get";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
+import { getUserProfileAction } from "@/server/actions/profile/get";
+import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
+import { maskCPF,maskDate,maskPhoneNumber } from "@/utils/masks";
 import { EditPersonalDataModal } from "./EditPersonalDataModal";
 import { MembershipCard } from "./MembershipCard";
 import { PersonalDataCard } from "./PersonalDataCard";
 
-function formatMemberSince(createdAt: string) {
-    const date = new Date(createdAt);
-
-    if (Number.isNaN(date.getTime())) {
-        return "Não informado";
-    }
-
-    return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    }).format(date);
-}
-
+const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string | null> = {
+    A_POSITIVE: "A+",
+    A_NEGATIVE: "A-",
+    B_POSITIVE: "B+",
+    B_NEGATIVE: "B-",
+    AB_POSITIVE: "AB+",
+    AB_NEGATIVE: "AB-",
+    O_POSITIVE: "O+",
+    O_NEGATIVE: "O-",
+    UNKNOWN: null,
+};
 export function PersonalDataTab() {
     const { setContent, setOpen } = useModal();
     const queryClient = useQueryClient();
@@ -39,6 +38,12 @@ export function PersonalDataTab() {
     } = useQuery({
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+    });
+    const { data: medicalProfile } = useQuery({
+        queryKey: ["medical-profile", "me"],
+        queryFn: getMedicalProfileAction,
     });
 
     if (isLoading) {
@@ -82,17 +87,30 @@ export function PersonalDataTab() {
     };
 
     return (
-        <div className="mx-auto grid w-full max-w-[1104px] items-start justify-center gap-6 xl:grid-cols-[minmax(300px,360px)_minmax(0,720px)]">
+        <div className="grid w-full items-stretch gap-6 xl:grid-cols-2">
             <PersonalDataCard
                 photoUrl={
                     personalData.profilePhotoUrl
                 }
                 fullName={personalData.name}
                 roleLabel="Associado"
-                memberSince={formatMemberSince(
-                    personalData.createdAt,
-                )}
-                registrationNumber={`ID#${personalData.id}`}
+                memberSince={maskDate(personalData.createdAt, {
+                    dateStyle: "long",
+                    fallback: "Não informado",
+                    includeTime: false,
+                })}
+                registrationNumber={String(personalData.id)}
+                email={personalData.email}
+                cpf={maskCPF(personalData.cpf)}
+                rg={personalData.rg}
+                phoneNumber={
+                    personalData.phoneNumber
+                        ? maskPhoneNumber(personalData.phoneNumber)
+                        : null
+                }
+                birthDate={maskDate(personalData.birthDate, {
+                    includeTime: false,
+                })}
                 onEdit={handleOpenEdit}
             />
 
@@ -107,9 +125,6 @@ export function PersonalDataTab() {
                 memberSince={
                     personalData.createdAt
                 }
-                issuedAt={
-                    personalData.createdAt
-                }
                 phoneNumber={
                     personalData.phoneNumber
                 }
@@ -117,9 +132,11 @@ export function PersonalDataTab() {
                 registrationNumber={String(
                     personalData.id,
                 )}
-                cityState={null}
-                driverLicense={null}
-                bloodType={null}
+                bloodType={
+                    medicalProfile?.bloodType
+                        ? BLOOD_TYPE_LABELS[medicalProfile.bloodType]
+                        : null
+                }
                 exportFileName={`carteirinha-${personalData.id}`}
             />
         </div>

@@ -1,15 +1,20 @@
+import { publicationManagementAccessActions } from "@/config/publicationManagement";
 import {
-    CalendarDays,
+    Newspaper,
+    Car,
     KeyRound,
+    UserRoundCheck,
     Users,
     WalletCards,
+    Wrench,
+    HeartPulse,
     type LucideIcon,
 } from "lucide-react";
+import { paymentPermissions } from "@/config/paymentPermissions";
 
 /**
- * Permissão única e obrigatória que decide se o módulo existe pro
- * usuário — card no painel + acesso à rota. De propósito coisa binária (tem a
- * permissão de leitura, ou não tem), não uma combinação de alternativas.
+ * Permissão de leitura que decide se o módulo existe para o usuário.
+ * Módulos com várias áreas podem oferecer ações alternativas de leitura.
  *
  * As demais permissões daquele módulo (criar, editar, excluir...) só
  * fazem sentido DEPOIS que essa aqui já liberou o acesso — elas
@@ -18,6 +23,7 @@ import {
 export interface AdminVisibilityPermission {
     module: string;
     action: string;
+    alternativeActions?: string[];
 }
 
 export interface AdminModuleConfig {
@@ -31,6 +37,34 @@ export interface AdminModuleConfig {
 
 export const adminModules: AdminModuleConfig[] = [
     {
+        key: "medical-profiles",
+        title: "Gestão de dados médicos",
+        description: "Consulte e gerencie os dados médicos de usuários e dependentes.",
+        href: "/admin/dados-medicos",
+        icon: HeartPulse,
+        visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
+    },
+    {
+        key: "payments",
+        title: "Análise de pagamentos",
+        description: "Consulte comprovantes e confirme ou rejeite pagamentos.",
+        href: "/admin/pagamentos",
+        icon: WalletCards,
+        visibilityPermission: { module: paymentPermissions.module, action: paymentPermissions.read },
+    },
+    {
+        key: "publication-management",
+        title: "Gestão de publicações",
+        description: "Gerencie eventos, avisos e anúncios de serviços do clube.",
+        href: "/admin/gestao-publicacoes",
+        icon: Newspaper,
+        visibilityPermission: {
+            module: "PUBLICATIONS",
+            action: publicationManagementAccessActions[0],
+            alternativeActions: publicationManagementAccessActions.slice(1),
+        },
+    },
+    {
         key: "users",
         title: "Gestão de usuários",
         description:
@@ -38,13 +72,24 @@ export const adminModules: AdminModuleConfig[] = [
         href: "/admin/users",
         icon: Users,
         visibilityPermission: {
-            module: "AUTHENTICATION",
+            module: "IDENTITY",
             action: "USER_READ",
         },
     },
     {
+        key: "membership-applications",
+        title: "Solicitações de associação",
+        description: "Analise novos pedidos de adesão ao clube.",
+        href: "/admin/users?tab=applications",
+        icon: UserRoundCheck,
+        visibilityPermission: {
+            module: "MEMBERSHIP",
+            action: "MEMBERSHIP_REQUEST_READ",
+        },
+    },
+    {
         key: "roles-permissions",
-        title: "Roles e permissões",
+        title: "Gestão de roles e permissões",
         description:
             "Defina o que cada administrador pode acessar e fazer.",
         href: "/admin/roles-permissoes",
@@ -52,6 +97,43 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: {
             module: "AUTHORIZATION",
             action: "ROLE_READ",
+        },
+    },
+    {
+        key: "financial-management",
+        title: "Gestão financeira",
+        description:
+            "Acompanhe mensalidades, faturas e a saúde financeira do clube.",
+        href: "/admin/gestao-financeira",
+        icon: WalletCards,
+        visibilityPermission: {
+            module: "BILLING",
+            action: "CHARGE_DEFINITION_READ",
+            alternativeActions: ["CHARGE_CYCLE_READ", "MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"],
+        },
+    },
+    {
+        key: "vehicles",
+        title: "Gestão de veículos",
+        description:
+            "Visualize, cadastre e gerencie os veículos de todos os membros.",
+        href: "/admin/veiculos",
+        icon: Car,
+        visibilityPermission: {
+            module: "VEHICLES",
+            action: "VEHICLE_READ",
+        },
+    },
+    {
+        key: "tools",
+        title: "Gestão de ferramentas",
+        description:
+            "Visualize, cadastre e gerencie as ferramentas de todos os associados.",
+        href: "/admin/ferramentas",
+        icon: Wrench,
+        visibilityPermission: {
+            module: "TOOLS",
+            action: "TOOL_READ",
         },
     },
 ];
@@ -70,7 +152,7 @@ export function canAccessAdminModule(
         return false;
     }
 
-    return userModule.actions.includes(action);
+    return [action, ...(adminModule.visibilityPermission.alternativeActions ?? [])].some((candidate) => userModule.actions.includes(candidate));
 }
 
 // retorna somente os módulos que devem aparecer

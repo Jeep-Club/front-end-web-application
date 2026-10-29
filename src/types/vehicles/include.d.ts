@@ -6,11 +6,10 @@ type FuelType =
     | 'ELECTRIC'
     | 'HYBRID';
 
-type VehicleStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
+type VehicleStatus = 'ACTIVE' | 'SOFT_DELETED' | 'INACTIVE' | 'PENDING';
 
 interface IncludeVehicleMemberRequest {
     nickname?: string;
-    photo?: string;
     plate: string;
     renavam: string;
     brand: string;
@@ -24,6 +23,6 @@ interface IncludeVehicleMemberRequest {
     towing: boolean;
 }
 
-type IncludeVehicleMemberFormData = Omit<IncludeVehicleMemberRequest, 'photo'> & {
+type IncludeVehicleMemberFormData = Omit<IncludeVehicleMemberRequest, 'photo' | 'photos'> & {
     photo?: File[];
 };

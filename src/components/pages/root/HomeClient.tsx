@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useRef } from "react";
 import { Logo } from "@/components/common/logo";
 import LegalLinks from "@/components/common/legal-links";
 import { useRouter } from "next/navigation";
@@ -8,29 +9,52 @@ import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
   FaGift,
-  FaEnvelope,
+  FaUserPlus,
   FaIdCard,
   FaUsers,
   FaChevronRight,
   FaChevronDown,
+  FaQuestionCircle,
 } from "react-icons/fa";
 import { GiJeep } from "react-icons/gi";
 import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
+import { driver } from "driver.js";
+import { getHomeTourSteps } from "@/config/tourSteps";
 
 export default function HomeClient() {
   const router = useRouter();
-
-  const handleContact = () => {
-    router.push("/contato");
-  };
+  const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
   const handleLogin = () => {
     router.push("/login");
   };
 
   const handleRegister = () => {
-    router.push("/register");
+    router.push("/membership/apply");
   };
+
+  const handleHomeTour = useCallback(() => {
+    if (driverRef.current) {
+      driverRef.current.destroy();
+      driverRef.current = null;
+    }
+
+    const driverObj = driver({
+      animate: true,
+      duration: 400,
+      smoothScroll: true,
+      showProgress: true,
+      progressText: "Passo {{current}} de {{total}}",
+      nextBtnText: "Próximo →",
+      prevBtnText: "← Anterior",
+      doneBtnText: "Entendido ✓",
+      skipMissingElement: false,
+      steps: getHomeTourSteps(),
+    });
+
+    driverRef.current = driverObj;
+    driverObj.drive();
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
@@ -51,12 +75,24 @@ export default function HomeClient() {
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
           <div />
           <div className="flex items-center gap-3">
+            {/* Botão de ajuda / tour da tela inicial */}
             <button
+              id="tour-home-help-btn"
+              onClick={handleHomeTour}
+              title="Como navegar nesta página?"
+              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 shadow-md shadow-yellow-500/10"
+            >
+              <FaQuestionCircle size={15} />
+              <span>Como funciona?</span>
+            </button>
+
+            <button
+              id="tour-home-member-btn"
               onClick={handleLogin}
               className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-all active:scale-95 hover:bg-[#001a52] shadow-lg"
             >
               <FaIdCard size={14} />
-              Sou membro
+              Entrar
             </button>
 
             <Logo />
@@ -76,18 +112,20 @@ export default function HomeClient() {
             <p className="text-xs md:text-sm text-white/90">09/09/1999</p>
           </div>
 
+          <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
           <button
-            onClick={handleContact}
+            onClick={handleRegister}
             className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
           >
-            <FaEnvelope size={20} />
-            Entre em Contato
+            <FaUserPlus size={20} />
+            Quero ser sócio
             <FaChevronRight size={12} />
           </button>
         </div>
 
         {/* Scroll down trigger */}
         <ScrollLink
+          id="tour-home-scroll-down"
           to="experiencias"
           smooth
           duration={600}
@@ -114,7 +152,7 @@ export default function HomeClient() {
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
                   <MdOutlineExplore size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Expedições & Trilhas</h3>
+                  <h3 className="text-xl font-bold">Expedições &amp; Trilhas</h3>
                 </div>
                 <p className="text-sm md:text-base text-white/50 leading-relaxed">
                   Trilhas icônicas do Litoral Norte. De passeios leves a desafios técnicos extremos em meio à Mata Atlântica.
@@ -129,7 +167,7 @@ export default function HomeClient() {
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-3">
                   <FaUsers size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Eventos & Encontros</h3>
+                  <h3 className="text-xl font-bold">Eventos &amp; Encontros</h3>
                 </div>
                 <p className="text-sm md:text-base text-white/50 leading-relaxed">
                   Muito mais que carros — celebramos a amizade com encontros gastronômicos e workshops técnicos.
@@ -145,7 +183,7 @@ export default function HomeClient() {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="order-2 lg:order-1">
             <p className="text-[11px] tracking-[0.2em] text-blue-900 uppercase mb-3 font-black">
-              Legado & Tradição
+              Legado &amp; Tradição
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-blue-950 leading-tight mb-6">
               Jeep Club Tamoios:<br />
@@ -248,8 +286,8 @@ export default function HomeClient() {
             <GiJeep size={24} className="text-yellow-400" />
             <p className="text-lg text-white font-bold tracking-tight">Jeep Club Tamoios</p>
           </div>
-          <p className="text-xs text-j-gray-300 mb-8">© 2026 Todos os direitos reservados.</p>
-          <LegalLinks className="text-j-gray-200 font-medium" />
+          <p className="text-xs text-white/30 mb-8">© 2026 Todos os direitos reservados.</p>
+          <LegalLinks className="text-white/60 font-medium" />
         </div>
       </footer>
     </main>

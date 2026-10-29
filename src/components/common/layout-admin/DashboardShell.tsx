@@ -3,40 +3,46 @@
 import { useState } from "react";
 import Sidebar from "@/components/common/layout-admin/Sidebar";
 import Topbar from "@/components/common/layout-admin/Topbar";
-import LegalLinks from "@/components/common/legal-links";
+import DashboardFooter from "@/components/common/layout-admin/DashboardFooter";
+import GuidedTour from "@/components/common/tour/GuidedTour";
+import { FirstAccessOnboarding } from "@/components/pages/first-access/Onboarding";
 
 interface DashboardShellProps {
     fullName: string;
+    initialProfilePhotoUrl?: string | null;
+    onboardingRequired?: boolean;
     children: React.ReactNode;
 }
 
-
-export default function DashboardShell({ fullName, children }: DashboardShellProps) {
+export default function DashboardShell({ fullName, initialProfilePhotoUrl, onboardingRequired = false, children }: DashboardShellProps) {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    if (onboardingRequired) return <FirstAccessOnboarding />;
+
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-j-white">
-            <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                isMobileOpen={isMobileMenuOpen}
-                onCloseMobile={() => setIsMobileMenuOpen(false)}
-                fullName={fullName}
-            />
-            <div className="flex h-screen flex-1 flex-col overflow-hidden">
-                <Topbar
-                    isSidebarCollapsed={isSidebarCollapsed}
-                    onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
-                    onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        <GuidedTour setMobileMenuOpen={setIsMobileMenuOpen}>
+            <div className="flex h-dvh min-h-0 w-full overflow-hidden bg-j-white">
+                <Sidebar
+                    isCollapsed={isSidebarCollapsed}
+                    isMobileOpen={isMobileMenuOpen}
+                    onCloseMobile={() => setIsMobileMenuOpen(false)}
                     fullName={fullName}
                 />
-                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-j-gray-100">
-                    <div className="flex-1">{children}</div>
-                    <footer className="shrink-0 bg-j-blue-800 px-4 py-5 text-j-gray-200">
-                        <LegalLinks />
-                    </footer>
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                    <Topbar
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+                        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+                        fullName={fullName}
+                        initialProfilePhotoUrl={initialProfilePhotoUrl}
+                    />
+                    <div data-dashboard-scroll className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch]">
+                        {children}
+                    </div>
+                    <DashboardFooter />
                 </div>
             </div>
-        </div>
+        </GuidedTour>
     );
 }

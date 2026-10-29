@@ -1,10 +1,35 @@
 interface MeResponse {
     userId: number;
-    userName: string;
     sessionId: number;
     sessionActive: boolean;
     expiresInSeconds: number;
+}
+
+interface IdentityMeResponse {
+    id: number;
+    name: string;
+    birthDate: string | null;
+    email: string | null;
+    cpf: string;
+    rg: string | null;
+    phoneNumber: string | null;
+    profilePhotoStorageKey: string | null;
+    status: 'ACTIVE' | 'DISABLED';
+    createdAt: string;
+    disabledAt: string | null;
+    updatedAt: string | null;
+}
+
+interface AuthorizationMeResponse {
+    userId: number;
     authorities: string[];
 }
 
-type MeCookie = Omit<MeResponse, 'authorities' | 'expiresInSeconds'> & { expires: string };
+interface MeCookie {
+    userId: number;
+    userName: string;
+    profilePhotoStorageKey?: string | null;
+    sessionId: number;
+    sessionActive: boolean;
+    expires: string;
+}

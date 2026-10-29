@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     Newspaper,
+    HelpCircle,
+    CalendarRange,
     ShieldCheck,
-    UserRound,
     X,
 } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -17,8 +18,13 @@ import { hasAnyAdminAccess } from "@/config/adminModules";
 const navItems = [
     {
         href: "/feed",
-        label: "Feed",
+        label: "Home",
         icon: Newspaper,
+    },
+    {
+        href: "/agenda",
+        label: "Agenda",
+        icon: CalendarRange,
     },
 ];
 
@@ -27,6 +33,7 @@ interface SidebarProps {
     isMobileOpen: boolean;
     onCloseMobile: () => void;
     fullName: string;
+    role?: string;
 }
 
 export default function Sidebar({
@@ -34,7 +41,6 @@ export default function Sidebar({
     isMobileOpen,
     onCloseMobile,
     fullName,
-    role,
 }: SidebarProps) {
     const pathname = usePathname();
 
@@ -43,16 +49,9 @@ export default function Sidebar({
     );
 
     const canAccessAdmin = hasAnyAdminAccess(permissions);
-    const isAdminPanel = pathname.startsWith("/admin");
 
-    const panelHref = isAdminPanel ? "/feed" : "/admin";
-    const panelLabel = isAdminPanel
-        ? "Painel do sócio"
-        : "Painel administrativo";
-
-    const PanelIcon = isAdminPanel
-        ? UserRound
-        : ShieldCheck;
+    const panelHref = "/admin";
+    const panelLabel = "Gest\u00e3o Administrativa";
 
     return (
         <>
@@ -64,12 +63,13 @@ export default function Sidebar({
             )}
 
             <aside
+                id="tour-sidebar"
                 className={twMerge(
                     `
-                    fixed inset-y-0 left-0 z-40 flex h-screen w-64 flex-col
-                    border-r border-j-yellow-300 bg-j-blue-800
+                    fixed inset-y-0 left-0 z-40 flex h-dvh min-h-0 w-64 shrink-0 flex-col
+                    overflow-x-hidden overflow-y-auto overscroll-contain border-r border-j-yellow-300 bg-j-blue-800
                     transition-transform duration-300
-                    md:sticky md:top-0 md:z-auto md:translate-x-0
+                    md:sticky md:top-0 md:z-20 md:translate-x-0
                     md:transition-[width]
                     `,
                     isMobileOpen
@@ -77,10 +77,10 @@ export default function Sidebar({
                         : "-translate-x-full",
                     isCollapsed
                         ? "md:w-20"
-                        : "md:w-64",
+                        : "md:w-60",
                 )}
             >
-                <div className="relative flex flex-col items-center gap-1 border-b border-j-blue-700 p-6">
+                <div className="relative flex shrink-0 flex-col items-center gap-1 border-b border-j-blue-700 p-6">
                     <button
                         type="button"
                         onClick={onCloseMobile}
@@ -105,17 +105,13 @@ export default function Sidebar({
                     )}
                 </div>
 
-                <div className="flex flex-col items-center gap-0.5 border-b border-j-blue-700 p-4 md:hidden">
+                <div className="flex shrink-0 flex-col items-center gap-0.5 border-b border-j-blue-700 p-4 md:hidden">
                     <span className="text-sm font-bold text-j-white">
                         {fullName}
                     </span>
-
-                    <span className="text-xs text-j-transparent-white">
-                        {role}
-                    </span>
                 </div>
 
-                <nav className="flex flex-1 flex-col gap-2 p-4">
+                <nav className="flex min-h-fit flex-1 flex-col gap-2 p-4">
                     {navItems.map(
                         ({
                             href,
@@ -130,6 +126,7 @@ export default function Sidebar({
                                     key={href}
                                     href={href}
                                     title={label}
+                                    id={href === "/feed" ? "tour-nav-feed" : undefined}
                                     onClick={onCloseMobile}
                                     className={twMerge(
                                         "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
@@ -155,41 +152,46 @@ export default function Sidebar({
                             );
                         },
                     )}
-                </nav>
-
-                {canAccessAdmin && (
-                    <div className="border-t border-j-blue-700 p-4">
+                    <Link
+                        href="/tutoriais"
+                        title="Tutoriais"
+                        aria-current={pathname.startsWith("/tutoriais") ? "page" : undefined}
+                        onClick={onCloseMobile}
+                        className={twMerge(
+                            "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-red-400 transition-colors hover:bg-j-blue-700 hover:text-red-300",
+                            pathname.startsWith("/tutoriais") && "bg-j-blue-700",
+                            isCollapsed && "md:justify-center md:px-0",
+                        )}
+                    >
+                        <HelpCircle size={18} />
+                        <span className={isCollapsed ? "md:hidden" : ""}>Tutoriais</span>
+                    </Link>
+                    {canAccessAdmin && (
                         <Link
                             href={panelHref}
                             title={panelLabel}
-                            onClick={onCloseMobile}
+                            aria-label={panelLabel}
+                            id="tour-admin-link"
+                            aria-current={pathname.startsWith(panelHref) ? "page" : undefined}
+                            onClick={() => {
+                                onCloseMobile();
+                                if (typeof window !== "undefined") {
+                                    sessionStorage.setItem('force_branch_tour', 'true');
+                                    window.dispatchEvent(new CustomEvent('tour:destroy-and-diverge'));
+                                }
+                            }}
                             className={twMerge(
-                                `
-                                flex items-center justify-center gap-3
-                                rounded-lg bg-j-yellow-300 px-4 py-3
-                                text-sm font-bold text-j-blue-800
-                                transition-all
-                                hover:bg-j-yellow-200
-                                active:scale-[0.98]
-                                `,
-                                isCollapsed &&
-                                    "md:px-0",
+                                "mt-auto flex shrink-0 cursor-pointer items-center gap-3 rounded-lg bg-j-yellow-300 px-4 py-3 text-xs font-bold text-j-blue-800 shadow-sm transition-colors hover:bg-j-yellow-300",
+                                isCollapsed && "md:justify-center md:px-0",
                             )}
                         >
-                            <PanelIcon size={18} />
-
-                            <span
-                                className={
-                                    isCollapsed
-                                        ? "md:hidden"
-                                        : ""
-                                }
-                            >
+                            <ShieldCheck size={18} />
+                            <span className={isCollapsed ? "md:hidden" : ""}>
                                 {panelLabel}
                             </span>
                         </Link>
-                    </div>
-                )}
+                    )}
+                </nav>
             </aside>
         </>
     );

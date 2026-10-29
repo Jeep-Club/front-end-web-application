@@ -5,6 +5,9 @@ interface VehicleDetail {
     id: number;
     nickname: string | null;
     photo: string | null;
+    photos?: string[];
+    images?: { storageKey: string; position: number; primary: boolean }[];
+    galleryRevision?: number;
     plate: string;
     renavam: string;
     brand: string;
@@ -20,5 +23,5 @@ interface VehicleDetail {
     ownerId: number;
     createdAt: string;
     updatedAt: string | null;
-    disabledAt: string | null;
+    disabledAt?: string | null;
 }

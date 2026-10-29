@@ -1,27 +1,29 @@
 'use client';
 
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormContext } from "react-hook-form";
-import toast from "react-hot-toast";
-import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { InputFile } from "@/components/common/input/file";
+import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputRegister } from "@/components/common/input/input-register";
 import { SelectRegister } from "@/components/common/select/select-register";
-import { InputCheckbox } from "@/components/common/input/input-checkbox";
-import { InputFile } from "@/components/common/input/file";
-import { includeVehicleMemberFormSchema } from "@/schemas/vehicles/include";
-import { includeVehicleMemberAction } from "@/actions/vehicles/include-member";
-import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
-import { editVehicleMemberAction } from "@/actions/vehicles/edit-member";
-import { getVehicleDetailForEditAction } from "@/actions/vehicles/detail-for-edit-member";
+import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
 import { useModal } from "@/providers/ModalProvider";
+import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
+import { includeVehicleMemberFormSchema } from "@/schemas/vehicles/include";
+import { getVehicleDetailForEditAction } from "@/server/actions/vehicles/detail-for-edit-member";
+import { editVehicleMemberAction } from "@/server/actions/vehicles/edit-member";
+import { includeVehicleMemberAction } from "@/server/actions/vehicles/include-member";
+import { maskDecimal } from "@/utils/masks/maskDecimal";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
 import { maskYear } from "@/utils/masks/maskYear";
-import { maskDecimal } from "@/utils/masks/maskDecimal";
+import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import toast from "react-hot-toast";
+import { twMerge } from "tailwind-merge";
 
 const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
     { value: "GASOLINE", label: "Gasolina" },
@@ -35,7 +37,7 @@ const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
 const STEPS = [
     { step: 1, label: "Identificação", fields: ["plate", "renavam", "brand", "nickname"] as const },
     { step: 2, label: "Características", fields: ["model", "color", "manufacturingYear", "modelYear", "seatingCapacity", "fuelType", "engineDisplacement", "towing"] as const },
-    { step: 3, label: "Foto", fields: ["photo"] as const },
+    { step: 3, label: "Fotos", fields: ["photo"] as const },
 ];
 
 const LIGHT_FIELDS_CLASS = `
@@ -46,53 +48,39 @@ const LIGHT_FIELDS_CLASS = `
     [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
 `;
 
-function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { appendVehicleGalleryMultipart,createVehicleMultipart } from "@/utils/media/vehicleGallery";
 
 interface VehicleStepsFieldsProps {
     currentStep: number;
     onNext: () => void;
     onBack: () => void;
+    onStepChange: (step: number) => void;
     isEditMode: boolean;
     vehicle?: VehicleDetailForEdit;
 }
 
-function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }: VehicleStepsFieldsProps) {
-    const { trigger, formState: { errors } } = useFormContext();
-
-    const handleNext = async () => {
-        const fields = STEPS[currentStep - 1].fields;
-        const isValid = await trigger(fields as unknown as string[]);
-        if (isValid) onNext();
-    };
-
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-        if (event.key !== 'Enter') return;
-        if (currentStep < STEPS.length) {
-            event.preventDefault();
-            handleNext();
-        }
-    };
+function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditMode, vehicle }: VehicleStepsFieldsProps) {
+    const { formState: { errors } } = useFormContext();
+    const { rootRef, handleNext } = useVehicleModalSteps(currentStep, STEPS, onNext);
 
     return (
-        <div onKeyDown={handleKeyDown} className="flex w-full flex-col items-center gap-5">
+        <div ref={rootRef} tabIndex={-1} className="flex w-full flex-col items-center gap-5 outline-none">
             <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-j-gray-100 p-1.5">
                 {STEPS.map(({ step, label, fields }) => {
                     const hasError = fields.some((field) => !!errors[field]);
                     const isActive = step === currentStep;
                     const isCompleted = step < currentStep;
                     return (
-                        <div
+                        <button
+                            type="button"
                             key={step}
+                            onClick={() => onStepChange(step)}
+                            aria-label={`Etapa ${step}: ${label}`}
+                            aria-current={isActive ? "step" : undefined}
                             title={`Etapa ${step}`}
                             className={twMerge(
-                                "flex min-w-0 items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors md:text-sm",
+                                "flex min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors hover:bg-j-blue-100/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700 md:text-sm",
                                 hasError
                                     ? "bg-j-red-100 text-j-red-600"
                                     : isActive
@@ -109,7 +97,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                                 {step}
                             </span>
                             <span className="hidden truncate sm:inline">{label}</span>
-                        </div>
+                        </button>
                     );
                 })}
             </div>
@@ -190,16 +178,24 @@ function VehicleStepsFields({ currentStep, onNext, onBack, isEditMode, vehicle }
                 </div>
 
             <div className={currentStep === 3 ? "flex w-full flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-6" : "hidden"}>
-                <InputFile.Image
+                <p className="text-xs text-j-gray-500">Envie até 5 fotos. A primeira será a capa. Na edição, as novas fotos são adicionadas às atuais, até o total de 5.</p>
+                {vehiclePhotoKeys(vehicle).length < 5 && <InputFile.Image
                     name="photo"
                     label="Foto do veículo"
-                    maxFiles={1}
+                    maxFiles={5 - vehiclePhotoKeys(vehicle).length}
+                    cropShape="landscape"
                     className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
-                />
+                />}
                 {isEditMode && vehicle?.photo && (
-                    <p className="text-xs text-j-gray-500">
-                        Já existe uma foto cadastrada. Envie uma nova apenas se quiser substituí-la.
-                    </p>
+                    <div className="flex items-center gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3">
+                        <VehiclePhotoCarousel cover={vehicle?.photo} photos={vehiclePhotoKeys(vehicle)} alt="Fotos atuais" className="h-32 w-48 shrink-0 rounded-lg" />
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-j-gray-700">Foto atual cadastrada</span>
+                            <span className="text-[11px] text-j-gray-500">
+                                As novas fotos serão adicionadas à galeria. A capa atual será mantida.
+                            </span>
+                        </div>
+                    </div>
                 )}
             </div>
             </div>
@@ -264,13 +260,13 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
 
     const mutation = useMutation({
         mutationFn: async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {
-            const photoFile = data.photo?.[0];
-            const photo = photoFile ? await fileToBase64(photoFile) : (vehicle?.photo ?? undefined);
+            const photoFiles = data.photo ?? [];
+            if (vehiclePhotoKeys(vehicle).length + photoFiles.length > 5) throw new Error("O veículo pode ter no máximo 5 fotos. Considere também as fotos já cadastradas.");
+            const gallery = photoFiles.length && isEditMode ? appendVehicleGalleryMultipart(vehicle, photoFiles) : undefined;
 
             if (isEditMode && vehicleId) {
-                const payload: EditVehicleMemberRequest = {
-                    nickname: data.nickname,
-                    photo,
+                const changes: EditVehicleMemberRequest = {
+                    nickname: data.nickname?.trim() || null,
                     plate: data.plate,
                     renavam: data.renavam,
                     brand: data.brand,
@@ -283,22 +279,29 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                     engineDisplacement: data.engineDisplacement,
                     towing: data.towing,
                 };
-                return editVehicleMemberAction(vehicleId, payload);
+                const payload: EditVehicleMemberRequest = {};
+                for (const [key, value] of Object.entries(changes)) {
+                    if (value !== vehicle?.[key as keyof VehicleDetailForEdit]) {
+                        Object.assign(payload, { [key]: value });
+                    }
+                }
+                return editVehicleMemberAction(vehicleId, payload, gallery);
             }
 
-            const payload: IncludeVehicleMemberRequest = { ...(data as IncludeVehicleMemberFormData), photo };
-            return includeVehicleMemberAction(payload);
+            const vehicleData = { ...data };
+            delete vehicleData.photo;
+            return includeVehicleMemberAction(createVehicleMultipart(vehicleData, photoFiles));
         },
         onSuccess: () => {
             toast.success(isEditMode ? "Veículo atualizado com sucesso!" : "Veículo cadastrado com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["vehicles", "list-member"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || (isEditMode ? "Erro ao editar veículo." : "Erro ao cadastrar veículo.")),
+
     });
 
     const handleSubmit = async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {
-        mutation.mutateAsync(data);
+        try { await mutation.mutateAsync(data); } catch { /* onError presents the error. */ }
     };
 
     return (
@@ -343,11 +346,15 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
                 <Form<IncludeVehicleMemberFormData | EditVehicleMemberFormData>
                     schema={isEditMode ? editVehicleMemberFormSchema : includeVehicleMemberFormSchema}
                     onSubmit={handleSubmit}
-                    onError={(errors) => console.log(errors)}
+                    onError={(errors) => {
+                        const invalidStep = STEPS.find(({ fields }) => fields.some((field) => field in errors));
+                        if (invalidStep) setCurrentStep(invalidStep.step);
+                    }}
                     className="gap-5 px-5 py-5 md:px-8 md:py-6"
                 >
                     <VehicleStepsFields
                         currentStep={currentStep}
+                        onStepChange={setCurrentStep}
                         onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
                         onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
                         isEditMode={isEditMode}

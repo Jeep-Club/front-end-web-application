@@ -8,6 +8,7 @@ export interface TextareaProps extends Omit<React.ComponentProps<'textarea'>, 'n
     name: string;
     error?: string;
     required?: boolean;
+    labelClassName?: string;
 }
 
 export function Textarea({
@@ -16,17 +17,18 @@ export function Textarea({
     name,
     value,
     className,
+    labelClassName,
     required,
     ...props
 }: TextareaProps) {
     const id = useId();
     const isError = error !== 'undefined' && error !== undefined && error !== null;
-    
+
     return (
         <div className="w-full flex flex-col gap-2">
-            <label 
+            <label
                 htmlFor={id}
-                className="text-sm font-medium text-j-gray-300"
+                className={twMerge("text-sm font-medium text-j-gray-300", labelClassName)}
             >
                 {label} {required ? <span className="text-j-red-200">*</span> : null}
             </label>

@@ -1,35 +1,17 @@
-import { getAuthCookies } from "@/utils/auth/get";
-import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWrapper";
+import { getAuthCookies } from '@/utils/auth/get';
+import { toActionError } from '@/utils/http/apiError';
+import { fetchWrapper,FetchWrapperProps,FetchWrapperResponse } from './fetchWrapper';
+import { frontendHeaders } from './frontendHeaders';
 
-interface ServerFetchWapperProps<T> extends FetchWrapperProps<T> {
-
-}
-
-interface ServerFetchWrapperResponse<T> extends FetchWrapperResponse<T> {
-
-}
-
-export default async function serverFetchWrapper<T>({ ...props }: ServerFetchWapperProps<T>): Promise<ServerFetchWrapperResponse<T>> {
-
-    const { url, ...fetchProps } = props;
-
-    const apiURL = process.env.API_URL;
-
-    if (!apiURL) {
-        throw new Error("API_URL is not defined");
-    }
-
-    const authCookies = await getAuthCookies.SERVER();
-    fetchProps.headers = {
-        ...fetchProps.headers,
-        ...(authCookies?.AuthAccessToken ? {'Authorization': `Bearer ${authCookies.AuthAccessToken}`} : {})
-    }
-
+export default async function serverFetchWrapper<T>({ url, ...props }: FetchWrapperProps<T>): Promise<FetchWrapperResponse<T>> {
     try {
-        const response = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
-
-        return response
+        const apiURL = process.env.API_URL;
+        if (!apiURL) throw new Error('API_URL is not defined');
+        const auth = await getAuthCookies.SERVER();
+        const headers = new Headers(props.headers);
+        if (auth?.AuthAccessToken) headers.set('Authorization', `Bearer ${auth.AuthAccessToken}`);
+        return await fetchWrapper<T>({ ...props, url: `${apiURL.replace(/\/$/, '')}/${url}`, headers: frontendHeaders(headers) });
     } catch (error) {
-        throw error
+        throw toActionError(error);
     }
 }

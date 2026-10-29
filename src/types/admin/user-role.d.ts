@@ -1,0 +1,3 @@
+interface PutUserRoleRequest {
+    roleIds: number[];
+}

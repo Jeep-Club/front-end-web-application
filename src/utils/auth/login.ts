@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { authCookieOptions } from './cookieOptions';
 
 export async function login(
     accessToken: string,
@@ -6,7 +7,7 @@ export async function login(
     accessExpiration: string,
 ) {
     const cookieStore = await cookies();
-    cookieStore.set('AuthAccessToken', accessToken, { path: '/'});
-    cookieStore.set('AuthRefreshToken', refreshToken, { path: '/', httpOnly: true, secure: process.env.NODE_SECURE === 'HTTPS', sameSite: "lax" });
-    cookieStore.set('AccessTokenExpiration', accessExpiration, { path: '/' });
+    cookieStore.set('AuthAccessToken', accessToken, authCookieOptions());
+    cookieStore.set('AuthRefreshToken', refreshToken, authCookieOptions(true));
+    cookieStore.set('AccessTokenExpiration', accessExpiration, authCookieOptions());
 }

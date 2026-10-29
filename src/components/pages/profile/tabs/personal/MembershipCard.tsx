@@ -1,459 +1,174 @@
 "use client";
 
-import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Globe, UserRound } from "lucide-react";
-
-import {
-    CardExportActions,
-    type CardExportRequest,
-} from "@/components/common/card-export/CardExportActions";
-import {
-    captureCardElement,
-    exportCardImages,
-} from "@/utils/card-export/exportCard";
+import { CardExportActions, type CardExportRequest } from "@/components/common/card-export/CardExportActions";
+import { captureCardElement, exportCardAsPng } from "@/utils/card-export/exportCard";
+import { buildAndSaveMembershipCardPdf } from "@/utils/card-export/buildMembershipCardPdf";
+import { maskDate, maskPhoneNumber } from "@/utils/masks";
 
 interface MembershipCardProps {
     profilePhotoUrl?: string | null;
     fullName?: string | null;
     birthDate?: string | null;
     memberSince?: string | null;
-    issuedAt?: string | null;
     phoneNumber?: string | null;
     roleLabel?: string | null;
     registrationNumber?: string | null;
-    cityState?: string | null;
-    driverLicense?: string | null;
     bloodType?: string | null;
     exportFileName?: string;
 }
 
 type CardSide = "front" | "back";
+const NAVY = "#0c1f4c";
+const GOLD = "#fed01b";
+const MUTED = "#758099";
+const value = (text?: string | null) => text?.trim() || "Não informado";
 
-function displayValue(value?: string | null) {
-    return value?.trim() || "—";
+function registration(value?: string | null) {
+    const digits = value?.replace(/\D/g, "");
+    if (!digits) return value || "-";
+    const padded = digits.padStart(5, "0");
+    return `${padded.slice(0, -1)}-${padded.slice(-1)}`;
 }
 
-function formatDate(value?: string | null) {
-    if (!value) {
-        return "—";
-    }
-
-    const normalizedDate = /^\d{4}-\d{2}-\d{2}$/.test(value)
-        ? `${value}T12:00:00`
-        : value;
-    const date = new Date(normalizedDate);
-
-    if (Number.isNaN(date.getTime())) {
-        return value;
-    }
-
-    return new Intl.DateTimeFormat("pt-BR").format(date);
-}
-
-function formatMembershipId(value?: string | null) {
-    if (!value) {
-        return "0000-0";
-    }
-
-    const digits = value.replace(/\D/g, "");
-
-    if (!digits) {
-        return value;
-    }
-
-    const normalizedDigits = digits.padStart(5, "0");
-
-    return `${normalizedDigits.slice(0, -1)}-${normalizedDigits.slice(-1)}`;
-}
-
-function waitForRender() {
-    return new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => resolve());
+/** Embed the same image bytes in every face, including exported SVG captures. */
+function useCardImage(source?: string | null) {
+    const [image, setImage] = useState<{ source?: string | null; data?: string; error?: boolean }>({});
+    useEffect(() => {
+        if (!source) return;
+        const controller = new AbortController();
+        fetch(source, { signal: controller.signal }).then((response) => {
+            if (!response.ok) throw new Error("Imagem indisponível");
+            return response.blob();
+        }).then((blob) => new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        })).then((data) => {
+            if (!controller.signal.aborted) setImage({ source, data });
+        }).catch(() => {
+            if (!controller.signal.aborted) setImage({ source, error: true });
         });
-    });
+        return () => controller.abort();
+    }, [source]);
+    return { data: image.source === source ? image.data : undefined, ready: !source || image.source === source, error: image.source === source && image.error };
 }
 
-interface CardFieldProps {
-    label: string;
-    value?: string | null;
+function Field({ x, y, label, text, width = 262 }: { x: number; y: number; label: string; text?: string | null; width?: number }) {
+    const displayed = value(text);
+    return <g>
+        <text x={x} y={y} fill={MUTED} fontSize="12" fontWeight="700" letterSpacing="1.5">{label.toUpperCase()}</text>
+        <text x={x} y={y + 31} fill={NAVY} fontSize={displayed.length > 23 ? 20 : 25} fontWeight="700">{displayed}</text>
+        <line x1={x} y1={y + 48} x2={x + width} y2={y + 48} stroke={NAVY} strokeWidth="2.5" strokeLinecap="round" />
+    </g>;
 }
 
-function CardField({ label, value }: CardFieldProps) {
-    const displayedValue = displayValue(value);
-
-    return (
-        <div className="flex min-w-0 flex-col gap-[clamp(1px,0.35cqw,3px)]">
-            <span className="truncate text-[clamp(5px,1.2cqw,9px)] font-extrabold uppercase leading-none tracking-[0.08em] text-j-blue-400">
-                {label}
-            </span>
-
-            <div className="flex min-h-[clamp(11px,3.7cqw,25px)] items-center overflow-hidden rounded-[clamp(3px,0.8cqw,7px)] border border-j-blue-100 bg-j-gray-100/70 px-[clamp(3px,1cqw,8px)] py-[clamp(1px,0.35cqw,3px)]">
-                <span
-                    title={displayedValue}
-                    className="w-full truncate text-[clamp(6px,1.65cqw,12px)] font-bold leading-tight text-j-blue-800"
-                >
-                    {displayedValue}
-                </span>
-            </div>
-        </div>
-    );
+function nameLines(name: string, length: number) {
+    const lines: string[] = [];
+    for (const word of name.split(/\s+/)) {
+        const last = lines.length - 1;
+        if (last >= 0 && lines[last].length + word.length + 1 <= length) lines[last] += ` ${word}`;
+        else if (word.length <= length) lines.push(word);
+        else for (let start = 0; start < word.length; start += length) lines.push(word.slice(start, start + length));
+    }
+    return lines;
 }
 
-interface MembershipCardFaceProps {
-    profilePhotoUrl?: string | null;
-    fullName?: string | null;
-    birthDate?: string | null;
-    memberSince?: string | null;
-    issuedAt?: string | null;
-    phoneNumber?: string | null;
-    roleLabel?: string | null;
-    registrationNumber?: string | null;
-    cityState?: string | null;
-    driverLicense?: string | null;
-    bloodType?: string | null;
+/** One SVG layout shared by the responsive preview and both export formats. */
+function CardFace({ side, data, logo, photo }: { side: CardSide; data: MembershipCardProps; logo?: string; photo?: string }) {
+    const id = useId().replace(/:/g, "");
+    const name = value(data.fullName);
+    const longName = name.length > 68;
+    const lines = nameLines(name, longName ? 36 : 32);
+    const compactName = lines.length >= 3;
+    const nameBaseline = lines.length >= 4 ? 190 : 202;
+    const nameLineHeight = compactName ? 20 : 31;
+    const nameUnderline = nameBaseline + (lines.length - 1) * nameLineHeight + 18;
+    const firstFieldY = nameUnderline + (compactName ? 26 : 34);
+    const secondFieldY = firstFieldY + 86;
+    return <div data-card-side={side} className="aspect-[856/540] w-full overflow-hidden bg-white shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" className="block h-full w-full" role="img" aria-label={`${side === "front" ? "Frente" : "Verso"} da carteirinha de ${name}`} fontFamily="Arial, Helvetica, sans-serif">
+            <defs><clipPath id={`${id}-frame`}><rect width="856" height="540" /></clipPath><clipPath id={`${id}-photo`}><rect x="36" y="151" width="240" height="345" rx="12" /></clipPath></defs>
+            <g clipPath={`url(#${id}-frame)`}>
+                <rect width="856" height="540" fill={side === "front" ? "#ffffff" : NAVY} />
+                {side === "front" ? <>
+                    <rect width="856" height="112" fill={NAVY} />
+                    <rect y="112" width="856" height="5" fill={GOLD} />
+                    <circle cx="73" cy="56" r="46" fill={NAVY} stroke={GOLD} strokeWidth="3" />
+                    {logo && <image href={logo} x="29" y="12" width="88" height="88" />}
+                    <text x="140" y="43" fill={GOLD} fontSize="14" letterSpacing="3" fontWeight="700">JEEP CLUBE TAMOIOS</text>
+                    <text x="140" y="80" fill="#ffffff" fontSize="28" fontWeight="700">CARTEIRA DE ASSOCIADO</text>
+                    <rect x="36" y="151" width="240" height="345" rx="12" fill="#edf1f7" stroke={NAVY} strokeWidth="3" />
+                    {photo ? <image href={photo} x="36" y="151" width="240" height="345" preserveAspectRatio="xMidYMid slice" clipPath={`url(#${id}-photo)`} /> : <g fill="none" stroke="#a5b3cb" strokeWidth="8"><circle cx="156" cy="285" r="30" /><path d="M105 369c0-60 102-60 102 0" strokeLinecap="round" /></g>}
+                    <text x="310" y="170" fill={MUTED} fontSize="12" fontWeight="700" letterSpacing="1.5">NOME DO ASSOCIADO</text>
+                    <text x="310" y={nameBaseline} fill={NAVY} fontSize={compactName ? 20 : longName ? 25 : 31} fontWeight="700">{lines.map((line, index) => <tspan key={index} x="310" dy={index === 0 ? 0 : nameLineHeight}>{line}</tspan>)}</text>
+                    <line x1="310" y1={nameUnderline} x2="820" y2={nameUnderline} stroke={NAVY} strokeWidth="3" strokeLinecap="round" />
+                    <Field x={310} y={firstFieldY} width={222} label="Nº DE REGISTRO" text={registration(data.registrationNumber)} />
+                    <Field x={568} y={firstFieldY} width={252} label="Nascimento" text={maskDate(data.birthDate, { includeTime: false })} />
+                    <Field x={310} y={secondFieldY} width={222} label="Telefone" text={data.phoneNumber ? maskPhoneNumber(data.phoneNumber) : null} />
+                    <Field x={568} y={secondFieldY} width={252} label="Categoria" text={data.roleLabel || "Associado"} />
+                    <g>
+                        <rect x="558" y="435" width="262" height="61" rx="10" fill="#fff5f5" stroke="#dc2626" strokeWidth="2.5" />
+                        <text x="689" y="455" textAnchor="middle" fill="#b91c1c" fontSize="10" fontWeight="700" letterSpacing="1.2">TIPO SANGUÍNEO</text>
+                        <text x="689" y="481" textAnchor="middle" fill={NAVY} fontSize={data.bloodType ? 25 : 16} fontWeight="700">{value(data.bloodType)}</text>
+                    </g>
+                    <rect y="506" width="856" height="34" fill={NAVY} />
+                    <text x="428" y="528" fill="#ffffff" fontSize="11" textAnchor="middle" letterSpacing="2">USO PESSOAL E INTRANSFERÍVEL</text>
+                </> : <>
+                    <circle cx="80" cy="76" r="51" fill={NAVY} stroke={GOLD} strokeWidth="3" />
+                    {logo && <image href={logo} x="32" y="28" width="96" height="96" />}
+                    <text x="154" y="66" fill="#ffffff" fontSize="29" fontWeight="700">JEEP CLUBE TAMOIOS</text>
+                    <text x="154" y="96" fill={GOLD} fontSize="13" letterSpacing="2">OFF-ROAD · AMIZADE · AVENTURA</text>
+                    <rect x="32" y="148" width="792" height="294" rx="18" fill="#ffffff" />
+                    <rect x="407" y="174" width="42" height="4" fill={GOLD} />
+                    <text x="428" y="211" textAnchor="middle" fill={NAVY} fontSize="20" fontWeight="700">Informações do associado</text>
+                    <text x="428" y="254" textAnchor="middle" fill={MUTED} fontSize="12" fontWeight="700" letterSpacing="1.5">MEMBRO DESDE</text>
+                    <text x="428" y="286" textAnchor="middle" fill={NAVY} fontSize="27" fontWeight="700">{value(maskDate(data.memberSince, { includeTime: false }))}</text>
+                    <line x1="298" y1="304" x2="558" y2="304" stroke={NAVY} strokeWidth="2.5" strokeLinecap="round" />
+                    <text x="428" y="353" textAnchor="middle" fill={NAVY} fontSize="16">Esta carteira é de uso exclusivo do associado identificado na frente.</text>
+                    <text x="428" y="387" textAnchor="middle" fill={MUTED} fontSize="15">Documento de uso pessoal e intransferível.</text>
+                    <text x="32" y="490" fill="#ffffff" fontSize="16">Caraguatatuba · São Paulo</text>
+                    <text x="824" y="490" fill={GOLD} textAnchor="end" fontSize="13" letterSpacing="2">DESDE 09/09/1999</text>
+                    <rect y="532" width="856" height="8" fill={GOLD} />
+                </>}
+            </g>
+        </svg>
+    </div>;
 }
 
-function MembershipCardFront({
-    profilePhotoUrl,
-    fullName,
-    birthDate,
-    memberSince,
-    issuedAt,
-    phoneNumber,
-    roleLabel,
-    registrationNumber,
-    cityState,
-    driverLicense,
-    bloodType,
-}: MembershipCardFaceProps) {
-    return (
-        <div
-            id="membership-card-front"
-            data-card-side="front"
-            className="flex aspect-[856/540] w-full flex-col overflow-hidden rounded-[clamp(10px,2.4cqw,18px)] border border-j-blue-100 bg-j-white shadow-[0_12px_32px_rgba(6,30,80,0.18)] [container-type:inline-size]"
-        >
-            <div className="flex h-[clamp(12px,4cqw,26px)] w-full shrink-0 items-center justify-end bg-j-blue-800 px-[clamp(7px,2.6cqw,17px)]">
-                <span className="truncate text-[clamp(5px,1.15cqw,8px)] font-bold uppercase tracking-[0.08em] text-j-white/90">
-                    Expedida em {formatDate(issuedAt)}
-                </span>
-            </div>
-            <div className="h-[clamp(2px,0.65cqw,4px)] w-full shrink-0 bg-j-yellow-300" />
-
-            <header className="grid h-[clamp(30px,10cqw,64px)] shrink-0 grid-cols-[18%_1fr] items-center px-[clamp(8px,3cqw,20px)]">
-                <div className="flex justify-center">
-                    <div className="relative h-[clamp(26px,8cqw,52px)] w-[clamp(26px,8cqw,52px)] overflow-hidden">
-                        <Image
-                            src="/images/logo_grande.jpg"
-                            alt="Jeep Clube Tamoios"
-                            fill
-                            className="object-contain mix-blend-multiply"
-                            priority
-                        />
-                    </div>
-                </div>
-
-                <div className="min-w-0 text-center">
-                    <h3 className="whitespace-nowrap text-[clamp(10px,3.3cqw,24px)] font-black uppercase leading-none tracking-tight text-j-blue-800">
-                        Jeep Clube Tamoios
-                    </h3>
-
-                    <p className="mt-[clamp(2px,0.6cqw,4px)] truncate text-[clamp(5px,1.45cqw,11px)] font-bold uppercase tracking-[0.1em] text-j-blue-300">
-                        Caraguatatuba • Fundado em 09/09/1999
-                    </p>
-                </div>
-            </header>
-
-            <div className="grid min-h-0 flex-1 grid-cols-[26%_1fr] gap-[clamp(5px,1.7cqw,11px)] px-[clamp(7px,2.6cqw,17px)] pb-[clamp(9px,2.8cqw,18px)] @[480px]:grid-cols-[30%_1fr]">
-                <div className="flex min-h-0 flex-col gap-[clamp(3px,0.8cqw,6px)] rounded-[clamp(6px,1.5cqw,12px)] bg-j-blue-800 p-[clamp(3px,1cqw,7px)]">
-                    <div className="min-h-0 flex-1 overflow-hidden rounded-[clamp(4px,1.1cqw,9px)] border-[clamp(2px,0.4cqw,3px)] border-j-yellow-300 bg-j-white">
-                        {profilePhotoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                src={profilePhotoUrl}
-                                alt={
-                                    fullName
-                                        ? `Foto de ${fullName}`
-                                        : "Foto do associado"
-                                }
-                                className="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-j-blue-900">
-                                <UserRound className="h-[clamp(22px,7cqw,46px)] w-[clamp(22px,7cqw,46px)] text-j-blue-100" />
-                            </div>
-                        )}
-                    </div>
-
-                    <p className="truncate rounded-[clamp(3px,0.7cqw,6px)] bg-j-yellow-300 px-[clamp(3px,0.8cqw,6px)] py-[clamp(2px,0.45cqw,4px)] text-center text-[clamp(9px,3cqw,20px)] font-black leading-none tracking-wide text-j-blue-950">
-                        {formatMembershipId(registrationNumber)}
-                    </p>
-                </div>
-
-                <div className="flex min-h-0 flex-col justify-between gap-[clamp(2px,0.65cqw,4px)]">
-                    <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[clamp(3px,1cqw,7px)]">
-                        <CardField
-                            label="Nome e sobrenome"
-                            value={fullName}
-                        />
-                        <CardField
-                            label="Nascimento"
-                            value={formatDate(birthDate)}
-                        />
-                    </div>
-
-                    <CardField label="UF e cidade" value={cityState} />
-
-                    <div className="grid grid-cols-2 gap-[clamp(3px,1cqw,7px)]">
-                        <CardField
-                            label="Habilitação"
-                            value={driverLicense}
-                        />
-                        <CardField
-                            label="Membro desde"
-                            value={formatDate(memberSince)}
-                        />
-                    </div>
-
-                    <CardField label="Telefone" value={phoneNumber} />
-
-                    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.55fr)_auto] items-end gap-[clamp(3px,1cqw,7px)]">
-                        <CardField label="Função" value={roleLabel} />
-                        <CardField label="T sanguíneo" value={bloodType} />
-
-                        <div
-                            aria-label="Espaço reservado para QR Code"
-                            className="flex aspect-square w-[clamp(22px,7cqw,46px)] shrink-0 items-center justify-center rounded-[clamp(3px,0.8cqw,7px)] border-[clamp(1px,0.3cqw,2px)] border-dashed border-j-blue-200 bg-j-blue-100/10"
-                        >
-                            <span className="text-center text-[clamp(4px,0.7cqw,6px)] font-bold uppercase leading-tight tracking-wide text-j-blue-200">
-                                QR Code
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function MembershipCardBack() {
-    return (
-        <div
-            id="membership-card-back"
-            data-card-side="back"
-            className="flex aspect-[856/540] w-full flex-col overflow-hidden rounded-[clamp(10px,2.4cqw,18px)] border border-j-blue-800 bg-j-blue-800 shadow-[0_12px_32px_rgba(6,30,80,0.22)] [container-type:inline-size]"
-        >
-            <div className="h-[clamp(3px,0.75cqw,5px)] w-full shrink-0 bg-j-yellow-300" />
-
-            <div className="relative grid min-h-0 flex-1 grid-cols-[38%_1fr] items-center overflow-hidden px-[clamp(14px,5cqw,32px)]">
-                <div className="absolute -right-[10%] -top-[42%] aspect-square w-[45%] rounded-full border-[clamp(8px,4cqw,28px)] border-j-white/5" />
-                <div className="absolute -bottom-[62%] -left-[10%] aspect-square w-[50%] rounded-full border-[clamp(8px,4cqw,28px)] border-j-yellow-300/10" />
-
-                <div className="relative flex justify-center">
-                    <div className="relative aspect-square w-[clamp(58px,18cqw,116px)] overflow-hidden rounded-[clamp(9px,2cqw,16px)] bg-j-white p-1 shadow-lg">
-                        <Image
-                            src="/images/logo_grande.jpg"
-                            alt="Jeep Clube Tamoios"
-                            fill
-                            className="object-contain"
-                        />
-                    </div>
-                </div>
-
-                <div className="relative min-w-0 text-j-white">
-                    <p className="text-[clamp(6px,1.45cqw,10px)] font-bold uppercase tracking-[0.18em] text-j-yellow-300">
-                        Desde 1999
-                    </p>
-                    <p className="mt-[clamp(2px,0.6cqw,4px)] text-[clamp(15px,4.2cqw,29px)] font-black uppercase leading-[0.9]">
-                        Jeep Clube
-                        <br />
-                        Tamoios
-                    </p>
-                    <p className="mt-[clamp(3px,0.8cqw,6px)] text-[clamp(6px,1.4cqw,10px)] font-medium text-j-blue-100">
-                        Caraguatatuba • SP
-                    </p>
-                </div>
-            </div>
-
-            <div className="h-[clamp(4px,1cqw,7px)] w-full shrink-0 bg-j-yellow-300" />
-
-            <footer className="grid min-h-[19%] shrink-0 grid-cols-2 items-center gap-[clamp(8px,5cqw,32px)] bg-j-white px-[clamp(12px,5cqw,32px)] py-[clamp(7px,2.5cqw,16px)] text-j-blue-950">
-                <div className="flex min-w-0 items-center gap-[clamp(4px,1.4cqw,8px)]">
-                    <Image
-                        src="/svgs/insta.svg"
-                        alt="Instagram"
-                        width={22}
-                        height={22}
-                        className="h-[clamp(11px,3.2cqw,21px)] w-[clamp(11px,3.2cqw,21px)] shrink-0"
-                    />
-                    <span className="truncate text-[clamp(6px,1.8cqw,13px)] font-medium">
-                        JeepTamoios
-                    </span>
-                </div>
-
-                <div className="flex min-w-0 items-center gap-[clamp(4px,1.4cqw,8px)]">
-                    <Globe className="h-[clamp(11px,3.2cqw,21px)] w-[clamp(11px,3.2cqw,21px)] shrink-0" />
-                    <span className="truncate text-[clamp(6px,1.8cqw,13px)] font-medium">
-                        www.JeepTamoios.com
-                    </span>
-                </div>
-            </footer>
-        </div>
-    );
-}
-
-export function MembershipCard({
-    profilePhotoUrl,
-    fullName,
-    birthDate,
-    memberSince,
-    issuedAt,
-    phoneNumber,
-    roleLabel,
-    registrationNumber,
-    cityState,
-    driverLicense,
-    bloodType,
-    exportFileName,
-}: MembershipCardProps) {
-    const [currentSide, setCurrentSide] = useState<CardSide>("front");
-    const cardContainerRef = useRef<HTMLDivElement>(null);
-
+export function MembershipCard(props: MembershipCardProps) {
+    const [side, setSide] = useState<CardSide>("front");
+    const exportFaces = useRef<HTMLDivElement>(null);
+    const logo = useCardImage("/images/jeepclube-emblema.png");
+    const photo = useCardImage(props.profilePhotoUrl);
     const handleExport = async ({ format, scope }: CardExportRequest) => {
-        const previousSide = currentSide;
-
         try {
-            setCurrentSide("front");
-            await waitForRender();
-
-            const frontElement =
-                cardContainerRef.current?.querySelector<HTMLElement>(
-                    '[data-card-side="front"]',
-                );
-
-            if (!frontElement) {
-                throw new Error(
-                    "Não foi possível localizar a frente da carteirinha",
-                );
-            }
-
-            const frontImage = await captureCardElement(frontElement);
-            let backImage: string | undefined;
-
-            if (scope === "front-and-back") {
-                setCurrentSide("back");
-                await waitForRender();
-
-                const backElement =
-                    cardContainerRef.current?.querySelector<HTMLElement>(
-                        '[data-card-side="back"]',
-                    );
-
-                if (!backElement) {
-                    throw new Error(
-                        "Não foi possível localizar o verso da carteirinha",
-                    );
-                }
-
-                backImage = await captureCardElement(backElement);
-            }
-
-            await exportCardImages({
-                format,
-                scope,
-                frontImage,
-                backImage,
-                fileName:
-                    exportFileName ??
-                    `carteirinha-${
-                        registrationNumber ?? fullName ?? "associado"
-                    }`,
-            });
-
-            toast.success(
-                `${format === "pdf" ? "PDF" : "Imagem"} gerado com sucesso!`,
-            );
-        } catch (error) {
-            console.error("Erro ao exportar carteirinha:", error);
-
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Erro ao exportar a carteirinha",
-            );
-        } finally {
-            setCurrentSide(previousSide);
-        }
+            if (logo.error) throw new Error("O logotipo não carregou. Atualize a página e tente novamente.");
+            if (photo.error) throw new Error("A foto não carregou. Atualize a página e tente novamente.");
+            const front = exportFaces.current?.querySelector<HTMLElement>('[data-card-side="front"]');
+            const back = exportFaces.current?.querySelector<HTMLElement>('[data-card-side="back"]');
+            if (!front || !back) throw new Error("Não foi possível preparar a carteirinha.");
+            const frontImage = await captureCardElement(front);
+            const backImage = scope === "front-and-back" ? await captureCardElement(back) : undefined;
+            const fileName = props.exportFileName || `carteirinha-${props.registrationNumber || "associado"}`;
+            if (format === "pdf") await buildAndSaveMembershipCardPdf({ scope, frontImage, backImage, fileName });
+            else await exportCardAsPng({ scope, frontImage, backImage, fileName });
+            toast.success("Carteirinha exportada com sucesso!");
+        } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao exportar a carteirinha."); }
     };
-
-    return (
-        <section className="mx-auto flex w-full max-w-[720px] min-w-0 flex-col gap-3">
-            <header className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                <div>
-                    <h2 className="text-sm font-extrabold text-j-gray-700">
-                        Carteirinha digital
-                    </h2>
-                    <p className="text-[11px] text-j-gray-400">
-                        Padrão 85,6 × 53,98 mm
-                    </p>
-                </div>
-
-                <div
-                    className="grid w-full grid-cols-2 gap-1 rounded-xl bg-j-gray-100 p-1 sm:w-auto"
-                    aria-label="Selecionar lado da carteirinha"
-                >
-                    {(["front", "back"] as const).map((side) => {
-                        const isActive = currentSide === side;
-                        const label = side === "front" ? "Frente" : "Verso";
-
-                        return (
-                            <button
-                                key={side}
-                                type="button"
-                                onClick={() => setCurrentSide(side)}
-                                aria-label={`Visualizar ${label.toLowerCase()}`}
-                                aria-pressed={isActive}
-                                className={`cursor-pointer rounded-lg px-4 py-2 text-xs font-bold transition-colors sm:py-1.5 ${
-                                    isActive
-                                        ? "bg-j-blue-800 text-j-white shadow-sm"
-                                        : "text-j-gray-500 hover:bg-j-white"
-                                }`}
-                            >
-                                {label}
-                            </button>
-                        );
-                    })}
-                </div>
-            </header>
-
-            <div
-                ref={cardContainerRef}
-                className="w-full min-w-0 [container-type:inline-size]"
-            >
-                {currentSide === "front" ? (
-                    <MembershipCardFront
-                        profilePhotoUrl={profilePhotoUrl}
-                        fullName={fullName}
-                        birthDate={birthDate}
-                        memberSince={memberSince}
-                        issuedAt={issuedAt}
-                        phoneNumber={phoneNumber}
-                        roleLabel={roleLabel}
-                        registrationNumber={registrationNumber}
-                        cityState={cityState}
-                        driverLicense={driverLicense}
-                        bloodType={bloodType}
-                    />
-                ) : (
-                    <MembershipCardBack />
-                )}
-            </div>
-
-            <CardExportActions onExport={handleExport} />
-        </section>
-    );
+    return <section className="flex w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+        <header className="flex min-h-20 shrink-0 flex-wrap content-start items-start justify-between gap-3 border-b-4 border-j-yellow-300 bg-j-blue-800 px-5 py-4 sm:h-20">
+            <div><h2 className="text-sm font-extrabold text-j-white">Carteirinha digital</h2><p className="mt-1 text-[11px] text-j-white/60">85,6 × 53,98 mm · Frente e verso</p></div>
+            <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-j-blue-700 p-1 sm:w-auto" aria-label="Selecionar lado da carteirinha">{(["front", "back"] as const).map((option) => <button key={option} type="button" aria-pressed={side === option} aria-label={`Visualizar ${option === "front" ? "frente" : "verso"}`} onClick={() => setSide(option)} className={`rounded-md border px-4 py-2 text-xs font-bold transition-colors ${side === option ? "border-j-yellow-300 bg-j-yellow-300 text-j-blue-800" : "border-j-white/40 text-j-white/80 hover:border-j-white hover:bg-j-blue-800"}`}>{option === "front" ? "Frente" : "Verso"}</button>)}</div>
+        </header>
+        <div className="flex flex-col gap-4 p-4 sm:p-5">
+            <div className="mx-auto w-full max-w-[720px]"><CardFace side={side} data={props} logo={logo.data} photo={photo.data} /></div>
+            <CardExportActions onExport={handleExport} disabled={!logo.ready || !photo.ready} className="mx-auto w-full max-w-[720px]" />
+        </div>
+        <div ref={exportFaces} aria-hidden="true" style={{ position: "fixed", left: "-10000px", top: 0, width: 856, pointerEvents: "none" }}><CardFace side="front" data={props} logo={logo.data} photo={photo.data} /><CardFace side="back" data={props} logo={logo.data} photo={photo.data} /></div>
+    </section>;
 }
 
 export default MembershipCard;

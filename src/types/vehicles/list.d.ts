@@ -8,9 +8,14 @@ interface VehicleListItem {
     nickname: string | null;
     plate: string;
     photo: string | null;
+    photos?: string[];
+    images?: { storageKey: string; position: number; primary: boolean }[];
+    galleryRevision?: number;
     modelYear: number;
     model: string;
     color: string;
+    ownerId?: number | null;
+    ownerName?: string | null;
 }
 
 type ListVehicleMemberResponse = PageResponse<VehicleListItem>;

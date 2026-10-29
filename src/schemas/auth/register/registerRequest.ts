@@ -3,7 +3,7 @@ import { emailSchema, cpfSchema, birthDateSchema, PasswordSchema } from "@/schem
 
 export const registerRequestSchema: z.ZodType<RegisterRequest> = z.object({
     name: z.string().min(1, 'O nome é obrigatório'),
-    birthData: birthDateSchema,
+    birthDate: birthDateSchema,
     email: emailSchema,
     cpf: cpfSchema,
     password: PasswordSchema,

@@ -1,4 +1,6 @@
 import z from "zod";
+import { identityMeResponseSchema } from '../auth/me/me';
+import { getMediaImageUrl } from '@/utils/media/imageUrl';
 
 export const userStatusSchema = z.enum([
     'ACTIVE',
@@ -22,14 +24,9 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
     lastLoginAt: z.string().nullable(),
 });
 
-export const backendUserProfileResponseSchema = z.object({
-    id: z.number(),
-    name: z.string(),
-    cpf: z.string(),
-    email: z.string().nullable().optional(),
-    phone: z.string().nullable().optional(),
-    status: userStatusSchema,
-    passwordChangeRequired: z.boolean(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable().optional(),
-});
+
+export const meProfileResponseSchema: z.ZodType<MeProfileResponse> = identityMeResponseSchema.transform(user => ({
+    ...user,
+    profilePhotoUrl: getMediaImageUrl(user.profilePhotoStorageKey) || null,
+}));
+

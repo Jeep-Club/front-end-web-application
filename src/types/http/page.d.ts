@@ -1,12 +1,4 @@
-/**
- * Formato padrao de paginacao do Spring Data (Page<T>).
- */
-interface PageSort {
-    sorted: boolean;
-    unsorted: boolean;
-    empty: boolean;
-}
-
+/** Envelope estável de paginação retornado pela API. */
 interface PageResponse<T> {
     content: T[];
     totalElements: number;
@@ -17,5 +9,4 @@ interface PageResponse<T> {
     last: boolean;
     numberOfElements: number;
     empty: boolean;
-    sort: PageSort;
 }

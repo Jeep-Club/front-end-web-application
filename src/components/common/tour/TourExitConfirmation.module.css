@@ -1,0 +1,46 @@
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  width: min(440px, calc(100vw - 32px));
+  padding: 28px;
+  border: 1px solid var(--yellow-300);
+  border-radius: 24px;
+  background: white;
+  color: var(--blue-800);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 30%);
+  pointer-events: auto;
+}
+.dialog, .dialog * { pointer-events: auto !important; }
+.dialog::backdrop { background: rgb(0 0 0 / 55%); }
+.icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: var(--blue-800);
+  color: var(--yellow-300);
+  font-size: 24px;
+  font-weight: 900;
+}
+.dialog h2 { font-size: 22px; font-weight: 900; }
+.dialog p { margin-top: 10px; color: var(--gray-600); font-size: 14px; line-height: 1.6; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.actions button {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.actions button:hover { background: var(--gray-100); }
+.actions button[data-action="exit"] { background: #ef4444; border-color: #ef4444; color: white; }
+.actions button[data-action="exit"]:hover { background: #dc2626; border-color: #dc2626; }
+.actions button:focus-visible { outline: 3px solid var(--blue-800); outline-offset: 3px; }
+

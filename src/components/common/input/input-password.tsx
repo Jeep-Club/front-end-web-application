@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react";
-import { Input, InputProps } from "./";
+import { Input } from "./input";
+import type { InputProps } from "./input";
 import { ButtonIcon } from "../button";
 import { twMerge } from "tailwind-merge";
 import { Eye, EyeClosed, KeyRound } from "lucide-react";
@@ -55,6 +56,8 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                 <KeyRound size={20} className="absolute left-2.5 text-j-blue-800"/>
                 <ButtonIcon
                     disabled={notSeePassword}
+                    aria-label={isVisible ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-pressed={isVisible}
                     onClick={()=>{setIsVisible((prev)=>!prev)}}
 
                     className="absolute right-2.5"
@@ -87,8 +90,6 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                 </ul>
             }
         </div>
-
-
     );
 }
 
