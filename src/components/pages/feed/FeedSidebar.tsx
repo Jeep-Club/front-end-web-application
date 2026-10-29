@@ -77,7 +77,6 @@ export function FeedSidebar() {
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
-
                             const participants = event.details.participants ?? [];
                             const participantCount = event.details.registrationCount ?? participants.length;
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
