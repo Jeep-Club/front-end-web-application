@@ -24,12 +24,14 @@ function participantInitials(name: string) {
         .join("");
 }
 
+
 function ParticipantAvatar({ participant, compact = false }: { participant: Participant; compact?: boolean }) {
     const photo = participantPhoto(participant);
     const size = compact ? "h-8 w-8" : "h-9 w-9";
     return photo
         ? <Avatar src={photo} alt="" className={`${size} border-2 border-j-white bg-j-gray-200`} />
         : <span aria-hidden="true" className={`flex ${size} items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 text-[10px] font-extrabold text-j-white`}>
+
             {participantInitials(participant.name) || "A"}
         </span>;
 }
@@ -37,11 +39,13 @@ function ParticipantAvatar({ participant, compact = false }: { participant: Part
 export function EventParticipants({ details }: { details: EventDetails }) {
     const participants = details.participants ?? [];
     const count = details.registrationCount ?? participants.length;
+
     const preview = participants.slice(0, Math.min(3, count));
 
     if (details.registrationCount === undefined && !participants.length) return null;
 
     return <details
+
         className="group"
         onClick={(event) => event.stopPropagation()}
     >
@@ -60,6 +64,7 @@ export function EventParticipants({ details }: { details: EventDetails }) {
         </summary>
 
         <div className="mt-2 border-t border-j-gray-200 pt-3">
+
             {participants.length > 0 ? <>
                 <ul className="flex flex-col gap-2">
                     {participants.map((participant, index) => <li key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className="flex min-w-0 items-center gap-2.5">
