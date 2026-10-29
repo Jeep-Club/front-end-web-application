@@ -20,7 +20,7 @@ export function DeleteRoleModal({ roleId, roleName }: DeleteRoleModalProps) {
     const mutation = useMutation({
         mutationFn: () => deleteRoleAction(roleId),
         onSuccess: () => {
-            toast.success("Cargo excluído com sucesso!");
+            toast.success("Cargo arquivado com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["authorization", "roles"] });
             setClose();
         },

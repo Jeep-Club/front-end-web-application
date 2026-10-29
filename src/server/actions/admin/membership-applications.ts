@@ -8,6 +8,7 @@ import {
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { HttpAPIRoutes } from '@/utils/http/api';
 import { z } from 'zod';
+import { adminTemporaryPasswordResponseSchema } from '@/schemas/auth/recovery';
 
 const noContentSchema = z.literal('');
 const byId = (route: string, id: number) => route.replace('{id}', String(id));
@@ -67,10 +68,10 @@ export async function rejectAndBlockMembershipApplicantAction(id: number, reason
 }
 
 export async function generateUserTemporaryPasswordAction(userId: number) {
-    const result = await actionFetchWrapper<TemporaryPasswordApproval>({
+    const result = await actionFetchWrapper({
         url: HttpAPIRoutes.ADMIN_USER_TEMPORARY_PASSWORD.replace('{userId}', String(userId)),
         method: 'POST',
-        schema: temporaryPasswordApprovalSchema,
+        schema: adminTemporaryPasswordResponseSchema,
     });
-    return result.data;
+    return { userId, ...result.data };
 }

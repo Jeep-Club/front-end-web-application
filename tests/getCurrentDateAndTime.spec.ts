@@ -3,7 +3,7 @@ import { getCurrentDateAndTime } from '@/utils/several/getCurrentDateAndTime';
 describe('getCurrentDateAndTime', () => {
   beforeAll(() => {
     // Congela no dia 25 de Dezembro de 2024 às 15:30:45
-    jest.useFakeTimers().setSystemTime(new Date('2024-12-25T15:30:45Z'));
+    jest.useFakeTimers().setSystemTime(new Date(2024, 11, 25, 15, 30, 45));
   });
 
   afterAll(() => {

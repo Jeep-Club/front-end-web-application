@@ -17,6 +17,7 @@ export async function completeFirstAccessPasswordAction(data: FirstAccessPasswor
     const cookieStore = await cookies();
     const passwordChangeToken = cookieStore.get("FirstAccessPasswordChangeToken")?.value;
     if (!passwordChangeToken) throw new ActionError("O prazo para criar sua senha expirou. Entre novamente com a senha temporária.");
+    const firstAccess = cookieStore.get("FirstAccessPasswordChangePending")?.value === "true";
 
     try {
         const response = await actionFetchWrapper<AuthResponse>({
@@ -25,6 +26,10 @@ export async function completeFirstAccessPasswordAction(data: FirstAccessPasswor
             body: JSON.stringify({ passwordChangeToken, newPassword: data.password }),
             schema: completeFirstAccessResponseSchema,
         });
+        // This one-use challenge was consumed by the successful API mutation.
+        // A later profile read must not leave it available for another submission.
+        cookieStore.delete("FirstAccessPasswordChangeToken");
+        cookieStore.delete("FirstAccessPasswordChangePending");
 
         await login(
             response.data.accessToken,
@@ -39,15 +44,12 @@ export async function completeFirstAccessPasswordAction(data: FirstAccessPasswor
         ]);
         await me(sessionResponse.data, identityResponse.data, authorizationResponse.data);
 
-        const firstAccess = cookieStore.get("FirstAccessPasswordChangePending")?.value === "true";
         if (firstAccess) {
             cookieStore.set("FirstAccessOnboardingUserId", String(identityResponse.data.id), {
                 ...authCookieOptions(true),
                 maxAge: 60 * 60 * 24 * 90,
             });
         }
-        cookieStore.delete("FirstAccessPasswordChangeToken");
-        cookieStore.delete("FirstAccessPasswordChangePending");
         return { firstAccess };
     } catch (error) {
         await logout();

@@ -12,14 +12,12 @@ const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
     INACTIVE: "Inativa",
     ARCHIVED: "Arquivada",
-    DELETED: "Excluída",
 };
 
 const STATUS_DOT_STYLE: Record<ToolStatus, string> = {
     ACTIVE: "bg-j-green-500",
     INACTIVE: "bg-j-gray-400",
     ARCHIVED: "bg-amber-500",
-    DELETED: "bg-red-500",
 };
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {

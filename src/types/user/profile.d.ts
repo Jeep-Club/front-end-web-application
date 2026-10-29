@@ -5,18 +5,13 @@ type UserStatus =
     | 'CHANGE_PASSWORD_REQUIRED'
     | 'PENDING_FIRST_ACCESS';
 
-/**
- * Espelha os campos publicamente exibiveis do UserProfile do backend
- * (com.jeepclub.backend.authentication.core.domain.model.User), sem os
- * campos internos de credencial/seguranca (passwordHash, failedLoginAttempts,
- * accountStatus/authenticationStatus/credentialStatus brutos) — esses ultimos
- * tres sao projetados pelo backend em um unico campo `status` (User.getStatus()).
- */
+/** View model do perfil; a action normaliza email ausente para string vazia. */
 interface UserProfile {
     id: number;
     name: string;
     birthDate: string | null;
     email: string;
+    membershipNumber?: string | null;
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;
@@ -29,14 +24,15 @@ interface UserProfile {
 type GetUserProfileResponse = UserProfile;
 
 /**
- * Espelha com.jeepclub.backend.authentication.api.http.dto.session.MeResponseDTO
- * (campos de dados pessoais retornados por GET /authentication/me).
+ * Dados de GET /identity/me com URL da foto derivada para a apresentação.
  */
 interface MeProfileResponse {
     id: number;
     name: string;
     birthDate: string | null;
     email: string | null;
+    membershipNumber?: string | null;
+    profileCompletionPending?: boolean;
     cpf: string;
     rg: string | null;
     phoneNumber: string | null;
