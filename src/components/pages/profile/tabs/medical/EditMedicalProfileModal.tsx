@@ -159,6 +159,35 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
                 onError={() => toast.error("Revise os campos informados.")}
                 className="items-stretch gap-5 px-5 pt-5 md:px-8 md:pt-6"
             >
+                <MedicalProfileFields />
+
+                <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-j-blue-100 bg-j-blue-100/10 px-5 py-5 sm:flex-row sm:justify-end md:-mx-8 md:px-8">
+                    <Button type="button" onClick={setClose} disabled={mutation.isPending} className="border-2 border-j-gray-200 bg-j-white px-5 text-j-gray-600 hover:bg-j-gray-100 hover:text-j-gray-700">
+                        Cancelar
+                    </Button>
+                    <Button type="submit" disabled={mutation.isPending} className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white">
+                        {mutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
+                        {mutation.isPending ? "Salvando..." : "Salvar alterações"}
+                    </Button>
+                </div>
+            </Form>
+        </div>
+    );
+}
+
+function FormSection({ title, columns = false, children }: { title: string; columns?: boolean; children: React.ReactNode }) {
+    return (
+        <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/40 p-4 [&_label]:!text-j-gray-700 md:p-5">
+            <h3 className="border-b border-j-gray-200 pb-3 text-sm font-extrabold text-j-blue-800">{title}</h3>
+            <div className={columns ? "grid gap-4 sm:grid-cols-2" : "flex flex-col gap-4"}>{children}</div>
+        </section>
+    );
+}
+
+export default EditMedicalProfileModal;
+
+export function MedicalProfileFields() {
+    return <>
                 <FormSection title="Informações médicas">
                     <SelectRegister
                         name="bloodType"
@@ -185,27 +214,5 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
                 </FormSection>
                 <MedicalConditionalField name="observations" question="Possui alguma observação médica adicional?" label="Observações" placeholder="Outras informações importantes" />
 
-                <div className="-mx-5 mt-1 flex flex-col-reverse gap-3 border-t border-j-blue-100 bg-j-blue-100/10 px-5 py-5 sm:flex-row sm:justify-end md:-mx-8 md:px-8">
-                    <Button type="button" onClick={setClose} disabled={mutation.isPending} className="border-2 border-j-gray-200 bg-j-white px-5 text-j-gray-600 hover:bg-j-gray-100 hover:text-j-gray-700">
-                        Cancelar
-                    </Button>
-                    <Button type="submit" disabled={mutation.isPending} className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white">
-                        {mutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
-                        {mutation.isPending ? "Salvando..." : "Salvar alterações"}
-                    </Button>
-                </div>
-            </Form>
-        </div>
-    );
+    </>;
 }
-
-function FormSection({ title, columns = false, children }: { title: string; columns?: boolean; children: React.ReactNode }) {
-    return (
-        <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/40 p-4 [&_label]:!text-j-gray-700 md:p-5">
-            <h3 className="border-b border-j-gray-200 pb-3 text-sm font-extrabold text-j-blue-800">{title}</h3>
-            <div className={columns ? "grid gap-4 sm:grid-cols-2" : "flex flex-col gap-4"}>{children}</div>
-        </section>
-    );
-}
-
-export default EditMedicalProfileModal;

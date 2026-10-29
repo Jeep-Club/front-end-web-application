@@ -78,7 +78,7 @@ export default function VehicleManagement() {
                 <PageHeader title="Gestão de veículos" breadcrumbs={[
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
-                    { label: "Gestão de veículos" },
+                    { label: "Veículos" },
                 ]} />
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
@@ -106,8 +106,8 @@ export default function VehicleManagement() {
                                 <div className="divide-y divide-j-gray-100">
                                     {data?.content.map((vehicle) => (
                                         <div key={vehicle.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-blue-50/30 xl:grid xl:grid-cols-[minmax(0,1.2fr)_minmax(120px,0.6fr)_minmax(140px,1fr)_280px] xl:items-center xl:gap-3">
-                                            <div className="flex min-w-0 flex-col items-stretch gap-3 xl:flex-row xl:items-center">
-                                                <div className="flex h-48 w-full shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-56 xl:h-20 xl:w-36">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-j-gray-200 bg-j-blue-800 text-j-yellow-300 sm:h-20 sm:w-36">
                                                     {vehicle.photo || vehicle.photos?.length ? (
                                                         <VehiclePhotoCarousel vehicleId={vehicle.id} admin cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="h-full w-full" />
                                                     ) : <Car size={24} aria-hidden="true" />}

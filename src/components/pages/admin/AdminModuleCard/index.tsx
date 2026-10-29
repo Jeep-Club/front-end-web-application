@@ -17,7 +17,7 @@ export default function Admin() {
 
     const availableModules = getAvailableAdminModules(permissions);
 
-    // Tour do Painel do Administrador (responsivo para Mobile e Desktop)
+    // Tour do Painel de gestão (responsivo para Mobile e Desktop)
     const { startTour, restartTour } = usePageTour({
         storageKey: "tour_completed_admin_panel",
         steps: getAdminPanelTourSteps,
@@ -30,7 +30,7 @@ export default function Admin() {
             <div className="flex w-full flex-col gap-6">
                 <PageHeader
                     id="tour-admin-header"
-                    title="Painel do Administrador"
+                    title="Painel de gestão"
                     breadcrumbs={[
                         {
                             label: "Home",

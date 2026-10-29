@@ -26,7 +26,7 @@ function jsonResponse(body: unknown, status = 200) {
 
 it('reproduces the email:null mismatch and prints the raw 200 response before the Zod cause', async () => {
     mockFetch.mockResolvedValue(jsonResponse(identity));
-    const error = await fetchWrapper({ url, schema: identityMeResponseSchema }).catch(error => error);
+    const error = await fetchWrapper({ url, schema: identityMeResponseSchema.extend({ email: z.string() }) }).catch(error => error);
     expect(error).toMatchObject({ status: 200, rawData: identity, zodError: expect.any(z.ZodError) });
     expect(log).toHaveBeenCalledTimes(1);
     const output = log.mock.calls[0][0] as string;

@@ -15,9 +15,9 @@ export async function submitMembershipApplicationAction(form: MembershipApplicat
             name: form.name.trim(),
             // Os inputs exibem as máscaras; a API recebe somente dígitos.
             cpf: unMaskCPF(form.cpf),
-            phoneNumber: unMaskPhoneNumber(form.phoneNumber),
-            email: form.email.trim() || null,
-            message: form.message.trim(),
+            phoneNumber: unMaskPhoneNumber(form.phoneNumber).replace(/^55(?=\d{11}$)/, ''),
+            email: (form.email?.trim() ?? '') || null,
+            message: form.message?.trim() || null,
         }),
         schema: membershipApplicationSubmissionSchema,
     });

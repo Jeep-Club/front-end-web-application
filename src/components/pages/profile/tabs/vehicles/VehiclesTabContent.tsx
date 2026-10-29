@@ -81,27 +81,27 @@ export function VehiclesTabContent() {
                             >
                                 <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
                                     <VehiclePhotoCarousel vehicleId={vehicle.id} cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
-                                    <div className="absolute right-3 top-3 inline-flex flex-col overflow-hidden rounded-lg border border-white/80 bg-white/95 shadow-md backdrop-blur-sm">
-                                        <span className="bg-j-blue-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white">
-                                            Placa do veículo
-                                        </span>
-                                        <span className="px-3 py-1 font-mono text-base font-extrabold leading-none tracking-[0.14em] text-j-gray-800 sm:text-lg" aria-label={`Placa ${maskPlate(vehicle.plate)}`}>
-                                            {maskPlate(vehicle.plate)}
-                                        </span>
-                                    </div>
                                 </div>
 
                                 <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
-                                    <h4 className="mt-0.5 min-w-0 text-xl font-black leading-tight text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
-                                        {vehicle.nickname?.trim() ? (
-                                            <>
-                                                <span className="break-words [overflow-wrap:anywhere]">{vehicle.nickname.trim()}</span>
-                                                <span className="ml-1 inline-block text-sm font-medium [overflow-wrap:anywhere]">- {vehicle.model}</span>
-                                            </>
-                                        ) : (
-                                            <span className="break-words [overflow-wrap:anywhere]">{vehicle.model}</span>
-                                        )}
-                                    </h4>
+                                    <div className="flex min-w-0 items-center justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
+                                                {vehicle.nickname?.trim()
+                                                    ? <>{vehicle.nickname.trim()}<span className="text-sm font-medium"> - {vehicle.model}</span></>
+                                                    : vehicle.model}
+                                            </h4>
+                                        </div>
+
+                                        <div className="inline-flex shrink-0 flex-col overflow-hidden rounded-lg border border-j-gray-300 bg-white shadow-sm">
+                                            <span className="bg-j-blue-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white">
+                                                Placa do veículo
+                                            </span>
+                                            <span className="px-3 py-1 font-mono text-base font-extrabold leading-none tracking-[0.14em] text-j-gray-800 sm:text-lg" aria-label={`Placa ${maskPlate(vehicle.plate)}`}>
+                                                {maskPlate(vehicle.plate)}
+                                            </span>
+                                        </div>
+                                    </div>
 
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div className="flex min-w-0 items-center gap-2 rounded-xl border border-j-gray-200 bg-j-gray-50 px-3 py-2.5 text-j-gray-600">

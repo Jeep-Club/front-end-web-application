@@ -1,3 +1,4 @@
+import { resolveToolErrorMessage } from './toolErrorMessages';
 import { ActionError,getActionFailure } from '@/utils/http/ActionError';
 
 export const SESSION_EXPIRED_MESSAGE = 'Sua sessão expirou. Faça login novamente.';
@@ -38,7 +39,8 @@ export function extractApiErrorMessage(error: unknown, fallback = FALLBACK): str
             const message = problem.errors.find(item => typeof item?.message === 'string' && item.message.trim())?.message;
             if (message) return message;
         }
-        if (problem.detail.trim()) return problem.detail;
+        const detail = resolveToolErrorMessage(problem.detail, problem.code);
+        if (detail.trim()) return detail;
     }
     const codeMessages: Record<string, string> = {
         MEMBERSHIP_PAYMENT_REQUIRED: 'Regularize o pagamento da sua membritude para continuar.',

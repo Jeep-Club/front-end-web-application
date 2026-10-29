@@ -23,9 +23,11 @@ export enum HttpAPIRoutes {
     LOGOUT = "authentication/logout",
     PERMISSIONS = "authorization/permissions",
     AUTHORIZATION_ROLES = "authorization/roles",
+    BILLING_PAYMENTS = "billing/member-payments",
 
     USER_ROLES = "authorization/users/{id}/roles",
     TOOLS = "tools",
+    ADMIN_TOOLS = "admin/tools",
 
     ADMIN_DEPENDENTS = "socios/{id}/dependents",
     ADMIN_MEDICAL_PROFILES = "admin/medical-profiles",
