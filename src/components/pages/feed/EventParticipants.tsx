@@ -24,11 +24,12 @@ function participantInitials(name: string) {
         .join("");
 }
 
-function ParticipantAvatar({ participant }: { participant: Participant }) {
+function ParticipantAvatar({ participant, compact = false }: { participant: Participant; compact?: boolean }) {
     const photo = participantPhoto(participant);
+    const size = compact ? "h-8 w-8" : "h-9 w-9";
     return photo
-        ? <Avatar src={photo} alt="" className="size-9 border-2 border-j-white bg-j-gray-200" />
-        : <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 text-[10px] font-extrabold text-j-white">
+        ? <Avatar src={photo} alt="" className={`${size} border-2 border-j-white bg-j-gray-200`} />
+        : <span aria-hidden="true" className={`flex ${size} items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 text-[10px] font-extrabold text-j-white`}>
             {participantInitials(participant.name) || "A"}
         </span>;
 }
@@ -36,33 +37,29 @@ function ParticipantAvatar({ participant }: { participant: Participant }) {
 export function EventParticipants({ details }: { details: EventDetails }) {
     const participants = details.participants ?? [];
     const count = details.registrationCount ?? participants.length;
-    const preview = participants.slice(0, Math.min(4, count));
-    const extraCount = Math.max(0, count - preview.length);
+    const preview = participants.slice(0, Math.min(3, count));
 
     if (details.registrationCount === undefined && !participants.length) return null;
 
     return <details
-        className="group rounded-2xl bg-j-gray-100/70 px-3 py-2.5"
+        className="group"
         onClick={(event) => event.stopPropagation()}
     >
-        <summary className="flex min-h-10 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 rounded-lg text-left focus-visible:outline-2 focus-visible:outline-j-blue-800 [&::-webkit-details-marker]:hidden">
+        <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg text-left text-sm text-j-gray-500 focus-visible:outline-2 focus-visible:outline-j-blue-800 [&::-webkit-details-marker]:hidden">
             <span className="flex items-center" aria-hidden="true">
                 {preview.map((participant, index) => <span key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className={index ? "-ml-2" : ""}>
-                    <ParticipantAvatar participant={participant} />
+                    <ParticipantAvatar participant={participant} compact />
                 </span>)}
-                {extraCount > 0 && <span className={`${preview.length ? "-ml-2" : ""} flex size-9 items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 px-1 text-[11px] font-extrabold text-j-white`}>
-                    +{extraCount}
-                </span>}
-                {!preview.length && !extraCount && <UsersRound size={18} className="text-j-blue-700" />}
+                {!preview.length && count > 0 && <UsersRound size={18} className="text-j-gray-400" />}
             </span>
-            <span className="text-sm font-semibold text-j-gray-700">
-                <strong className="font-extrabold text-j-blue-800">{count}</strong>{" "}
-                {count === 1 ? "pessoa vai participar" : "pessoas vão participar"}
+            <span className="font-medium">
+                <strong className="font-semibold text-j-gray-700">{count}</strong>{" "}
+                {count === 1 ? "pessoa" : "pessoas"}
             </span>
-            <ChevronDown size={16} aria-hidden="true" className="ml-auto shrink-0 text-j-gray-500 transition-transform group-open:rotate-180" />
+            <ChevronDown size={14} aria-hidden="true" className="shrink-0 text-j-gray-400 transition-transform group-open:rotate-180" />
         </summary>
 
-        <div className="mt-3 border-t border-j-gray-200 pt-3">
+        <div className="mt-2 border-t border-j-gray-200 pt-3">
             {participants.length > 0 ? <>
                 <ul className="flex flex-col gap-2">
                     {participants.map((participant, index) => <li key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className="flex min-w-0 items-center gap-2.5">
