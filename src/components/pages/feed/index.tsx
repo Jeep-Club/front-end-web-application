@@ -17,7 +17,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
 import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
 import { feedTypes, publicationReadError, publicationReadRetry } from "./feedDisplay";
-import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
+import { CreatePublicationModal } from "@/components/pages/admin/publications/CreatePublicationModal";
 import { PublicationDetailModal } from "./PublicationDetailModal";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
@@ -87,7 +87,7 @@ export default function Feed() {
         const updateHint = () => {
             setShowFilterHint(
                 nav.scrollWidth > nav.clientWidth + 1 &&
-                    nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1
+                nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 1
             );
         };
 
@@ -216,408 +216,403 @@ export default function Feed() {
     return (
         <div tabIndex={-1} data-publication-return className="min-h-full w-full px-3 py-4 focus:outline-none md:px-6 md:py-6">
             <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-              <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
-                {!canRead ? (
-                    <div
-                        role="status"
-                        className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600"
-                    >
-                        Seu usuário não possui permissão para acessar o feed.
-                    </div>
-                ) : (
-                    <>
-                        <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
-
-                        <div className="flex min-w-0 items-center gap-3">
-                            <div className="relative min-w-0 flex-1">
-                                <nav
-                                    ref={filterNavRef}
-                                    aria-label="Tipos de publicação"
-                                    aria-describedby="feed-filter-swipe-hint"
-                                    className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-
-
-
-
-                                >
-                                    <button
-                                        type="button"
-                                        onClick={() => filterType()}
-                                        aria-pressed={!type}
-                                        className={`cursor-pointer flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
-                                            !type
-                                                ? "bg-j-blue-800 text-j-white shadow-sm"
-                                                : "text-j-gray-600 hover:bg-j-gray-100"
-                                        }`}
-                                    >
-                                        <Newspaper size={17} aria-hidden="true" />
-                                        Tudo
-                                    </button>
-
-                                    {(["SERVICE", "NOTICE", "EVENT"] as const).map(
-                                        (key) => {
-                                            const Icon = icons[key];
-
-                                            return (
-                                                <button
-                                                    key={key}
-                                                    type="button"
-                                                    onClick={() => filterType(key)}
-                                                    aria-pressed={type === key}
-                                                    className={`cursor-pointer flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
-                                                        type === key
-                                                            ? "bg-j-blue-800 text-j-white shadow-sm"
-                                                            : "text-j-gray-600 hover:bg-j-gray-100"
-                                                    }`}
-                                                >
-                                                    <Icon
-                                                        size={17}
-                                                        aria-hidden="true"
-                                                    />
-                                                    {feedTypes[key].plural}
-                                                </button>
-                                            );
-                                        }
-                                    )}
-                                </nav>
-
-                                <span
-                                    id="feed-filter-swipe-hint"
-                                    className="sr-only"
-                                >
-                                    Deslize horizontalmente para ver mais tipos
-                                    de publicação.
-                                </span>
-
-                                {showFilterHint && (
-                                    <div
-                                        aria-hidden="true"
-                                        className="pointer-events-none absolute inset-y-0 right-0 flex items-center rounded-r-2xl bg-gradient-to-l from-j-white via-j-white/95 to-transparent pl-5 pr-2 md:hidden"
-                                    >
-                                        <span className="inline-flex items-center gap-0.5 rounded-full bg-j-white/90 py-1 pl-2 pr-1 text-[10px] font-bold text-j-blue-700 shadow-sm">
-                                            Deslize <ChevronRight size={14} />
-                                        </span>
-                                    </div>
-                                )}
-
-                            </div>
-
-                            {canCreateCurrentType && (
-                                <button
-                                    type="button"
-                                    aria-label={`Criar ${creationLabel}`}
-                                    title={`Criar ${creationLabel}`}
-                                    onClick={openCreatePublication}
-                                    className="cursor-pointer flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-sm transition-transform hover:scale-105 hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-blue-800"
-                                >
-                                    <Plus
-                                        size={25}
-                                        strokeWidth={2.8}
-                                        aria-hidden="true"
-                                    />
-                                </button>
-                            )}
+                <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
+                    {!canRead ? (
+                        <div
+                            role="status"
+                            className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600"
+                        >
+                            Seu usuário não possui permissão para acessar o feed.
                         </div>
+                    ) : (
+                        <>
+                            <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
 
-                        <FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => applyFilters({ type, ...period })} />
-                        <Button disabled={!filtersResult.success || query.isFetching} onClick={refreshFeed}>Atualizar publicações</Button>
-                        {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : query.isLoading ? (
-                            <div
-                                role="status"
-                                aria-label="Carregando feed"
-                                className="grid grid-cols-1 gap-5"
-                            >
-                                {Array.from({ length: 5 }, (_, index) => (
-                                    <div
-                                        key={index}
-                                        className="h-80 animate-pulse rounded-3xl bg-j-gray-200"
-                                    />
-                                ))}
-                            </div>
-                        ) : query.isError && !publications.length ? (
-                            <div
-                                role="alert"
-                                className="rounded-2xl border border-red-200 bg-j-white p-6"
-                            >
-                                <p className="text-sm text-input-error-text">
-                                    {failure.message}
-                                </p>
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className="relative min-w-0 flex-1">
+                                    <nav
+                                        ref={filterNavRef}
+                                        aria-label="Tipos de publicação"
+                                        aria-describedby="feed-filter-swipe-hint"
+                                        className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 
-                                <Button
-                                    className="mt-4"
-                                    onClick={() => void query.refetch()}
-                                >
-                                    Tentar novamente
-                                </Button>
-                            </div>
-                        ) : !publications.length ? (
 
-                            <div
-                                role="status"
-                                className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center shadow-sm"
-                            >
-                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-j-yellow-300/30 text-j-blue-800">
-                                    <Newspaper
-                                        size={27}
-                                        aria-hidden="true"
-                                    />
-                                </span>
 
-                                {(type || publishedFrom || publishedTo) && <><p>Nenhum resultado para os filtros selecionados.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></>}
-                                <h2 className="mt-4 text-lg font-extrabold text-j-blue-800">
-                                    {type
-                                        ? `Nenhum ${
-                                              feedTypes[
-                                                  type
-                                              ].label.toLocaleLowerCase(
-                                                  "pt-BR"
-                                              )
-                                          } publicado ainda`
-                                        : "Nenhuma publicação por aqui"}
-                                </h2>
 
-                                <p className="mt-2 max-w-sm text-sm leading-relaxed text-j-gray-500">
-                                    {type
-                                        ? `As publicações de ${
-                                              feedTypes[
-                                                  type
-                                              ].plural.toLocaleLowerCase(
-                                                  "pt-BR"
-                                              )
-                                          } aparecem aqui quando forem publicadas.`
-                                        : "Avisos, eventos e serviços do clube aparecem aqui quando forem publicados."}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-5">
-                                {publications.map((publication) => {
-                                    const Icon = icons[publication.type];
-                                    const isEvent = publication.type === "EVENT";
-
-                                    return (
-                                        <article
-                                            key={publication.id}
-                                            onClickCapture={event => {
-                                                // Safari does not focus pointer-activated links/buttons by default.
-                                                // Remember the actual control before the modal takes focus.
-                                                (event.target as Element).closest<HTMLElement>('a, button')?.focus({ preventScroll: true });
-                                            }}
-                                            className="flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm"
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => filterType()}
+                                            aria-pressed={!type}
+                                            className={`cursor-pointer flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${!type
+                                                    ? "bg-j-blue-800 text-j-white shadow-sm"
+                                                    : "text-j-gray-600 hover:bg-j-gray-100"
+                                                }`}
                                         >
-                                            {publication.primaryImage && !failedImages.has(publication.primaryImage.storageKey) && (
-                                                <div className="relative aspect-[16/9] bg-j-gray-100">
-                                                    <Image
-                                                        src={getMediaImageUrl(
-                                                            publication
-                                                                .primaryImage
-                                                                .storageKey
-                                                        )}
-                                                        onError={() => setFailedImages(previous => new Set(previous).add(publication.primaryImage!.storageKey))}
-                                                        alt={publication.title}
-                                                        fill
-                                                        unoptimized
-                                                        sizes="(min-width: 800px) 768px, 100vw"
-                                                        className="object-cover"
-                                                    />
+                                            <Newspaper size={17} aria-hidden="true" />
+                                            Tudo
+                                        </button>
 
-                                                    {isEvent && publication.details.status === "OPEN" && (
-                                                        <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-j-yellow-300 px-3 py-1.5 text-xs font-extrabold text-j-blue-900 shadow-md">
-                                                            <CalendarDays
-                                                                size={14}
-                                                                aria-hidden="true"
-                                                            />
-                                                            Próximo evento
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
+                                        {(["SERVICE", "NOTICE", "EVENT"] as const).map(
+                                            (key) => {
+                                                const Icon = icons[key];
 
-                                            {publication.primaryImage && failedImages.has(publication.primaryImage.storageKey) && <div role="status" className="bg-j-gray-100 p-4 text-sm text-j-gray-600">Imagem indisponível.<Button onClick={() => setFailedImages(previous => { const next = new Set(previous); next.delete(publication.primaryImage!.storageKey); return next; })}>Tentar imagem novamente</Button></div>}
-                                            <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
-                                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold ${
-                                                            isEvent
-                                                                ? "bg-j-yellow-300/30 text-j-blue-900"
-                                                                : "bg-j-gray-100 text-j-blue-800"
-                                                        }`}
+                                                return (
+                                                    <button
+                                                        key={key}
+                                                        type="button"
+                                                        onClick={() => filterType(key)}
+                                                        aria-pressed={type === key}
+                                                        className={`cursor-pointer flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${type === key
+                                                                ? "bg-j-blue-800 text-j-white shadow-sm"
+                                                                : "text-j-gray-600 hover:bg-j-gray-100"
+                                                            }`}
                                                     >
                                                         <Icon
-                                                            size={15}
+                                                            size={17}
                                                             aria-hidden="true"
                                                         />
-                                                        {
-                                                            feedTypes[
-                                                                publication.type
-                                                            ].label
-                                                        }
-                                                    </span>
+                                                        {feedTypes[key].plural}
+                                                    </button>
+                                                );
+                                            }
+                                        )}
+                                    </nav>
 
-                                                    <RelativeTime
-                                                        value={
-                                                            publication.publishedAt
-                                                        }
-                                                        className="text-xs text-j-gray-500"
-                                                    />
-                                                </div>
+                                    <span
+                                        id="feed-filter-swipe-hint"
+                                        className="sr-only"
+                                    >
+                                        Deslize horizontalmente para ver mais tipos
+                                        de publicação.
+                                    </span>
 
-                                                <div>
-                                                    <h2 className="line-clamp-2 break-words text-xl font-extrabold text-j-blue-800">
-                                                        {preview(
-                                                            publication.title,
-                                                            100
-                                                        )}
-                                                    </h2>
+                                    {showFilterHint && (
+                                        <div
+                                            aria-hidden="true"
+                                            className="pointer-events-none absolute inset-y-0 right-0 flex items-center rounded-r-2xl bg-gradient-to-l from-j-white via-j-white/95 to-transparent pl-5 pr-2 md:hidden"
+                                        >
+                                            <span className="inline-flex items-center gap-0.5 rounded-full bg-j-white/90 py-1 pl-2 pr-1 text-[10px] font-bold text-j-blue-700 shadow-sm">
+                                                Deslize <ChevronRight size={14} />
+                                            </span>
+                                        </div>
+                                    )}
 
-                                                    <p className="mt-2 line-clamp-3 break-words text-sm leading-relaxed text-j-gray-600">
-                                                        {preview(
-                                                            publicationPlainText(
-                                                                publication.content
-                                                            ),
-                                                            220
-                                                        )}
-                                                    </p>
-                                                </div>
+                                </div>
 
-                                                <FeedMetadata
-                                                    publication={publication}
-                                                />
+                                {canCreateCurrentType && (
+                                    <button
+                                        type="button"
+                                        aria-label={`Criar ${creationLabel}`}
+                                        title={`Criar ${creationLabel}`}
+                                        onClick={openCreatePublication}
+                                        className="cursor-pointer flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-sm transition-transform hover:scale-105 hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-blue-800"
+                                    >
+                                        <Plus
+                                            size={25}
+                                            strokeWidth={2.8}
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                )}
+                            </div>
 
-                                                {publication.type === "EVENT" && (
-                                                    <EventParticipants
-                                                        details={
-                                                            publication.details
-                                                        }
-                                                    />
-                                                )}
+                            <FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => applyFilters({ type, ...period })} />
+                            <Button disabled={!filtersResult.success || query.isFetching} onClick={refreshFeed}>Atualizar publicações</Button>
+                            {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : query.isLoading ? (
+                                <div
+                                    role="status"
+                                    aria-label="Carregando feed"
+                                    className="grid grid-cols-1 gap-5"
+                                >
+                                    {Array.from({ length: 5 }, (_, index) => (
+                                        <div
+                                            key={index}
+                                            className="h-80 animate-pulse rounded-3xl bg-j-gray-200"
+                                        />
+                                    ))}
+                                </div>
+                            ) : query.isError && !publications.length ? (
+                                <div
+                                    role="alert"
+                                    className="rounded-2xl border border-red-200 bg-j-white p-6"
+                                >
+                                    <p className="text-sm text-input-error-text">
+                                        {failure.message}
+                                    </p>
 
-                                                {publication.type === "EVENT" && (
-                                                    <EventParticipation
-                                                        eventId={publication.id}
-                                                        eventStatus={
-                                                            publication.details
-                                                                .status
-                                                        }
-                                                        compact
-                                                    />
-                                                )}
+                                    <Button
+                                        className="mt-4"
+                                        onClick={() => void query.refetch()}
+                                    >
+                                        Tentar novamente
+                                    </Button>
+                                </div>
+                            ) : !publications.length ? (
 
-                                                {canDetail && (
-                                                    <a aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} onClick={event => {
-                                                        if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                                                        event.preventDefault(); openPublication(publication.id);
-                                                    }} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
-                                                )}
+                                <div
+                                    role="status"
+                                    className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center shadow-sm"
+                                >
+                                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-j-yellow-300/30 text-j-blue-800">
+                                        <Newspaper
+                                            size={27}
+                                            aria-hidden="true"
+                                        />
+                                    </span>
 
-                                                <div className="mt-auto border-t border-j-gray-200 pt-3">
-                                                    <div className="flex flex-wrap items-center justify-between gap-3">
-                                                        <FeedInteractions
-                                                            publication={
+                                    {(type || publishedFrom || publishedTo) && <><p>Nenhum resultado para os filtros selecionados.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></>}
+                                    <h2 className="mt-4 text-lg font-extrabold text-j-blue-800">
+                                        {type
+                                            ? `Nenhum ${feedTypes[
+                                                type
+                                            ].label.toLocaleLowerCase(
+                                                "pt-BR"
+                                            )
+                                            } publicado ainda`
+                                            : "Nenhuma publicação por aqui"}
+                                    </h2>
+
+                                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-j-gray-500">
+                                        {type
+                                            ? `As publicações de ${feedTypes[
+                                                type
+                                            ].plural.toLocaleLowerCase(
+                                                "pt-BR"
+                                            )
+                                            } aparecem aqui quando forem publicadas.`
+                                            : "Avisos, eventos e serviços do clube aparecem aqui quando forem publicados."}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-5">
+                                    {publications.map((publication) => {
+                                        const Icon = icons[publication.type];
+                                        const isEvent = publication.type === "EVENT";
+
+                                        return (
+                                            <article
+                                                key={publication.id}
+                                                onClickCapture={event => {
+                                                    // Safari does not focus pointer-activated links/buttons by default.
+                                                    // Remember the actual control before the modal takes focus.
+                                                    (event.target as Element).closest<HTMLElement>('a, button')?.focus({ preventScroll: true });
+                                                }}
+                                                className="flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm"
+                                            >
+                                                {publication.primaryImage && !failedImages.has(publication.primaryImage.storageKey) && (
+                                                    <div className="relative aspect-[16/9] bg-j-gray-100">
+                                                        <Image
+                                                            src={getMediaImageUrl(
                                                                 publication
-                                                            }
-                                                            onComments={
-                                                                canDetail
-                                                                    ? () =>
-                                                                          openPublication(
-                                                                              publication.id
-                                                                          )
-                                                                    : undefined
-                                                            }
+                                                                    .primaryImage
+                                                                    .storageKey
+                                                            )}
+                                                            onError={() => setFailedImages(previous => new Set(previous).add(publication.primaryImage!.storageKey))}
+                                                            alt={publication.title}
+                                                            fill
+                                                            unoptimized
+                                                            sizes="(min-width: 800px) 768px, 100vw"
+                                                            className="object-cover"
                                                         />
 
-                                                        {isEvent &&
-                                                            canDetail && (
-                                                                <a
-                                                                    href={`https://wa.me/?text=${encodeURIComponent(
-                                                                        `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${getEventShareLink(
-                                                                            publication.id
-                                                                        )}`
-                                                                    )}`}
-                                                                    target="_blank"
-                                                                    rel="noreferrer noopener"
-                                                                    aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
-                                                                    onClick={(
-                                                                        event
-                                                                    ) =>
-                                                                        event.stopPropagation()
-                                                                    }
-                                                                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-4 text-sm font-bold text-j-blue-800 transition-colors hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
-                                                                >
-                                                                    <Share2
-                                                                        size={
-                                                                            16
-                                                                        }
-                                                                        aria-hidden="true"
-                                                                    />
-                                                                    Compartilhar
-                                                                </a>
-                                                            )}
+                                                        {isEvent && publication.details.status === "OPEN" && (
+                                                            <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-j-yellow-300 px-3 py-1.5 text-xs font-extrabold text-j-blue-900 shadow-md">
+                                                                <CalendarDays
+                                                                    size={14}
+                                                                    aria-hidden="true"
+                                                                />
+                                                                Próximo evento
+                                                            </span>
+                                                        )}
                                                     </div>
+                                                )}
+
+                                                {publication.primaryImage && failedImages.has(publication.primaryImage.storageKey) && <div role="status" className="bg-j-gray-100 p-4 text-sm text-j-gray-600">Imagem indisponível.<Button onClick={() => setFailedImages(previous => { const next = new Set(previous); next.delete(publication.primaryImage!.storageKey); return next; })}>Tentar imagem novamente</Button></div>}
+                                                <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <span
+                                                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold ${isEvent
+                                                                    ? "bg-j-yellow-300/30 text-j-blue-900"
+                                                                    : "bg-j-gray-100 text-j-blue-800"
+                                                                }`}
+                                                        >
+                                                            <Icon
+                                                                size={15}
+                                                                aria-hidden="true"
+                                                            />
+                                                            {
+                                                                feedTypes[
+                                                                    publication.type
+                                                                ].label
+                                                            }
+                                                        </span>
+
+                                                        <RelativeTime
+                                                            value={
+                                                                publication.publishedAt
+                                                            }
+                                                            className="text-xs text-j-gray-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <h2 className="line-clamp-2 break-words text-xl font-extrabold text-j-blue-800">
+                                                            {preview(
+                                                                publication.title,
+                                                                100
+                                                            )}
+                                                        </h2>
+
+                                                        <p className="mt-2 line-clamp-3 break-words text-sm leading-relaxed text-j-gray-600">
+                                                            {preview(
+                                                                publicationPlainText(
+                                                                    publication.content
+                                                                ),
+                                                                220
+                                                            )}
+                                                        </p>
+                                                    </div>
+
+                                                    <FeedMetadata
+                                                        publication={publication}
+                                                    />
+
+                                                    {publication.type === "EVENT" && (
+                                                        <EventParticipants
+                                                            details={
+                                                                publication.details
+                                                            }
+                                                        />
+                                                    )}
+
+                                                    {publication.type === "EVENT" && (
+                                                        <EventParticipation
+                                                            eventId={publication.id}
+                                                            eventStatus={
+                                                                publication.details
+                                                                    .status
+                                                            }
+                                                            compact
+                                                        />
+                                                    )}
+
+                                                    {canDetail && (
+                                                        <a aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} onClick={event => {
+                                                            if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                                                            event.preventDefault(); openPublication(publication.id);
+                                                        }} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
+                                                    )}
+
+                                                    <div className="mt-auto border-t border-j-gray-200 pt-3">
+                                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                                            <FeedInteractions
+                                                                publication={
+                                                                    publication
+                                                                }
+                                                                onComments={
+                                                                    canDetail
+                                                                        ? () =>
+                                                                            openPublication(
+                                                                                publication.id
+                                                                            )
+                                                                        : undefined
+                                                                }
+                                                            />
+
+                                                            {isEvent &&
+                                                                canDetail && (
+                                                                    <a
+                                                                        href={`https://wa.me/?text=${encodeURIComponent(
+                                                                            `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${getEventShareLink(
+                                                                                publication.id
+                                                                            )}`
+                                                                        )}`}
+                                                                        target="_blank"
+                                                                        rel="noreferrer noopener"
+                                                                        aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
+                                                                        onClick={(
+                                                                            event
+                                                                        ) =>
+                                                                            event.stopPropagation()
+                                                                        }
+                                                                        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-4 text-sm font-bold text-j-blue-800 transition-colors hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
+                                                                    >
+                                                                        <Share2
+                                                                            size={
+                                                                                16
+                                                                            }
+                                                                            aria-hidden="true"
+                                                                        />
+                                                                        Compartilhar
+                                                                    </a>
+                                                                )}
+                                                        </div>
+                                                    </div>
+
+                                                    <PublicationCommentPreview
+                                                        publicationId={
+                                                            publication.id
+                                                        }
+                                                        count={
+                                                            publication.commentCount
+                                                        }
+                                                        onOpen={
+                                                            canDetail
+                                                                ? () =>
+                                                                    openPublication(
+                                                                        publication.id
+                                                                    )
+                                                                : undefined
+                                                        }
+                                                    />
                                                 </div>
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            )}
 
-                                                <PublicationCommentPreview
-                                                    publicationId={
-                                                        publication.id
-                                                    }
-                                                    count={
-                                                        publication.commentCount
-                                                    }
-                                                    onOpen={
-                                                        canDetail
-                                                            ? () =>
-                                                                  openPublication(
-                                                                      publication.id
-                                                                  )
-                                                            : undefined
-                                                    }
-                                                />
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {filtersResult.success && query.hasNextPage && !failure.restricted && <Button disabled={query.isFetching} aria-busy={query.isFetchingNextPage} onClick={() => void query.fetchNextPage({ cancelRefetch: false })}>Carregar mais publicações</Button>}
-                        {query.isRefetchError && !query.isFetchNextPageError && publications.length > 0 && <p role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700">Não foi possível atualizar. Exibindo as publicações carregadas anteriormente.</p>}
-                        <div
-                            ref={loadMoreRef}
-                            className="h-px"
-                            aria-hidden="true"
-                        />
-
-                        {query.isFetchingNextPage && (
-                            <p
-                                role="status"
-                                className="py-4 text-center text-sm text-j-gray-500"
-                            >
-                                Carregando mais publicações...
-                            </p>
-                        )}
-
-                        {query.isFetchNextPageError && (
+                            {filtersResult.success && query.hasNextPage && !failure.restricted && <Button disabled={query.isFetching} aria-busy={query.isFetchingNextPage} onClick={() => void query.fetchNextPage({ cancelRefetch: false })}>Carregar mais publicações</Button>}
+                            {query.isRefetchError && !query.isFetchNextPageError && publications.length > 0 && <p role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700">Não foi possível atualizar. Exibindo as publicações carregadas anteriormente.</p>}
                             <div
-                                role="alert"
-                                className="py-4 text-center"
-                            >
-                                <p className="text-sm text-input-error-text">
-                                    Não foi possível carregar mais publicações.
-                                </p>
+                                ref={loadMoreRef}
+                                className="h-px"
+                                aria-hidden="true"
+                            />
 
-                                <Button
-                                    className="mt-3"
-                                    onClick={() =>
-                                        void query.fetchNextPage()
-                                    }
+                            {query.isFetchingNextPage && (
+                                <p
+                                    role="status"
+                                    className="py-4 text-center text-sm text-j-gray-500"
                                 >
-                                    Tentar novamente
-                                </Button>
-                            </div>
-                        )}
-                    </>
-                )}
-              </div>
-              {canRead && <FeedSidebar />}
+                                    Carregando mais publicações...
+                                </p>
+                            )}
+
+                            {query.isFetchNextPageError && (
+                                <div
+                                    role="alert"
+                                    className="py-4 text-center"
+                                >
+                                    <p className="text-sm text-input-error-text">
+                                        Não foi possível carregar mais publicações.
+                                    </p>
+
+                                    <Button
+                                        className="mt-3"
+                                        onClick={() =>
+                                            void query.fetchNextPage()
+                                        }
+                                    >
+                                        Tentar novamente
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+                {canRead && <FeedSidebar />}
             </div>
             {detailValue && !detailId && <p role="alert">Identificação de publicação inválida.</p>}
             {detailId && <ModalRoot isOpen isEscapable={!activeModal} onClose={closePublication}><PublicationDetailModal key={detailId} publicationId={detailId} onClose={closePublication} /></ModalRoot>}

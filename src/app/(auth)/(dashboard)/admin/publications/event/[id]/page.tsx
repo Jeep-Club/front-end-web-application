@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { EventAdminDetails } from '@/components/pages/admin/gestao-publicacoes/EventAdminDetails';
+import { EventAdminDetails } from '@/components/pages/admin/publications/EventAdminDetails';
 import { publicationIdSchema } from '@/schemas/publications/admin';
 import { simpleHaveRoutePermissions } from '@/utils/permission/routePermissions';
 

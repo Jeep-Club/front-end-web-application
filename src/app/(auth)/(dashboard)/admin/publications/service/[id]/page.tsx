@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { ServiceAdminDetails } from '@/components/pages/admin/gestao-publicacoes/ServiceAdminDetails';
+import { ServiceAdminDetails } from '@/components/pages/admin/publications/ServiceAdminDetails';
 import { publicationIdSchema } from '@/schemas/publications/admin';
 import { simpleHaveRoutePermissions } from '@/utils/permission/routePermissions';
 export default async function ServiceAdminPage({ params }: { params: Promise<{ id: string }> }) {

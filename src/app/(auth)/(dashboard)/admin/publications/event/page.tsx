@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PublicationManagement from "@/components/pages/admin/gestao-publicacoes";
+import PublicationManagement from "@/components/pages/admin/publications";
 import { simpleHaveRoutePermissions } from "@/utils/permission/routePermissions";
 
 export default async function PublicationManagementPage() {
