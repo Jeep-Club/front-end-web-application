@@ -14,6 +14,7 @@ import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister
 import { InputFile } from "@/components/common/input/file";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
+
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationCreationTypes } from "@/config/publicationCreation";
 import { publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
@@ -24,6 +25,7 @@ import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
 import { createChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/create";
 import { assignChargeToEventParticipantsAction } from "@/server/actions/billing/chargeAssignments/assign";
+
 
 function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
     const { setClose } = useModal();
