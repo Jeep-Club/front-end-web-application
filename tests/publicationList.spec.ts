@@ -1,4 +1,4 @@
-import { listAdminPublicationsAction } from "@/actions/publications/list";
+import { listAdminPublicationsAction } from "@/server/actions/publications/list";
 import { parsePublicationExportIds } from "@/utils/publications/exportCsv";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
@@ -13,12 +13,12 @@ describe("Listagem administrativa pelas rotas existentes", () => {
     it("lista rascunhos com galeria, sem usar o feed", async () => {
         jest.mocked(haveActionPermission).mockResolvedValue(true);
         jest.mocked(actionFetchWrapper).mockImplementation(async (request) => request.url.includes("/export")
-            ? { status: 200, data: '\uFEFF"ID";"Título"\r\n"7";"Aviso salvo"\r\n' }
+            ? { status: 200, data: new Blob(['\uFEFF"ID";"Título"\r\n"7";"Aviso salvo"\r\n'], { type: 'text/csv' }) }
             : { status: 200, data: notice });
         const result = await listAdminPublicationsAction({ types: ["NOTICE"], status: "DRAFT", page: 0, size: 12 });
         expect(result.content[0]).toEqual({ ...notice, type: "NOTICE" });
         expect(result.totalElements).toBe(1);
-        expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "admin/notices/export?format=CSV&status=DRAFT", headers: { Accept: "text/csv" } }));
+        expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "admin/notices/export?format=CSV&status=DRAFT", responseType: 'blob', allowedContentTypes: ['text/csv'] }));
         expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "admin/notices/7" }));
         expect(actionFetchWrapper).not.toHaveBeenCalledWith(expect.objectContaining({ url: expect.stringContaining("publications/feed") }));
     });
@@ -26,7 +26,7 @@ describe("Listagem administrativa pelas rotas existentes", () => {
         jest.mocked(haveActionPermission).mockResolvedValue(true);
         const csv = '"ID"\r\n' + Array.from({ length: 25 }, (_, i) => `"${i + 1}"\r\n`).join("");
         jest.mocked(actionFetchWrapper).mockImplementation(async (request) => request.url.includes("/export")
-            ? { status: 200, data: csv }
+            ? { status: 200, data: new Blob([csv], { type: 'text/csv' }) }
             : { status: 200, data: { ...notice, id: Number(request.url.split("/").pop()) } });
         const result = await listAdminPublicationsAction({ types: ["NOTICE"], status: "ALL", page: 1, size: 12 });
         expect(result.content.map((entry) => entry.id)).toEqual([13,12,11,10,9,8,7,6,5,4,3,2]);

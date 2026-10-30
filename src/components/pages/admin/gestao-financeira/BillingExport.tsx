@@ -1,11 +1,11 @@
 "use client";
-import { useId, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/common/button";
-import { downloadBillingAction } from "@/actions/billing/download";
-import { billingLabels } from "./billingDisplay";
-import { decodeFinancialCsv, downloadFinancialReport } from "@/utils/financial-export/report";
+import { downloadBillingAction } from "@/server/actions/billing/download";
+import { decodeFinancialCsv,downloadFinancialReport } from "@/utils/financial-export/report";
+import { useMutation } from "@tanstack/react-query";
+import { useId,useRef,useState } from "react";
 import toast from "react-hot-toast";
+import { billingLabels } from "./billingDisplay";
 
 export function BillingExport({ kind, filters = {} }: { kind: "definitions" | "cycles" | "member-charges" | "payments" | "refunds"; filters?: Record<string, string> }) {
     const filterDialog = useRef<HTMLDialogElement>(null);
@@ -18,7 +18,7 @@ export function BillingExport({ kind, filters = {} }: { kind: "definitions" | "c
         if (combined.dueFrom && combined.dueTo && combined.dueFrom > combined.dueTo) throw new Error("O vencimento inicial deve preceder o final.");
         const source = await downloadBillingAction(kind, "CSV", combined);
         downloadFinancialReport(kind, format, decodeFinancialCsv(source.base64), combined);
-    }, onSuccess: () => toast.success("Relatório gerado. Download iniciado."), onError: (error) => toast.error(error.message) });
+    }, onSuccess: () => toast.success("Relatório gerado. Download iniciado.") });
     const statuses = { definitions: ["ACTIVE", "INACTIVE", "ARCHIVED"], cycles: ["GENERATED", "FINISHED", "CANCELED", "ARCHIVED"], "member-charges": ["PENDING", "PAID", "CANCELED"], payments: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"], refunds: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"] };
     const fields = [
         ["id", "Código do registro", "number"], ["userId", "Código do associado", "number"],
@@ -46,4 +46,3 @@ export function BillingExport({ kind, filters = {} }: { kind: "definitions" | "c
         </div><button type="button" className="mt-2 underline" onClick={() => setAdvanced({})}>Limpar filtros do relatório</button><div className="mt-5 flex justify-end"><Button type="button" className="h-10 px-4 py-0 text-sm" onClick={() => filterDialog.current?.close()}>Concluir</Button></div></dialog>
     </div>;
 }
-

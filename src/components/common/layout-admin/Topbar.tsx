@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { getUserProfileAction } from "@/actions/profile/get";
 import { AvatarMenu } from "@/components/common/layout-admin/AvatarMenu";
 import { NotificationBell } from "@/components/common/layout-admin/NotificationBell";
+import { getUserProfileAction } from "@/server/actions/profile/get";
+import { useQuery } from "@tanstack/react-query";
+import { Menu,PanelLeftClose,PanelLeftOpen } from "lucide-react";
 
 interface TopbarProps {
     isSidebarCollapsed: boolean;

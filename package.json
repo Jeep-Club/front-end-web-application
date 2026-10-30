@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "jest",
     "test:production-errors": "node tests/productionServerActionErrors.mjs",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:e2e:contracts": "playwright test tests/e2e/controller-contracts.spec.mjs tests/e2e/http-contracts.spec.mjs --workers=1",
+    "seed:e2e:contracts": "node tests/e2e/seed-contract-audit.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -26,9 +28,9 @@
     "js-cookie": "^3.0.5",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.14.0",
-    "next": "^16.2.3",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.75.0",
     "react-hot-toast": "^2.6.0",
@@ -40,14 +42,16 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "@types/react-scroll": "^1.8.10",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "eslint-config-next": "16.4.3",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^30.4.2",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.11",

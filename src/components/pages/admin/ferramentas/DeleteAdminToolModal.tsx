@@ -6,7 +6,7 @@ import { AlertTriangle, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { ConfirmButton } from "@/components/common/button/ConfirmButton";
 import { useModal } from "@/providers/ModalProvider";
-import { deleteToolAdminAction } from "@/actions/admin/tools/delete";
+import { deleteToolAdminAction } from "@/server/actions/admin/tools/delete";
 
 interface DeleteAdminToolModalProps {
     toolId: number;

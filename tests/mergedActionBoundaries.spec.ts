@@ -1,13 +1,14 @@
+import { toActionError } from '@/utils/http/apiError';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { listToolsAction } from '@/actions/tools/list';
-import { getToolDetailAction } from '@/actions/tools/detail';
-import { updateToolPhotoAction } from '@/actions/tools/photo';
+import { listToolsAction } from '@/server/actions/tools/list';
+import { getToolDetailAction } from '@/server/actions/tools/detail';
+import { updateToolPhotoAction } from '@/server/actions/tools/photo';
 import { updateToolPhotoAction as updatePhotoTransport } from '@/server/actions/tools/photo';
-import { generateUserTemporaryPasswordAction, rejectMembershipApplicationAction } from '@/actions/admin/membership-applications';
+import { generateUserTemporaryPasswordAction, rejectMembershipApplicationAction } from '@/server/actions/admin/membership-applications';
 import { HttpAPIRoutes } from '@/utils/http/api';
 
 jest.mock('@/services/fetchWrapper/actionFetchWrapper', () => ({ __esModule: true, default: jest.fn() }));
-jest.mock('@/actions/tools/detail', () => ({ getToolDetailAction: jest.fn() }));
+jest.mock('@/server/actions/tools/detail', () => ({ getToolDetailAction: jest.fn() }));
 
 const request = jest.mocked(actionFetchWrapper);
 const detail = jest.mocked(getToolDetailAction);
@@ -38,8 +39,8 @@ it('still lists tools if a compatibility detail read fails', async () => {
 
 it('keeps photo errors serializable and exposes their message to the client adapter', async () => {
     const rawData = { code: 'ACCESS_DENIED', status: 403, detail: 'Você não pode alterar esta foto.' };
-    request.mockRejectedValue({ rawData, status: 403 });
-    expect(await updatePhotoTransport(1, null)).toMatchObject({ ok: false, error: { message: rawData.detail, code: rawData.code } });
+    request.mockRejectedValue(toActionError({ rawData, status: 403 }));
+    await expect(updateToolPhotoAction(1, null)).rejects.toMatchObject({ status: 403, code: rawData.code });
     await expect(updateToolPhotoAction(1, null)).rejects.toThrow(rawData.detail);
 });
 

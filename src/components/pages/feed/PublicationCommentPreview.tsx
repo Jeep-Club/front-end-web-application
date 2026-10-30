@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { listPublicationCommentsAction } from '@/actions/publications/feed';
-import { useUserStore } from '@/stores/userStore';
-import { hasPermission } from '@/utils/permission/hasPermission';
-import { PublicationCommentAuthor } from './PublicationCommentAuthor';
+import { listPublicationCommentsAction } from "@/server/actions/publications/feed";
+import { useUserStore } from "@/stores/userStore";
+import { hasPermission } from "@/utils/permission/hasPermission";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { PublicationCommentAuthor } from "./PublicationCommentAuthor";
+
 
 /** The current API has no comment likes; its stable newest-first order is the fallback. */
 export function PublicationCommentPreview({ publicationId, count, onOpen }: { publicationId: number; count: number; onOpen?: () => void }) {

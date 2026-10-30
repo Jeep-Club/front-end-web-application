@@ -14,7 +14,7 @@ import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { medicalPermissions as permissionsConfig } from "@/config/medicalPermissions";
 import MedicalDetails from "./MedicalDetails";
-import { listMedicalProfilesAction, getMedicalProfileAdminAction, getMedicalOwnerAction, deleteMedicalProfileAction, exportMedicalProfilesAction } from "@/actions/admin/medical-profile/manage";
+import { listMedicalProfilesAction, getMedicalProfileAdminAction, getMedicalOwnerAction, deleteMedicalProfileAction, exportMedicalProfilesAction } from "@/server/actions/admin/medical-profile/manage";
 import MedicalForm from "./MedicalForm";
 
 const key = ["admin", "medical-profiles"];

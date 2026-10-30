@@ -15,6 +15,7 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
     name: z.string(),
     birthDate: z.string().nullable(),
     email: z.string(),
+    membershipNumber: z.string().nullish(),
     cpf: z.string(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),

@@ -1,24 +1,24 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
 import { useMutation } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { ShieldX } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname,useRouter,useSearchParams } from "next/navigation";
+import { useCallback,useMemo,useState,useTransition } from "react";
 import toast from "react-hot-toast";
 
-import { patchUserStatusAction } from "@/actions/admin/users/patchStatus";
 import { PageHeader } from "@/components/common/page-header";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
+import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
 import { useUserStore } from "@/stores/userStore";
-import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
+import { unMaskCPF,unMaskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { isValidCPF } from "@/utils/validate";
-import { UserManagementView } from "./UserManagementView";
-import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 import { MembershipApplicationsTab } from "./MembershipApplicationsTab";
 import { NewAdminUserPage } from "./new";
+import { UserManagementView } from "./UserManagementView";
+import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 
 type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
 
@@ -275,7 +275,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
             </div>
         );
     }
-
 
     return (
         <div className="min-h-full w-full p-3 md:p-4">
