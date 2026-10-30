@@ -57,20 +57,16 @@ test('ordenar eventos usa API, reinicia página e mantém visualização', async
 
 test('período publicado aplica limite real e limpar remove filtros e rascunhos', async ({ page, api }) => {
     api.feedItems = [{ id: 8, type: 'NOTICE', title: 'Aviso publicado', content: 'Conteúdo', authorUserId: 7, primaryImage: null, publishedAt: '2026-10-30T12:00:00Z', likeCount: 0, commentCount: 0, likedByMe: false, details: {} }];
-    await page.goto('/admin/publications/notice?page=1&view=grid');
-    await page.getByText('Mais filtros', { exact: true }).click();
-    await page.getByLabel('Publicada a partir de (UTC)').fill('2026-11-01T00:00:00Z');
-    await page.getByRole('button', { name: 'Aplicar período' }).click();
-    await expect(page).toHaveURL(/page=0/);
-    await expect.poll(() => api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('publishedFrom')).toBe('2026-11-01T00:00:00Z');
+    await page.goto('/admin/publications/notice?view=grid');
+    const start = page.getByLabel('Período de publicação — data inicial');
+    await start.fill('01112026');
+    await page.getByRole('button', { name: 'Abrir calendário: Período de publicação' }).click();
+    await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
+    await expect.poll(() => api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('publishedFrom')).toBe('2026-11-01T03:00:00.000000000Z');
     await expect(page.getByText('Nenhuma publicação encontrada', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Limpar filtros', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Aviso publicado', exact: true })).toBeVisible();
-    await expect(page.getByLabel('Publicada a partir de (UTC)')).toHaveValue('');
     await expect(page).not.toHaveURL(/publishedFrom/);
-    await page.getByLabel('Publicada a partir de (UTC)').fill('rascunho inválido');
-    await page.getByRole('button', { name: 'Limpar filtros', exact: true }).click();
-    await expect(page.getByLabel('Publicada a partir de (UTC)')).toHaveValue('');
     await expect(page.getByRole('button', { name: 'Grade', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 

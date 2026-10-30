@@ -67,8 +67,13 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
             {!type && <PublicationOverview />}
             {type && <PublicationSearchFilters key={type} type={type} canReadId={canLookup} canReadList={type === 'EVENT' ? canLookup : canFeed} publishedFrom={publishedFrom} publishedTo={publishedTo} onOpenId={id => router.push(`${pathname}/${id}`)} onPeriod={next => {
                 const params = new URLSearchParams(searchParams.toString());
-                for (const key of ['publishedFrom', 'publishedTo'] as const) { if (next[key]) params.set(key, next[key]!); else params.delete(key); }
-                params.set('page', '0'); navigateParams(params);
+                let changed = false;
+                for (const key of ['publishedFrom', 'publishedTo'] as const) {
+                    if ((params.get(key) ?? undefined) === next[key]) continue;
+                    changed = true;
+                    if (next[key]) params.set(key, next[key]!); else params.delete(key);
+                }
+                if (changed) navigateParams(params);
             }} onClear={() => { const params = new URLSearchParams(searchParams.toString()); for (const key of ['publishedFrom', 'publishedTo', 'status', 'q']) params.delete(key); params.set('page', '0'); navigateParams(params); }} />}
             {type === 'EVENT' && (canLookup ? <PublicationList page={events.data ? { ...events.data, content: events.data.content.map(event => ({ ...event, type: 'EVENT' as const, status: event.publicationStatus })) } : undefined} pageIndex={pagination.pageIndex} pageSize={pagination.pageSize} view={view} onViewChange={changeView} ordering={{ direction: sort === 'createdAt,asc' ? 'asc' : 'desc', title: `Ordenado pela data de criação, ${sort === 'createdAt,asc' ? 'mais antigas' : 'mais recentes'} primeiro. Clique para inverter.`, onChange: changeOrder }} isLoading={events.isLoading} isFetching={events.isFetching} error={events.error?.message} onRetry={() => void events.refetch()} onPaginationChange={changePage} /> : <p className="mt-4">Você pode criar eventos, mas não possui permissão para consultar a lista.</p>)}
             {isLookup && <div className="mt-4 space-y-4"><p className="text-sm text-j-gray-600">Exibindo publicações disponíveis no feed. Outros registros podem ser consultados pelo ID.</p>

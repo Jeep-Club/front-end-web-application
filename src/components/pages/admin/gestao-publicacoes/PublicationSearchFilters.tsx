@@ -5,6 +5,8 @@ import { Search, X } from 'lucide-react';
 import { Button } from '@/components/common/button';
 import { Input } from '@/components/common/input/input';
 import { Select } from '@/components/common/select/select';
+import { DatePicker } from '@/components/common/date-picker';
+import { localPeriodValueToUtcInstant, utcInstantToLocalPeriodValue } from '@/utils/publications/periodDateTime';
 import { Filters, type FilterItem } from '@/components/common/filters/Filters';
 import { publicationFeedFiltersSchema, type PublicationFeedFilters } from '@/schemas/publications/feed';
 
@@ -25,26 +27,25 @@ export function PublicationSearchFilters({ type, canReadId, canReadList, publish
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [pending, startTransition] = useTransition();
-    const [from, setFrom] = useState(publishedFrom ?? '');
-    const [to, setTo] = useState(publishedTo ?? '');
-    const [periodErrors, setPeriodErrors] = useState<Record<string, string>>({});
-    const [applied, setApplied] = useState({ publishedFrom, publishedTo });
+    const [periodError, setPeriodError] = useState('');
     const helpId = useId();
     const value = search.trim();
     const searchMode = mode === 'AUTO' ? (!value || /^\d+$/.test(value) ? 'ID' : 'TITLE') : mode;
 
-    // Browser history can restore a period independently of the local fields.
-    if (applied.publishedFrom !== publishedFrom || applied.publishedTo !== publishedTo) {
-        setApplied({ publishedFrom, publishedTo });
-        setFrom(publishedFrom ?? '');
-        setTo(publishedTo ?? '');
-        setPeriodErrors({});
-    }
-    function applyPeriod(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const result = publicationFeedFiltersSchema.safeParse({ publishedFrom: from || undefined, publishedTo: to || undefined });
-        if (!result.success) { setPeriodErrors(Object.fromEntries(result.error.issues.map(issue => [issue.path.join('.'), issue.message]))); return; }
-        setPeriodErrors({}); onPeriod(result.data);
+    function applyPeriod(value: { start: string | null; end: string | null }) {
+        const from = value.start ? localPeriodValueToUtcInstant(value.start, { original: publishedFrom, boundary: 'start' }) : undefined;
+        const to = value.end ? localPeriodValueToUtcInstant(value.end, { original: publishedTo, boundary: 'end' }) : undefined;
+        if ((value.start && !from) || (value.end && !to)) {
+            setPeriodError('Horário inválido ou ambíguo.');
+            return false;
+        }
+        const result = publicationFeedFiltersSchema.safeParse({ publishedFrom: from, publishedTo: to });
+        if (!result.success) {
+            setPeriodError(result.error.issues[0]?.message ?? 'Período inválido.');
+            return false;
+        }
+        setPeriodError('');
+        onPeriod(result.data);
     }
 
     const filters: FilterItem[] = [
@@ -52,11 +53,11 @@ export function PublicationSearchFilters({ type, canReadId, canReadList, publish
         ...(type === 'EVENT' ? [{ id: 'eventStatus', label: 'Situação do evento', content: <div className="w-full sm:w-44"><Select name="eventStatus" label="Situação do evento" disabled value="ALL" options={[{ value: 'ALL', label: 'Todas' }, { value: 'OPEN', label: 'Aberto' }, { value: 'IN_PROGRESS', label: 'Em andamento' }, { value: 'FINISHED', label: 'Finalizado' }, { value: 'CANCELLED', label: 'Cancelado' }]} /></div> }] : []),
         ...(type === 'NOTICE' ? [{ id: 'noticePriority', label: 'Prioridade', content: <div className="w-full sm:w-44"><Select name="noticePriority" label="Prioridade" disabled placeholder="Sem suporte na API" /></div> }] : []),
         ...(type === 'SERVICE' ? [{ id: 'serviceCategory', label: 'Categoria do serviço', content: <div className="w-full sm:w-44"><Select name="serviceCategory" label="Categoria do serviço" disabled placeholder="Sem suporte na API" /></div> }] : []),
-        ...(type === 'EVENT' ? [{ id: 'eventPeriod', label: 'Período do evento', content: <div className="w-full sm:w-44"><Select name="eventPeriod" label="Período do evento" disabled placeholder="Sem suporte na API" /></div> }] : [{ id: 'publishedPeriod', label: 'Período de publicação', content: <form aria-label="Período de publicação" className="flex min-w-0 max-w-full flex-wrap items-end gap-2" onSubmit={applyPeriod}>
-            <div className="w-full sm:w-52"><Input name="publishedFrom" label="Publicada a partir de (UTC)" value={from} onChange={event => setFrom(event.target.value)} error={periodErrors.publishedFrom} disabled={!canReadList} placeholder="2026-10-01T00:00:00Z" /></div>
-            <div className="w-full sm:w-52"><Input name="publishedTo" label="Publicada até (UTC)" value={to} onChange={event => setTo(event.target.value)} error={periodErrors.publishedTo} disabled={!canReadList} placeholder="2026-10-31T23:59:59Z" /></div>
-            <Button type="submit" disabled={!canReadList}>Aplicar</Button>
-        </form> }]),
+        ...(type === 'EVENT' ? [{ id: 'eventPeriod', label: 'Período do evento', content: <div className="w-full sm:w-44"><Select name="eventPeriod" label="Período do evento" disabled placeholder="Sem suporte na API" /></div> }] : [{ id: 'publishedPeriod', label: 'Período de publicação', content: <div className="w-full sm:w-72">
+            <DatePicker mode="range" label="Período de publicação" disabled={!canReadList}
+                value={{ start: publishedFrom ? utcInstantToLocalPeriodValue(publishedFrom) : null, end: publishedTo ? utcInstantToLocalPeriodValue(publishedTo) : null }} onChange={applyPeriod} />
+            {periodError && <p role="alert" className="text-sm text-input-error-text">{periodError}</p>}
+        </div> }]),
         ...(type === 'NOTICE' ? [{ id: 'noticeValidity', label: 'Validade', content: <div className="w-full sm:w-44"><Select name="noticeValidity" label="Validade" disabled placeholder="Sem suporte na API" /></div> }] : []),
     ];
 
@@ -77,8 +78,8 @@ export function PublicationSearchFilters({ type, canReadId, canReadList, publish
             </div>
         </form>
         <Filters filters={filters} requiredVisible={publishedFrom || publishedTo ? ['publishedPeriod'] : []} onRemove={id => {
-            if (id === 'publishedPeriod') { setFrom(''); setTo(''); setPeriodErrors({}); if (publishedFrom || publishedTo) onPeriod({}); }
-        }} onClear={() => { setFrom(''); setTo(''); setPeriodErrors({}); onClear(); }} />
+            if (id === 'publishedPeriod') { setPeriodError(''); if (publishedFrom || publishedTo) onPeriod({}); }
+        }} onClear={() => { setPeriodError(''); onClear(); }} />
         <p className="text-xs text-j-gray-600">Filtros desabilitados ainda não têm suporte na API.</p>
     </div>;
 }
