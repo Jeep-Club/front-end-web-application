@@ -1,8 +1,8 @@
 'use client';
 
 import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
-import { LoaderCircle,X } from "lucide-react";
 import toast from "react-hot-toast";
+import { LoaderCircle, RefreshCw, X } from "lucide-react";
 
 import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
@@ -20,7 +20,7 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
     const { setClose } = useModal();
     const queryClient = useQueryClient();
 
-    const { data: chargeDefinition, isLoading } = useQuery({
+    const { data: chargeDefinition, isLoading, isFetching, refetch } = useQuery({
         queryKey: ["billing", "charge-definitions", chargeDefinitionId],
         queryFn: () => getChargeDefinitionAction(chargeDefinitionId),
     });
@@ -30,6 +30,7 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
         onSuccess: () => {
             toast.success("Definição de cobrança atualizada com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
+            queryClient.invalidateQueries({ queryKey: ["billing", "dashboard", "Definições cadastradas"], exact: true });
             setClose();
         },
 
@@ -49,6 +50,7 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
         >
             <ButtonIcon
                 onClick={setClose}
+                aria-label="Fechar edição de definição de cobrança"
                 className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
                 <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
@@ -63,10 +65,20 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
                 </p>
             </header>
 
-            {isLoading || !chargeDefinition ? (
+            {isLoading ? (
                 <div className="flex items-center justify-center gap-2 px-5 py-16 text-j-gray-500 md:px-8">
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados da cobrança...
+                </div>
+            ) : !chargeDefinition ? (
+                <div className="flex flex-col items-start gap-3 px-5 py-8 md:px-8">
+                    <p role="alert" className="text-sm text-j-red-400">
+                        Não foi possível carregar os dados da cobrança. Tente novamente.
+                    </p>
+                    <Button onClick={() => refetch()} disabled={isFetching}>
+                        <RefreshCw size={16} />
+                        Tentar novamente
+                    </Button>
                 </div>
             ) : (
                 <Form<ChargeDefinitionFormData>

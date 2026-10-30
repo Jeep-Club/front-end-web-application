@@ -4,7 +4,7 @@ import { Input as InputBase } from "./input";
 import type { InputProps } from "./input";
 import { InputRegister } from "./input-register";
 
-export type { InputProps } from "./input";
+export type { InputProps, InputVariant } from "./input";
 
 interface BaseInputProps extends InputProps {
     register?: boolean;

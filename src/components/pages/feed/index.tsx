@@ -257,8 +257,6 @@ export default function Feed() {
                                     className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 
 
-
-
                                 >
                                     <button
                                         type="button"
@@ -319,6 +317,7 @@ export default function Feed() {
                                         </span>
                                     </div>
                                 )}
+
 
                             </div>
 

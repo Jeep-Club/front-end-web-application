@@ -72,6 +72,7 @@ export default function Admin() {
                                 <AdminModuleCard
                                     key={key}
                                     id={`tour-admin-module-${key}`}
+                                    moduleKey={key}
                                     title={title}
                                     description={description}
                                     href={href}
