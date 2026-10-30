@@ -22,6 +22,8 @@ import { mutateDraftPublicationAction } from "@/actions/publications/draft";
 import { uploadImageAction } from "@/actions/media/upload-image";
 import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
+import { createChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/create";
+import { assignChargeToEventParticipantsAction } from "@/actions/billing/chargeAssignments/assign";
 
 function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
     const { setClose } = useModal();
@@ -32,6 +34,8 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
     const types = publicationCreationTypes.filter((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
     const canPublishEvent = hasPermission(permissions, "PUBLICATIONS", "EVENT_PUBLISH")
         && hasPermission(permissions, "PUBLICATIONS", "EVENT_READ_ADMIN");
+    const canConfigureEventPrice = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_CREATE")
+        && hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_CREATE");
     return (
         <>
             <fieldset disabled={isSubmitting} className={`${styles.fields} flex w-full min-w-0 flex-col gap-5`}>
@@ -49,7 +53,10 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
                         <InputRegister name="startsAt" label="Início" type="datetime-local" required />
                         <InputRegister name="endsAt" label="Término (opcional)" type="datetime-local" />
                     </div>
-                    <p className="text-xs text-j-gray-500">Use o horário local. Este cadastro cria um evento sem cobranças.</p>
+                    {canConfigureEventPrice ? <div className="rounded-xl border border-j-yellow-300/60 bg-j-yellow-100/20 p-4">
+                        <InputRegister name="amount" label="Valor por participante (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="Deixe vazio para gratuito" />
+                        <p className="mt-2 text-xs leading-relaxed text-j-gray-500">Evento pago gera cobranca unica obrigatoria para cada participante, integrada ao financeiro do clube.</p>
+                    </div> : <p className="text-xs text-j-gray-500">Seu perfil nao pode configurar cobrancas; o evento sera gratuito.</p>}
                 </>}
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">
                     <InputRegister name="amount" label="Valor anunciado (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="100,00" required />
@@ -82,6 +89,12 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
     const queryClient = useQueryClient();
     const mutation = useMutation({
         mutationFn: async (data: PublicationFormData) => {
+            if (data.type === "EVENT" && data.amount.trim()) {
+                const currentPermissions = useUserStore.getState().permissions;
+                if (!hasPermission(currentPermissions, "BILLING", "CHARGE_DEFINITION_CREATE") || !hasPermission(currentPermissions, "BILLING", "CHARGE_ASSIGNMENT_CREATE")) {
+                    throw new Error("Seu perfil nao pode configurar a cobranca deste evento.");
+                }
+            }
             const config = publicationCreationTypes.find((entry) => entry.type === data.type)!;
             if (!hasPermission(useUserStore.getState().permissions, "PUBLICATIONS", config.action)) throw new Error("Você não tem permissão para criar este tipo de publicação.");
             const images = [];
@@ -102,6 +115,21 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
                     ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: unMaskPhoneNumber(data.contactPhone) }
                     : { ...common, type: "NOTICE" };
             const created = await createPublicationAction(payload);
+            if (data.type === "EVENT" && data.amount.trim()) {
+                try {
+                    const charge = await createChargeDefinitionAction({
+                        name: `Inscricao - ${data.title}`.slice(0, 120),
+                        description: `Cobranca obrigatoria de participacao no evento: ${data.title}`.slice(0, 255),
+                        defaultAmount: Number(data.amount.replace(",", ".")),
+                        recurrenceType: "ONE_TIME",
+                        required: true,
+                        paymentAcceptancePolicy: "UNTIL_DUE_DATE",
+                    });
+                    await assignChargeToEventParticipantsAction(charge.id, created.id);
+                } catch (error) {
+                    return { ...created, published: false, financeError: error instanceof Error ? error.message : "Nao foi possivel configurar a cobranca." };
+                }
+            }
             if (created.type !== "EVENT" || !publishEventImmediately) return { ...created, published: false };
 
             const currentPermissions = useUserStore.getState().permissions;
@@ -127,6 +155,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             }
             if (result.type === "SERVICE") toast.success("Solicitação enviada para aprovação!");
             else if (result.type === "EVENT" && result.published) toast.success("Evento criado e publicado no feed!");
+            else if (result.type === "EVENT" && "financeError" in result && result.financeError) toast.error(`Evento criado, mas a cobranca falhou: ${result.financeError}. Acesse Gestao financeira para concluir a configuracao.`);
             else if (result.type === "EVENT" && "publishError" in result && result.publishError) toast.error(`O evento foi salvo como rascunho, mas não foi publicado: ${result.publishError}`);
             else if (result.type === "EVENT" && publishEventImmediately) toast.success("Evento salvo como rascunho. Para aparecer no feed, publique em Gestão de publicações.");
             else toast.success("Rascunho criado com sucesso!");
