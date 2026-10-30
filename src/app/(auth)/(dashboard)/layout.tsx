@@ -14,7 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     const fullName = currentUser?.userName ?? "Usuário";
     const initialProfilePhotoUrl = getMediaImageUrl(currentUser?.profilePhotoStorageKey) || null;
     return (
-        <DashboardShell fullName={fullName} initialProfilePhotoUrl={initialProfilePhotoUrl} onboardingRequired={onboardingRequired}>
+        <DashboardShell fullName={fullName} userId={currentUser?.userId ?? "unknown"} initialProfilePhotoUrl={initialProfilePhotoUrl} onboardingRequired={onboardingRequired}>
             {children}
         </DashboardShell>
     );

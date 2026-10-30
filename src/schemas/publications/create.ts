@@ -33,6 +33,7 @@ export const publicationFormSchema = z.object({
     const primary = Number(data.primaryIndex);
     if (!Number.isInteger(primary) || primary < 0 || primary >= data.photos.length) ctx.addIssue({ code: "custom", path: ["primaryIndex"], message: "Selecione a imagem de capa." });
     if (data.type === "EVENT") {
+        if (data.amount && (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || Number(data.amount.replace(",", ".")) < 0.01)) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe valor positivo com ate duas casas decimais ou deixe em branco para gratuito." });
         const start = Date.parse(data.startsAt);
         if (!Number.isFinite(start) || start <= Date.now()) ctx.addIssue({ code: "custom", path: ["startsAt"], message: "Informe um início no futuro." });
         if (data.endsAt && (!Number.isFinite(Date.parse(data.endsAt)) || Date.parse(data.endsAt) <= start)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "O término deve ser posterior ao início." });

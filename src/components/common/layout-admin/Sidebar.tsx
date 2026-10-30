@@ -8,12 +8,14 @@ import {
     CalendarRange,
     ShieldCheck,
     X,
+    Star,
 } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { Logo } from "@/components/common/logo";
 import { useUserStore } from "@/stores/userStore";
-import { hasAnyAdminAccess } from "@/config/adminModules";
+import { getAvailableAdminModules, hasAnyAdminAccess } from "@/config/adminModules";
+import { useAdminFavorites } from "@/hooks/useAdminFavorites";
 
 const navItems = [
     {
@@ -33,6 +35,7 @@ interface SidebarProps {
     isMobileOpen: boolean;
     onCloseMobile: () => void;
     fullName: string;
+    userId: string | number;
     role?: string;
 }
 
@@ -41,6 +44,7 @@ export default function Sidebar({
     isMobileOpen,
     onCloseMobile,
     fullName,
+    userId,
 }: SidebarProps) {
     const pathname = usePathname();
 
@@ -49,6 +53,8 @@ export default function Sidebar({
     );
 
     const canAccessAdmin = hasAnyAdminAccess(permissions);
+    const { favorites } = useAdminFavorites(userId);
+    const favoriteModules = getAvailableAdminModules(permissions).filter((module) => favorites.includes(module.key));
 
     const panelHref = "/admin";
     const panelLabel = "Gest\u00e3o Administrativa";
@@ -167,6 +173,15 @@ export default function Sidebar({
                         <span className={isCollapsed ? "md:hidden" : ""}>Tutoriais</span>
                     </Link>
                     {canAccessAdmin && (
+                        <>
+                        {favoriteModules.length > 0 && <div className="mt-4 border-t border-j-blue-700 pt-3">
+                            {!isCollapsed && <p className="mb-2 px-4 text-[10px] font-bold uppercase tracking-wider text-j-transparent-white">Favoritos</p>}
+                            {favoriteModules.map(({ key, title, href, icon: Icon }) => <Link key={key} href={href} title={title} aria-label={title} onClick={onCloseMobile} className={twMerge("mb-1 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-j-white/80 transition-colors hover:bg-j-blue-700 hover:text-j-white", isCollapsed && "md:justify-center md:px-0", pathname === href.split("?")[0] && "bg-j-blue-700 text-j-yellow-300")}>
+                                <Icon size={18} />
+                                <span className={isCollapsed ? "md:hidden" : ""}>{title}</span>
+                                {!isCollapsed && <Star size={13} className="ml-auto fill-j-yellow-300 text-j-yellow-300" />}
+                            </Link>)}
+                        </div>}
                         <Link
                             href={panelHref}
                             title={panelLabel}
@@ -190,6 +205,7 @@ export default function Sidebar({
                                 {panelLabel}
                             </span>
                         </Link>
+                        </>
                     )}
                 </nav>
             </aside>
