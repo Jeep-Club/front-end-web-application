@@ -3,6 +3,7 @@
 import type { Preview } from "@storybook/nextjs-vite";
 import { MINIMAL_VIEWPORTS } from "storybook/viewport";
 import { ThemePreview } from "./ThemePreview";
+import { ThemeDocsContainer } from "./ThemeDocsContainer";
 import "../src/app/globals.css";
 
 // font-sans follows the app's current CSS mapping. Unmapped Google font variables
@@ -11,14 +12,14 @@ import "../src/app/globals.css";
 
 const preview: Preview = {
   tags: ["autodocs"],
-  initialGlobals: { theme: "light" },
+  initialGlobals: { theme: "light", storybookTheme: "light" },
   globalTypes: {
-    theme: {
-      description: "Aparência da aplicação",
+    storybookTheme: {
+      description: "Tema do Storybook",
       toolbar: {
-        title: "Tema",
-        icon: "circlehollow",
-        dynamicTitle: true,
+        title: "Storybook",
+        icon: "browser",
+        dynamicTitle: false,
         items: [
           { value: "light", title: "Claro" },
           { value: "dark", title: "Escuro" },
@@ -26,8 +27,23 @@ const preview: Preview = {
         ],
       },
     },
+    theme: {
+      description: "Tema dos componentes",
+      toolbar: {
+        title: "Componentes",
+        icon: "circlehollow",
+        dynamicTitle: false,
+        items: [
+          { value: "light", title: "Claro" },
+          { value: "dark", title: "Escuro" },
+          { value: "system", title: "Sistema" },
+          { value: "storybook", title: "Storybook" },
+        ],
+      },
+    },
   },
   parameters: {
+    docs: { container: ThemeDocsContainer },
     options: {
       storySort: { order: ["Introdução", "Documentação", "Componentes", "Páginas"] },
     },
@@ -36,7 +52,7 @@ const preview: Preview = {
     layout: "padded",
   },
   decorators: [
-    (Story, context) => <ThemePreview theme={context.globals.theme}><Story /></ThemePreview>,
+    (Story, context) => <ThemePreview theme={context.globals.theme} storybookTheme={context.globals.storybookTheme}><Story /></ThemePreview>,
   ],
 };
 
