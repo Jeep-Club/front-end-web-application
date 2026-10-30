@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
+    "127.0.0.1",
+    "10.30.7.168",
     "192.168.0.14",
     "crispy-enigma-4jqg6qg66q6pfqvwj-3000.app.github.dev",
     "*.app.github.dev",

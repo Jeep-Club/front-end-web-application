@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent } from "rea
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Code2, UserRound } from "lucide-react";
 import developers from "../../../../public/desenvolvedores/equipe.json";
-import styles from "./DevelopersSection.module.css";
+import styles from "./TeamSection.module.css";
 
 interface Developer {
   id: string;
@@ -50,11 +50,11 @@ function DeveloperCard({ developer, index }: { developer: Developer; index: numb
           </div>
         )}
         <span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-        <span className={styles.badge}><Code2 size={14} aria-hidden="true" /> Desenvolvimento</span>
+        <span className={styles.badge}><Code2 size={14} aria-hidden="true" /> Equipe técnica</span>
       </div>
       <div className={styles.details}>
         <span className={styles.accent} aria-hidden="true" />
-        <h3>{developer.nome}</h3>
+        <h2>{developer.nome}</h2>
         <p>{developer.cargo}</p>
       </div>
       </article>
@@ -62,7 +62,7 @@ function DeveloperCard({ developer, index }: { developer: Developer; index: numb
   );
 }
 
-export default function DevelopersSection() {
+export default function TeamSection() {
   const trackRef = useRef<HTMLUListElement>(null);
   const gesture = useRef<{ x: number; y: number; horizontal: boolean } | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -124,15 +124,15 @@ export default function DevelopersSection() {
   }, [finishGesture]);
 
   return (
-    <section id="desenvolvedores" aria-labelledby="desenvolvedores-titulo" aria-roledescription="carrossel" className={styles.section}>
+    <section id="equipe" aria-labelledby="equipe-titulo" aria-roledescription="carrossel" className={styles.section}>
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-6 max-w-2xl text-center md:mb-8">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-yellow-400">Quem desenvolve</p>
-          <h2 id="desenvolvedores-titulo" className="text-3xl font-bold tracking-tight text-white md:text-4xl">Desenvolvedores do site</h2>
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-yellow-400">Quem faz acontecer</p>
+          <h1 id="equipe-titulo" className="text-3xl font-bold tracking-tight text-white md:text-4xl">Equipe técnica</h1>
           <p className="mt-4 text-sm leading-relaxed text-gray-300 md:text-base">Conheça a equipe por trás da experiência digital do Jeep Clube Tamoios.</p>
         </div>
         <div className={styles.carousel}>
-          <button type="button" onClick={() => move(-1)} disabled={index === 0} className={`${styles.arrow} ${styles.previous}`} aria-label="Ver desenvolvedor anterior" aria-controls="cartas-desenvolvedores">
+          <button type="button" onClick={() => move(-1)} disabled={index === 0} className={`${styles.arrow} ${styles.previous}`} aria-label="Ver integrante anterior" aria-controls="cartas-equipe">
             <ArrowLeft size={23} aria-hidden="true" />
           </button>
           <div
@@ -157,11 +157,11 @@ export default function DevelopersSection() {
           >
             <ul
               ref={trackRef}
-              id="cartas-desenvolvedores"
+              id="cartas-equipe"
               className={[styles.track, dragDistance !== 0 ? styles.dragging : ""].join(" ")}
               style={{ transform: "translate3d(" + -translatedOffset + "px, 0, 0)" }}
               tabIndex={0}
-              aria-label="Equipe de desenvolvimento. Use as setas do teclado, arraste ou deslize para navegar."
+              aria-label="Equipe técnica. Use as setas do teclado, arraste ou deslize para navegar."
               onKeyDown={(event) => {
                 if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
                   event.preventDefault();
@@ -176,11 +176,11 @@ export default function DevelopersSection() {
               {developers.map((developer, index) => <DeveloperCard key={developer.id} developer={developer} index={index} />)}
             </ul>
           </div>
-          <button type="button" onClick={() => move(1)} disabled={index === maxIndex} className={`${styles.arrow} ${styles.next}`} aria-label="Ver próximo desenvolvedor" aria-controls="cartas-desenvolvedores">
+          <button type="button" onClick={() => move(1)} disabled={index === maxIndex} className={`${styles.arrow} ${styles.next}`} aria-label="Ver próximo integrante" aria-controls="cartas-equipe">
             <ArrowRight size={23} aria-hidden="true" />
           </button>
           <p className={styles.status} aria-live="polite" aria-atomic="true">
-            <span className="sr-only">Desenvolvedores </span>
+            <span className="sr-only">Integrantes </span>
             <span className="text-yellow-400">{String(first).padStart(2, "0")} — {String(last).padStart(2, "0")}</span>
             <span className="mx-2 text-white/30">/</span>{developers.length}
           </p>

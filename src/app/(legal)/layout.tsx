@@ -1,5 +1,5 @@
 import Link from "next/link";
-import LegalLinks from "@/components/common/legal-links";
+import SiteFooter from "@/components/common/site-footer";
 import styles from "./legal.module.css";
 
 // Mantém os contatos públicos atualizados a partir da configuração do servidor.
@@ -16,10 +16,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
                 </div>
             </header>
             <main id="conteudo-legal" className="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 sm:py-14">{children}</main>
-            <footer className="border-t border-white/10 bg-[#0a0a0a] px-5 py-8 text-j-gray-200 print:hidden">
-                <LegalLinks />
-                <p className="mt-5 text-center text-xs">© 2026 Jeep Clube Tamoios</p>
-            </footer>
+            <SiteFooter />
         </div>
     );
 }

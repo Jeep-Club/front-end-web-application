@@ -1,8 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/common/logo";
-import DevelopersSection from "./DevelopersSection";
-import LegalLinks from "@/components/common/legal-links";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import * as Scroll from 'react-scroll';
@@ -18,7 +17,7 @@ import {
 import { GiJeep } from "react-icons/gi";
 import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
 
-export default function HomeClient() {
+export default function HomeClient({ footer }: { footer: ReactNode }) {
   const router = useRouter();
 
   const handleContact = () => {
@@ -242,19 +241,8 @@ export default function HomeClient() {
         </div>
       </section>
 
-      <DevelopersSection />
-
       {/* ── FOOTER ── */}
-      <footer className="px-6 py-12 bg-[#0a0a0a] border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-4">
-            <GiJeep size={24} className="text-yellow-400" />
-            <p className="text-lg text-white font-bold tracking-tight">Jeep Club Tamoios</p>
-          </div>
-          <p className="text-xs text-j-gray-300 mb-8">© 2026 Todos os direitos reservados.</p>
-          <LegalLinks className="text-j-gray-200 font-medium" />
-        </div>
-      </footer>
+      {footer}
     </main>
   );
 }

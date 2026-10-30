@@ -1,6 +1,6 @@
-# Equipe de desenvolvimento
+# Equipe técnica
 
-Esta pasta reúne as fotos e as informações dos desenvolvedores exibidos ao final da landing page, antes do rodapé, em um carrossel de cartas 3D. No computador, use as setas laterais, arraste as cartas com o mouse ou foque a lista e use as setas do teclado. As teclas Home e End levam ao início e ao final. No celular, deslize as cartas ou use os botões. Não há avanço automático.
+Esta pasta reúne as fotos e as informações dos integrantes exibidos na página `/equipe`, acessível pelo link “Equipe técnica” depois de “Contato” no rodapé, em um carrossel de cartas 3D. No computador, use as setas laterais, arraste as cartas com o mouse ou foque a lista e use as setas do teclado. As teclas Home e End levam ao início e ao final. No celular, deslize as cartas ou use os botões. Não há avanço automático.
 
 Em telas grandes, aparecem quatro cartas completas e parte da quinta para indicar a continuação da lista. Em telas menores, a quantidade se adapta e a próxima carta também fica parcialmente visível.
 
@@ -23,6 +23,6 @@ Exemplo de um registro:
 
 Os registros aparecem na mesma ordem do arquivo. Separe os registros com vírgulas, sem deixar vírgula após o último. Enquanto `foto` estiver vazia ou se a imagem não carregar, o cartão exibirá um ícone de pessoa.
 
-Para visualizar, execute `npm run dev` na raiz do projeto e abra `http://localhost:3000/#desenvolvedores`. Alterações no JSON são incorporadas ao aplicativo; em produção, faça uma nova compilação/publicação após editar.
+Para visualizar, execute `npm run dev` na raiz do projeto e abra `http://localhost:3000/equipe`. Alterações no JSON são incorporadas ao aplicativo; em produção, faça uma nova compilação/publicação após editar.
 
 Os arquivos nesta pasta são públicos. Inclua apenas nomes, cargos e fotos destinados à publicação, com autorização das pessoas envolvidas.

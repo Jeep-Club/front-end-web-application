@@ -1,11 +1,11 @@
 [
-  { "id": "dev-01", "nome": "LUCAS ALVES DE MELO LINS", "cargo": "Cargo a preencher", "foto": "lucas.jpg" },
-  { "id": "dev-02", "nome": "JOÃO GABRIEL DE FARIA BESERRA", "cargo": "Cargo a preencher", "foto": "joao.jpg" },
-  { "id": "dev-03", "nome": "KAUAN EDSON LEONEL LIRA", "cargo": "Cargo a preencher", "foto": "kauan.jpg" },
-  { "id": "dev-04", "nome": "VITOR RAMOS MENEZES", "cargo": "Cargo a preencher", "foto": "vitor.jpg" },
-  { "id": "dev-05", "nome": "JOAO ALVES PASSOS", "cargo": "Cargo a preencher", "foto": "passos.jpg" },
-  { "id": "dev-06", "nome": "TULIO KENJI YOSHIMURA", "cargo": "Cargo a preencher", "foto": "tulio.jpg" },
-  { "id": "dev-07", "nome": "DANIEL PATRICK DE MORAIS", "cargo": "Cargo a preencher", "foto": "daniel.jpg" },
-  { "id": "dev-08", "nome": "TIAGO VIEIRA VENANCIO FERREIRA", "cargo": "Cargo a preencher", "foto": "tiago.jpg" },
-  { "id": "dev-09", "nome": "VINICIUS FRANCISCO GARCIA SOBRAL", "cargo": "Cargo a preencher", "foto": "vinicius.jpg" }
+  { "id": "dev-01", "nome": "LUCAS ALVES DE MELO LINS", "cargo": "TECH-LEAD BACKEND", "foto": "lucas.jpg" },
+  { "id": "dev-02", "nome": "JOÃO GABRIEL DE FARIA BESERRA", "cargo": "DEVELOPER MASTER", "foto": "joao.jpg" },
+  { "id": "dev-03", "nome": "KAUAN EDSON LEONEL LIRA", "cargo": "PRODUCT OWNER", "foto": "kauan.jpg" },
+  { "id": "dev-04", "nome": "VITOR RAMOS MENEZES", "cargo": "TECH-LEAD FRONTEND", "foto": "vitor.jpg" },
+  { "id": "dev-05", "nome": "JOAO ALVES PASSOS", "cargo": "DEVELOPER", "foto": "passos.jpg" },
+  { "id": "dev-06", "nome": "TULIO KENJI YOSHIMURA", "cargo": "DEVELOPER", "foto": "tulio.jpg" },
+  { "id": "dev-07", "nome": "DANIEL PATRICK DE MORAIS", "cargo": "DEVELOPER", "foto": "daniel.jpg" },
+  { "id": "dev-08", "nome": "TIAGO VIEIRA VENANCIO FERREIRA", "cargo": "DEVELOPER", "foto": "tiago.jpg" },
+  { "id": "dev-09", "nome": "VINICIUS FRANCISCO GARCIA SOBRAL", "cargo": "DEVELOPER", "foto": "vinicius.jpg" }
 ]

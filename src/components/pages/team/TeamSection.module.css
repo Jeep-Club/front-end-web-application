@@ -123,7 +123,7 @@
 }
 .details { position: relative; padding: 8px 18px 24px; }
 .accent { display: block; width: 28px; height: 3px; margin-bottom: 14px; border-radius: 4px; background: #facc15; }
-.details h3 { overflow-wrap: anywhere; font-size: 17px; font-weight: 700; line-height: 1.35; color: white; }
+.details h2 { overflow-wrap: anywhere; font-size: 17px; font-weight: 700; line-height: 1.35; color: white; }
 .details p { margin-top: 8px; overflow-wrap: anywhere; font-size: 12px; line-height: 1.6; color: #cbd5e1; }
 .arrow {
   display: flex;

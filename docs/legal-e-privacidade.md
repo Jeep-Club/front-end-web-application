@@ -2,7 +2,7 @@
 
 Termos de Uso e Política de Privacidade: versão 1.2, de 30/10/2026. As cláusulas de imagem e voz e ciência de riscos estão consolidadas nos Termos de Uso, conforme pedido do usuário. Não há fichas de preenchimento, formulários de assinatura ou documentos separados para o visitante.
 
-Rotas públicas: `/termos-de-uso`, `/politica-de-privacidade` e `/contato`. As antigas rotas `/termo-de-imagem` e `/termo-de-risco` redirecionam para `/termos-de-uso#imagem-voz` e `/termos-de-uso#riscos-trilhas`. Ficam fora dos grupos de autenticação. O rodapé mantém apenas os links dos documentos gerais e contato, sem páginas adicionais para o visitante.
+Rotas públicas: `/termos-de-uso`, `/politica-de-privacidade` e `/contato`. As antigas rotas `/termo-de-imagem` e `/termo-de-risco` redirecionam para `/termos-de-uso#imagem-voz` e `/termos-de-uso#riscos-trilhas`. Ficam fora dos grupos de autenticação. O rodapé mantém os links dos documentos gerais, contato e a página `/equipe`, identificada como “Equipe técnica”.
 
 ## Identificação e atendimento
 
@@ -19,6 +19,8 @@ Definir uma pessoa física ou jurídica efetivamente responsável pelas decisõe
 - `LEGAL_SUPPORT_EMAIL`: atendimento geral, opcional.
 
 Essas variáveis são públicas por finalidade. Nunca colocar nelas senhas ou chaves. As páginas legais são renderizadas no servidor a cada solicitação e não exigem variáveis `NEXT_PUBLIC_`. Não há formulário de envio de pedidos de privacidade.
+
+O componente `src/components/common/site-footer/index.tsx` compartilha o rodapé entre a página inicial, a equipe e as páginas legais. Preencha `src/config/footer.ts` com o nome/razão social, CNPJ, endereço com CEP e os links HTTPS dos perfis oficiais. Campos vazios são omitidos; o título “Redes sociais” permanece visível e os ícones aparecem ao preencher os links. Se houver identificação institucional configurada nas variáveis `LEGAL_CONTROLLER_NAME`, `LEGAL_CONTROLLER_DOCUMENT` e `LEGAL_CONTROLLER_ADDRESS`, esses valores prevalecem no rodapé. Em produção, recompile/republique após alterar o arquivo.
 
 ## Imagem e trilhas nos Termos de Uso
 
