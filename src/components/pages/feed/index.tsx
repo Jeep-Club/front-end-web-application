@@ -2,18 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { feedTypeSchema } from "@/schemas/publications/feed";
+import type { PublicationFeedFilters } from "@/schemas/publications/feed";
+import { parsePublicationFeedFilters, updatePublicationFeedFilters } from "@/utils/publications/feedFilters";
+import { FeedPeriodFilters } from "./FeedPeriodFilters";
+import { ModalRoot } from "@/components/common/modal/root";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
 import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
-import { feedTypes } from "./feedDisplay";
+import { feedTypes, publicationReadError, publicationReadRetry } from "./feedDisplay";
 import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
 import { PublicationDetailModal } from "./PublicationDetailModal";
 import { FeedInteractions } from "./FeedInteractions";
@@ -54,10 +57,14 @@ export default function Feed() {
         SERVICE: hasPermission(permissions, "PUBLICATIONS", "SERVICE_REQUEST_CREATE"),
     };
 
-    const { setContent, setOpen, setClose } = useModal();
+    const { setContent, setOpen, content: activeModal } = useModal();
     const params = useSearchParams();
-    const typeResult = feedTypeSchema.safeParse(params.get("type"));
-    const type = typeResult.success ? typeResult.data : undefined;
+    const filtersResult = parsePublicationFeedFilters(params);
+    const filters = filtersResult.success ? filtersResult.data : {};
+    const { type, publishedFrom, publishedTo } = filters;
+    const detailValue = params.get('publication');
+    const detailId = detailValue && /^\d+$/.test(detailValue) && Number.isSafeInteger(Number(detailValue)) && Number(detailValue) > 0 ? Number(detailValue) : null;
+    const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
     const canCreateCurrentType = type
         ? canCreate[type]
@@ -70,7 +77,6 @@ export default function Feed() {
         : "publicação";
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
-    const openedDeepLinkRef = useRef<number | null>(null);
     const filterNavRef = useRef<HTMLElement>(null);
     const [showFilterHint, setShowFilterHint] = useState(false);
 
@@ -93,22 +99,28 @@ export default function Feed() {
             nav.removeEventListener("scroll", updateHint);
             resizeObserver.disconnect();
         };
-    }, []);
+    }, [canRead]);
 
+    const queryClient = useQueryClient();
+    const feedKey = ["publications", "feed", "infinite", { type, publishedFrom, publishedTo, size: 12 }, permissions];
+    function refreshFeed() { void queryClient.resetQueries({ queryKey: feedKey, exact: true }); }
     const query = useInfiniteQuery({
-        queryKey: ["publications", "feed", "infinite", type, permissions],
+        queryKey: feedKey,
         queryFn: ({ pageParam }) =>
             listPublicationFeedAction({
-                type,
+                type, publishedFrom, publishedTo,
                 page: pageParam,
                 size: 12,
             }),
         initialPageParam: 0,
         getNextPageParam: nextFeedPage,
-        enabled: canRead,
+        enabled: canRead && filtersResult.success,
+        staleTime: 0,
+        retry: publicationReadRetry,
     });
 
-    const publications = mergeFeedPages(query.data?.pages ?? []);
+    const failure = publicationReadError(query.error);
+    const publications = failure.restricted || !filtersResult.success ? [] : mergeFeedPages(query.data?.pages ?? []);
 
     const {
         fetchNextPage,
@@ -125,6 +137,8 @@ export default function Feed() {
         if (
             !sentinel ||
             !canRead ||
+            !filtersResult.success ||
+            failure.restricted ||
             !hasNextPage ||
             isFetching ||
             isFetchNextPageError
@@ -150,6 +164,8 @@ export default function Feed() {
         return () => observer.disconnect();
     }, [
         canRead,
+        filtersResult.success,
+        failure.restricted,
         hasNextPage,
         isFetching,
         isFetchNextPageError,
@@ -159,67 +175,31 @@ export default function Feed() {
 
     function closePublication() {
         const search = new URLSearchParams(window.location.search);
-        search.delete("publication");
+        search.delete('publication');
+        window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
+    }
 
-        window.history.replaceState(
-            null,
-            "",
-            `${window.location.pathname}${search.size ? `?${search}` : ""}`
-        );
-
-        openedDeepLinkRef.current = null;
-        setClose();
+    function publicationHref(id: number) {
+        const search = new URLSearchParams(params.toString());
+        search.set('publication', String(id));
+        return `/feed?${search}`;
     }
 
     function openPublication(id: number) {
-        setContent(
-            <PublicationDetailModal
-                publicationId={id}
-                onClose={closePublication}
-            />
-        );
-
-        setOpen();
+        window.history.pushState(null, '', publicationHref(id));
     }
 
-    useEffect(() => {
-        const id = Number(params.get("publication"));
+    function applyFilters(next: PublicationFeedFilters) {
+        const search = updatePublicationFeedFilters(new URLSearchParams(params.toString()), next);
+        window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
+    }
 
-        if (
-            !canDetail ||
-            !Number.isInteger(id) ||
-            id <= 0 ||
-            openedDeepLinkRef.current === id
-        ) {
-            return;
-        }
-
-        openedDeepLinkRef.current = id;
-        openPublication(id);
-
-        // openPublication reads stable modal actions from the provider;
-        // the ref prevents re-opening on rerenders.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [params, canDetail]);
-
-    function filterType(next?: "NOTICE" | "EVENT" | "SERVICE") {
+    function filterType(next?: 'NOTICE' | 'EVENT' | 'SERVICE') {
         const search = new URLSearchParams(params.toString());
-
-        if (next) {
-            search.set("type", next);
-        } else {
-            search.delete("type");
-        }
-
-        search.delete("page");
-        search.delete("size");
-        search.delete("publication");
-
-        window.history.replaceState(
-            null,
-            "",
-            `/feed${search.size ? `?${search}` : ""}`
-        );
+        search.delete('type');
+        if (next) search.set('type', next);
+        for (const key of ['publication', 'page', 'size']) search.delete(key);
+        window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
     }
 
     function openCreatePublication() {
@@ -234,7 +214,7 @@ export default function Feed() {
     }
 
     return (
-        <div className="min-h-full w-full px-3 py-4 md:px-6 md:py-6">
+        <div tabIndex={-1} data-publication-return className="min-h-full w-full px-3 py-4 focus:outline-none md:px-6 md:py-6">
             <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
               <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                 {!canRead ? (
@@ -246,7 +226,7 @@ export default function Feed() {
                     </div>
                 ) : (
                     <>
-                        <h1 className="sr-only">Mural do clube</h1>
+                        <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
 
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="relative min-w-0 flex-1">
@@ -264,7 +244,7 @@ export default function Feed() {
                                         type="button"
                                         onClick={() => filterType()}
                                         aria-pressed={!type}
-                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
+                                        className={`cursor-pointer flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                             !type
                                                 ? "bg-j-blue-800 text-j-white shadow-sm"
                                                 : "text-j-gray-600 hover:bg-j-gray-100"
@@ -284,7 +264,7 @@ export default function Feed() {
                                                     type="button"
                                                     onClick={() => filterType(key)}
                                                     aria-pressed={type === key}
-                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
+                                                    className={`cursor-pointer flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                                         type === key
                                                             ? "bg-j-blue-800 text-j-white shadow-sm"
                                                             : "text-j-gray-600 hover:bg-j-gray-100"
@@ -328,7 +308,7 @@ export default function Feed() {
                                     aria-label={`Criar ${creationLabel}`}
                                     title={`Criar ${creationLabel}`}
                                     onClick={openCreatePublication}
-                                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-sm transition-transform hover:scale-105 hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-blue-800"
+                                    className="cursor-pointer flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-sm transition-transform hover:scale-105 hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-blue-800"
                                 >
                                     <Plus
                                         size={25}
@@ -339,7 +319,9 @@ export default function Feed() {
                             )}
                         </div>
 
-                        {query.isLoading ? (
+                        <FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => applyFilters({ type, ...period })} />
+                        <Button disabled={!filtersResult.success || query.isFetching} onClick={refreshFeed}>Atualizar publicações</Button>
+                        {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : query.isLoading ? (
                             <div
                                 role="status"
                                 aria-label="Carregando feed"
@@ -357,8 +339,8 @@ export default function Feed() {
                                 role="alert"
                                 className="rounded-2xl border border-red-200 bg-j-white p-6"
                             >
-                                <p className="text-sm text-red-500">
-                                    {query.error.message}
+                                <p className="text-sm text-input-error-text">
+                                    {failure.message}
                                 </p>
 
                                 <Button
@@ -369,6 +351,7 @@ export default function Feed() {
                                 </Button>
                             </div>
                         ) : !publications.length ? (
+
                             <div
                                 role="status"
                                 className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center shadow-sm"
@@ -380,6 +363,7 @@ export default function Feed() {
                                     />
                                 </span>
 
+                                {(type || publishedFrom || publishedTo) && <><p>Nenhum resultado para os filtros selecionados.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></>}
                                 <h2 className="mt-4 text-lg font-extrabold text-j-blue-800">
                                     {type
                                         ? `Nenhum ${
@@ -413,50 +397,14 @@ export default function Feed() {
                                     return (
                                         <article
                                             key={publication.id}
-                                            role={canDetail ? "link" : undefined}
-                                            tabIndex={canDetail ? 0 : undefined}
-                                            aria-label={
-                                                canDetail
-                                                    ? `Abrir publicação: ${publication.title}`
-                                                    : undefined
-                                            }
-                                            onClick={(event) => {
-                                                if (
-                                                    !canDetail ||
-                                                    (
-                                                        event.target as Element
-                                                    ).closest(
-                                                        "button, a, input, textarea, select"
-                                                    )
-                                                ) {
-                                                    return;
-                                                }
-
-                                                openPublication(publication.id);
+                                            onClickCapture={event => {
+                                                // Safari does not focus pointer-activated links/buttons by default.
+                                                // Remember the actual control before the modal takes focus.
+                                                (event.target as Element).closest<HTMLElement>('a, button')?.focus({ preventScroll: true });
                                             }}
-                                            onKeyDown={(event) => {
-                                                if (
-                                                    canDetail &&
-                                                    event.target ===
-                                                        event.currentTarget &&
-                                                    (
-                                                        event.key === "Enter" ||
-                                                        event.key === " "
-                                                    )
-                                                ) {
-                                                    event.preventDefault();
-                                                    openPublication(
-                                                        publication.id
-                                                    );
-                                                }
-                                            }}
-                                            className={`flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md ${
-                                                canDetail
-                                                    ? "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800"
-                                                    : ""
-                                            }`}
+                                            className="flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm"
                                         >
-                                            {publication.primaryImage && (
+                                            {publication.primaryImage && !failedImages.has(publication.primaryImage.storageKey) && (
                                                 <div className="relative aspect-[16/9] bg-j-gray-100">
                                                     <Image
                                                         src={getMediaImageUrl(
@@ -464,6 +412,7 @@ export default function Feed() {
                                                                 .primaryImage
                                                                 .storageKey
                                                         )}
+                                                        onError={() => setFailedImages(previous => new Set(previous).add(publication.primaryImage!.storageKey))}
                                                         alt={publication.title}
                                                         fill
                                                         unoptimized
@@ -471,7 +420,7 @@ export default function Feed() {
                                                         className="object-cover"
                                                     />
 
-                                                    {isEvent && (
+                                                    {isEvent && publication.details.status === "OPEN" && (
                                                         <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-j-yellow-300 px-3 py-1.5 text-xs font-extrabold text-j-blue-900 shadow-md">
                                                             <CalendarDays
                                                                 size={14}
@@ -483,6 +432,7 @@ export default function Feed() {
                                                 </div>
                                             )}
 
+                                            {publication.primaryImage && failedImages.has(publication.primaryImage.storageKey) && <div role="status" className="bg-j-gray-100 p-4 text-sm text-j-gray-600">Imagem indisponível.<Button onClick={() => setFailedImages(previous => { const next = new Set(previous); next.delete(publication.primaryImage!.storageKey); return next; })}>Tentar imagem novamente</Button></div>}
                                             <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                                     <span
@@ -553,17 +503,10 @@ export default function Feed() {
                                                 )}
 
                                                 {canDetail && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            openPublication(
-                                                                publication.id
-                                                            )
-                                                        }
-                                                        className="self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800"
-                                                    >
-                                                        Ver publicação completa
-                                                    </button>
+                                                    <a aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} onClick={event => {
+                                                        if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                                                        event.preventDefault(); openPublication(publication.id);
+                                                    }} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
                                                 )}
 
                                                 <div className="mt-auto border-t border-j-gray-200 pt-3">
@@ -598,7 +541,7 @@ export default function Feed() {
                                                                     ) =>
                                                                         event.stopPropagation()
                                                                     }
-                                                                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-4 text-sm font-bold text-[#168A43] transition-colors hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
+                                                                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-4 text-sm font-bold text-j-blue-800 transition-colors hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
                                                                 >
                                                                     <Share2
                                                                         size={
@@ -635,6 +578,8 @@ export default function Feed() {
                             </div>
                         )}
 
+                        {filtersResult.success && query.hasNextPage && !failure.restricted && <Button disabled={query.isFetching} aria-busy={query.isFetchingNextPage} onClick={() => void query.fetchNextPage({ cancelRefetch: false })}>Carregar mais publicações</Button>}
+                        {query.isRefetchError && !query.isFetchNextPageError && publications.length > 0 && <p role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700">Não foi possível atualizar. Exibindo as publicações carregadas anteriormente.</p>}
                         <div
                             ref={loadMoreRef}
                             className="h-px"
@@ -655,7 +600,7 @@ export default function Feed() {
                                 role="alert"
                                 className="py-4 text-center"
                             >
-                                <p className="text-sm text-red-500">
+                                <p className="text-sm text-input-error-text">
                                     Não foi possível carregar mais publicações.
                                 </p>
 
@@ -674,6 +619,8 @@ export default function Feed() {
               </div>
               {canRead && <FeedSidebar />}
             </div>
+            {detailValue && !detailId && <p role="alert">Identificação de publicação inválida.</p>}
+            {detailId && <ModalRoot isOpen isEscapable={!activeModal} onClose={closePublication}><PublicationDetailModal key={detailId} publicationId={detailId} onClose={closePublication} /></ModalRoot>}
         </div>
     );
 }

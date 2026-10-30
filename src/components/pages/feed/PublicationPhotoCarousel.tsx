@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { Button } from '@/components/common/button';
 
 export function PublicationPhotoCarousel({ images, title }: {
     images: { storageKey: string; position: number }[];
@@ -11,6 +12,7 @@ export function PublicationPhotoCarousel({ images, title }: {
 }) {
     const photos = [...images].sort((a, b) => a.position - b.position);
     const [selected, setSelected] = useState(0);
+    const [failedKeys, setFailedKeys] = useState<Set<string>>(new Set());
     const start = useRef<{ x: number; y: number } | null>(null);
     const index = Math.min(selected, Math.max(photos.length - 1, 0));
     const move = (direction: number) => setSelected((index + direction + photos.length) % photos.length);
@@ -34,14 +36,14 @@ export function PublicationPhotoCarousel({ images, title }: {
             }}
             onTouchCancel={() => { start.current = null; }}
         >
-            <Image src={getMediaImageUrl(photos[index].storageKey)} alt={`${title} — foto ${index + 1} de ${photos.length}`} fill unoptimized sizes="(min-width: 768px) 720px, 90vw" className="object-contain" />
+            {failedKeys.has(photos[index].storageKey) ? <div role="status" className="flex h-full flex-col items-center justify-center gap-3 px-14 text-center text-sm text-j-gray-600"><p>Imagem indisponível.</p><Button onClick={() => setFailedKeys(previous => { const next = new Set(previous); next.delete(photos[index].storageKey); return next; })}>Tentar imagem novamente</Button></div> : <Image key={photos[index].storageKey} src={getMediaImageUrl(photos[index].storageKey)} onError={() => setFailedKeys(previous => new Set(previous).add(photos[index].storageKey))} alt={`${title} — foto ${index + 1} de ${photos.length}`} fill unoptimized sizes="(min-width: 768px) 720px, 90vw" className="object-contain" />}
             {photos.length > 1 && <>
                 <button type="button" aria-label="Foto anterior" onClick={() => move(-1)} className="absolute left-2 top-1/2 z-10 flex size-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#0b2054] text-white shadow-[0_2px_10px_rgba(0,0,0,0.45)] hover:bg-[#17366f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"><ChevronLeft size={28} strokeWidth={3} className="stroke-white" /></button>
                 <button type="button" aria-label="Próxima foto" onClick={() => move(1)} className="absolute right-2 top-1/2 z-10 flex size-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-[#0b2054] text-white shadow-[0_2px_10px_rgba(0,0,0,0.45)] hover:bg-[#17366f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"><ChevronRight size={28} strokeWidth={3} className="stroke-white" /></button>
             </>}
         </div>
         {photos.length > 1 && <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
-            {photos.map((photo, photoIndex) => <button key={`${photo.storageKey}-${photoIndex}`} type="button" aria-label={`Mostrar foto ${photoIndex + 1}`} aria-pressed={photoIndex === index} onClick={() => setSelected(photoIndex)} className="flex size-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-j-blue-800"><span className={`size-2.5 rounded-full ${photoIndex === index ? "bg-j-blue-800" : "bg-j-gray-300"}`} /></button>)}
+            {photos.map((photo, photoIndex) => <button key={`${photo.storageKey}-${photoIndex}`} type="button" aria-label={`Mostrar foto ${photoIndex + 1}`} aria-pressed={photoIndex === index} onClick={() => setSelected(photoIndex)} className="cursor-pointer flex size-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-j-blue-800"><span className={`size-2.5 rounded-full ${photoIndex === index ? "bg-j-blue-800" : "bg-j-gray-300"}`} /></button>)}
             <p aria-live="polite" aria-atomic="true" className="w-full text-center text-sm text-j-gray-600">Foto {index + 1} de {photos.length}</p>
         </div>}
     </section>;

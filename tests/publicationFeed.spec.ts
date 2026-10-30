@@ -12,6 +12,18 @@ const item = { id: 7, authorUserId: 1, title: "Aviso", content: "<p>Publicado</p
 
 describe("Feed de publicações", () => {
     beforeEach(() => { jest.resetAllMocks(); jest.mocked(haveActionPermission).mockResolvedValue(true); });
+    it('preserva limites absolutos e tamanho pequeno da sidebar', async () => {
+        jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: {} });
+        await listPublicationFeedAction({ page: 0, size: 3, publishedFrom: '2026-10-29T12:00:00.123456Z' });
+        const url = new URL(jest.mocked(actionFetchWrapper).mock.calls[0][0].url, 'http://local/');
+        expect(url.searchParams.get('size')).toBe('3');
+        expect(url.searchParams.get('publishedFrom')).toBe('2026-10-29T12:00:00.123456Z');
+        expect(url.searchParams.has('publishedTo')).toBe(false);
+    });
+    it('rejeita tamanho inválido sem HTTP', async () => {
+        await expect(listPublicationFeedAction({ page: 0, size: 51 })).rejects.toThrow();
+        expect(actionFetchWrapper).not.toHaveBeenCalled();
+    });
     it("busca todos os publicados com paginação nativa, sem exportação", async () => {
         jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: { content: [item] } });
         await listPublicationFeedAction({ page: 0, size: 12 });

@@ -2,22 +2,23 @@
 import { ActionError } from "@/utils/http/ActionError";
 
 import { pageResponseSchema } from "@/schemas/page";
-import { feedTypeSchema,publicationCommentSchema,publicationFeedDetailSchema,publicationFeedItemSchema } from "@/schemas/publications/feed";
+import { publicationFeedParamsSchema, type PublicationFeedParams,publicationCommentSchema,publicationFeedDetailSchema,publicationFeedItemSchema } from "@/schemas/publications/feed";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
-import { parsePublicationPagination } from "@/utils/publications/pagination";
 import { z } from "zod";
 
 async function requirePermission(action: string) {
-    if (!await haveActionPermission("PUBLICATIONS", action)) throw new ActionError("Você não tem permissão para realizar esta ação.");
+    if (!await haveActionPermission("PUBLICATIONS", action)) throw new ActionError("Você não tem permissão para realizar esta ação.", { status: 403, code: 'ACCESS_DENIED' });
 }
 const idSchema = z.number().int().positive();
 
-export async function listPublicationFeedAction(input: { page: number; size: number; type?: "NOTICE" | "EVENT" | "SERVICE" }) {
+export async function listPublicationFeedAction(input: PublicationFeedParams) {
     await requirePermission("FEED_READ");
-    const pagination = parsePublicationPagination(new URLSearchParams({ page: String(input.page), size: String(input.size) }));
-    const params = new URLSearchParams({ page: String(pagination.pageIndex), size: String(pagination.pageSize) });
-    if (input.type) params.set("type", feedTypeSchema.parse(input.type));
+    const parsed = publicationFeedParamsSchema.safeParse(input);
+    if (!parsed.success) throw new ActionError('Revise os filtros da publicação.', { status: 400, code: 'PUBLICATION_FEED_INVALID', errors: parsed.error.issues.map(issue => ({ field: issue.path.join('.'), code: issue.code, message: issue.message })) });
+    const data = parsed.data;
+    const params = new URLSearchParams({ page: String(data.page), size: String(data.size) });
+    for (const key of ['type', 'publishedFrom', 'publishedTo'] as const) if (data[key]) params.set(key, data[key]);
     const result = await actionFetchWrapper({ url: `publications/feed?${params}`, method: "GET", cache: "no-store", schema: pageResponseSchema(publicationFeedItemSchema) });
     return result.data;
 }

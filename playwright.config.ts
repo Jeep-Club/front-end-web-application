@@ -53,6 +53,7 @@ export default defineConfig({
         API_FRONTEND_KEY: "playwright-local-only",
         ACCESS: "playwright-local-session-not-for-production",
         NODE_SECURE: "HTTP",
+        JEEP_PLAYWRIGHT: "1",
       },
     },
     {

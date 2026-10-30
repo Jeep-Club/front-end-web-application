@@ -2,6 +2,43 @@
 
 Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o alcance das verificações, isolamento e critérios para avaliar alterações.
 
+## Feed e detalhe de publicações (WEB-224)
+
+`tests/browser/feed/fixtures.ts` inicia uma API HTTP sintética na origem local de
+`PLAYWRIGHT_API_URL` e fornece cookies assinados exclusivos do ambiente Playwright.
+Configure essa variável com uma porta livre >= 1024 para estes cenários; o valor
+de isolamento sem servidor (`http://127.0.0.1:1`) do piloto não atende ao feed.
+Nunca aponte os cenários para API de produção. O servidor é encerrado ao final
+de cada teste e o runner usa `.next-playwright`, separado do dev normal. Seus
+tipos gerados são incluídos no TypeScript e seus artefatos são ignorados pelo
+Git/ESLint. O servidor dev já aberto não precisa ser encerrado.
+
+```powershell
+# Exemplo: escolha uma porta livre e mantenha a mesma origem no runner e fixture.
+$env:PLAYWRIGHT_API_URL='http://127.0.0.1:32124'
+npm run test:browser -- tests/browser/feed/feed.spec.ts --project=chromium-mobile --project=chromium-desktop
+npm run test:browser -- tests/browser/feed/feed-stories.spec.ts --project=chromium-mobile --project=chromium-desktop
+npm run test:a11y -- tests/browser/feed/feed.a11y.spec.ts
+```
+
+O teste da aplicação percorre Server Functions, validação e cache reais do frontend
+contra DTOs sintéticos. Não comprova autorização/persistência da API real. A fixture
+GET-only original permanece intacta e é reutilizada nas stories. Elas documentam
+FeedPeriodFilters, FeedMetadata e PublicationPhotoCarousel, incluindo ambos os temas,
+precisão de filtros, status de eventos e falha de mídia. Artefatos seguem o relatório
+Playwright existente; não há baselines visuais aprovadas.
+
+Na validação da WEB-224, o axe identificou `button-name` no botão de NotificationBell
+do shell, já sem nome acessível no código anterior à task. O spec mantém a assertion
+sem exclusões: feed e validação continuam sinalizando essa pendência global; o detalhe
+é analisado separadamente. Essa limitação não deve ser descrita como aprovação geral
+de acessibilidade nem resolvida enfraquecendo o scanner.
+
+`tests/publicationSessionCache.spec.ts` usa QueryClient real para verificar a limpeza
+do prefixo Publications ao desmontar UserProvider. O logout do menu navega sem reload;
+portanto permissions iguais não são uma chave de identidade suficiente. O teste Node
+exercita o cleanup e o cache, sem se apresentar como um fluxo completo entre duas contas.
+
 ## Ferramentas disponíveis
 
 | Ferramenta/configuração | Alcance e limite |
