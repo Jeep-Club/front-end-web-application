@@ -48,12 +48,16 @@ test("Documentação acompanha o Storybook e mantém o tema explícito dos exemp
   await page.getByRole("option", { name: "Escuro", exact: true }).click();
   await expect(docs).not.toHaveCSS("background-color", lightBackground);
   const input = preview.getByRole("textbox", { name: "Nome", exact: true }).first();
+  const canvas = preview.locator(".docs-story").filter({ has: input }).first();
+  await expect(canvas).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await expect(input).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await page.getByRole("button", { name: "Tema dos componentes" }).click();
   await page.getByRole("option", { name: "Storybook", exact: true }).click();
   await expect(input).toHaveCSS("background-color", "rgb(17, 28, 46)");
+  await expect(canvas).toHaveCSS("background-color", "rgb(11, 18, 32)");
   await page.reload();
   await expect(docs).not.toHaveCSS("background-color", lightBackground);
   await expect(input).toHaveCSS("background-color", "rgb(17, 28, 46)");
+  await expect(canvas).toHaveCSS("background-color", "rgb(11, 18, 32)");
 });
 

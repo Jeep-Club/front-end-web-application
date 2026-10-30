@@ -5,6 +5,7 @@ import { MINIMAL_VIEWPORTS } from "storybook/viewport";
 import { ThemePreview } from "./ThemePreview";
 import { ThemeDocsContainer } from "./ThemeDocsContainer";
 import "../src/app/globals.css";
+import "./preview.css";
 
 // font-sans follows the app's current CSS mapping. Unmapped Google font variables
 // add a remote request during preview compilation without changing that font stack.
