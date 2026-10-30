@@ -1,14 +1,17 @@
 "use client";
 
+import Link from "next/link";
+import { getActionFailure } from "@/utils/http/ActionError";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { InputFile } from "@/components/common/input/file";
+import { PublicationGalleryFields } from "@/components/pages/publications/PublicationGalleryFields";
+import type { PublicationGalleryItem } from "@/utils/publications/gallery";
 import { InputRegister } from "@/components/common/input/input-register";
 import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister";
 import { SelectRegister } from "@/components/common/select/select-register";
 import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useModal } from "@/providers/ModalProvider";
-import { publicationFormSchema, type CreatePublicationRequest, type PublicationFormData } from "@/schemas/publications/create";
+import { publicationFormSchema, parseEventChargeRows, type CreatePublicationRequest, type PublicationFormData } from "@/schemas/publications/create";
 import { uploadImageAction } from "@/server/actions/media/upload-image";
 import { createPublicationAction } from "@/server/actions/publications/create";
 import { useUserStore } from "@/stores/userStore";
@@ -18,24 +21,34 @@ import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Newspaper, X } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import toast from "react-hot-toast";
+import { EventChargeFields } from "./EventChargeFields";
+import { invalidatePublicationAdministration } from "@/utils/publications/administration";
 import styles from "./CreatePublicationModal.module.css";
 
-function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
+function Fields({ initialType, publishEventImmediately, serverError }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown }) {
     const { setClose } = useModal();
-    const { watch, formState: { isSubmitting } } = useFormContext<PublicationFormData>();
+    const { watch, setValue, setError, formState: { isSubmitting, errors } } = useFormContext<PublicationFormData>();
     const type = watch("type");
-    const photos = watch("photos") ?? [];
+    useEffect(() => {
+        for (const issue of getActionFailure(serverError)?.errors ?? []) {
+            const field = issue.field;
+            if (field === 'title' || field === 'content' || field === 'startsAt' || field === 'endsAt' || field === 'amount' || field === 'contactPhone') setError(field, { type: 'server', message: issue.message });
+            else if (field.startsWith('images')) setError('photos', { type: 'server', message: issue.message });
+            else if (field.startsWith('charges')) setError('charges', { type: 'server', message: issue.message });
+        }
+    }, [serverError, setError]);
+    const [gallery, setGallery] = useState<PublicationGalleryItem[]>([]);
+    const [primaryId, setPrimaryId] = useState('');
     const permissions = useUserStore((state) => state.permissions);
     const types = publicationCreationTypes.filter((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
-    const canPublishEvent = hasPermission(permissions, "PUBLICATIONS", "EVENT_PUBLISH")
-        && hasPermission(permissions, "PUBLICATIONS", "EVENT_READ_ADMIN");
+    const canPublishEvent = hasPermission(permissions, "PUBLICATIONS", "EVENT_PUBLISH");
     return (
         <>
-            <fieldset disabled={isSubmitting} className={`${styles.fields} flex w-full min-w-0 flex-col gap-5`}>
+            <fieldset disabled={isSubmitting} className={`${styles.fields} [&_select]:!bg-input-bg [&_select]:!text-input-text flex w-full min-w-0 flex-col gap-5`}>
                 <div className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
                 {!initialType && <SelectRegister name="type" label="Tipo de publicação" required>
                     {types.map((entry) => <option key={entry.type} value={entry.type}>{entry.label}</option>)}
@@ -50,19 +63,20 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
                         <InputRegister name="startsAt" label="Início" type="datetime-local" required />
                         <InputRegister name="endsAt" label="Término (opcional)" type="datetime-local" />
                     </div>
-                    <p className="text-xs text-j-gray-500">Use o horário local. Este cadastro cria um evento sem cobranças.</p>
+                    <p className="text-xs text-j-gray-500">Use o horário local. O fuso usado é o do navegador.</p>
                 </>}
+                {type === "EVENT" && <EventChargeFields disabled={isSubmitting} />}
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">
                     <InputRegister name="amount" label="Valor anunciado (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="100,00" required />
                     <InputRegister name="contactPhone" label="Telefone de contato" type="tel" inputMode="numeric" mask={maskPhoneNumber} placeholder="(00) 00000-0000" maxLength={15} required />
                 </div>}
                 </div>
                 <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
-                <InputFile.Image className={styles.gallery} name="photos" label="Imagens" maxFiles={5} maxSizeMB={5} cropShape="landscape" required />
-                <p className="text-xs text-j-gray-500">Envie de 1 a 5 imagens JPEG, PNG ou WebP, com até 5 MiB cada.</p>
-                {photos.length > 0 && <SelectRegister name="primaryIndex" label="Imagem de capa" required>
-                    {photos.map((file, index) => <option key={index} value={String(index)}>{index + 1}. {file.name}</option>)}
-                </SelectRegister>}
+                <PublicationGalleryFields items={gallery} primaryId={primaryId} disabled={isSubmitting} error={errors.photos?.message || errors.primaryIndex?.message} onChange={(items, primary) => {
+                    setGallery(items); setPrimaryId(primary);
+                    setValue('photos', items.flatMap(item => item.kind === 'file' ? [item.file] : []), { shouldDirty: true, shouldValidate: true });
+                    setValue('primaryIndex', String(items.findIndex(item => item.id === primary)), { shouldDirty: true, shouldValidate: true });
+                }} />
                 </div>
             </fieldset>
             <div className="flex w-full flex-col-reverse gap-3 border-t border-j-gray-200 pt-5 sm:flex-row">
@@ -81,6 +95,23 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
     const types = publicationCreationTypes.filter((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
     const uploads = useRef(new Map<File, string>());
     const queryClient = useQueryClient();
+    const dialog = useRef<HTMLDialogElement>(null);
+    const pending = useRef(false);
+    const [createdResult, setCreatedResult] = useState<{ id: number; type: 'EVENT' | 'NOTICE' | 'SERVICE'; published: boolean; publishError?: string }>();
+    useEffect(() => {
+        const element = dialog.current;
+        const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        element?.showModal();
+        const escape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            // WebKit may dispatch Escape outside the focused control after it becomes disabled.
+            // Prevent native cancellation as well as the provider listener while a write is pending.
+            if (pending.current) { event.preventDefault(); event.stopImmediatePropagation(); }
+            else if (event.target instanceof Node && !element?.contains(event.target)) event.stopImmediatePropagation();
+        };
+        document.addEventListener('keydown', escape, true);
+        return () => { document.removeEventListener('keydown', escape, true); element?.close(); if (previous?.isConnected) previous.focus(); };
+    }, []);
     const mutation = useMutation({
         mutationFn: async (data: PublicationFormData) => {
             const config = publicationCreationTypes.find((entry) => entry.type === data.type)!;
@@ -98,44 +129,37 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             }
             const common = { title: data.title, content: data.content, images };
             const payload: CreatePublicationRequest = data.type === "EVENT"
-                ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null }
+                ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null, charges: parseEventChargeRows(data.charges ?? [], new Date(data.startsAt).toISOString()) }
                 : data.type === "SERVICE"
                     ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: unMaskPhoneNumber(data.contactPhone) }
                     : { ...common, type: "NOTICE" };
             const created = await createPublicationAction(payload);
+            if (data.type === 'EVENT' && data.charges?.some(charge => charge.mode === 'inline')) void invalidatePublicationAdministration(queryClient, 'EVENT', created.id, { inline: true });
             if (created.type !== "EVENT" || !publishEventImmediately) return { ...created, published: false };
 
             const currentPermissions = useUserStore.getState().permissions;
-            const canPublishEvent = hasPermission(currentPermissions, "PUBLICATIONS", "EVENT_PUBLISH")
-                && hasPermission(currentPermissions, "PUBLICATIONS", "EVENT_READ_ADMIN");
+            const canPublishEvent = hasPermission(currentPermissions, "PUBLICATIONS", "EVENT_PUBLISH");
             if (!canPublishEvent) return { ...created, published: false };
 
             try {
                 await mutateDraftPublicationAction({ id: created.id, type: "EVENT", action: "publish" });
                 return { ...created, published: true };
             } catch (error) {
-                return { ...created, published: false, publishError: error instanceof Error ? error.message : "Não foi possível publicar o evento." };
+                return { ...created, published: false, publishError: getActionFailure(error)?.message ?? (error instanceof Error ? error.message : "Não foi possível publicar o evento.") };
             }
         },
         onSuccess: (result) => {
-            if (result.type === 'SERVICE') {
-                const params = new URLSearchParams(window.location.search);
-                params.set('status', 'ALL');
-                params.delete('type');
-                params.append('type', 'SERVICE');
-                params.delete('page');
-                window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
-            }
             if (result.type === "SERVICE") toast.success("Solicitação enviada para aprovação!");
             else if (result.type === "EVENT" && result.published) toast.success("Evento criado e publicado no feed!");
             else if (result.type === "EVENT" && "publishError" in result && result.publishError) toast.error(`O evento foi salvo como rascunho, mas não foi publicado: ${result.publishError}`);
             else if (result.type === "EVENT" && publishEventImmediately) toast.success("Evento salvo como rascunho. Para aparecer no feed, publique em Gestão de publicações.");
             else toast.success("Rascunho criado com sucesso!");
             void queryClient.invalidateQueries({ queryKey: ["publications"] });
-            setClose();
+            setCreatedResult(result);
         },
 
     });
+    useEffect(() => { pending.current = mutation.isPending; }, [mutation.isPending]);
     if (!types.length) return null;
     const title = initialType === "EVENT" ? "Criar evento" : initialType === "NOTICE" ? "Criar aviso" : initialType === "SERVICE" ? "Criar serviço" : "Criar publicação";
     const description = initialType === "EVENT"
@@ -146,7 +170,14 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
                 ? "Cadastre um serviço para enviar à aprovação."
                 : "Escolha o tipo e preencha os dados da publicação.";
     return (
-        <div role="dialog" aria-modal="true" aria-labelledby="create-publication-title" className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto overflow-x-hidden rounded-3xl bg-j-white shadow-2xl">
+        <dialog ref={dialog} onKeyDown={event => {
+            if (event.key === 'Escape') event.stopPropagation();
+            if (event.key !== 'Tab' || event.currentTarget.querySelector('[role="listbox"]')) return;
+            const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button, input, textarea, select, [contenteditable="true"], [tabindex]')).filter(element => element.tabIndex >= 0 && !element.matches(':disabled') && !element.closest('[inert]') && element.getClientRects().length > 0);
+            const first = controls[0]; const last = controls.at(-1);
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }} onCancel={event => { event.preventDefault(); if (!pending.current) setClose(); }} aria-modal="true" aria-labelledby="create-publication-title" className="m-auto border-0 p-0 text-j-gray-700 backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto overflow-x-hidden rounded-3xl bg-j-white shadow-2xl">
             <ButtonIcon aria-label="Fechar" disabled={mutation.isPending} onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"><X size={20} /></ButtonIcon>
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
 
@@ -155,9 +186,13 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
 
 
             </header>
-            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="px-5 py-5 md:px-8 md:py-6">
-                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} />
-            </Form>
-        </div>
+            {createdResult ? <div role="status" className="space-y-4 p-6"><p>{createdResult.type === 'SERVICE' ? 'Solicitação' : 'Publicação'} salva com ID <strong>#{createdResult.id}</strong>. Guarde este ID para consultar depois.</p>
+                {createdResult.publishError && <p className="text-input-error-text">O rascunho foi salvo, mas a publicação falhou: {createdResult.publishError}. Não crie novamente; publique pelo detalhe.</p>}
+                {createdResult.type !== 'SERVICE' && hasPermission(permissions, 'PUBLICATIONS', createdResult.type === 'EVENT' ? 'EVENT_READ_ADMIN' : 'NOTICE_READ') && <Link onClick={setClose} className="block cursor-pointer font-bold text-j-blue-800 underline" href={`/admin/publications/${createdResult.type === 'EVENT' ? 'event' : 'notice'}/${createdResult.id}`}>Administrar publicação #{createdResult.id}</Link>}
+                <Button onClick={setClose}>Concluir</Button></div> : <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], charges: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="px-5 py-5 md:px-8 md:py-6">
+                {mutation.isError && <p role="alert" className="text-input-error-text">{getActionFailure(mutation.error)?.message ?? mutation.error.message}</p>}
+                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} serverError={mutation.error} />
+            </Form>}
+        </dialog>
     );
 }

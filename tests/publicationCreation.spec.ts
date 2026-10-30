@@ -5,11 +5,20 @@ import { haveActionPermission } from "@/utils/permission/actionPermissions";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
-const base = { title: "Publicação", content: "Conteúdo", images: [{ storageKey: "images/example.jpg", position: 0, primary: true }] };
+const base = { title: "Publicação", content: "Conteúdo", images: [{ storageKey: "images/2026/10/30/550e8400-e29b-41d4-a716-446655440000.jpg", position: 0, primary: true }] };
 const event = { ...base, type: "EVENT" as const, startsAt: "2099-11-15T11:00:00Z", endsAt: null };
 
 describe("Criação de publicações", () => {
     beforeEach(() => { jest.resetAllMocks(); });
+    it('valida DTO completo e estado DRAFT na resposta de criação', async () => {
+        jest.mocked(haveActionPermission).mockResolvedValue(true);
+        jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 201, data: { id: 1 } });
+        await createPublicationAction(event);
+        const schema = jest.mocked(actionFetchWrapper).mock.calls[0][0].schema;
+        const response = { ...event, id: 1, authorUserId: 7, publicationStatus: 'DRAFT', eventStatus: 'OPEN' };
+        expect(schema.safeParse(response).success).toBe(true);
+        expect(schema.safeParse({ ...response, publicationStatus: 'PUBLISHED' }).success).toBe(false);
+    });
 
     it("rejeita galeria sem capa ou com imagens duplicadas", () => {
         expect(createPublicationSchema.safeParse({ ...base, type: "NOTICE", images: [{ ...base.images[0], primary: false }] }).success).toBe(false);

@@ -6,6 +6,7 @@ import { createPublicationSchema,type CreatePublicationRequest } from "@/schemas
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { z } from "zod";
+import { adminEventSchema, adminNoticeSchema } from "@/schemas/publications/admin";
 
 export async function createPublicationAction(input: CreatePublicationRequest) {
     const parsed = createPublicationSchema.safeParse(input);
@@ -18,8 +19,8 @@ export async function createPublicationAction(input: CreatePublicationRequest) {
         method: "POST",
         body: JSON.stringify(payload),
         schema: type === "EVENT"
-            ? z.object({ id: z.number(), publicationStatus: z.literal("DRAFT") })
-            : type === "NOTICE" ? z.object({ id: z.number(), status: z.literal("DRAFT") }) : z.object({ id: z.number(), status: z.literal("PENDING") }),
+            ? adminEventSchema.extend({ publicationStatus: z.literal("DRAFT") })
+            : type === "NOTICE" ? adminNoticeSchema.extend({ status: z.literal("DRAFT") }) : z.object({ id: z.number(), status: z.literal("PENDING") }),
     });
     return { id: response.data.id, type };
 }

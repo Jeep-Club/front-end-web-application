@@ -56,7 +56,7 @@ export const adminModules: AdminModuleConfig[] = [
         key: "publication-management",
         title: "Gestão de publicações",
         description: "Gerencie eventos, avisos e anúncios de serviços do clube.",
-        href: "/admin/gestao-publicacoes",
+        href: "/admin/publications",
         icon: Newspaper,
         visibilityPermission: {
             module: "PUBLICATIONS",

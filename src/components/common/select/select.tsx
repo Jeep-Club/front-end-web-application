@@ -295,7 +295,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                             {triggerContent}
                         </button>
                     </PopoverPrimitive.Trigger>
-                    <PopoverPrimitive.Portal>
+                    {/* A native modal makes body portals inert; keep options in the trigger's top layer. */}
+                    <PopoverPrimitive.Portal container={triggerRef.current?.closest('dialog') ?? undefined}>
                         <PopoverPrimitive.Content
                             align="start"
                             sideOffset={4}
@@ -415,7 +416,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                             <ChevronDown aria-hidden="true" className="shrink-0 text-j-gray-400" size={20} />
                         </SelectPrimitive.Icon>
                     </SelectPrimitive.Trigger>
-                    <SelectPrimitive.Portal>
+                    <SelectPrimitive.Portal container={triggerRef.current?.closest('dialog') ?? undefined}>
                         <SelectPrimitive.Content
                             position="popper"
                             sideOffset={4}

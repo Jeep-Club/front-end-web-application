@@ -97,3 +97,23 @@ Testes do fluxo: `npm test -- --runInBand --coverage=false payment`.
 ## Documentação
 
 Consulte o [índice de documentação](docs/README.md) para consultar arquitetura, design, convenções, implementação de componentes e testes. As instruções de implantação, variáveis de deploy e integração operacional permanecem no [runbook da Vercel](deploy/vercel.md).
+
+## Administração de publicações (WEB-198)
+
+Acesse `/admin/publications`. As áreas usam `/admin/publications/notice`, `/admin/publications/event` e `/admin/publications/service`; cada rota fixa o tipo no modal de criação. Eventos usam paginação real do backend e incluem todos os estados; não há busca ou filtro administrativo por estado. Avisos e serviços publicados usam o feed paginado; rascunhos e arquivados podem ser consultados pelo ID, pois a API não oferece suas coleções administrativas JSON. Exportações e feed não substituem esse inventário.
+
+As três áreas abrem em lista compacta, com opção de grade via `view` na URL, sem outra consulta ao alternar. A pesquisa automática identifica números como ID e textos como título; também é possível escolher o modo. ID abre o detalhe administrativo da categoria, independentemente da página; título global permanece indisponível até haver suporte da API. Eventos permitem alternar a ordenação pela data de criação, com desempate por ID; no feed de avisos e serviços a ordem é fixa pela publicação mais recente. Avisos e serviços permitem incluir o período de publicação em UTC no feed, com reinício da paginação ao aplicar, remover ou limpar. Filtros de estado, prioridade/validade de avisos, categoria de serviços e período dos eventos ficam desabilitados e identificados como sem suporte. Não há busca nem filtros globais simulados sobre uma página de dados.
+
+O componente compartilhado `Filters` organiza os filtros fornecidos pela tela, independentemente da pesquisa: mostra os três primeiros inicialmente e permite adicionar ou remover os demais. A tela mantém os valores e as regras de cada filtro.
+
+Na visão geral, os indicadores e a lista de publicações recentes usam o feed e representam somente publicações publicadas, com as permissões e restrições de associação do feed. As prévias por categoria são as mais recentes por data de publicação; não representam prioridade ou próximos eventos. Uma seção separada mostra os eventos administrativos mais recentes, inclusive rascunhos. Os filtros de estado estão visíveis, mas ainda não são aplicados; listagens administrativas unificadas e indicadores de prioridade, capacidade ou próximos eventos dependem de contratos adicionais.
+
+Os detalhes ficam em `/admin/publications/event/{id}`, `/admin/publications/notice/{id}` e `/admin/publications/service/{id}`, com as respectivas permissões de leitura. Criar não exige leitura: após salvar, o modal mantém o ID e oferece link somente quando autorizado. Se a publicação imediata de um evento falhar após o cadastro, o rascunho já existe; use seu ID para publicar, sem criar novamente.
+
+Eventos têm estado editorial e operacional independentes. Publicar, finalizar e cancelar são comandos distintos. Cancelar afeta obrigações financeiras e elegibilidade de reembolso, sem reembolso automático; excluir não equivale a cancelar financeiramente. O dashboard exige permissão própria e mostra participação, capacidade derivada dos veículos e fatos financeiros. Participação CONFIRMED não comprova pagamento homologado.
+
+Agenda usa horário local do navegador, convertido para Instant; cutoff é informado como UTC e vencimento permanece data civil. A edição omite campos intactos. Qualquer inscrição, inclusive cancelada, ou fato financeiro bloqueia agenda e regras; sem acesso ao dashboard, o servidor confirma a elegibilidade. Alterar cobranças substitui a coleção completa. Definição inline cria uma definição financeira real; remover regras não apaga definições ou dívidas.
+
+Avisos podem ser criados, editados, publicados e arquivados. Arquivar é terminal: mantém consulta por ID, sem edição/republicação. A exclusão está disponível também para arquivados. Serviços têm somente leitura e exclusão administrativas; pedidos/propostas e suas revisões pertencem à WEB-227, cujas filas ainda não estão disponíveis neste módulo. Excluir um serviço preserva pedidos/propostas e pode impedir sua aprovação posterior.
+
+Galerias combinam referências salvas e arquivos novos, com até cinco imagens e uma capa independente da ordem. Somente arquivos novos são enviados; a substituição envia a galeria completa com storageKeys. Remover uma referência não apaga a mídia global.

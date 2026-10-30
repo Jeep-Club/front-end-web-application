@@ -1,0 +1,20 @@
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { useEffect, useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Form } from '@/components/common/form';
+import { useUserStore } from '@/stores/userStore';
+import { eventChargeFormRowSchema } from '@/schemas/publications/create';
+import { z } from 'zod';
+import { EventChargeFields } from './EventChargeFields';
+const row = { mode: 'existing' as const, chargeDefinitionId: '99', name: 'Transporte', description: '', amount: '50,25', billingRequired: false, requiredForParticipation: true, participationCutoff: '2099-11-15T11:00:00Z', financialDueDate: '', paymentAcceptancePolicy: '' };
+const schema = z.object({ charges: z.array(eventChargeFormRowSchema) });
+const meta = { title: 'Publicações/Cobranças de evento', component: EventChargeFields, args: { disabled: false }, render: function Example(args, context) {
+    const [client] = useState(() => { const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } }); const permissions = [{ module: 'PUBLICATIONS', actions: ['EVENT_CREATE'] }]; for (let page = 0; page < 2; page++) client.setQueryData(['publications', 'admin', 'event-charge-catalog', { page, size: 12 }, permissions], { content: [{ id: page + 4, name: 'Definição elegível', description: null, defaultAmount: 50, required: false, paymentAcceptancePolicy: 'AFTER_DUE_DATE' }], number: page, size: 12, totalElements: 24, totalPages: 2, numberOfElements: 1, first: page === 0, last: page === 1, empty: false }); return client; });
+    useEffect(() => { const previous = useUserStore.getState().permissions; useUserStore.setState({ permissions: [{ module: 'PUBLICATIONS', actions: ['EVENT_CREATE'] }] }); return () => { useUserStore.setState({ permissions: previous }); client.clear(); }; }, [client]);
+    return <QueryClientProvider client={client}><Form schema={schema} formOptions={{ defaultValues: { charges: [{ ...row, mode: context.name === 'Inline' ? 'inline' : 'existing' }] } }} onSubmit={() => {}} onError={() => {}}><EventChargeFields {...args} /></Form></QueryClientProvider>;
+} } satisfies Meta<typeof EventChargeFields>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+export const ExistenteForaDaPagina: Story = {};
+export const Inline: Story = {};
+export const Bloqueada: Story = { args: { disabled: true } };

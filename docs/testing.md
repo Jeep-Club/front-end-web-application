@@ -170,3 +170,15 @@ O preview importa o CSS global e preserva a resolução atual de `font-sans`, in
 Para validação de interface, conferir interação, DOM, teclado, foco, zoom, conteúdo longo e diferentes viewports. Screenshots complementam essas verificações; não certificam acessibilidade nem substituem avaliação humana. Uma integração real precisa de API isolada, dados sintéticos, credenciais próprias e limpeza controlada.
 
 Ao entregar uma alteração, informe arquivos/escopo, comandos realmente executados, resultados/exit codes, falhas comparadas, artefatos e limitações. Separe inspeção estática, teste automatizado e avaliação manual. Não apresente resultados anteriores ou checks não executados como aprovação atual.
+
+### Administração de publicações
+
+`tests/browser/publications/fixtures.ts` fornece sessão e API sintéticas isoladas para as Server Functions reais. Usa as origens do Playwright e exige `PLAYWRIGHT_API_URL` em porta local livre >=1024; não aponta para backend real. A fixture registra métodos/payloads, permite conflitos/negações controlados e encerra seu próprio servidor ao final. O piloto GET-only permanece intacto.
+
+`administration.spec.ts` cobre as rotas `/admin/publications/{notice,event,service}`, criação com tipo fixado pela rota, permissões por área, paginação/navegação por ID, PATCH sem agenda intocada, galeria retida, coleção financeira completa, 409 com dados preservados, lifecycle, exclusão, bloqueio por inscrição cancelada, permissões independentes e cadastro com upload. `stories.spec.ts` verifica galeria e catálogo nos dois temas; `administration.a11y.spec.ts` analisa edição, validação e confirmação com axe. A integração não comprova comportamento do backend implantado, homologação financeira ou conformidade integral de acessibilidade.
+
+`overview.spec.ts` verifica publicações por categoria, eventos em rascunho, ajuda e aviso dos filtros, falhas independentes e ausência de chamada ao feed sem permissão. `categories.spec.ts` cobre listagem de avisos e serviços publicados, consulta por ID e contraste das abas. `overview.a11y.spec.ts` audita a visão geral nos dois temas, incluindo o shell administrativo.
+
+`list-management.spec.ts` cobre consulta por ID fora do feed, validação, ausência de suporte a título global, filtros desabilitados, ordenação de eventos, período publicado, limpeza e alternância Lista/Grade sem refetch. `list-stories.spec.ts` e `list-stories.a11y.spec.ts` exercitam as composições isoladas nos dois temas; o axe do catálogo não inclui o shell administrativo nem valida autorização no backend. A fixture aplica os limites temporais do feed aos dados sintéticos e registra os parâmetros da ordenação, sem comprovar a consulta JPA implantada.
+
+As stories de cobranças têm QueryClient próprio e dados sintéticos. O mock de `publications/events.ts` no preview impede avaliar autenticação e transporte exclusivos de servidor no navegador do Storybook; não é usado na aplicação Next nem nas fixtures autenticadas.
