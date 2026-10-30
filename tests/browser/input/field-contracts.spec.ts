@@ -20,13 +20,23 @@ test("Textarea associa ajuda e erro por IDs válidos", async ({ page }) => {
   await expect(input).toHaveAttribute("aria-invalid", "true");
 });
 
-test("Radio mantém indicador visual de seleção coerente com o valor nativo", async ({ page }) => {
-  await page.goto(new URL("/iframe.html?id=componentes-input-checkbox-e-radio--radio-isolado&embed=true", storybookUrl).href);
-  const selected = page.getByRole("radio", { name: "E-mail", exact: true });
-  await expect(selected).toBeChecked();
-  // A opacidade é parte do requisito visual; o estado nativo sozinho não prova o indicador.
-  await expect(selected.locator("..").locator("span span")).toHaveCSS("opacity", "1");
-  await selected.press("ArrowRight");
-  await expect(page.getByRole("radio", { name: "Telefone", exact: true })).toBeChecked();
-  await expect(selected.locator("..").locator("span span")).toHaveCSS("opacity", "0");
-});
+for (const story of ["radio-isolado", "registrados"]) {
+  for (const [theme, gray] of [["light", "rgb(89, 89, 89)"], ["dark", "rgb(186, 199, 217)"]]) {
+    test(`Radio ${story}: ponto cinza no tema ${theme}`, async ({ page }) => {
+      await page.goto(new URL(`/iframe.html?id=componentes-input-checkbox-e-radio--${story}&embed=true`, storybookUrl).href);
+      const email = page.getByRole("radio", { name: "E-mail", exact: true });
+      const phone = page.getByRole("radio", { name: "Telefone", exact: true });
+      const indicator = (radio: typeof email) => radio.locator("+ span");
+      await expect(email).toBeChecked();
+      await page.evaluate((value) => document.documentElement.setAttribute("data-theme", value), theme);
+      await expect(indicator(email)).toHaveCSS("border-color", "rgb(236, 191, 13)");
+      await expect(indicator(email).locator("span")).toHaveCSS("background-color", gray);
+      await expect(indicator(email).locator("span")).toHaveCSS("opacity", "1");
+      await email.focus();
+      await email.press("ArrowRight");
+      await expect(phone).toBeChecked();
+      await expect(indicator(phone).locator("span")).toHaveCSS("opacity", "1");
+      await expect(indicator(email).locator("span")).toHaveCSS("opacity", "0");
+    });
+  }
+}
