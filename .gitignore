@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/storybook-static/
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -33,7 +36,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env
 .env.*
-!env.example
+!.env.example
 
 # vercel
 .vercel
@@ -45,3 +48,6 @@ next-env.d.ts
 # Playwright local reports
 /test-results/
 /playwright-report/
+
+# Storybook
+debug-storybook.log*

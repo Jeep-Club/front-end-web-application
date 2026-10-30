@@ -20,6 +20,7 @@ export function CreateChargeDefinitionModal() {
         onSuccess: () => {
             toast.success("Definição de cobrança criada com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
+            queryClient.invalidateQueries({ queryKey: ["billing", "dashboard", "Definições cadastradas"], exact: true });
             setClose();
         },
 

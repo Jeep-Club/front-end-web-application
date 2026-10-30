@@ -1,9 +1,10 @@
 "use client"
 
-import { FileText, FilePlay, FileImage, X } from "lucide-react";
+import { FileText, FilePlay, FileImage } from "lucide-react";
 import { formatFileSize } from "@/utils/formats/formatFileSize";
 import { twMerge } from "tailwind-merge";
 import { RemoveFile } from "../actions/remove";
+import type { InputVariant } from "../../input";
 
 export type ListProps = {
     files: File[];
@@ -12,6 +13,7 @@ export type ListProps = {
      */
     onRemove: (index: number) => void;
     className?: string;
+    variant?: InputVariant;
 }
 
 // Helper para escolher o ícone baseado no MIME Type
@@ -21,7 +23,7 @@ function getFileIcon(type: string) {
     return <FileText size={20}/>;
 }
 
-export function ListFile({ files, onRemove, className }: ListProps) {
+export function ListFile({ files, onRemove, className, variant = "white" }: ListProps) {
     if (!files || files.length === 0) return null;
 
     return (
@@ -29,17 +31,17 @@ export function ListFile({ files, onRemove, className }: ListProps) {
             {files.map((file, idx) => (
                 <li 
                     key={`${file.name}-${idx}`} 
-                    className="flex items-center justify-between p-3 rounded-lg bg-input-bg border border-input-border hover:border-input-border-hover transition-colors"
+                    className={twMerge("flex items-center justify-between p-3 rounded-lg border transition-colors", variant === "white" ? "border-j-gray-300 bg-j-white" : "bg-input-legacy-bg border-input-border hover:border-input-border-hover")}
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="w-10 h-10 flex items-center justify-center bg-background rounded-md shrink-0 text-j-gray-400">
+                        <div className={twMerge("w-10 h-10 flex items-center justify-center rounded-md shrink-0", variant === "white" ? "bg-j-gray-100 text-j-gray-500" : "bg-background text-j-gray-400")}>
                             {getFileIcon(file.type)}
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                            <span className="text-sm font-medium text-input-text truncate" title={file.name}>
+                            <span className={twMerge("text-sm font-medium truncate", variant === "white" ? "text-j-gray-700" : "text-input-legacy-text")} title={file.name}>
                                 {file.name}
                             </span>
-                            <span className="text-xs text-j-gray-400">
+                            <span className={twMerge("text-xs", variant === "white" ? "text-j-gray-500" : "text-j-white/70")}>
                                 {formatFileSize(file.size)}
                             </span>
                         </div>

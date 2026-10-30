@@ -1,0 +1,39 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './InputDate.stories';
+
+<Meta of={Stories} />
+
+# InputDate
+
+Campo registrado com input date e botão para abrir o calendário nativo. Use para uma data civil, sem horário.
+
+## Uso com React Hook Form
+
+```tsx
+import { InputDate } from '@/components/common/input/input-date';
+
+// Dentro do Form do projeto, com schema e defaultValues correspondentes.
+<InputDate name="birthDate" label="Data de nascimento" max="2026-12-31" />
+```
+
+Este componente exige FormProvider, como o fornecido por Form. Não possui modo `register=false`. Inicialize o valor como string em `formOptions.defaultValues` e use o mesmo `name` no schema. O erro exibido vem do React Hook Form. `required` sinaliza a obrigatoriedade; Form usa `noValidate`, por isso declare a regra no schema.
+
+O nome legado padrão é `birthData`. O valor HTML é `YYYY-MM-DD`, enquanto a apresentação depende do navegador/idioma. O botão chama `showPicker()` e depende do suporte do navegador e de uma ação do usuário; não representa um calendário Radix. `min`/`max` são atributos nativos; valide também no schema.
+
+## Aparência e controles
+
+A superfície acompanha os tokens de `data-theme`; alterne claro/escuro na toolbar. Não é necessário escolher variante de cor. `white`/`gray` permanecem por compatibilidade, como descrito em [Input](?path=/docs/componentes-input-input--docs). `className` e `labelClassName` ajustam o contexto. Os ícones não substituem o label.
+
+<Canvas of={Stories.Padrao} />
+
+<div role="region" aria-label="Propriedades de InputDate" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Padrao} />
+</div>
+
+<Canvas of={Stories.Gray} />
+<Canvas of={Stories.Desabilitado} />
+
+## Integração e limites
+
+As stories usam Form/RHF e Zod reais com validação mínima de campo preenchido, sem backend. Não representam todas as regras do domínio. Confira a integração e os estados de erro no [guia de Input](?path=/docs/componentes-input-input--docs). Os testes de navegador verificam o comportamento local; isso não certifica acessibilidade completa.
+

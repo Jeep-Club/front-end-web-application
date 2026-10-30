@@ -42,13 +42,13 @@ export default function FormLogin() {
                 onError={() => toast.error('Confira o CPF e a senha informados.')}
             >
                 <div id="tour-login-cpf" className="w-full">
-                    <InputCPF required />
+                    <InputCPF required labelClassName="text-j-white" errorClassName="text-j-red-100" />
                 </div>
 
                 <div className="w-full pb-5">
                     <div id="tour-login-password" className="relative w-full">
-                        <InputPassword required autoComplete="current-password" />
-                        <span
+                        <InputPassword required autoComplete="current-password" labelClassName="text-j-white" errorClassName="text-j-red-100" />
+                        <span 
                             id="tour-login-forgot"
                             className="text-xs md:text-sm text-j-transparent-white absolute top-full right-0 mt-1 hover:text-j-yellow-300 hover:underline hover:cursor-pointer transition-colors duration-300"
                             onClick={() => router.push('/forgot-password')}

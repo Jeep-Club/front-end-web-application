@@ -1,0 +1,55 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './Textarea.stories';
+
+<Meta of={Stories} />
+
+# Textarea
+
+Entrada de texto em várias linhas com label e erro associados. Use para observações
+ou descrições; texto curto usa [Input](?path=/docs/componentes-input-input--docs), e
+valores de uma lista usam [Select](?path=/docs/componentes-select--docs).
+
+```tsx
+import { Textarea } from '@/components/common/textarea';
+
+// Dentro de Form, com schema e defaultValues correspondentes.
+<Textarea name="notes" label="Observações" rows={4} maxLength={500} />
+
+// Fora do RHF: estado e validação pertencem ao consumidor.
+<Textarea.Unregister name="notes" label="Observações" value={notes}
+  onChange={(event) => setNotes(event.target.value)} />
+```
+
+O export público é registrado e exige contexto RHF. A story apresenta a base sem
+provider; não comprova validação Zod ou submissão. O adaptador admite máscara
+opcional e mantém `onChange`, blur e ref ligados ao formulário. Inicialize valores
+no Form; mudar `value` depois não equivale a chamar reset.
+
+<Canvas of={Stories.Padrao} />
+<div role="region" aria-label="Propriedades do Textarea" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Padrao} />
+</div>
+
+## Tema, erro e ajuda
+
+A superfície segue os tokens do `data-theme`, sem variante de cor. Alterne o tema
+na toolbar. `id` explícito é respeitado; sem ele, o componente gera um ID. IDs de
+ajuda externa coexistem com o erro em `aria-describedby`. `required` chega ao
+elemento nativo, mas no Form com `noValidate` a regra precisa estar no schema.
+
+<Canvas of={Stories.ComErroEAjuda} />
+
+`disabled` bloqueia edição/foco; `readOnly` mantém leitura e foco. O campo permite
+resize vertical. Preserve label visível, tamanho de texto e acesso ao conteúdo
+longo em telas pequenas; placeholder não substitui instrução. Tooltip pode
+complementar ajuda, mas não deve esconder um requisito ou erro essencial.
+
+<Canvas of={Stories.Desabilitado} />
+<Canvas of={Stories.SomenteLeitura} />
+
+## Onde é usado
+
+`ChargeDefinitionFormFields` compartilha descrição entre criação e edição de
+cobrança. Formulários de associado, ferramenta e dependente também usam essa
+família; cada domínio mantém sua validação e operação. Ajustes de layout continuam
+locais, sem exigir conversão dos textareas nativos das outras páginas.
