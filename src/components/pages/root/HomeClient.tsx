@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/common/logo";
+import DevelopersSection from "./DevelopersSection";
 import LegalLinks from "@/components/common/legal-links";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -240,6 +241,8 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      <DevelopersSection />
 
       {/* ── FOOTER ── */}
       <footer className="px-6 py-12 bg-[#0a0a0a] border-t border-white/5">

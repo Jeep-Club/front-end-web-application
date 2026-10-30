@@ -6,21 +6,24 @@ export interface LegalSection {
     content: ReactNode;
 }
 
-export default function LegalDocument({ title, introduction, sections }: {
+export default function LegalDocument({ title, introduction, sections, version = "1.0", updatedAt = "2026-10-28" }: {
     title: string;
     introduction: string;
     sections: LegalSection[];
+    version?: string;
+    updatedAt?: string;
 }) {
+    const updatedLabel = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${updatedAt}T12:00:00Z`));
     return (
         <>
             <header className="border-b border-j-gray-200 pb-8">
                 <p className="text-xs font-bold uppercase tracking-widest text-j-blue-700">Jeep Clube Tamoios · Transparência</p>
                 <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-j-blue-800 sm:text-4xl">{title}</h1>
-                <p className="mt-4 text-sm text-j-gray-500">Versão 1.0 · Atualizado em <time dateTime="2026-10-28">28 de outubro de 2026</time></p>
+                <p className="mt-4 text-sm text-j-gray-500">Versão {version} · Atualizado em <time dateTime={updatedAt}>{updatedLabel}</time></p>
                 <p className="mt-5 leading-7 text-j-gray-600">{introduction}</p>
             </header>
-            <div className="mt-8 grid items-start gap-10 lg:grid-cols-[230px_minmax(0,1fr)]">
-                <nav aria-label={`Sumário: ${title}`} className="rounded-2xl bg-j-gray-100 p-5 lg:sticky lg:top-6">
+            <div data-legal-body className="mt-8 grid items-start gap-10 lg:grid-cols-[230px_minmax(0,1fr)] print:block">
+                <nav data-legal-summary aria-label={`Sumário: ${title}`} className="rounded-2xl bg-j-gray-100 p-5 lg:sticky lg:top-6 print:hidden">
                     <h2 className="text-sm font-bold text-j-blue-800">Nesta página</h2>
                     <ol className="mt-4 space-y-3 text-sm text-j-gray-600">
                         {sections.map(({ id, title }, index) => (

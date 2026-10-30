@@ -1,22 +1,48 @@
 # Termos de Uso e Política de Privacidade
 
-Versão dos documentos: 1.0, de 28/10/2026.
+Termos de Uso e Política de Privacidade: versão 1.2, de 30/10/2026. As cláusulas de imagem e voz e ciência de riscos estão consolidadas nos Termos de Uso, conforme pedido do usuário. Não há fichas de preenchimento, formulários de assinatura ou documentos separados para o visitante.
 
-Rotas públicas: `/termos-de-uso`, `/politica-de-privacidade` e `/contato`. Ficam fora dos grupos de autenticação para consulta antes do login e após encerramento da conta. Os links estão na página inicial, login, cadastro e área interna. O contato provisório de WhatsApp da página inicial foi substituído pela página de contato.
+Rotas públicas: `/termos-de-uso`, `/politica-de-privacidade` e `/contato`. As antigas rotas `/termo-de-imagem` e `/termo-de-risco` redirecionam para `/termos-de-uso#imagem-voz` e `/termos-de-uso#riscos-trilhas`. Ficam fora dos grupos de autenticação. O rodapé mantém apenas os links dos documentos gerais e contato, sem páginas adicionais para o visitante.
 
 ## Identificação e atendimento
 
-O responsável informou que o clube não possui os dados institucionais e canais solicitados. Não foram inventados CNPJ, endereço, e-mail ou encarregado. As páginas mostram as lacunas com transparência. Isso não substitui a identificação do controlador e um canal efetivo para os titulares.
+Inicialmente não havia dados institucionais e canais confirmados. Em 30/10/2026, o usuário forneceu orientação do presidente com o canal `dpo@jeeptamoios.com.br` e o domínio `www.jeeptamoios.com.br`. O e-mail passou a ser o padrão em `src/config/legal.ts`, sem modificar arquivos de ambiente; uma configuração explícita do servidor continua prevalecendo. A administração deve confirmar que a caixa funciona e é monitorada. Não foi inventada a identidade de um encarregado.
+
+O CNPJ informado no modelo estava mascarado e não foi publicado como identificação válida. Razão social completa, documento e endereço seguem pendentes. As páginas mostram essas lacunas. Isso não substitui a identificação do controlador.
 
 Definir uma pessoa física ou jurídica efetivamente responsável pelas decisões sobre os dados. A ausência de CNPJ não impede a identificação de pessoa física como controlador. Publicar somente os dados de identificação necessários; não divulgar CPF pessoal indiscriminadamente. Configurar no servidor, usando `.sampleenv` como referência:
 
 - `LEGAL_CONTROLLER_NAME`: nome da pessoa física ou razão social responsável.
 - `LEGAL_CONTROLLER_DOCUMENT`: identificação institucional pertinente, se houver; opcional.
 - `LEGAL_CONTROLLER_ADDRESS`: endereço de atendimento apropriado.
-- `LEGAL_PRIVACY_EMAIL`: endereço monitorado para direitos LGPD.
+- `LEGAL_PRIVACY_EMAIL`: endereço monitorado para direitos LGPD; se ausente, utiliza o e-mail informado pelo presidente.
 - `LEGAL_SUPPORT_EMAIL`: atendimento geral, opcional.
 
-Essas variáveis são públicas por finalidade. Nunca colocar nelas senhas ou chaves. As páginas legais são renderizadas no servidor a cada solicitação e não exigem variáveis `NEXT_PUBLIC_`. Na ausência de e-mail não aparece link fictício nem formulário sem entrega.
+Essas variáveis são públicas por finalidade. Nunca colocar nelas senhas ou chaves. As páginas legais são renderizadas no servidor a cada solicitação e não exigem variáveis `NEXT_PUBLIC_`. Não há formulário de envio de pedidos de privacidade.
+
+## Imagem e trilhas nos Termos de Uso
+
+As regras completas estão nas seções `imagem-voz` e `riscos-trilhas` do mesmo documento. Os campos, checkboxes e botões de preparação para impressão da implementação anterior foram removidos. A navegação não solicita qualificação adicional ou assinatura. A organização continua responsável por informar as condições concretas de cada atividade e completar sua identificação institucional.
+
+Incluir as regras no mesmo texto não converte navegação ou aceite genérico em consentimento específico para toda utilização de imagem. O site também não afirma ter registrado ciência individual de risco apenas porque a página foi consultada.
+
+O modelo do presidente foi adaptado para preservar revogação, reparação e acesso à Justiça. Não foram incluídas isenção total civil/criminal, promessa de não processar, irrevogabilidade geral do que já foi publicado, consentimento promocional obrigatório para participar, transferência de toda responsabilidade de menores ou ambiental, nem exigência genérica de documentos dos dois pais com firma reconhecida para qualquer menor de 12 anos. Essas regras não devem ser reintroduzidas como condição de um checkbox. O prazo de retirada de até 15 dias é compromisso operacional proposto pelo clube e precisa ser atendido na operação; não foi apresentado como prazo legal geral.
+
+### Integração futura de inscrições e aceites
+
+O repositório não contém módulo de eventos/inscrições, endpoint de consentimentos ou acesso a banco durável. Por isso não foi criada tabela `consents`, captura de IP ou assinatura digital fictícia. Não há checkbox ou coleta adicional na página dos termos; a interface não declara aceite registrado.
+
+Antes de disponibilizar aceite eletrônico, implementar no backend:
+
+1. Identidade autenticada e verificação proporcional da representação do menor; cada adulto registra sua própria vontade. Não assumir que preencher nome/CPF comprova identidade ou poderes.
+2. Documentos versionados e imutáveis, texto canônico e hash calculado no servidor; evento, titular, representante e cada finalidade escolhida associados ao registro. Separar `imagem_voz` de `ciencia_risco_trilha`, sem nomear o registro como isenção total.
+3. Data/hora do servidor, origem e dados de auditoria estritamente necessários. IP deve vir de infraestrutura confiável, não de campo do navegador nem de cabeçalho arbitrário não validado. Documentar base legal e retenção.
+4. Gravação durável e transacional, autorização, proteção CSRF e contra repetição, recibo acessível ao titular e tratamento de falhas. Só confirmar o aceite após sucesso do servidor. IP, hash e checkbox isolados não comprovam tudo.
+5. Registro de revogação, bloqueio de novos usos e fluxo de retirada/desfoque, inclusive para operadores. Dar tratamento restrito à prova eventualmente conservada.
+6. Conferência da ciência de riscos e das condições de segurança na inscrição, sem exigir imagem promocional como contrapartida. Dados de saúde exigem fluxo próprio e restrito.
+7. Definir se e como será utilizado provedor de assinatura eletrônica, inclusive gov.br. Não equiparar checkbox a assinatura gov.br nem prometer blindagem jurídica ou obrigatoriedade universal de assinatura física e digital simultâneas.
+
+Os documentos e os procedimentos devem ser revisados por assessoria jurídica do clube antes da coleta de assinaturas e utilização operacional, sobretudo nas atividades com menores, no compromisso de retirada e na definição de responsáveis.
 
 ## Inventário confirmado no código
 
@@ -50,6 +76,10 @@ Os documentos foram adaptados às funcionalidades encontradas, com referências 
 
 ## Verificação desta alteração
 
+Na versão 1.2, a verificação se concentra nas seções integradas, na ausência de campos e checkboxes, nos links do sumário e nos redirecionamentos das antigas páginas. Os controles de preenchimento e impressão da versão anterior não fazem mais parte da interface. O estilo de impressão dos documentos gerais permanece disponível para a impressão comum pelo navegador.
+
+Verificação inicial de 28/10/2026:
+
 - Análise ESLint dos novos componentes, páginas e configuração: passou.
 - Renderização direta com React das três páginas e layout: passou, com um título principal por página, links legais presentes e destinos dos sumários existentes. Cenários de contato configurado e ausente também foram verificados.
 - `git diff --check`: passou.
@@ -65,3 +95,7 @@ Os documentos foram adaptados às funcionalidades encontradas, com referências 
 - [ANPD: dados de crianças e adolescentes](https://www.gov.br/anpd/pt-br/assuntos/noticias/anpd-divulga-enunciado-sobre-o-tratamento-de-dados-pessoais-de-criancas-e-adolescentes).
 - [ANPD: transferências internacionais](https://www.gov.br/anpd/pt-br/assuntos/assuntos-internacionais/transferencia-internacional-de-dados).
 - [ANPD: comunicação de incidentes](https://www.gov.br/anpd/pt-br/assuntos/noticias/anpd-aprova-o-regulamento-de-comunicacao-de-incidente-de-seguranca).
+- [CDC, arts. 25 e 51, texto atualizado na Câmara](https://www2.camara.leg.br/legin/fed/lei/1990/lei-8078-11-setembro-1990-365086-normaatualizada-pl.html).
+- [ANPD: direitos dos titulares, inclusive revogação](https://www.gov.br/anpd/pt-br/assuntos/titular-de-dados/direito-dos-titulares).
+- [Governo Digital: tipos e requisitos de assinatura eletrônica](https://www.gov.br/governodigital/pt-br/identidade/assinatura-eletronica/saiba-mais-sobre-a-assinatura-eletronica).
+- [TJPE: regras e exceções de autorização para viagens nacionais de menores](https://portal.tjpe.jus.br/web/infancia-e-juventude/viagens-nacionais).
