@@ -18,14 +18,12 @@ const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
     INACTIVE: "Inativa",
     ARCHIVED: "Arquivada",
-    DELETED: "Excluída",
 };
 
 const STATUS_BADGE_CLASS: Record<ToolStatus, string> = {
     ACTIVE: "bg-j-green-100 text-j-green-700",
     INACTIVE: "bg-j-gray-200 text-j-gray-600",
     ARCHIVED: "bg-amber-100 text-amber-700",
-    DELETED: "bg-j-red-100 text-j-red-600",
 };
 
 export function ToolsTabContent() {

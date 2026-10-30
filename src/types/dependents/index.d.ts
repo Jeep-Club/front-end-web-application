@@ -7,7 +7,7 @@ interface MemberDependent {
   relationshipType: MemberDependentRelationshipType;
   phoneNumber: string | null;
   userId: number;
-  status: 'ACTIVE' | 'DISABLED' | 'INACTIVE' | 'ARCHIVED';
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   photoUrl?: string | null;
   createdAt: string;
   updatedAt: string | null;

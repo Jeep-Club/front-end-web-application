@@ -22,6 +22,7 @@ import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
+import { FeedSidebar } from "./FeedSidebar";
 
 import Image from "next/image";
 
@@ -234,7 +235,8 @@ export default function Feed() {
 
     return (
         <div className="min-h-full w-full px-3 py-4 md:px-6 md:py-6">
-            <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-5 md:gap-6">
+            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+              <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                 {!canRead ? (
                     <div
                         role="status"
@@ -255,12 +257,14 @@ export default function Feed() {
                                     className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
 
 
+
+
                                 >
                                     <button
                                         type="button"
                                         onClick={() => filterType()}
                                         aria-pressed={!type}
-                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                             !type
                                                 ? "bg-j-blue-800 text-j-white shadow-sm"
                                                 : "text-j-gray-600 hover:bg-j-gray-100"
@@ -280,7 +284,7 @@ export default function Feed() {
                                                     type="button"
                                                     onClick={() => filterType(key)}
                                                     aria-pressed={type === key}
-                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                                         type === key
                                                             ? "bg-j-blue-800 text-j-white shadow-sm"
                                                             : "text-j-gray-600 hover:bg-j-gray-100"
@@ -315,11 +319,6 @@ export default function Feed() {
                                         </span>
                                     </div>
                                 )}
-
-
-
-
-
 
                             </div>
 
@@ -672,6 +671,8 @@ export default function Feed() {
                         )}
                     </>
                 )}
+              </div>
+              {canRead && <FeedSidebar />}
             </div>
         </div>
     );

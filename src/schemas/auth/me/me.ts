@@ -12,6 +12,8 @@ export const identityMeResponseSchema = z.object({
     name: z.string(),
     birthDate: z.string().nullable(),
     email: z.string().nullable(),
+    membershipNumber: z.string().nullish(),
+    profileCompletionPending: z.boolean().optional(),
     cpf: z.string(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),

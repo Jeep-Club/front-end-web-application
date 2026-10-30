@@ -12,13 +12,13 @@ import { twMerge } from "tailwind-merge";
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
-    DELETED: "Excluído",
+    ARCHIVED: "Arquivado",
 };
 
 const ROLE_STATUS_DOT_STYLE: Record<RoleStatus, string> = {
     ACTIVE: "bg-j-green-500",
     INACTIVE: "bg-j-gray-400",
-    DELETED: "bg-red-500",
+    ARCHIVED: "bg-red-500",
 };
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -97,8 +97,8 @@ export function ViewRoleModal({ roleId }: ViewRoleModalProps) {
                             <ReadOnlyField label="Atualizado em" value={maskDate(role.updatedAt)} />
                         </div>
 
-                        {role.status === "DELETED" && (
-                            <ReadOnlyField label="Excluído em" value={maskDate(role.deletedAt)} />
+                        {role.status === "ARCHIVED" && (
+                            <ReadOnlyField label="Arquivado em" value={maskDate(role.deletedAt)} />
                         )}
                     </div>
                 )}

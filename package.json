@@ -14,7 +14,9 @@
     "test:a11y": "playwright test --project=a11y-*",
     "storybook": "node scripts/local-server.mjs storybook",
     "build-storybook": "storybook build --disable-telemetry",
-    "test:production-errors": "node tests/productionServerActionErrors.mjs"
+    "test:production-errors": "node tests/productionServerActionErrors.mjs",
+    "test:e2e:contracts": "playwright test tests/e2e/controller-contracts.spec.mjs tests/e2e/http-contracts.spec.mjs --workers=1",
+    "seed:e2e:contracts": "node tests/e2e/seed-contract-audit.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -59,6 +61,7 @@
     "@types/react-scroll": "^1.8.10",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^30.4.2",
     "storybook": "10.6.3",
     "tailwindcss": "^4",

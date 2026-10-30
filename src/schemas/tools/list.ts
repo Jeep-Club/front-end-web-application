@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const toolStatusSchema: z.ZodType<ToolStatus> = z.enum(["ACTIVE", "INACTIVE", "ARCHIVED", "DELETED"]);
+export const toolStatusSchema: z.ZodType<ToolStatus> = z.enum(["ACTIVE", "INACTIVE", "ARCHIVED"]);
 
 export const toolListItemSchema: z.ZodType<ToolListItem> = z.object({
     id: z.number(),

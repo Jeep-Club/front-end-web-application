@@ -18,5 +18,5 @@ export const USER_STATUS_STYLE: Record<UserStatus, string> = {
 export const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
-    DELETED: "Excluído",
+    ARCHIVED: "Arquivado",
 };

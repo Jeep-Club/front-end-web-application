@@ -4,6 +4,7 @@ import http from 'node:http';
 import { once } from 'node:events';
 import { spawn } from 'node:child_process';
 import { seedLocalContracts } from './seed-local.mjs';
+import { readActionFrame } from './action-wire.mjs';
 
 // No shared Playwright configuration: this suite can be merged alongside the other branch.
 // Run after npm run build: npx playwright test tests/e2e/http-contracts.spec.mjs --workers=1
@@ -29,17 +30,17 @@ async function action(request, module, args, session = seed.session) {
     const response = await request.post(`${baseURL}/login`, { headers, data: JSON.stringify(args) });
     const body = await response.text();
     expect(body).not.toContain('An error occurred in the Server Components render');
-    const frame = body.split('\n').find(line => line.startsWith('1:')).slice(2);
+    const frame = readActionFrame(body);
     let result;
-    if (frame.startsWith('E')) {
+    if (frame.error) {
         expect([200, 500]).toContain(response.status()); // A streamed rejection may follow committed HTTP 200.
-        const error = JSON.parse(frame.slice(1));
+        const error = frame.error;
         const prefix = 'JEEP_API_ERROR_V1:';
         expect(error.digest.startsWith(prefix)).toBe(true);
         result = { ok: false, error: JSON.parse(decodeURIComponent(error.digest.slice(prefix.length))) };
     } else {
         expect(response.status()).toBe(200);
-        result = { ok: true, data: JSON.parse(frame) };
+        result = { ok: true, data: frame.value };
     }
     return { result, response };
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { Input } from "@/components/common/input";
 import { InputPhoneNumber } from "@/components/common/input/input-phonenumber";
+import Link from "next/link";
 import { putMedicalProfileRequestSchema } from "@/schemas/admin/medical-profile";
 import { putMedicalProfileAction } from "@/server/actions/admin/medical-profile/put";
 import { useMutation } from '@tanstack/react-query';
@@ -40,6 +41,11 @@ export default function FormPutMedicalProfile({ id, medicalProfile}: { id: numbe
     console.log("Default Values:", defaultValues);
     return (
         <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
+            <p className="w-full rounded-xl border border-j-blue-100 bg-j-blue-100/10 p-4 text-sm leading-6 text-j-gray-600">
+                Dados de saúde são sensíveis. Antes de registrar ou alterar informações, verifique a autorização específica do titular ou responsável e o fundamento legal documentado pela administração.
+                O cadastro no clube não substitui essa autorização. Acesse apenas os dados necessários à sua função e evite informações excessivas.
+                Consulte a <Link href="/politica-de-privacidade#saude-menores" className="font-medium text-j-blue-700 underline underline-offset-4">Política de Privacidade</Link>.
+            </p>
             <Form<PutMedicalProfile>
                 schema={putMedicalProfileRequestSchema}
                 onSubmit={handleSubmit}

@@ -99,7 +99,7 @@ export function PersonalDataTab() {
                     fallback: "Não informado",
                     includeTime: false,
                 })}
-                registrationNumber={String(personalData.id)}
+                registrationNumber={personalData.membershipNumber}
                 email={personalData.email}
                 cpf={maskCPF(personalData.cpf)}
                 rg={personalData.rg}
@@ -129,9 +129,7 @@ export function PersonalDataTab() {
                     personalData.phoneNumber
                 }
                 roleLabel="Associado"
-                registrationNumber={String(
-                    personalData.id,
-                )}
+                registrationNumber={personalData.membershipNumber}
                 bloodType={
                     medicalProfile?.bloodType
                         ? BLOOD_TYPE_LABELS[medicalProfile.bloodType]
