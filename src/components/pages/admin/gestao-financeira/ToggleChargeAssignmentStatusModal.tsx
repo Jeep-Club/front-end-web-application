@@ -1,14 +1,14 @@
 'use client';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import toast from "react-hot-toast";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { activateChargeAssignmentAction } from "@/actions/billing/chargeAssignments/activate";
-import { deactivateChargeAssignmentAction } from "@/actions/billing/chargeAssignments/deactivate";
+import { activateChargeAssignmentAction } from "@/server/actions/billing/chargeAssignments/activate";
+import { deactivateChargeAssignmentAction } from "@/server/actions/billing/chargeAssignments/deactivate";
 import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
 
 interface ToggleChargeAssignmentStatusModalProps {
@@ -52,7 +52,7 @@ export function ToggleChargeAssignmentStatusModal({
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions", chargeDefinitionId, "assignments"] });
             backToAssignmentsList();
         },
-        onError: (error) => toast.error(error.message || "Erro ao alterar status da atribuição."),
+
     });
 
     return (

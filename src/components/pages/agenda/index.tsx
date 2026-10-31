@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, MessageCircle, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
-import { listPublicationFeedAction } from "@/actions/publications/feed";
+import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/providers/ModalProvider";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -84,7 +84,7 @@ function EventSummary({ event }: { event: EventItem }) {
                 {excerpt && <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{excerpt}</p>}
             </div>
             <div className="flex items-center gap-2 text-sm text-j-gray-500"><MessageCircle size={16} aria-hidden="true" />{event.commentCount} {event.commentCount === 1 ? "comentário" : "comentários"}</div>
-            <EventParticipation eventId={event.id} eventStatus={event.details.status} compact />
+            <EventParticipation eventId={event.id} eventStatus={event.details.status} charges={event.details.charges} compact />
             {canReadDetail && <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>}
         </div>
     </section>;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { vehicleStatusSchema } from './include';
 
 export const vehicleListItemSchema: z.ZodType<VehicleListItem> = z.object({
     id: z.number(),
@@ -10,6 +11,7 @@ export const vehicleListItemSchema: z.ZodType<VehicleListItem> = z.object({
     modelYear: z.number(),
     model: z.string(),
     color: z.string(),
+    status: vehicleStatusSchema,
     ownerId: z.number().nullable().optional(),
     ownerName: z.string().nullable().optional(),
 }).transform((vehicle) => ({

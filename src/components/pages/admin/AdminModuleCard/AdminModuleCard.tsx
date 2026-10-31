@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, type LucideIcon } from "lucide-react";
+import { ArrowRight, Star, type LucideIcon } from "lucide-react";
+import { useAdminFavorites, useAdminUserId } from "@/hooks/useAdminFavorites";
 
 interface AdminModuleCardProps {
     id?: string;
@@ -7,6 +8,7 @@ interface AdminModuleCardProps {
     description: string;
     href: string;
     icon: LucideIcon;
+    moduleKey: string;
 }
 
 export default function AdminModuleCard({
@@ -15,7 +17,11 @@ export default function AdminModuleCard({
     description,
     href,
     icon: Icon,
+    moduleKey,
 }: AdminModuleCardProps) {
+    const userId = useAdminUserId();
+    const { favorites, toggleFavorite } = useAdminFavorites(userId);
+    const isFavorite = favorites.includes(moduleKey);
     return (
         <article
             id={id}
@@ -29,6 +35,10 @@ export default function AdminModuleCard({
                 hover:shadow-md
             "
         >
+            <div className="relative">
+            <button type="button" onClick={() => toggleFavorite(moduleKey)} aria-label={isFavorite ? `Remover ${title} dos favoritos` : `Adicionar ${title} aos favoritos`} aria-pressed={isFavorite} title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"} className="absolute right-2 top-2 z-10 rounded-full p-2 text-j-blue-800 transition-colors hover:bg-j-yellow-300/30">
+                <Star size={21} className={isFavorite ? "fill-j-yellow-300 text-j-blue-800" : "text-j-gray-500"} />
+            </button>
             <div
                 className="
                     flex h-28 items-center justify-center
@@ -45,6 +55,7 @@ export default function AdminModuleCard({
                         group-hover:scale-110
                     "
                 />
+            </div>
             </div>
 
             <div className="flex flex-1 flex-col pt-6">

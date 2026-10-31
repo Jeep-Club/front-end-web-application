@@ -1,4 +1,4 @@
-import { listAdminPublicationsAction } from '@/actions/publications/list';
+import { listAdminPublicationsAction } from '@/server/actions/publications/list';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { haveActionPermission } from '@/utils/permission/actionPermissions';
 import { maskServiceAmount } from '@/utils/masks/maskServiceAmount';
@@ -28,7 +28,7 @@ it('keeps pending requests out of the published filter', async () => {
 
 it('does not retrieve pending requests without review permission', async () => {
     jest.mocked(haveActionPermission).mockImplementation(async (_, action) => action === 'SERVICE_ADMIN_READ' || action === 'EXPORT');
-    jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: '"ID"\r\n' });
+    jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: new Blob(['"ID"\r\n'], { type: 'text/csv' }) });
     expect((await listAdminPublicationsAction({ types: ['SERVICE'], status: 'ALL', page: 0, size: 12 })).content).toEqual([]);
     expect(actionFetchWrapper).not.toHaveBeenCalledWith(expect.objectContaining({ url: expect.stringContaining('service-publication-requests') }));
 });

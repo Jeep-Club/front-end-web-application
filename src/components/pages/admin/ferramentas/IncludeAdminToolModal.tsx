@@ -15,11 +15,11 @@ import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
 import { createAdminToolFormSchema } from "@/schemas/admin/tools";
 import { editToolFormSchema } from "@/schemas/tools/update";
-import { createToolAdminAction } from "@/actions/admin/tools/create";
-import { updateToolAdminAction } from "@/actions/admin/tools/update";
-import { getToolDetailAdminAction } from "@/actions/admin/tools/detail";
-import { updateToolPhotoAdminAction } from "@/actions/admin/tools/photo";
-import { uploadImageAction } from "@/actions/media/upload-image";
+import { createToolAdminAction } from "@/server/actions/admin/tools/create";
+import { updateToolAdminAction } from "@/server/actions/admin/tools/update";
+import { getToolDetailAdminAction } from "@/server/actions/admin/tools/detail";
+import { updateToolPhotoAdminAction } from "@/server/actions/admin/tools/photo";
+import { uploadImageAction } from "@/server/actions/media/upload-image";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 
 function ToolOwnerField() {

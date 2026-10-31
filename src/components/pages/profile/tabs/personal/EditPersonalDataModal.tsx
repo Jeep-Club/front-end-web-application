@@ -1,35 +1,36 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { getBirthDateInputBounds } from "@/utils/validate/validateBirthDate";
+import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 
+import { uploadImageAction } from "@/server/actions/media/upload-image";
+import { getUserProfileAction } from "@/server/actions/profile/get";
+import { updatePersonalDataAction } from "@/server/actions/profile/update-personal-data";
+import { updateProfilePhotoAction } from "@/server/actions/profile/update-photo";
 import {
-    CalendarDays,
-    Camera,
-    Save,
-    ShieldCheck,
-    UserRound,
-    UserRoundPen,
-    X,
+	CalendarDays,
+	Camera,
+	Save,
+	ShieldCheck,
+	UserRound,
+	UserRoundPen,
+	X,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { updatePersonalDataAction } from "@/actions/profile/update-personal-data";
-import { uploadImageAction } from "@/actions/media/upload-image";
-import { updateProfilePhotoAction } from "@/actions/profile/update-photo";
-import { getUserProfileAction } from "@/actions/profile/get";
 
 import {
-    Button,
-    ButtonIcon,
+	Button,
+	ButtonIcon,
 } from "@/components/common/button";
-import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { Form } from "@/components/common/form";
 import { InputFile } from "@/components/common/input/file";
 import { InputRegister } from "@/components/common/input/input-register";
+import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
 import {
-    editPersonalDataFormSchema,
-    type EditPersonalDataFormData,
+	editPersonalDataFormSchema,
+	type EditPersonalDataFormData,
 } from "@/schemas/profile/edit-personal-data";
 
 interface EditPersonalDataModalProps {
@@ -71,77 +72,57 @@ export function EditPersonalDataModal({
     onSave,
 }: EditPersonalDataModalProps) {
     const { setClose } = useModal();
-    const [isSaving, setIsSaving] = useState(false);
+
     const photoSectionRef = useRef<HTMLElement>(null);
     const openPhotoPicker = () => {
         if (!isSaving) photoSectionRef.current?.querySelector<HTMLInputElement>('input[type="file"]')?.click();
     };
 
-    const handleRemovePhoto = async () => {
-        setIsSaving(true);
-        try {
+    const removedPhoto = useMutation({
+        mutationFn: async () => {
             await updateProfilePhotoAction(null);
-            onSave(await getUserProfileAction());
+            return getUserProfileAction();
+        },
+        onSuccess: (profile) => {
+            onSave(profile);
             toast.success("Foto de perfil removida.");
             setClose();
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Não foi possível remover a foto.");
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleSubmit = async (
-        data: EditPersonalDataFormData,
-    ) => {
-        try {
-            const selectedPhoto =
-                data.profilePhoto?.[0];
-
-            if (selectedPhoto && selectedPhoto.size > 5 * 1024 * 1024) {
-                toast.error("A foto excede o limite de 5 MiB. Escolha uma imagem menor e tente novamente.");
-                return;
-            }
-
-            if (selectedPhoto && !["image/jpeg", "image/png", "image/webp"].includes(selectedPhoto.type)) {
-                toast.error("Formato não aceito. Envie uma foto JPEG, PNG ou WebP.");
-                return;
-            }
-
-            setIsSaving(true);
+        },
+    });
+    const savedProfile = useMutation({
+        mutationFn: async (data: EditPersonalDataFormData) => {
             await updatePersonalDataAction({
-                name: data.name.trim(),
-                birthDate: data.birthDate || null,
-                email: data.email.trim(),
-                rg: data.rg.trim() || null,
+                name: data.name.trim(), birthDate: data.birthDate || null,
+                email: data.email.trim(), rg: data.rg.trim() || null,
                 phoneNumber: data.phoneNumber.replace(/\D/g, "") || null,
             });
-
+            const selectedPhoto = data.profilePhoto?.[0];
             if (selectedPhoto) {
                 const uploadForm = new FormData();
                 uploadForm.set("file", selectedPhoto);
-                const storageKey = await uploadImageAction(uploadForm);
-                await updateProfilePhotoAction(storageKey);
+                await updateProfilePhotoAction(await uploadImageAction(uploadForm));
             }
-
-            const savedPersonalData = await getUserProfileAction();
-            onSave(savedPersonalData);
-
-            toast.success(
-                "Dados atualizados com sucesso!",
-            );
-
+            return getUserProfileAction();
+        },
+        onSuccess: (profile) => {
+            onSave(profile);
+            toast.success("Dados atualizados com sucesso!");
             setClose();
-        } catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : "Erro ao atualizar os dados";
-
-            toast.error(message);
-        } finally {
-            setIsSaving(false);
+        },
+    });
+    const isSaving = savedProfile.isPending || removedPhoto.isPending;
+    const handleRemovePhoto = () => removedPhoto.mutate();
+    const handleSubmit = (data: EditPersonalDataFormData) => {
+        const photo = data.profilePhoto?.[0];
+        if (photo && photo.size > 5 * 1024 * 1024) {
+            toast.error("A foto excede o limite de 5 MiB. Escolha uma imagem menor e tente novamente.");
+            return;
         }
+        if (photo && !["image/jpeg", "image/png", "image/webp"].includes(photo.type)) {
+            toast.error("Formato não aceito. Envie uma foto JPEG, PNG ou WebP.");
+            return;
+        }
+        savedProfile.mutate(data);
     };
 
     return (
@@ -198,7 +179,6 @@ export function EditPersonalDataModal({
                     variant="summary"
                 />
 
-                
             </div>
 
             <Form<EditPersonalDataFormData>

@@ -60,7 +60,7 @@ function MobileAccordionRow<TData extends RowData>({ row }: { row: Row<TData> })
                 <div className="flex min-w-0 flex-1 items-start gap-4">
                     {headerCellA && (
                         <div className="flex min-w-0 shrink-0 flex-col gap-1">
-                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
+                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
                                 {getColumnLabel(headerCellA)}
                             </span>
                             <span className="truncate text-sm font-bold text-j-gray-700">
@@ -70,7 +70,7 @@ function MobileAccordionRow<TData extends RowData>({ row }: { row: Row<TData> })
                     )}
                     {headerCellB && (
                         <div className="flex min-w-0 flex-1 flex-col gap-1 border-l border-j-gray-200 pl-4">
-                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
+                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
                                 {getColumnLabel(headerCellB)}
                             </span>
                             <span className="truncate text-sm font-bold text-j-gray-700">

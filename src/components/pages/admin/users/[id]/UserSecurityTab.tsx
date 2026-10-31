@@ -1,23 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { CircleAlert,RefreshCw,ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, RefreshCw, ShieldCheck } from "lucide-react";
+import { useEffect,useState } from "react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/common/button";
 import {
-    cancelAdminPasswordRecoveryRequestAction,
-    listAdminUserPasswordRecoveryRequestsAction,
-    listAdminUserRefreshTokensAction,
-    listAdminUserSessionsAction,
-    logoutAdminSessionAction,
-    revokeAdminRefreshTokenAction,
-    type AdminPasswordRecoveryRequest,
-    type AdminRefreshToken,
-    type AdminSession,
-} from "@/actions/admin/security";
+	cancelAdminPasswordRecoveryRequestAction,
+	listAdminUserPasswordRecoveryRequestsAction,
+	listAdminUserRefreshTokensAction,
+	listAdminUserSessionsAction,
+	logoutAdminSessionAction,
+	revokeAdminRefreshTokenAction,
+	type AdminPasswordRecoveryRequest,
+	type AdminRefreshToken,
+	type AdminSession,
+} from "@/server/actions/admin/security";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 
@@ -134,7 +134,7 @@ export function UserSecurityTab({ userId }: { userId: number }) {
             setConfirmTarget(null);
             toast.success(target.kind === "session" ? "Sessão encerrada." : target.kind === "refresh-token" ? "Token revogado." : "Pedido de recuperação cancelado.");
         },
-        onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível concluir a ação."),
+
     });
 
     const sectionsCount = Number(canReadSessions) + Number(canReadTokens) + Number(canReadRecovery);

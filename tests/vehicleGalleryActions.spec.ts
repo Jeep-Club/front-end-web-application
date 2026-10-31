@@ -1,8 +1,9 @@
+import { toActionError } from '@/utils/http/apiError';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { includeVehicleMemberAction } from '@/actions/vehicles/include-member';
-import { includeVehicleAdminAction } from '@/actions/admin/vehicles/include';
-import { editVehicleMemberAction } from '@/actions/vehicles/edit-member';
-import { editVehicleAdminAction } from '@/actions/admin/vehicles/edit';
+import { includeVehicleMemberAction } from '@/server/actions/vehicles/include-member';
+import { includeVehicleAdminAction } from '@/server/actions/admin/vehicles/include';
+import { editVehicleMemberAction } from '@/server/actions/vehicles/edit-member';
+import { editVehicleAdminAction } from '@/server/actions/admin/vehicles/edit';
 import { createVehicleMultipart, appendVehicleGalleryMultipart } from '@/utils/media/vehicleGallery';
 
 jest.mock('@/services/fetchWrapper/actionFetchWrapper', () => ({ __esModule: true, default: jest.fn() }));
@@ -36,7 +37,7 @@ it('does not overwrite the gallery when only metadata changes', async () => {
 });
 
 it('surfaces revision conflicts without retrying an overwrite', async () => {
-    jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: '' }).mockRejectedValueOnce({ status: 409, rawData: { status: 409, code: 'VEHICLE_GALLERY_CONFLICT', detail: 'Galeria alterada. Recarregue o veiculo.' } });
+    jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: '' }).mockRejectedValueOnce(toActionError({ status: 409, rawData: { status: 409, code: 'VEHICLE_GALLERY_CONFLICT', detail: 'Galeria alterada. Recarregue o veiculo.' } }));
     const gallery = appendVehicleGalleryMultipart({ galleryRevision: 2, images: [] }, []);
     await expect(editVehicleMemberAction(7, {}, gallery)).rejects.toThrow('Galeria alterada');
     expect(actionFetchWrapper).toHaveBeenCalledTimes(2);

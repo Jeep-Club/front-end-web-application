@@ -1,20 +1,21 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { Share2, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { RichTextContent } from "@/components/common/rich-text/RichTextContent";
-import { getPublicationFeedDetailAction } from "@/actions/publications/feed";
 import { useModal } from "@/providers/ModalProvider";
+import { getPublicationFeedDetailAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
+import { useQuery } from "@tanstack/react-query";
+import { X, Share2 } from "lucide-react";
+import { feedTypes } from "./feedDisplay";
 import { PublicationPhotoCarousel } from "./PublicationPhotoCarousel";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationComments } from "./PublicationComments";
-import { feedTypes } from "./feedDisplay";
 import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
+
 
 export function PublicationDetailModal({ publicationId, onClose }: { publicationId: number; onClose?: () => void }) {
     const { setClose } = useModal();
@@ -42,7 +43,7 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
                 {publication.type === "EVENT" && <EventParticipants details={publication.details} />}
-                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventStatus={publication.details.status} />}
+                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventStatus={publication.details.status} charges={publication.details.charges} />}
                 <RichTextContent content={publication.content} />
                 <FeedInteractions publication={publication} />
             </div>
