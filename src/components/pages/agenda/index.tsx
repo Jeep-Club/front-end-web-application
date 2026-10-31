@@ -84,7 +84,7 @@ function EventSummary({ event }: { event: EventItem }) {
                 {excerpt && <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{excerpt}</p>}
             </div>
             <div className="flex items-center gap-2 text-sm text-j-gray-500"><MessageCircle size={16} aria-hidden="true" />{event.commentCount} {event.commentCount === 1 ? "comentário" : "comentários"}</div>
-            <EventParticipation eventId={event.id} eventStatus={event.details.status} compact />
+            <EventParticipation eventId={event.id} eventStatus={event.details.status} charges={event.details.charges} compact />
             {canReadDetail && <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>}
         </div>
     </section>;

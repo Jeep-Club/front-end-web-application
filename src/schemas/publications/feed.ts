@@ -14,6 +14,7 @@ const eventParticipant = z.object({
 });
 const event = common.extend({ type: z.literal("EVENT"), details: z.object({
     startsAt: z.string(), endsAt: z.string().nullable(), status: z.enum(["OPEN", "IN_PROGRESS", "FINISHED", "CANCELLED"]),
+    charges: z.array(z.object({ name: z.string(), amount: z.number(), requiredForParticipation: z.boolean() })).optional(),
     registrationCount: z.number().int().nonnegative().optional(),
     participants: z.array(eventParticipant).optional(),
 }) });

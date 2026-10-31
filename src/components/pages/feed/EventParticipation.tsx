@@ -7,7 +7,10 @@ import { cancelMyEventRegistrationAction, getMyEventRegistrationAction, register
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 
-export function EventParticipation({ eventId, eventStatus, compact = false }: { eventId: number; eventStatus: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED"; compact?: boolean }) {
+type EventCharge = { name: string; amount: number; requiredForParticipation: boolean };
+const currency = (amount: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amount);
+
+export function EventParticipation({ eventId, eventStatus, charges = [], compact = false }: { eventId: number; eventStatus: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED"; charges?: EventCharge[]; compact?: boolean }) {
     const permissions = useUserStore((state) => state.permissions);
     const canRegister = hasPermission(permissions, "PUBLICATIONS", "EVENT_REGISTER");
     const canReadOwnRegistration = hasPermission(permissions, "PUBLICATIONS", "EVENT_REGISTRATION_READ");
@@ -49,6 +52,7 @@ export function EventParticipation({ eventId, eventStatus, compact = false }: { 
     if (!canRegister && !canReadOwnRegistration) return null;
 
     const currentRegistration = registration.data;
+    const requiredAmount = charges.filter((charge) => charge.requiredForParticipation).reduce((total, charge) => total + charge.amount, 0);
     const isPending = register.isPending || cancel.isPending;
     const buttonClass = compact
         ? "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900 shadow-sm transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-wait disabled:opacity-60"
@@ -78,7 +82,13 @@ export function EventParticipation({ eventId, eventStatus, compact = false }: { 
     if (!canRegister || eventStatus !== "OPEN") return null;
     if (canReadOwnRegistration && registration.isLoading) return <button type="button" disabled className={buttonClass}>Verificando inscrição...</button>;
 
-    return <button type="button" disabled={isPending} onClick={() => register.mutate()} className={buttonClass}>
+    return <div className={`flex flex-col gap-2 ${compact ? "w-full" : ""}`}>
+        {charges.length > 0 && <div className="rounded-xl bg-j-gray-100 px-3 py-2 text-xs text-j-gray-600" aria-label="Valores do evento">
+            {requiredAmount > 0 ? <p className="font-bold text-j-blue-800">Inscrição: {currency(requiredAmount)}{charges.filter((charge) => charge.requiredForParticipation).length > 1 ? " (obrigatório)" : ""}</p> : <p className="font-bold text-j-blue-800">Participação gratuita</p>}
+            {charges.filter((charge) => !charge.requiredForParticipation).map((charge) => <p key={charge.name}>{charge.name}: {currency(charge.amount)} (opcional)</p>)}
+        </div>}
+        <button type="button" disabled={isPending} onClick={() => register.mutate()} className={buttonClass}>
         <CalendarCheck size={18} aria-hidden="true" />{register.isPending ? "Confirmando presença..." : "Participar do evento"}
-    </button>;
+        </button>
+    </div>;
 }
