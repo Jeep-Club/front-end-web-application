@@ -26,10 +26,7 @@ const MUTED = "#758099";
 const value = (text?: string | null) => text?.trim() || "Não informado";
 
 function registration(value?: string | null) {
-    const digits = value?.replace(/\D/g, "");
-    if (!digits) return value || "-";
-    const padded = digits.padStart(5, "0");
-    return `${padded.slice(0, -1)}-${padded.slice(-1)}`;
+    return value?.trim() || '-';
 }
 
 /** Embed the same image bytes in every face, including exported SVG captures. */

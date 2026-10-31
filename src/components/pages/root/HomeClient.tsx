@@ -2,6 +2,7 @@
 
 import { useCallback, useRef } from "react";
 import { Logo } from "@/components/common/logo";
+import LegalLinks from "@/components/common/legal-links";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import * as Scroll from 'react-scroll';
@@ -286,13 +287,7 @@ export default function HomeClient() {
             <p className="text-lg text-white font-bold tracking-tight">Jeep Club Tamoios</p>
           </div>
           <p className="text-xs text-white/30 mb-8">© 2026 Todos os direitos reservados.</p>
-          <div className="flex flex-wrap justify-center gap-6">
-            {["Política de Privacidade", "Termos de Uso", "Contato"].map((link) => (
-              <a key={link} href="#" className="text-xs text-white/40 hover:text-yellow-400 transition-colors font-medium">
-                {link}
-              </a>
-            ))}
-          </div>
+          <LegalLinks className="text-white/60 font-medium" />
         </div>
       </footer>
     </main>

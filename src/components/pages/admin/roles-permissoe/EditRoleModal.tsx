@@ -1,16 +1,16 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { X, KeyRound, LoaderCircle } from "lucide-react";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
 import { InputRegister } from "@/components/common/input/input-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
 import { updateRoleRequestSchema } from "@/schemas/authorization/update";
-import { getRoleAction } from "@/actions/authorization/get-role";
-import { updateRoleAction } from "@/actions/authorization/update-role";
+import { getRoleAction } from "@/server/actions/authorization/get-role";
+import { updateRoleAction } from "@/server/actions/authorization/update-role";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { KeyRound,LoaderCircle,X } from "lucide-react";
+import toast from "react-hot-toast";
 
 const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
 
@@ -34,7 +34,7 @@ export function EditRoleModal({ roleId }: EditRoleModalProps) {
             queryClient.invalidateQueries({ queryKey: ["authorization", "roles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao atualizar cargo."),
+
     });
 
     const handleSubmit = async (data: UpdateRoleRequest) => {

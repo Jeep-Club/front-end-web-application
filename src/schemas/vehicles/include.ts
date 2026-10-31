@@ -13,7 +13,7 @@ export const fuelTypeSchema: z.ZodType<FuelType> = z.enum([
     'HYBRID',
 ]);
 
-export const vehicleStatusSchema: z.ZodType<VehicleStatus> = z.enum(['ACTIVE', 'SOFT_DELETED', 'INACTIVE', 'PENDING']);
+export const vehicleStatusSchema: z.ZodType<VehicleStatus> = z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
 
 const imageFileSchema = z.custom<File>(
     (value) => typeof File !== 'undefined' && value instanceof File,

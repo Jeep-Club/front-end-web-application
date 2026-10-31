@@ -1,0 +1,153 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as FileStories from './InputFile.stories';
+
+<Meta of={FileStories} />
+
+# Input File
+
+Seleciona arquivos locais por clique ou arrastar e soltar, mantém os valores no React Hook Form e permite removê-los. Use `InputFile` para anexos gerais e `InputFile.Image` para fotos que precisam de recorte. Selecionar não envia dados ao backend: serialização, autorização e envio pertencem ao consumidor.
+
+## Composição e dependências
+
+- **Form/FormProvider e useController:** contexto obrigatório; `name` identifica o campo. As stories usam o Form existente com um schema Zod local que aceita File[] opcional, sem simular regras de negócio.
+- **Dropzone/react-dropzone:** seleção, drag and drop, quantidade, tamanho e tipos aceitos.
+- **ListFile ou ListFileImage/ImageThumbnail:** nome/tamanho ou previews com URLs locais; imagens usam next/image e liberam as URLs ao desmontar.
+- **RemoveFile/ButtonIcon:** remoção com nome acessível “Remover arquivo”. Não usa o Button comum e não depende de sua story.
+- **ImageCropDialog:** nas apresentações de imagem, abre dialog nativo via portal e usa canvas para aplicar o recorte.
+
+Não é necessário TanStack Query, sessão, serviço de upload ou provider global. O adaptador Next.js, CSS e tema já vêm do preview. Files dos testes são sintéticos, criados no navegador, sem mocks do componente ou do dropzone.
+
+## Arquivos gerais
+
+InputFile, Image e Image2 usam tokens que acompanham `data-theme`, inclusive na superfície padrão. `white`/`gray` continuam aceitos como opções legadas de apresentação; não é preciso escolhê-los para alternar tema. Use a toolbar Claro/Escuro para comparar os cenários. Formato do recorte e limites de seleção são independentes da aparência.
+
+### Exemplo com formulário e validação
+
+```tsx
+'use client';
+
+import { z } from 'zod';
+import { Form } from '@/components/common/form';
+import { Button } from '@/components/common/button';
+import { InputFile } from '@/components/common/input/file';
+
+const schema = z.object({
+  attachments: z.array(z.instanceof(File))
+    .min(1, 'Selecione um comprovante.')
+    .max(2, 'Selecione no máximo dois arquivos.')
+    .optional()
+    .refine((files) => Boolean(files?.length), 'Selecione um comprovante.'),
+});
+
+function AttachmentForm() {
+  function handleSubmit(values: z.infer<typeof schema>) {
+    const body = new FormData();
+    for (const file of values.attachments ?? []) body.append('attachments', file);
+    // Entregue body à operação de envio definida pela tela.
+  }
+
+  return (
+    <Form
+      schema={schema}
+      formOptions={{ defaultValues: { attachments: [] } }}
+      onSubmit={handleSubmit}
+      onError={() => undefined}
+    >
+      <InputFile
+        name="attachments"
+        label="Comprovantes"
+        accept={{ 'application/pdf': ['.pdf'] }}
+        maxFiles={2}
+        maxSizeMB={5}
+        isFallback
+        required
+      />
+      <Button type="submit">Enviar comprovantes</Button>
+    </Form>
+  );
+}
+```
+
+O exemplo prepara FormData, mas não executa upload. `name` precisa corresponder ao schema e aos valores do formulário. O schema considera `undefined` após a remoção do último arquivo e o rejeita quando o campo é obrigatório. Para anexos opcionais, use `z.array(z.instanceof(File)).optional()` sem a regra de mínimo. Os limites de tamanho e formato do dropzone dão feedback local; valide também o contrato e o conteúdo na operação de envio.
+
+Não há modo `register=false`, prop `value` ou callback `onChange` nessa API. Leia os arquivos no submit ou pelas APIs do React Hook Form. URLs de arquivos já enviados não são Files locais: a apresentação de anexos remotos e sua manutenção em uma edição pertencem à tela.
+
+<Canvas of={FileStories.Vazio} />
+
+<div role="region" aria-label="Propriedades do Input File" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={FileStories.Vazio} />
+</div>
+
+O controle `name` fica fixo para acompanhar o schema do formulário de demonstração. Os tipos e padrões da tabela refletem a implementação; os args de cada exemplo podem diferir desses padrões (por exemplo, Vazio ativa isFallback, cujo padrão real é false). As anotações de argTypes corrigem limitações do docgen, sem substituir os tipos de produção. Não existem props de loading, disabled ou onUpload nessa API. `cropShape`, embora declarado no tipo base, só produz efeito nas apresentações de imagem.
+
+### Alterar os formatos aceitos
+
+No seletor **accept**, escolha Imagens (JPEG, PNG, WebP), Somente PDF, XML, CSV ou Sem restrição de formato. A opção altera o accept do input nativo e as regras do react-dropzone. Os presets usam MIME e extensões: image/jpeg (.jpg/.jpeg), image/png (.png), image/webp (.webp), application/pdf (.pdf), application/xml e text/xml (.xml), text/csv (.csv). Sem restrição envia undefined.
+
+O controle usa `argTypes.mapping`: `acceptPreset` é um argumento exclusivo da story, exibido como accept, convertido para o objeto de configuração real. Esse argumento não deve ser passado ao componente na aplicação. A pequena adaptação de render mantém os tokens serializáveis do painel separados de `Record<string, string[]>`, preservando os tipos sem casts. Cada Canvas possui seus próprios args; alterar o preset de Vazio não altera Rejeicoes.
+
+<Canvas of={FileStories.SelecionarERemover} />
+
+Esse cenário aceita PDF e verifica seleção e remoção reais. Não comprova integridade do conteúdo PDF nem validação do servidor.
+
+<Canvas of={FileStories.Multiplos} />
+
+`multiple` é inferido de `maxFiles > 1` quando omitido; explicitá-lo prevalece. `maxFiles=0` não limita a quantidade no dropzone, mas não ativa seleção múltipla por si só. Em modo único, uma nova seleção substitui a anterior. No modo múltiplo, o limite acumulado preserva os primeiros arquivos e registra erro quando excedido.
+
+<Canvas of={FileStories.Rejeicoes} />
+
+**Rejeicoes começa em Somente PDF e limite de 1 MiB.** Selecione um PDF menor que esse limite para aceitá-lo. Arraste uma imagem, XML ou CSV para ver “Formato de arquivo não suportado.”; um PDF maior que 1 MiB produz “O arquivo excedeu o limite de 1MB.”. O teste automatizado realiza esses passos com Files sintéticos e confirma que o PDF válido anterior continua na lista. Não valida a estrutura interna de um PDF.
+
+Abra a story Rejeicoes para alterar seus próprios Controls (accept e maxSizeMB); os passos acima descrevem os args iniciais. O filtro do seletor nativo normalmente oculta arquivos não aceitos: um arquivo que não pode ser escolhido não demonstra rejeição. Arraste-o para o dropzone para exercitar a validação de fato. Nos testes, `applyAccept: false` desliga apenas o filtro do simulador de seleção, deixando o react-dropzone rejeitar o arquivo real; não há mensagem artificial.
+
+O react-dropzone compara MIME **ou** extensão, aplica tamanho/quantidade por lote e fornece as rejeições. MIME pode variar entre sistemas; o preset não certifica o conteúdo e não substitui validação no servidor. O Jeep Club escolhe a mensagem da primeira rejeição, guarda os Files no RHF, controla substituição/acúmulo e remoção. Uma seleção com rejeições não incorpora os aceitos do mesmo lote. A remoção limpa o erro do campo e pode deixar seu valor como undefined em vez de array vazio; o schema do consumidor deve representar isso.
+
+`maxSizeMB` é convertido usando 1024 × 1024 bytes, apesar do rótulo MB. Para quantidade, react-dropzone limita o lote; a implementação também verifica o total acumulado entre seleções. Durante o arraste, o navegador pode não informar extensão/MIME suficientes para antecipar o resultado: confira a mensagem após soltar.
+
+## Imagens e casos de uso
+
+```tsx
+import { InputFile } from '@/components/common/input/file';
+
+// Dentro de Form, com campos File[] opcionais no schema e nos defaultValues.
+<InputFile.Image
+  name="avatar"
+  label="Foto de perfil"
+  cropShape="circle"
+  maxFiles={1}
+  isFallback
+/>
+<InputFile.Image
+  name="photos"
+  label="Fotos do veículo"
+  cropShape="landscape"
+  maxFiles={3}
+/>
+<InputFile.Image2 name="thumbnail" label="Miniatura" maxFiles={1} />
+```
+
+| Apresentação | Quando usar |
+| --- | --- |
+| `InputFile` | Documentos e anexos gerais, com `accept` configurável. |
+| `InputFile.Image` | Fotos com recorte, previews e mensagem vazia opcional. |
+| `InputFile.Image2` | Seleção de imagens com apresentação compacta; sem `isFallback`. |
+
+O diálogo permite ajustar a imagem antes de guardá-la no formulário. Confirme com “Usar foto” para aplicar o resultado; cancelar encerra o recorte sem adicionar as novas imagens. O arquivo resultante, não a URL de preview, é o valor que será entregue ao submit.
+
+As apresentações `InputFile.Image` e `InputFile.Image2` aceitam JPEG, PNG e WebP. O recorte suporta circle, square e landscape. PNG permanece PNG; as demais entradas são exportadas como JPEG. Image2 apresenta seleção compacta e miniaturas e não oferece isFallback.
+
+As duas apresentações fixam seus formatos internamente e não expõem accept. O seletor de presets pertence somente ao InputFile geral. O recorte e os previews são comportamentos da composição Jeep Club, não do react-dropzone. Ambas usam square quando cropShape é omitido; Avatar escolhe circle explicitamente.
+
+Explore as [stories de imagens](?path=/docs/componentes-input-inputfile-imagens--docs) no grupo **InputFile → Imagens**. `Avatar` demonstra seleção e aplicação de recorte com imagem sintética; `Veiculo` reproduz a configuração landscape e até três fotos usada pelos modais de veículos; `Compacta` apresenta Image2. O perfil pessoal usa circle e uma foto; o cadastro de ferramentas também utiliza landscape. Nenhuma dessas stories executa o fluxo completo de cadastro ou edição.
+
+## Cuidados e limites atuais
+
+`required` só adiciona indicação visual; obrigatoriedade e validações adicionais precisam do schema do formulário. O label associa seu ID ao input do dropzone; a área interativa também recebe nome acessível e papel de botão. Acessibilidade completa do seletor nativo e do recorte ainda exige avaliação adicional.
+
+O estado de arraste depende de interação real; não há prop para forçá-lo. Nos testes, a rejeição de formato ignora somente o filtro de accept do simulador de seleção para deixar o react-dropzone rejeitar o arquivo de fato. O seletor nativo do sistema, gestos de arraste, foco completo do diálogo e acessibilidade integral exigem validação adicional.
+
+Consulte também o [Input](?path=/docs/componentes-input-input--docs) para campos textuais e [componentes e páginas](?path=/docs/documentação-componentes-e-páginas--docs) para o procedimento de formulários.
+
+## Referências oficiais
+
+- [react-dropzone](https://react-dropzone.js.org/): regras accept, limites e rejeições; a configuração não realiza upload HTTP.

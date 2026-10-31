@@ -1,4 +1,4 @@
-type RoleStatus = "ACTIVE" | "INACTIVE" | "DELETED";
+type RoleStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
 
 type RoleKind = "ROOT" | "CUSTOM";
 

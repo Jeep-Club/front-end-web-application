@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Check, X } from "lucide-react";
-import { listUserOptionsAction } from "@/actions/admin/users/options";
+import { listUserOptionsAction } from "@/server/actions/admin/users/options";
 
 export interface MemberOption { id: number; name: string }
 

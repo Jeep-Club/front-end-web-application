@@ -1,0 +1,58 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './Button.stories';
+
+<Meta of={Stories} />
+
+# Button
+
+Use para executar uma ação, confirmar um formulário ou abrir uma interação. Para navegar para outra página, use Link. Button mantém os atributos nativos de botão e aplica a apresentação compartilhada; o consumidor define o handler e o estado da operação.
+
+## Uso e controles
+
+```tsx
+import { Button, ButtonIcon } from '@/components/common/button';
+import { ConfirmButton } from '@/components/common/button/ConfirmButton';
+import { Plus, Trash2 } from 'lucide-react';
+
+<Button type="submit" disabled={isPending}>Salvar alterações</Button>
+<Button onClick={onCreate}><Plus aria-hidden="true" size={18} />Criar</Button>
+<ButtonIcon aria-label="Excluir veículo" onClick={onRequestDelete}>
+  <Trash2 aria-hidden="true" size={18} />
+</ButtonIcon>
+<ConfirmButton onClick={onConfirmDelete} disabled={isPending}>
+  Excluir veículo
+</ConfirmButton>
+```
+
+Os handlers e `isPending` no exemplo pertencem à tela. `type` é `button` por padrão: use `submit` explicitamente para enviar formulários e `reset` somente quando o fluxo realmente deve restaurar campos. `children` aceita texto e JSX; `className` ajusta a apresentação por composição, sem uma API de variantes.
+
+<Canvas of={Stories.Padrao} />
+
+<div role="region" aria-label="Propriedades do Button" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Padrao} />
+</div>
+
+O controle de `children` edita texto. Para ícones, componha JSX como no exemplo; um objeto JSON no Controls não cria um elemento React. `onClick` é observado por um spy na story, sem operação remota.
+
+## Família e estados
+
+| Componente | Responsabilidade |
+| --- | --- |
+| Button | Ação com conteúdo visível e estados nativos. |
+| ButtonIcon | Ação compacta. Forneça um nome acessível, como `aria-label`, se só houver ícone. Quando desabilitado, fica oculto na implementação atual. |
+| ConfirmButton | Apresentação vermelha para a ação de confirmação. Não abre diálogo nem pede confirmação sozinho. |
+
+<Canvas of={Stories.Desabilitado} />
+<Canvas of={Stories.TextoLongo} />
+
+Não há prop `loading`: a tela deve indicar o andamento no conteúdo e decidir o bloqueio por `disabled`. Uma operação assíncrona não desabilita o botão automaticamente. Preserve uma mensagem que explique a ação perigosa; a cor de ConfirmButton não substitui essa explicação.
+
+## Teclado e composição
+
+O botão nativo responde a Enter/Espaço e recebe foco visível. `tabIndex` é zero por padrão; evite valores positivos. Não aninhe links ou outros botões no conteúdo. Ao usar somente um ícone, esconda o SVG decorativo de leitores de tela e nomeie o botão.
+
+Alterne o tema na toolbar para conferir os tokens de cor e os estados. Ações disponíveis indicam `cursor-pointer`; controles desabilitados indicam indisponibilidade. Um botão local pode manter função e aparência próprias, mas precisa conservar semântica nativa, nome acessível, foco visível e bloqueio real quando desabilitado. Não é necessário substituir todas as ações da aplicação por Button.
+
+Ajuda importante deve permanecer visível ou associada ao controle. Tooltip pode complementar uma ação por ícone, desde que funcione com foco/hover e Escape e permita ler seu conteúdo; `title` sozinho não comprova essas condições e não substitui `aria-label`. O catálogo não fornece uma implementação compartilhada de tooltip nesta família.
+
+Button é usado nas ações do [PageHeader](?path=/docs/componentes-pageheader--docs). A tela permanece responsável por permissões, validação, efeitos e tratamento de erros.

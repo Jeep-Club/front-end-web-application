@@ -3,8 +3,12 @@
 import { useDropzone, DropzoneOptions, DropzoneState } from "react-dropzone";
 import { twMerge } from "tailwind-merge";
 import { Image as ImageIcon } from "lucide-react";
+import type { InputVariant } from "../../input";
 
 export type DropzoneProps = DropzoneOptions & {
+    inputId?: string;
+    inputLabel?: string;
+    variant?: InputVariant;
     className?: string;
     /** * Se true (padrão), aplica o estilo visual da caixa tracejada. 
      * Se false, atua como um componente headless puro. 
@@ -16,13 +20,16 @@ export type DropzoneProps = DropzoneOptions & {
     children?: React.ReactNode | ((state: DropzoneState) => React.ReactNode);
 }
 
-export function DropzoneImage({ className, dStyle = true, children,...dropzoneOptions }: DropzoneProps) {
+export function DropzoneImage({ className, dStyle = true, children, inputId, inputLabel, variant = "gray", ...dropzoneOptions }: DropzoneProps) {
     const dropzoneState = useDropzone(dropzoneOptions);
     const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = dropzoneState;
 
     return (
+        <>
+        {/* O botão visual controla o seletor; o input fica fora dele para evitar controles aninhados. */}
+        <input {...getInputProps({ id: inputId, style: { display: "none" } })} />
         <div 
-            {...getRootProps()} 
+            {...getRootProps({ role: "button", "aria-label": inputLabel })}
             className={twMerge(
                 dStyle && 
                 `
@@ -31,17 +38,17 @@ export function DropzoneImage({ className, dStyle = true, children,...dropzoneOp
                  h-24 w-24 sm:w-28 sm:h-28
                 
                 `,
+                dStyle && variant === "white" && "border-j-gray-300 bg-j-white text-j-gray-500",
                 isDragActive && !isDragReject && "border-j-yellow-400 bg-j-yellow-400/10",
                 isDragReject && "border-j-red-300 bg-j-red-300/10",
                 isDragAccept && "border-j-green-300 bg-j-green-300/10",
-                !isDragActive && "text-input-text hover:border-j-gray-200",
+                !isDragActive && (variant === "white" ? "text-j-gray-500 hover:border-j-blue-500" : "text-input-text hover:border-j-gray-200"),
                 
                 // Desabilita visualmente se a prop disabled for passada no hook
                 dropzoneOptions.disabled && "opacity-50 pointer-events-none",
                 className,
             )}
         >
-            <input {...getInputProps()} />
             
             {/* Renderização Flexível */}
             {typeof children === 'function' ? (
@@ -57,5 +64,6 @@ export function DropzoneImage({ className, dStyle = true, children,...dropzoneOp
                 </>
             ) : null}
         </div>
+        </>
     );
 }

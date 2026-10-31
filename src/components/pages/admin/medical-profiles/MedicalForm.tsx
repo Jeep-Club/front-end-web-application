@@ -8,7 +8,7 @@ import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
 import { MedicalProfileFields } from "@/components/pages/profile/tabs/medical/EditMedicalProfileModal";
 import { medicalProfileFormSchema, medicalProfileBloodTypeSchema } from "@/schemas/profile/medical-profile";
-import { putMedicalProfileAction } from "@/actions/admin/medical-profile/put";
+import { putMedicalProfileAction } from "@/server/actions/admin/medical-profile/put";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { MemberSelector, type MemberOption } from "@/components/pages/admin/MemberSelector";

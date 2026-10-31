@@ -24,6 +24,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
             method: "GET",
             cache: "no-store",
             responseType: "blob",
+            allowedContentTypes: ["application/pdf", "image/jpeg", "image/png", "image/webp"],
             schema: z.instanceof(Blob),
         });
         if (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(data.type)) {

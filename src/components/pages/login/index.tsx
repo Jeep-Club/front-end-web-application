@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, HelpCircle } from "lucide-react";
 import FormLogin from "./form";
+import LegalLinks from "@/components/common/legal-links";
 import ClubFormHeader from "@/components/common/ClubFormHeader";
 import { usePageTour } from "@/hooks/useTour";
 import { getLoginTourSteps } from "@/config/tourSteps";
@@ -66,6 +67,7 @@ export default function Login() {
                                 Quero ser sócio
                             </Link>
                         </p>
+                        <LegalLinks className="px-5 pt-2 text-j-gray-200" />
                     </div>
                 </div>
             </div>

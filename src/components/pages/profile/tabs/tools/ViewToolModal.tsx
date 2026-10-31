@@ -1,25 +1,23 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { X, Wrench, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { getToolDetailAction } from "@/actions/tools/detail";
+import { getToolDetailAction } from "@/server/actions/tools/detail";
 import { getMediaImageUrl } from '@/utils/media/imageUrl';
+import { useQuery } from "@tanstack/react-query";
+import { LoaderCircle,Wrench,X } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
     INACTIVE: "Inativa",
     ARCHIVED: "Arquivada",
-    DELETED: "Excluída",
 };
 
 const STATUS_DOT_STYLE: Record<ToolStatus, string> = {
     ACTIVE: "bg-j-green-500",
     INACTIVE: "bg-j-gray-400",
     ARCHIVED: "bg-amber-500",
-    DELETED: "bg-red-500",
 };
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {

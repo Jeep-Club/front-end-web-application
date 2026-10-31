@@ -19,18 +19,21 @@ export function Textarea({
     className,
     labelClassName,
     required,
+    id: idProp,
     ...props
 }: TextareaProps) {
-    const id = useId();
-    const isError = error !== 'undefined' && error !== undefined && error !== null;
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const isError = Boolean(error && error !== 'undefined');
+    const errorId = `${id}-error`;
 
     return (
         <div className="w-full flex flex-col gap-2">
             <label
                 htmlFor={id}
-                className={twMerge("text-sm font-medium text-j-gray-300", labelClassName)}
+                className={twMerge("text-sm font-medium text-primary", labelClassName)}
             >
-                {label} {required ? <span className="text-j-red-200">*</span> : null}
+                {label} {required ? <span aria-hidden="true" className="text-input-error-text">*</span> : null}
             </label>
             <div className="w-full relative flex items-start">
                 <textarea 
@@ -39,30 +42,26 @@ export function Textarea({
                     name={name}
                     value={value}
                     required={required}
-                    aria-invalid={!!error}
-                    aria-describedby={isError ? error : undefined}
+                    aria-invalid={isError}
+                    aria-describedby={[props['aria-describedby'], isError ? errorId : undefined].filter(Boolean).join(' ') || undefined}
                     className={twMerge(
                         `
-                        w-full border-2 border-transparent p-2.5 rounded-lg font-light
-                        placeholder:text-j-transparent-white
+                        w-full border-2 border-input-border p-2.5 rounded-lg font-normal text-sm
+                        placeholder:text-input-placeholder
                         transition-colors
                         duration-300
                         bg-input-bg text-input-text
-                        focus:outline-2 focus:border-j-yellow-400
-                        focus:outline-j-yellow-400
-                        disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
+                        focus:outline-2 focus:border-input-border-focus focus:outline-input-border-focus
+                        disabled:bg-input-bg-disabled disabled:text-input-text-disabled disabled:cursor-not-allowed
                         min-h-25 resize-y
                         `,
-                        `
-                            ${isError ? "border-input-border-error text-input-border-error" : "border-transparent text-input-text"} 
-                            ${isError ? "focus:outline-input-border-error focus:border-input-border-error" : "focus:outline-j-yellow-400 focus:border-j-yellow-400"}
-                        `,
+                        isError && "border-input-border-error focus:outline-input-border-error focus:border-input-border-error",
                         className
                     )}
                 />
             </div>
 
-            {isError ? <p className="text-j-red-300 text-sm">{error}</p> : null}
+            {isError ? <p id={errorId} className="text-input-error-text text-sm">{error}</p> : null}
         </div>
     );
 }

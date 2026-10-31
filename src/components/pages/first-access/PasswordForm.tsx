@@ -1,14 +1,14 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { ArrowRight, LoaderCircle, LockKeyhole } from "lucide-react";
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
+import { Form } from "@/components/common/form";
 import InputPassword from "@/components/common/input/input-password";
-import { completeFirstAccessPasswordAction } from "@/actions/auth/complete-first-access-password";
-import { firstAccessPasswordSchema, type FirstAccessPasswordForm } from "@/schemas/auth/first-access-password";
+import { firstAccessPasswordSchema,type FirstAccessPasswordForm } from "@/schemas/auth/first-access-password";
+import { completeFirstAccessPasswordAction } from "@/server/actions/auth/complete-first-access-password";
+import { useMutation } from "@tanstack/react-query";
+import { ArrowRight,LoaderCircle,LockKeyhole } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export function PasswordForm() {
     const router = useRouter();
@@ -19,7 +19,7 @@ export function PasswordForm() {
             router.replace("/feed");
             router.refresh();
         },
-        onError: (error) => toast.error(error.message),
+
     });
 
     return (
