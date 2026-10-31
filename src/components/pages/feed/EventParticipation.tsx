@@ -84,7 +84,7 @@ export function EventParticipation({ eventId, eventStatus, charges = [], compact
     const currentRegistration = registration.data;
 
     const requiredAmount = charges.filter((charge) => charge.requiredForParticipation).reduce((total, charge) => total + charge.amount, 0);
-    const isPending = register.isPending || cancel.isPending || retryGuest.isPending;
+    const isPending = register.isPending || cancel.isPending;
 
     const buttonClass = compact
         ? "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900 shadow-sm transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-wait disabled:opacity-60"
@@ -117,17 +117,14 @@ export function EventParticipation({ eventId, eventStatus, charges = [], compact
     if (!canRegister || eventStatus !== "OPEN") return null;
     if (canReadOwnRegistration && registration.isLoading) return <button type="button" disabled className={buttonClass}>Verificando inscrição...</button>;
 
-    function openRegistrationModal() {
-        setContent(<EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
-        setOpen();
-    }
 
     return <div className={`flex flex-col gap-2 ${compact ? "w-full" : ""}`}>
         {charges.length > 0 && <div className="rounded-xl bg-j-gray-100 px-3 py-2 text-xs text-j-gray-600" aria-label="Valores do evento">
             {requiredAmount > 0 ? <p className="font-bold text-j-blue-800">Inscrição: {currency(requiredAmount)}{charges.filter((charge) => charge.requiredForParticipation).length > 1 ? " (obrigatório)" : ""}</p> : <p className="font-bold text-j-blue-800">Participação gratuita</p>}
             {charges.filter((charge) => !charge.requiredForParticipation).map((charge) => <p key={charge.name}>{charge.name}: {currency(charge.amount)} (opcional)</p>)}
         </div>}
-        <button type="button" disabled={isPending} onClick={openRegistrationModal} className={buttonClass}>
+
+        <button type="button" disabled={isPending} onClick={() => register.mutate()} className={buttonClass}>
 
         <CalendarCheck size={18} aria-hidden="true" />{register.isPending ? "Confirmando presença..." : "Participar do evento"}
         </button>
