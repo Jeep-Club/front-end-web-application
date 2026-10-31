@@ -547,6 +547,7 @@ export default function Feed() {
                                                             publication.details
                                                                 .status
                                                         }
+                                                        charges={publication.details.charges}
                                                         compact
                                                     />
                                                 )}

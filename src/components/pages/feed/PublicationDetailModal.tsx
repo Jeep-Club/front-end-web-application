@@ -43,7 +43,7 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
                 {publication.type === "EVENT" && <EventParticipants details={publication.details} />}
-                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventStatus={publication.details.status} />}
+                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventStatus={publication.details.status} charges={publication.details.charges} />}
                 <RichTextContent content={publication.content} />
                 <FeedInteractions publication={publication} />
             </div>
