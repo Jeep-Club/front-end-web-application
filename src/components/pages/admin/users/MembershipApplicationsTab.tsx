@@ -1,23 +1,23 @@
 'use client';
 import { confirmAction } from '@/components/common/tour/confirmTourExit';
 
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, ChevronLeft, ChevronRight, Clipboard, LoaderCircle, Mail, MessageCircle, RefreshCw, ShieldAlert, X } from 'lucide-react';
-import toast from 'react-hot-toast';
-import {
-    approveMembershipApplicationWithLinkAction,
-    approveMembershipApplicationWithTemporaryPasswordAction,
-    generateUserTemporaryPasswordAction,
-    listMembershipApplicationsAction,
-    rejectAndBlockMembershipApplicantAction,
-    rejectMembershipApplicationAction,
-    resendMembershipActivationLinkAction,
-} from '@/actions/admin/membership-applications';
 import { Button } from '@/components/common/button';
+import {
+	approveMembershipApplicationWithLinkAction,
+	approveMembershipApplicationWithTemporaryPasswordAction,
+	generateUserTemporaryPasswordAction,
+	listMembershipApplicationsAction,
+	rejectAndBlockMembershipApplicantAction,
+	rejectMembershipApplicationAction,
+	resendMembershipActivationLinkAction,
+} from '@/server/actions/admin/membership-applications';
 import { useUserStore } from '@/stores/userStore';
+import { maskCPF,maskPhoneNumber } from '@/utils/masks';
 import { hasPermission } from '@/utils/permission/hasPermission';
-import { maskCPF, maskPhoneNumber } from '@/utils/masks';
+import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query';
+import { Check,ChevronLeft,ChevronRight,Clipboard,LoaderCircle,Mail,MessageCircle,RefreshCw,ShieldAlert,X } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 type GeneratedPasswordForWhatsApp = TemporaryPasswordApproval & { name: string; phoneNumber: string };
 
@@ -65,7 +65,7 @@ export function MembershipApplicationsTab() {
             toast.success('Solicitação aprovada e usuário criado.');
             await refreshList();
         },
-        onError: (error) => toast.error(error.message),
+
     });
     const approveByLink = useMutation({
         mutationFn: approveMembershipApplicationWithLinkAction,
@@ -74,22 +74,22 @@ export function MembershipApplicationsTab() {
             toast.success('Solicitação aprovada e convite enviado por e-mail.');
             await refreshList();
         },
-        onError: (error) => toast.error(error.message),
+
     });
     const reject = useMutation({
         mutationFn: ({ id, reason }: { id: number; reason: string }) => rejectMembershipApplicationAction(id, reason),
         onSuccess: async () => { toast.success('Solicitação rejeitada.'); await refreshList(); },
-        onError: (error) => toast.error(error.message),
+
     });
     const rejectAndBlock = useMutation({
         mutationFn: ({ id, reason }: { id: number; reason: string }) => rejectAndBlockMembershipApplicantAction(id, reason),
         onSuccess: async () => { toast.success('Solicitação rejeitada e CPF bloqueado.'); await refreshList(); },
-        onError: (error) => toast.error(error.message),
+
     });
     const resend = useMutation({
         mutationFn: resendMembershipActivationLinkAction,
         onSuccess: async () => { toast.success('Convite reenviado.'); await refreshList(); },
-        onError: (error) => toast.error(error.message),
+
     });
     const generatePassword = useMutation({
         mutationFn: ({ userId }: { userId: number; name: string; phoneNumber: string }) => generateUserTemporaryPasswordAction(userId),
@@ -97,7 +97,7 @@ export function MembershipApplicationsTab() {
             setTemporaryPassword({ ...result, name: variables.name, phoneNumber: variables.phoneNumber });
             toast.success('Senha provisória gerada.');
         },
-        onError: (error) => toast.error(error.message),
+
     });
 
     if (!canRead) return <p className="rounded-xl bg-j-gray-50 p-5 text-sm text-j-gray-600">Seu usuário não tem permissão para consultar solicitações de associação.</p>;

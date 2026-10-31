@@ -14,16 +14,21 @@ import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister
 import { InputFile } from "@/components/common/input/file";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
+
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationCreationTypes } from "@/config/publicationCreation";
 import { publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
-import { createPublicationAction } from "@/actions/publications/create";
-import { mutateDraftPublicationAction } from "@/actions/publications/draft";
-import { uploadImageAction } from "@/actions/media/upload-image";
+import { createPublicationAction } from "@/server/actions/publications/create";
+import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
+import { uploadImageAction } from "@/server/actions/media/upload-image";
 import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
 import { createChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/create";
 import { assignChargeToEventParticipantsAction } from "@/actions/billing/chargeAssignments/assign";
+
+import { createChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/create";
+import { assignChargeToEventParticipantsAction } from "@/server/actions/billing/chargeAssignments/assign";
+
 
 function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
     const { setClose } = useModal();

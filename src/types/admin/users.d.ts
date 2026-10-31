@@ -11,6 +11,7 @@ interface AdminUser {
     birthDate: string | null;
     cpf: string;
     email: string | null;
+    membershipNumber?: string | null;
     rg: string | null;
     phoneNumber: string | null;
     profilePhotoUrl?: string | null;
@@ -21,7 +22,7 @@ interface AdminUser {
 
 }
 
-type RoleStatus = "ACTIVE" | "INACTIVE" | "DELETED";
+type RoleStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
 
 interface AdminRole {
     id: number;

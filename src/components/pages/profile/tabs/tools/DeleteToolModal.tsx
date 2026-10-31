@@ -1,12 +1,12 @@
 'use client';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { AlertTriangle, X } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { deleteToolAction } from "@/actions/tools/delete";
+import { deleteToolAction } from "@/server/actions/tools/delete";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle,X } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface DeleteToolModalProps {
     toolId: number;
@@ -24,7 +24,7 @@ export function DeleteToolModal({ toolId, toolLabel }: DeleteToolModalProps) {
             queryClient.invalidateQueries({ queryKey: ["tools", "list"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao excluir ferramenta."),
+
     });
 
     return (

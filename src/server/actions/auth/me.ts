@@ -1,27 +1,14 @@
 'use server';
 
-import { captureAction } from "@/utils/actions/captureAction";
-import { ActionError } from "@/utils/actions/actionResult";
-
-import z from 'zod';
+import { meResponseSchema } from '@/schemas/auth/me/me';
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from '@/utils/http/api';
-import { meResponseSchema } from '@/schemas/auth/me/me';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
 
-async function meActionImpl() {
-    try {
-            const response = await actionFetchWrapper<MeResponse>({
-                url: HttpAPIRoutes.AUTHENTICATION_ME,
-                method: 'GET',
-                schema: meResponseSchema
-            });
-            return response.data;
-        } catch (error) {
-            throw new ActionError(extractApiErrorMessage(error, 'Erro ao buscar dados do usuário'), { cause: error });
-        }
-}
-
-export async function meAction(...args: Parameters<typeof meActionImpl>) {
-    return captureAction(() => meActionImpl(...args));
+export async function meAction() {
+    const response = await actionFetchWrapper<MeResponse>({
+        url: HttpAPIRoutes.AUTHENTICATION_ME,
+        method: 'GET',
+        schema: meResponseSchema
+    });
+    return response.data;
 }

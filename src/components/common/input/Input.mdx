@@ -1,0 +1,71 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './Input.stories';
+
+<Meta of={Stories} />
+
+# Input
+
+Campo de entrada textual com label, erro e atributos nativos de input. Use para valores digitados; para escolher valores de uma lista conhecida, use [Select](?path=/docs/componentes-select--docs). Para envio de termo com limpeza e indicador de busca, use a composição [InputSearch](?path=/docs/componentes-input-inputsearch--docs).
+
+## Registro e valores
+
+O export `Input` da família usa `register=true` por padrão e exige contexto React Hook Form. Nas stories, `register=false` apresenta apenas o campo, sem formulário ou validação Zod.
+
+```tsx
+import { Input } from '@/components/common/input';
+import { InputRegister } from '@/components/common/input/input-register';
+
+// Campo isolado; onChange/value podem ser controlados pelo consumidor.
+<Input register={false} name="name" label="Nome" placeholder="Informe o nome" />
+
+// Dentro de Form, com schema e formOptions.defaultValues correspondentes.
+<Input name="name" label="Nome completo" required autoComplete="name" />
+
+// A máscara está no adaptador direto, não no contrato público de Input.
+<InputRegister name="code" label="Código" mask={(value) => value.toUpperCase()} />
+```
+
+Inicialize campos registrados em `formOptions.defaultValues` do Form. O adaptador usa `value` como fallback inicial no controller; não assuma que mudar essa prop posteriormente equivale a resetar o formulário. `mask` altera o texto antes de atualizar o React Hook Form e chamar o `onChange` adicional. Máscara formata; schema valida.
+
+<Canvas of={Stories.Padrao} />
+
+<div role="region" aria-label="Propriedades do Input" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Padrao} />
+</div>
+
+## Ícones e aparência
+
+<Canvas of={Stories.ComIcone} />
+
+`children` aparece como irmão do input em um container relativo. Reserve espaço no campo com `className`, como o padding à esquerda dessa story, para o ícone não sobrepor o texto. Ícones decorativos devem usar `aria-hidden` e não interceptar o clique. Não passe JSX como um objeto JSON pelo Controls.
+
+O campo usa os tokens CSS resolvidos por `data-theme`; não é necessário passar uma variante de cor. Alterne **Claro/Escuro/Sistema** na toolbar para conferir o mesmo exemplo. `className` e `labelClassName` permitem ajustes próprios do contexto. `white`/`gray` permanecem como compatibilidade de apresentação para consumidores existentes, sem representar temas.
+
+<Canvas of={Stories.Gray} />
+
+As apresentações registradas herdam a variante: CPF, e-mail, telefone, senha e data. Consulte também [checkbox e radio](?path=/docs/componentes-input-checkbox-e-radio--docs), que têm contratos próprios de escolha e não herdam todos os atributos do Input textual.
+
+O texto de erro padrão acompanha o tema. Um fundo institucional que permaneça escuro independentemente do tema pode precisar de `labelClassName`/`errorClassName` próprios; verifique o contraste na superfície real, sem escolher a variante pelo tema.
+
+## Erro, obrigatório e bloqueio
+
+<Canvas of={Stories.ComErro} />
+
+`required` exibe a marca e é repassado ao input nativo. O Form do projeto usa `noValidate`; nesse fluxo, declare a regra no schema. `error` mostra uma mensagem associada por ID com `aria-describedby` e sinaliza `aria-invalid`. No modo registrado, o adaptador obtém o erro do React Hook Form; na story o erro é fornecido diretamente, sem executar validação.
+
+<Canvas of={Stories.Desabilitado} />
+<Canvas of={Stories.SomenteLeitura} />
+
+`disabled` impede edição/foco e exclui o campo da submissão HTML nativa. `readOnly` mantém leitura e foco, sem permitir alteração. Use o estado que corresponde ao fluxo; não substitua bloqueio real por uma cor cinza. Não há carregamento ou erro remoto próprio.
+
+## Acessibilidade e limites
+
+O componente respeita `id` explícito ou gera um ID, liga o label ao input e combina os IDs de ajuda em `aria-describedby` com o ID do erro. Placeholder não substitui label. O exemplo abaixo mantém ajuda e erro simultaneamente associados.
+
+<Canvas of={Stories.IdEAjuda} />
+
+## Onde é usado
+
+InputRegister e os campos CPF/senha/data compõem esta base. Consumidores incluem cadastro de associados, login e `ChargeDefinitionFormFields` na gestão financeira. Essas integrações continuam responsáveis por schema e operação; a documentação das outras famílias está na navegação de Componentes/Input.
+
+As stories demonstram apresentação isolada e conteúdo com ícone. Elas não comprovam submissão, máscaras específicas ou integrações autenticadas. Veja o [guia de componentes e páginas](?path=/docs/documentação-componentes-e-páginas--docs) para compor Form, schema e operação de envio.

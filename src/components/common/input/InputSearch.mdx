@@ -1,0 +1,98 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as InputSearchStories from './InputSearch.stories';
+
+<Meta of={InputSearchStories} />
+
+# Busca com InputSearch
+
+Composição existente para capturar e enviar um termo de busca. Use quando precisar de um campo com ícone, limpeza e envio automático ao digitar ou ao confirmar com Enter. O componente entrega o termo em `onSubmit`; não consulta nem filtra registros sozinho.
+
+## Componentes e responsabilidades
+
+- **Form:** cria o contexto React Hook Form e aplica o schema Zod interno.
+- **InputRegister:** conecta o campo ao formulário; a apresentação e os estados de campo vêm do [Input](?path=/docs/componentes-input-input--docs).
+- **Ícones e botão nativo de limpeza:** indicam busca/carregamento e permitem apagar o termo. O botão de limpeza não utiliza o componente Button.
+
+## Uso e controles
+
+```tsx
+import { useState } from 'react';
+import { InputSearch } from '@/components/common/input/input-search';
+
+function MemberSearch() {
+  const [search, setSearch] = useState('');
+
+  return (
+    <InputSearch
+      value={search}
+      onSubmit={setSearch}
+      label="Buscar associados"
+      placeholder="Nome do associado"
+      submitOnChange={false}
+    />
+  );
+}
+```
+
+O exemplo precisa de uma fronteira cliente. `value` e `onSubmit` são obrigatórios; `onSubmit` recebe somente a string pesquisada, não um evento de formulário. Aqui, Enter confirma o termo e o botão de limpeza confirma uma string vazia. A lista que consome `search` deve implementar a filtragem local ou a atualização da consulta.
+
+InputSearch já cria um `form` e seu próprio provider. Não o coloque dentro de outro formulário HTML. Para um campo de busca que pertence a um formulário maior, componha [Input com ícone](?path=/story/componentes-input-input--com-icone) dentro desse formulário.
+
+<Canvas of={InputSearchStories.Padrao} />
+
+<div role="region" aria-label="Propriedades da busca" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={InputSearchStories.Padrao} />
+</div>
+
+`value` alimenta os valores do formulário, enquanto a digitação é gerida pelo React Hook Form. `submitOnChange` é verdadeiro por padrão; a alternativa abaixo envia com Enter. A ação de limpar também envia o termo vazio. O label padrão é visualmente oculto e continua nomeando o campo.
+
+Uma alteração externa de `value` alimenta os valores do RHF. No modo de confirmação, a edição fica no campo até Enter; mantenha no consumidor o termo confirmado. No modo automático, cada alteração solicita o envio; não há debounce, tamanho mínimo, normalização de espaços ou cancelamento de requisições implementados pelo componente. Aplique essas políticas no consumidor quando necessárias.
+
+<Canvas of={InputSearchStories.AoConfirmar} />
+
+## Carregamento
+
+<Canvas of={InputSearchStories.Carregando} />
+
+`isLoading` mostra um spinner no lugar da ação de limpar; não desabilita o campo automaticamente. Não há variante de erro remoto própria. O componente expõe `disabled` para o campo, mas não aplica esse atributo ao botão interno de limpeza: não interpretar o exemplo como bloqueio de todas as ações.
+
+```tsx
+<InputSearch
+  value={search}
+  onSubmit={handleSearch}
+  isLoading={isFetching}
+  label="Buscar cobranças"
+  placeholder="Descrição da cobrança"
+/>
+```
+
+`search`, `handleSearch` e `isFetching` pertencem à tela. Atualize a página da listagem ao mudar o termo quando a busca fizer parte de uma lista paginada. Não associe o spinner à conclusão da busca automaticamente: ele reflete apenas a prop recebida.
+
+## Apresentação e acessibilidade
+
+| Prop | Região estilizada |
+| --- | --- |
+| `className` | Input textual; preserve espaço para os ícones. |
+| `formClassName` | Formulário externo da composição. |
+| `labelClassName` | Label, oculto visualmente por padrão. |
+| `iconClassName` | Ícone de busca. |
+| `clearButtonClassName` | Botão de limpar, quando há texto e não está carregando. |
+
+```tsx
+<InputSearch
+  value={search}
+  onSubmit={handleSearch}
+  label="Buscar associados"
+  labelClassName="not-sr-only text-j-gray-700"
+/>
+```
+
+O campo padrão acompanha os tokens de `data-theme`; use a toolbar para alternar a aparência. `white`/`gray` permanecem como compatibilidade, não como escolha de tema. O label dá nome ao searchbox mesmo oculto; placeholder é uma dica, não seu substituto. Enter envia pelo formulário, e o botão “Limpar busca” é alcançável por teclado. O spinner é decorativo e não anuncia sozinho uma atualização para leitores de tela; a listagem deve comunicar seus resultados e estados.
+
+<Canvas of={InputSearchStories.Gray} />
+
+## Integrações e limites
+
+O formulário e a validação são reais e já pertencem à composição. A story acrescenta um canvas neutro e um spy `fn()` para observar `onSubmit`; não há chamada de API, autenticação, TanStack Query ou provider global adicional. Os cenários de digitação/limpeza e envio com Enter têm verificações `play` e specs Playwright locais; a execução desses mecanismos é distinta.
+
+Veja também o [Input com ícone](?path=/story/componentes-input-input--com-icone) para a composição direta de JSX via `children`. As APIs permanecem nos tipos reais e nos Controls; diretrizes visuais ficam no [guia de design](?path=/docs/documentação-design--docs).

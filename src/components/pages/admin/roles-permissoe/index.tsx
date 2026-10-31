@@ -1,42 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
-import { Eye, KeyRound, ListChecks, Lock, Pencil, Plus, Power, PowerOff, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Eye,KeyRound,ListChecks,Lock,Pencil,Plus,Power,PowerOff,ShieldCheck,Trash2,Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-import { PageHeader } from "@/components/common/page-header";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
+import { PageHeader } from "@/components/common/page-header";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
+import { getRolesTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { useModal } from "@/providers/ModalProvider";
+import { listPermissionsAction } from "@/server/actions/authorization/list-permissions";
+import { listRolesAction } from "@/server/actions/authorization/list-roles";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { listRolesAction } from "@/actions/authorization/list-roles";
-import { listPermissionsAction } from "@/actions/authorization/list-permissions";
 import { CreateRoleModal } from "./CreateRoleModal";
-import { ViewRoleModal } from "./ViewRoleModal";
-import { EditRoleModal } from "./EditRoleModal";
-import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
 import { DeleteRoleModal } from "./DeleteRoleModal";
-import { RolePermissionsModal } from "./RolePermissionsModal";
+import { EditRoleModal } from "./EditRoleModal";
 import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
-import { getModuleLabel, getPermissionDescription, getPermissionName } from "./permissionLabels";
+import { getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
+import { RolePermissionsModal } from "./RolePermissionsModal";
+import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
 import { UserRoleAssignmentsTab } from "./UserRoleAssignmentsTab";
-import { usePageTour } from "@/hooks/useTour";
-import { getRolesTourSteps } from "@/config/tourSteps";
-import TourHelpButton from "@/components/common/tour/TourHelpButton";
+import { ViewRoleModal } from "./ViewRoleModal";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
-    DELETED: "Excluído",
+    ARCHIVED: "Arquivado",
 };
 
 const ROLE_STATUS_DOT_STYLE: Record<RoleStatus, string> = {
     ACTIVE: "bg-j-green-500",
     INACTIVE: "bg-j-gray-400",
-    DELETED: "bg-red-500",
+    ARCHIVED: "bg-red-500",
 };
 
 const TABS = [
@@ -50,7 +50,7 @@ type RoleStatusFilter = RoleStatus;
 const ROLE_FILTERS: Array<{ key: RoleStatusFilter; label: string }> = [
     { key: "ACTIVE", label: "Ativos" },
     { key: "INACTIVE", label: "Inativos" },
-    { key: "DELETED", label: "Excluídos" },
+    { key: "ARCHIVED", label: "Arquivados" },
 ];
 const deletedDateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "America/Sao_Paulo" });
 
@@ -79,9 +79,10 @@ export default function RolesPermissions() {
 
     const { setContent, setOpen } = useModal();
 
-    const [activeTab, setActiveTab] = useState<TabKey>(
+    const [selectedTab, setActiveTab] = useState<TabKey>(
         () => visibleTabs[0]?.key ?? TABS[0].key
     );
+    const activeTab = isTabVisible(selectedTab) ? selectedTab : visibleTabs[0]?.key ?? TABS[0].key;
     const [roleStatusFilter, setRoleStatusFilter] = useState<RoleStatusFilter>("ACTIVE");
 
     // Tour do módulo de Roles e Permissões (Mobile e Desktop)
@@ -103,13 +104,6 @@ export default function RolesPermissions() {
         }
     };
 
-    useEffect(() => {
-        if (!isTabVisible(activeTab)) {
-            setActiveTab(visibleTabs[0]?.key ?? TABS[0].key);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab, permissions]);
-
     const { data: roles, isLoading, isError } = useQuery({
         queryKey: ["authorization", "roles"],
         queryFn: listRolesAction,
@@ -119,7 +113,7 @@ export default function RolesPermissions() {
     const roleCounts = ROLE_FILTERS.reduce<Record<RoleStatusFilter, number>>((counts, filter) => {
         counts[filter.key] = (roles ?? []).filter((role) => role.status === filter.key).length;
         return counts;
-    }, { ACTIVE: 0, INACTIVE: 0, DELETED: 0 });
+    }, { ACTIVE: 0, INACTIVE: 0, ARCHIVED: 0 });
 
     const {
         data: permissionsList,
@@ -287,9 +281,9 @@ export default function RolesPermissions() {
                                                     <p className="mt-1 text-sm text-j-gray-600">
                                                         {role.description ?? "Sem descrição."}
                                                     </p>
-                                                    {role.status === "DELETED" && role.deletedAt && (
+                                                    {role.status === "ARCHIVED" && role.deletedAt && (
                                                         <p className="mt-2 text-xs font-semibold text-j-gray-500">
-                                                            Excluído em {deletedDateFormatter.format(new Date(role.deletedAt))}
+                                                            Arquivado em {deletedDateFormatter.format(new Date(role.deletedAt))}
                                                         </p>
                                                     )}
                                                 </div>
@@ -299,7 +293,7 @@ export default function RolesPermissions() {
                                                 id={index === 0 ? "tour-role-actions" : undefined}
                                                 className="mt-3 grid grid-cols-1 gap-0.5 border-t border-j-gray-100 pt-3 sm:grid-cols-2"
                                             >
-                                                {role.status !== "DELETED" && !(role.kind === "ROOT" && role.status === "ACTIVE") && (
+                                                {role.status !== "ARCHIVED" && !(role.kind === "ROOT" && role.status === "ACTIVE") && (
                                                     (role.status === "ACTIVE" ? canDisableRole : canEnableRole) && (
                                                         <button
                                                             type="button"
@@ -318,7 +312,7 @@ export default function RolesPermissions() {
                                                         </button>
                                                     )
                                                 )}
-                                                {role.status !== "DELETED" && canUpdateRole && role.kind !== "ROOT" && (
+                                                {role.status !== "ARCHIVED" && canUpdateRole && role.kind !== "ROOT" && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenEditRole(role.id)}
@@ -331,7 +325,7 @@ export default function RolesPermissions() {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleOpenViewRole(role.id)}
-                                                    className="flex items-center gap-2.5 rounded-lg bg-blue-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
+                                                    className="flex items-center gap-2.5 rounded-lg bg-blue-100/10 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-blue-100"
                                                 >
                                                     <Eye size={16} className="text-j-blue-800" />
                                                     Visualizar
@@ -346,17 +340,17 @@ export default function RolesPermissions() {
                                                         Ver permissões
                                                     </button>
                                                 )}
-                                                {role.status !== "DELETED" && (canAssignPermission || canRevokePermission) && (
+                                                {role.status !== "ARCHIVED" && (canAssignPermission || canRevokePermission) && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenManageRolePermissions(role)}
-                                                        className="flex items-center gap-2.5 rounded-lg bg-purple-50 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-purple-100"
+                                                        className="flex items-center gap-2.5 rounded-lg bg-purple-100/10 px-2.5 py-2 text-left text-sm font-bold text-j-gray-700 transition-colors hover:bg-purple-100"
                                                     >
                                                         <ListChecks size={16} className="text-purple-600" />
                                                         Gerenciar permissões
                                                     </button>
                                                 )}
-                                                {canDeleteRole && role.status !== "DELETED" && role.kind !== "ROOT" && (
+                                                {canDeleteRole && role.status !== "ARCHIVED" && role.kind !== "ROOT" && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenDeleteRole(role)}
@@ -379,11 +373,11 @@ export default function RolesPermissions() {
                                     </div>
 
                                     <h3 className="text-lg font-black text-j-blue-800">
-                                        {roleStatusFilter === "DELETED" ? "Nenhum cargo excluído" : roleStatusFilter === "INACTIVE" ? "Nenhum cargo inativo" : "Nenhum cargo ativo"}
+                                        {roleStatusFilter === "ARCHIVED" ? "Nenhum cargo arquivado" : roleStatusFilter === "INACTIVE" ? "Nenhum cargo inativo" : "Nenhum cargo ativo"}
                                     </h3>
 
                                     <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                        {roleStatusFilter === "DELETED" ? "Cargos removidos aparecerão aqui para consulta." : roleStatusFilter === "INACTIVE" ? "Cargos desativados aparecerão aqui." : "Crie um cargo para começar a configurar os acessos."}
+                                        {roleStatusFilter === "ARCHIVED" ? "Cargos arquivados aparecerão aqui para consulta." : roleStatusFilter === "INACTIVE" ? "Cargos desativados aparecerão aqui." : "Crie um cargo para começar a configurar os acessos."}
                                     </p>
                                 </div>
                             )}

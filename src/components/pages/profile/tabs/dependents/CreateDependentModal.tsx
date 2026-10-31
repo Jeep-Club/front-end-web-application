@@ -1,29 +1,29 @@
 'use client';
+import { ActionError } from '@/utils/http/ActionError';
 
-import { useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { type DefaultValues, useController, useFormContext, useWatch } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import { HeartPulse, ShieldCheck, UserPlus, X } from 'lucide-react';
-import { createDependentAction, getDependentMedicalProfileAction, saveDependentMedicalProfileAction, updateDependentAction } from '@/actions/dependents';
-import { Button, ButtonIcon } from '@/components/common/button';
+import { Button,ButtonIcon } from '@/components/common/button';
 import { Form } from '@/components/common/form';
+import { InputFile } from '@/components/common/input/file';
 import { InputCheckbox } from '@/components/common/input/input-checkbox';
 import { InputDate } from '@/components/common/input/input-date';
 import { InputRegister } from '@/components/common/input/input-register';
 import { SelectRegister } from '@/components/common/select/select-register';
 import { TextareaRegister } from '@/components/common/textarea/textarea-register';
 import { useModal } from '@/providers/ModalProvider';
-import { createDependentFormSchema, editDependentFormSchema } from '@/schemas/dependents';
-import { maskCPF, unMaskCPF } from '@/utils/masks/maskCPF';
-import { maskPhoneNumber, unMaskPhoneNumber } from '@/utils/masks/maskPhoneNumber';
-import { InputFile } from '@/components/common/input/file';
+import { createDependentFormSchema,editDependentFormSchema } from '@/schemas/dependents';
+import { createDependentAction,getDependentMedicalProfileAction,saveDependentMedicalProfileAction,updateDependentAction } from '@/server/actions/dependents';
+import { removeDependentPhotoAction,saveDependentWithPhotoAction } from '@/server/actions/dependents/photo';
+import { maskCPF,unMaskCPF } from '@/utils/masks/maskCPF';
+import { maskPhoneNumber,unMaskPhoneNumber } from '@/utils/masks/maskPhoneNumber';
+import { useMutation,useQueryClient } from '@tanstack/react-query';
+import { HeartPulse,ShieldCheck,UserPlus,X } from 'lucide-react';
+import { useEffect } from 'react';
+import { type DefaultValues,useController,useFormContext,useWatch } from 'react-hook-form';
+import toast from 'react-hot-toast';
 import { DependentPhoto } from './DependentPhoto';
-import { saveDependentWithPhotoAction, removeDependentPhotoAction } from '@/actions/dependents/photo';
 
 const NOT_APPLICABLE = 'Não se aplica';
 const light = '[&_button[aria-haspopup=dialog]]:!text-j-blue-800 [&_button[aria-haspopup=dialog]_svg]:!text-j-blue-800 [&_input]:!h-11 [&_input]:!py-2 [&_input]:!text-base [&_select]:!h-11 [&_select]:!py-2 [&_select]:!text-base [&_textarea]:!min-h-28 [&_textarea]:!py-3 [&_label]:!text-j-gray-700 [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!text-j-gray-700 [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!text-j-gray-700 [&_textarea]:!border-j-gray-200 [&_textarea]:!bg-j-gray-100 [&_textarea]:!text-j-gray-700';
-
 
 function DependentHealthField({ name, label, question, placeholder }: {
   name: 'medicalProfile.allergies' | 'medicalProfile.chronicDiseases' | 'medicalProfile.medications' | 'medicalProfile.medicalNotes';
@@ -157,12 +157,12 @@ export function CreateDependentModal({ dependent }: { dependent?: MemberDependen
           observations: health.medicalNotes,
         });
       } catch (error) {
-        throw new Error(`Dependente ${isEdit ? 'atualizado' : 'cadastrado'}, mas não foi possível salvar o perfil médico: ${(error as Error).message}`);
+        throw new ActionError(`Dependente ${isEdit ? 'atualizado' : 'cadastrado'}, mas não foi possível salvar o perfil médico.`, { cause: error });
       }
       return saved;
     },
     onSuccess: (saved) => { toast.success(isEdit ? 'Dependente atualizado com sucesso!' : 'Dependente cadastrado com sucesso!'); queryClient.invalidateQueries({ queryKey: ['dependents'] }); queryClient.invalidateQueries({ queryKey: ['dependent-medical-profile', saved.id] }); setClose(); },
-    onError: (error) => toast.error(error.message || (isEdit ? 'Erro ao editar dependente.' : 'Erro ao cadastrar dependente.')),
+
   });
 
   const defaults: DefaultValues<CreateMemberDependentFormData> = {
