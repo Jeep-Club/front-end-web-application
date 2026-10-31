@@ -124,7 +124,23 @@ export function EventParticipation({ eventId, eventStatus, charges = [], compact
             {charges.filter((charge) => !charge.requiredForParticipation).map((charge) => <p key={charge.name}>{charge.name}: {currency(charge.amount)} (opcional)</p>)}
         </div>}
 
-        <button type="button" disabled={isPending} onClick={() => register.mutate()} className={buttonClass}>
+        <button
+            type="button"
+            disabled={isPending}
+            onClick={() => {
+                setContent(
+                    <EventRegistrationModal
+                        eventId={eventId}
+                        canRequestGuest={canRequestGuest}
+                        onSubmit={async (data) => {
+                            await register.mutateAsync(data);
+                        }}
+                    />,
+                );
+                setOpen();
+            }}
+            className={buttonClass}
+        >
 
         <CalendarCheck size={18} aria-hidden="true" />{register.isPending ? "Confirmando presença..." : "Participar do evento"}
         </button>
