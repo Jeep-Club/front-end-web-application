@@ -5,21 +5,20 @@ import { useMutation } from '@tanstack/react-query';
 import {registerAction} from '@/actions/auth/registerAction';
 import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
-import { Button } from "@/components/common/button";
-import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { registerSubmissionSchema, type RegisterSubmission } from "@/schemas/auth/register/registerRequest";
 import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/import";
 import { User } from "lucide-react";
 import { Textarea } from "@/components/common/textarea/";
 import { Select } from "@/components/common/select/";
 import Link from "next/link";
+import RegistrationConsent from "./RegistrationConsent";
 
 export default function FormRegister() {
     const router = useRouter();
 
     const mutation = useMutation({ 
         mutationFn: registerAction, 
-        onSuccess: (data) => {
+        onSuccess: () => {
             router.push("/feed");
             toast.success('Registro realizado com sucesso!');
         }, 
@@ -27,19 +26,20 @@ export default function FormRegister() {
 
     const isLoading = mutation.isPending;
 
-    const handleSubmit = async (registerRequest: RegisterRequest) => {
-        mutation.mutateAsync(registerRequest);
+    const handleSubmit = async (registerRequest: RegisterSubmission) => {
+        await mutation.mutateAsync(registerRequest);
     }
 
     return (
         <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
-            <Form<RegisterRequest>
-                schema={registerRequestSchema}
+            <Form<RegisterSubmission>
+                schema={registerSubmissionSchema}
+                formOptions={{ defaultValues: { termsAccepted: false } }}
                 onSubmit={handleSubmit}
-                onError={(errors) => console.log(errors)}
+                onError={() => toast.error("Revise os campos do formulário para continuar.")}
             >
                 <InputRegister name="name" label="Nome Completo" placeholder="Nome e sobrenome" type="text" required className="pl-10 pr-10"><User className="absolute left-2.5 text-j-transparent-white"/></InputRegister>
-                <InputEmail required/>
+                <InputEmail name="email" required/>
                 <InputDate required/>
                 <InputCPF required/>
                 <InputPhoneNumber required/>
@@ -60,13 +60,7 @@ export default function FormRegister() {
                     a <Link href="/politica-de-privacidade" target="_blank" rel="noopener noreferrer" className="text-j-yellow-300 underline underline-offset-4">Política de Privacidade (abre em nova aba)</Link> antes de enviar.
                     O cadastro não autoriza publicidade nem o uso de dados de saúde.
                 </p>
-                <Button 
-                    type="submit" 
-                    disabled={isLoading}
-                    className="w-full mt-4"
-                >
-                    {isLoading ? <>Registrando<LoaderCircle size={15} strokeWidth={3} className="animate-spin"/></> : <>Registrar<ArrowRight size={15} strokeWidth={3}/></>}
-                </Button>
+                <RegistrationConsent isLoading={isLoading} />
             </Form>
         </div>
     );

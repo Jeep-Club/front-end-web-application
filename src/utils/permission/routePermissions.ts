@@ -16,14 +16,6 @@ interface RoutePermissionRule {
 type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
 
 export const routePermissions: Record<string, RoutePermissionsConfig> = {
-    "/register": [
-        {
-            module: "AUTHENTICATION",
-            actions: ["USER_CREATE"],
-        },
-    ],
-
-
     // rotas autenticadas acessíveis para qualquer usuário logado.
     // array vazio significa que nenhuma permissão específica é exigida.
     "/feed": [],

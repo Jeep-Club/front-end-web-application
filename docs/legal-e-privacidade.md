@@ -32,9 +32,15 @@ O modelo do presidente foi adaptado para preservar revogação, reparação e ac
 
 ### Integração futura de inscrições e aceites
 
+Em 01/11/2026, o cadastro do site passou a exigir uma caixa de aceite dos Termos de Uso, inicialmente desmarcada, com link em nova aba. O botão de registrar fica desabilitado até a seleção. O schema do formulário e a Server Action rejeitam aceite ausente, falso ou de tipo incorreto antes de chamar a API. A rota `/register` foi movida para o grupo sem autenticação, pois antes exigia sessão de uma conta já existente. O campo de e-mail do cadastro também passou a usar explicitamente o nome esperado pelo schema.
+
+A regra de permissão administrativa de `/register` foi removida do proxy; as demais rotas protegidas permanecem com suas regras. Validação: quatro testes da ação do servidor passaram; no Chrome, pelo endereço local de rede e sem sessão, foram verificados acesso ao cadastro, checkbox desmarcado, bloqueio inicial, habilitação após seleção, novo bloqueio ao desmarcar, seleção pelo teclado e link em nova aba. Nenhuma conta foi criada durante essa verificação. O ESLint dos arquivos alterados passou; o TypeScript mantém os erros anteriores de `InputProps` e `SidebarProps`, sem novos erros desta alteração.
+
+O campo `termsAccepted` é exclusivo da submissão do site e validado no servidor Next.js. O payload da API de cadastro continua com seus seis campos originais, pois não há contrato documentado para gravar consentimentos no backend. Essa alteração torna o aceite obrigatório no fluxo do site, mas não cria evidência durável de versão/data/IP nem impede chamadas externas diretamente à API. O aceite dos termos gerais não substitui autorização específica de imagem ou de dados sensíveis. Nenhum arquivo de ambiente foi alterado.
+
 O repositório não contém módulo de eventos/inscrições, endpoint de consentimentos ou acesso a banco durável. Por isso não foi criada tabela `consents`, captura de IP ou assinatura digital fictícia. Não há checkbox ou coleta adicional na página dos termos; a interface não declara aceite registrado.
 
-Antes de disponibilizar aceite eletrônico, implementar no backend:
+Para adicionar prova durável de aceites e autorizações específicas, implementar no backend:
 
 1. Identidade autenticada e verificação proporcional da representação do menor; cada adulto registra sua própria vontade. Não assumir que preencher nome/CPF comprova identidade ou poderes.
 2. Documentos versionados e imutáveis, texto canônico e hash calculado no servidor; evento, titular, representante e cada finalidade escolhida associados ao registro. Separar `imagem_voz` de `ciencia_risco_trilha`, sem nomear o registro como isenção total.
