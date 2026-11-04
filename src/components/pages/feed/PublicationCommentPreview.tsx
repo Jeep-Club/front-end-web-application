@@ -6,6 +6,8 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import Image from "next/image";
+import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { PublicationCommentAuthor } from "./PublicationCommentAuthor";
 
 
@@ -43,11 +45,18 @@ export function PublicationCommentPreview({ publicationId, count, onOpen }: { pu
             <div className="flex flex-col gap-3">
                 {query.data?.content.map(comment => <div key={comment.id} className="rounded-xl bg-j-gray-100/60 p-3">
                     <PublicationCommentAuthor
+                        authorUserId={comment.authorUserId}
                         name={comment.authorName}
                         photo={comment.authorPhotoStorageKey ?? comment.authorProfilePhotoStorageKey ?? comment.authorPhotoUrl ?? comment.authorProfilePhotoUrl}
                         createdAt={comment.createdAt}
                     />
-                    <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm text-j-gray-700">{comment.text}</p>
+                    {comment.text && <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-sm text-j-gray-700">{comment.text}</p>}
+                    {comment.images.length > 0 && <div className="mt-2 flex gap-2">
+                        {comment.images.slice(0, 3).map((image) => <div key={image.storageKey} className="relative size-14 overflow-hidden rounded-md bg-j-gray-200">
+                            <Image src={getMediaImageUrl(image.storageKey)} alt="Imagem anexada ao comentário" fill unoptimized sizes="56px" className="object-cover" />
+                        </div>)}
+                        {comment.images.length > 3 && <span className="self-center text-xs text-j-gray-600">+{comment.images.length - 3}</span>}
+                    </div>}
                 </div>)}
             </div>
             {count > 3 && onOpen && <button type="button" onClick={onOpen} className="mt-2 min-h-11 text-sm font-bold text-j-blue-700 hover:underline">Ver todos os comentários</button>}
