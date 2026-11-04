@@ -40,14 +40,14 @@ export async function getMyEventRegistrationAction(eventId: number) {
     }
 }
 
-export async function registerForEventAction(eventId: number) {
+export async function registerForEventAction(eventId: number, allocations: { vehicleId: number; member: boolean; dependentIds: number[] }[] = [], dependentIds: number[] = []) {
     const id = idSchema.parse(eventId);
     await requirePermission("EVENT_REGISTER");
     try {
         const result = await actionFetchWrapper({
             url: `events/${id}/registrations`,
             method: "POST",
-            body: JSON.stringify({ allocations: [], dependentIds: [] }),
+            body: JSON.stringify({ allocations, dependentIds }),
             schema: eventRegistrationSchema,
         });
         return result.data;

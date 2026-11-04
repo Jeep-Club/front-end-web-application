@@ -12,7 +12,7 @@ const images = z.array(imageSchema).min(1, "Envie pelo menos uma imagem.").max(5
 const common = { title: text.max(200), content: publicationContent, images };
 export const createPublicationSchema = z.discriminatedUnion("type", [
     z.object({ type: z.literal("NOTICE"), ...common }),
-    z.object({ type: z.literal("EVENT"), ...common, startsAt: z.iso.datetime(), endsAt: z.iso.datetime().nullable() }),
+    z.object({ type: z.literal("EVENT"), ...common, startsAt: z.iso.datetime(), endsAt: z.iso.datetime().nullable(), charges: z.array(z.object({ name: text.max(120), description: text.max(255), amount: z.number().positive().max(9999999999999.99), billingRequired: z.boolean(), requiredForParticipation: z.boolean() })).optional() }),
     z.object({ type: z.literal("SERVICE"), ...common, amount: z.number().min(0.01).max(9999999999999.99).refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.01, "Use até duas casas decimais."), contactPhone: text.regex(/^\d{10,11}$/, "Informe um telefone com DDD.") }),
 ]).superRefine((data, ctx) => {
     if (data.type !== "EVENT") return;
@@ -28,7 +28,7 @@ export const publicationFormSchema = z.object({
     content: publicationContent,
     photos: z.array(fileSchema).min(1, "Envie pelo menos uma imagem.").max(5),
     primaryIndex: z.string(),
-    startsAt: z.string(), endsAt: z.string(), amount: z.string(), contactPhone: z.string(),
+    startsAt: z.string(), endsAt: z.string(), amount: z.string(), chargeName: z.string(), chargeDescription: z.string(), contactPhone: z.string(),
 }).superRefine((data, ctx) => {
     const primary = Number(data.primaryIndex);
     if (!Number.isInteger(primary) || primary < 0 || primary >= data.photos.length) ctx.addIssue({ code: "custom", path: ["primaryIndex"], message: "Selecione a imagem de capa." });
