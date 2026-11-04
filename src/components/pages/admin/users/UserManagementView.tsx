@@ -252,7 +252,7 @@ export function UserManagementView({
         >
             <Table.Header className="items-stretch border-b-0">
                 <div className="flex w-full flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-                    <div className="flex w-full lg:min-w-64 lg:flex-1">
+                    <div id="tour-users-search" className="flex w-full lg:min-w-64 lg:flex-1">
                         <Table.Search
                             value={searchType === "cpf"
                                 ? maskCPF(query.cpf ?? "")
@@ -290,7 +290,7 @@ export function UserManagementView({
                         </div>
                     </div>
 
-                    <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
+                    <div id="tour-users-status-filter" className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
                         <Select.Unregister
                             label="Status"
                             labelClassName="sr-only"
@@ -309,6 +309,7 @@ export function UserManagementView({
                         {permissions.canCreateUsers && (
                             <button
                                 type="button"
+                                id="tour-users-create-btn"
                                 onClick={onCreateUser}
                                 className="flex w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg p-2.5 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
                             >
@@ -343,7 +344,9 @@ export function UserManagementView({
                 )} */}
             </Table.Filters>
 
-            <Table.Content loadingRows={pageSize} />
+            <div id="tour-users-table">
+                <Table.Content loadingRows={pageSize} />
+            </div>
         </Table.Root>
     );
 }

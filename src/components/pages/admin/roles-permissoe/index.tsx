@@ -89,8 +89,13 @@ export default function RolesPermissions() {
     const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_roles",
         steps: getRolesTourSteps,
-        autoStartOnFirstVisit: true,
+        autoStartOnFirstVisit: false,
         enabled: permissions.length > 0,
+        onBeforeStart: () => {
+            if (activeTab !== "roles") {
+                setActiveTab("roles");
+            }
+        },
     });
 
     const handleRestartTour = () => {
@@ -196,7 +201,7 @@ export default function RolesPermissions() {
                     }
                 />
 
-                <div className={twMerge("grid gap-2 md:gap-3", TABS_GRID_COLS[visibleTabs.length] ?? "grid-cols-1")}>
+                <div id="tour-roles-tabs" className={twMerge("grid gap-2 md:gap-3", TABS_GRID_COLS[visibleTabs.length] ?? "grid-cols-1")}>
                     {visibleTabs.map(({ key, label, icon: Icon }) => {
                         const isActive = key === activeTab;
                         return (

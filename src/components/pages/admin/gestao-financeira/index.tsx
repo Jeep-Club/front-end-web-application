@@ -8,6 +8,8 @@ import { twMerge } from "tailwind-merge";
 
 import { Button,ButtonIcon } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
+import { getFinancialTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { Table } from "@/components/common/table";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
@@ -325,6 +327,12 @@ export default function FinancialManagement() {
     const visibleTabs = tabs.filter((tab) => hasPermission(permissions, "BILLING", tab.permission));
     const [selected, setSelected] = useState<FinancialTab>("dashboard");
     const active = visibleTabs.length ? selected === "dashboard" ? "dashboard" : visibleTabs.find((tab) => tab.key === selected)?.key ?? "dashboard" : undefined;
+    usePageTour({
+        storageKey: "tour_completed_admin_financial",
+        steps: getFinancialTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: Boolean(active),
+    });
     const breadcrumbLabels: Record<FinancialTab, string> = {
         dashboard: "Dashboard",
         definitions: "Definições de cobrança",
@@ -334,9 +342,9 @@ export default function FinancialManagement() {
         refunds: "Reembolsos",
     };
     return <div className="min-h-full w-full p-3 md:p-4"><div className="flex flex-col gap-4 pb-6">
-        <PageHeader title="Gestão financeira" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Financeira", ...(active ? { href: "/admin/gestao-financeira" } : {}) }, ...(active ? [{ label: breadcrumbLabels[active] }] : [])]} />
+        <PageHeader id="tour-financial-header" title="Gestão financeira" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Financeira", ...(active ? { href: "/admin/gestao-financeira" } : {}) }, ...(active ? [{ label: breadcrumbLabels[active] }] : [])]} />
         <div className="flex flex-wrap items-center gap-3"><ManagementBackButton /><p className="text-sm text-j-gray-600">Configure cobranças, acompanhe os ciclos e gerencie pagamentos e reembolsos dos associados.</p></div>
-        <nav aria-label="Áreas da gestão financeira" className="grid w-full grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-[repeat(var(--financial-tab-count),minmax(0,1fr))]" style={{ "--financial-tab-count": visibleTabs.length + 1 } as React.CSSProperties}>{(visibleTabs.length ? [{ key: "dashboard" as const, title: "Dashboard" }, ...visibleTabs] : []).map((tab) => <button key={tab.key} aria-current={active === tab.key ? "page" : undefined} onClick={() => setSelected(tab.key)} className={twMerge("flex min-h-14 w-full min-w-0 items-center justify-center rounded-xl border border-j-gray-200 bg-j-white px-3 py-3 text-center text-sm font-bold leading-tight text-j-blue-800", active === tab.key && "border-j-blue-800 bg-j-blue-800 text-j-yellow-300")}>{tab.title}</button>)}</nav>
-        {!active ? <p className="rounded-xl bg-j-white p-6">Seu usuário não possui permissão para consultar a gestão financeira.</p> : active === "dashboard" ? <FinancialDashboard onNavigate={setSelected} /> : active === "definitions" ? <ChargeDefinitions /> : <BillingOperations key={active} resource={active} />}
+        <nav id="tour-financial-tabs" aria-label="Áreas da gestão financeira" className="grid w-full grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-[repeat(var(--financial-tab-count),minmax(0,1fr))]" style={{ "--financial-tab-count": visibleTabs.length + 1 } as React.CSSProperties}>{(visibleTabs.length ? [{ key: "dashboard" as const, title: "Dashboard" }, ...visibleTabs] : []).map((tab) => <button key={tab.key} aria-current={active === tab.key ? "page" : undefined} onClick={() => setSelected(tab.key)} className={twMerge("flex min-h-14 w-full min-w-0 cursor-pointer items-center justify-center rounded-xl border border-j-gray-200 bg-j-white px-3 py-3 text-center text-sm font-bold leading-tight text-j-blue-800", active === tab.key && "border-j-blue-800 bg-j-blue-800 text-j-yellow-300")}>{tab.title}</button>)}</nav>
+        <div id="tour-financial-content">{!active ? <p className="rounded-xl bg-j-white p-6">Seu usuário não possui permissão para consultar a gestão financeira.</p> : active === "dashboard" ? <FinancialDashboard onNavigate={setSelected} /> : active === "definitions" ? <ChargeDefinitions /> : <BillingOperations key={active} resource={active} />}</div>
     </div></div>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Logo } from "@/components/common/logo";
 import LegalLinks from "@/components/common/legal-links";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ import { GiJeep } from "react-icons/gi";
 import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
 import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
+import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
 
 export default function HomeClient() {
   const router = useRouter();
@@ -48,13 +49,27 @@ export default function HomeClient() {
       nextBtnText: "Próximo →",
       prevBtnText: "← Anterior",
       doneBtnText: "Entendido ✓",
-      skipMissingElement: false,
+      skipMissingElement: true,
       steps: getHomeTourSteps(),
     });
 
     driverRef.current = driverObj;
     driverObj.drive();
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+    }
   }, []);
+
+  useEffect(() => {
+    const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
+    if (forcedTarget === "/" || forcedTarget === "tour_completed_home") {
+      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+      const timer = setTimeout(() => {
+        handleHomeTour();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [handleHomeTour]);
 
   return (
     <main className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
@@ -114,6 +129,7 @@ export default function HomeClient() {
 
           <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
           <button
+            id="tour-home-join-btn"
             onClick={handleRegister}
             className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
           >
@@ -255,7 +271,7 @@ export default function HomeClient() {
 
       {/* ── CTA ── */}
       <section className="px-6 py-20 bg-[#f5f7fb]">
-        <div className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
           <div className="relative z-10 text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-black text-[#00236F] leading-tight mb-4">
               Pronto para a sua<br className="hidden md:block" />próxima aventura?

@@ -23,6 +23,8 @@ import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { FeedSidebar } from "./FeedSidebar";
+import { usePageTour } from "@/hooks/useTour";
+import { getFeedTourSteps } from "@/config/tourSteps";
 
 import Image from "next/image";
 
@@ -73,6 +75,13 @@ export default function Feed() {
     const openedDeepLinkRef = useRef<number | null>(null);
     const filterNavRef = useRef<HTMLElement>(null);
     const [showFilterHint, setShowFilterHint] = useState(false);
+
+    usePageTour({
+        storageKey: "tour_completed_feed",
+        steps: getFeedTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: canRead,
+    });
 
     useEffect(() => {
         const nav = filterNavRef.current;
@@ -251,6 +260,7 @@ export default function Feed() {
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="relative min-w-0 flex-1">
                                 <nav
+                                    id="tour-feed-filters"
                                     ref={filterNavRef}
                                     aria-label="Tipos de publicação"
                                     aria-describedby="feed-filter-swipe-hint"
@@ -323,6 +333,7 @@ export default function Feed() {
 
                             {canCreateCurrentType && (
                                 <button
+                                    id="tour-feed-create-btn"
                                     type="button"
                                     aria-label={`Criar ${creationLabel}`}
                                     title={`Criar ${creationLabel}`}
@@ -338,6 +349,7 @@ export default function Feed() {
                             )}
                         </div>
 
+                        <div id="tour-feed-list">
                         {query.isLoading ? (
                             <div
                                 role="status"
@@ -634,6 +646,7 @@ export default function Feed() {
                                 })}
                             </div>
                         )}
+                        </div>
 
                         <div
                             ref={loadMoreRef}
