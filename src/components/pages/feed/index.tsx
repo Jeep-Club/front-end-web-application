@@ -560,6 +560,7 @@ export default function Feed() {
                                                                 .status
                                                         }
                                                         charges={publication.details.charges}
+                                                        eventTitle={publication.title}
                                                         compact
                                                     />
                                                 )}
