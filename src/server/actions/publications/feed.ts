@@ -46,12 +46,12 @@ export async function listPublicationCommentsAction(input: { id: number; page: n
 export async function createPublicationCommentAction(input: {
     id: number;
     text?: string;
-    images: { storageKey: string; position: number }[];
+    images?: { storageKey: string; position: number }[];
 }) {
     const data = z.object({
         id: idSchema,
-        text: z.string().trim().max(10_000).optional(),
-        images: z.array(z.object({ storageKey: z.string().trim().min(1), position: z.number().int().nonnegative() })).max(10),
+        text: z.string().max(10_000).transform(text => text.trim()).optional(),
+        images: z.array(z.object({ storageKey: z.string().trim().min(1), position: z.number().int().nonnegative() })).max(10).default([]),
     }).superRefine((value, context) => {
         const text = value.text?.trim() ?? "";
         if (!text && value.images.length === 0) {
