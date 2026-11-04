@@ -56,13 +56,13 @@ describe("fetchWrapper com resposta binária", () => {
 
     it("lê o comprovante como blob, sem converter bytes para texto", async () => {
         jest.spyOn(globalThis, "fetch").mockResolvedValue(new Response(new Uint8Array([0, 255, 128]), { headers: { "Content-Type": "image/png" } }));
-        const { data } = await fetchWrapper({ url: "http://localhost/receipt", responseType: "blob", schema: z.instanceof(Blob) });
+        const { data } = await fetchWrapper({ url: "http://localhost/receipt", responseType: "blob", allowedContentTypes: ["image/png"], schema: z.instanceof(Blob) });
         expect(Array.from(new Uint8Array(await data.arrayBuffer()))).toEqual([0, 255, 128]);
     });
 
     it("continua interpretando erros da API como JSON no download", async () => {
         const problem = { status: 404, code: "PAYMENT_RECEIPT_NOT_FOUND", detail: "Comprovante não encontrado." };
         jest.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(problem), { status: 404 }));
-        await expect(fetchWrapper({ url: "http://localhost/receipt", responseType: "blob", schema: z.instanceof(Blob) })).rejects.toEqual({ status: 404, rawData: problem });
+        await expect(fetchWrapper({ url: "http://localhost/receipt", responseType: "blob", allowedContentTypes: ["image/png"], schema: z.instanceof(Blob) })).rejects.toEqual({ status: 404, rawData: problem });
     });
 });

@@ -1,12 +1,14 @@
+import { toActionError } from "@/utils/http/apiError";
+jest.mock("@/services/token/permissions", () => ({}));
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { listToolsAdminAction } from "@/actions/admin/tools/list";
-import { getToolDetailAdminAction } from "@/actions/admin/tools/detail";
-import { createToolAdminAction } from "@/actions/admin/tools/create";
-import { updateToolAdminAction } from "@/actions/admin/tools/update";
-import { updateToolPhotoAdminAction } from "@/actions/admin/tools/photo";
-import { activateToolAdminAction } from "@/actions/admin/tools/activate";
-import { deactivateToolAdminAction } from "@/actions/admin/tools/deactivate";
-import { deleteToolAdminAction } from "@/actions/admin/tools/delete";
+import { listToolsAdminAction } from "@/server/actions/admin/tools/list";
+import { getToolDetailAdminAction } from "@/server/actions/admin/tools/detail";
+import { createToolAdminAction } from "@/server/actions/admin/tools/create";
+import { updateToolAdminAction } from "@/server/actions/admin/tools/update";
+import { updateToolPhotoAdminAction } from "@/server/actions/admin/tools/photo";
+import { activateToolAdminAction } from "@/server/actions/admin/tools/activate";
+import { deactivateToolAdminAction } from "@/server/actions/admin/tools/deactivate";
+import { deleteToolAdminAction } from "@/server/actions/admin/tools/delete";
 import { createAdminToolFormSchema } from "@/schemas/admin/tools";
 import { adminModules, canAccessAdminModule } from "@/config/adminModules";
 import { routePermissions } from "@/utils/permission/routePermissions";
@@ -196,7 +198,7 @@ describe("Admin Tools Management", () => {
     });
 
     it("surfaces validation, permission, and domain errors from the API", async () => {
-        request.mockRejectedValueOnce({
+        request.mockRejectedValueOnce(toActionError({
             status: 400,
             rawData: {
                 code: "VALIDATION_ERROR",
@@ -204,43 +206,43 @@ describe("Admin Tools Management", () => {
                 detail: "Payload inválido.",
                 errors: [{ field: "name", code: "NotBlank", message: "O nome da ferramenta é obrigatório" }],
             },
-        });
+        }));
         await expect(createToolAdminAction(7, { name: "" })).rejects.toThrow(
             "O nome da ferramenta é obrigatório",
         );
 
-        request.mockRejectedValueOnce({
+        request.mockRejectedValueOnce(toActionError({
             status: 403,
             rawData: {
                 code: "ACCESS_DENIED",
                 status: 403,
                 detail: "",
             },
-        });
+        }));
         await expect(deleteToolAdminAction(42)).rejects.toThrow(
             "Você não tem permissão para realizar esta ação.",
         );
 
-        request.mockRejectedValueOnce({
+        request.mockRejectedValueOnce(toActionError({
             status: 409,
             rawData: {
                 code: "TOOL_OWNER_DISABLED",
                 status: 409,
                 detail: "Proprietário da ferramenta está desabilitado.",
             },
-        });
+        }));
         await expect(createToolAdminAction(9, { name: "Guincho" })).rejects.toThrow(
             "Proprietário da ferramenta está desabilitado.",
         );
 
-        request.mockRejectedValueOnce({
+        request.mockRejectedValueOnce(toActionError({
             status: 404,
             rawData: {
                 code: "TOOL_NOT_FOUND",
                 status: 404,
                 detail: "Tool not found.",
             },
-        });
+        }));
         await expect(activateToolAdminAction(999)).rejects.toThrow("Ferramenta não encontrada.");
     });
 

@@ -1,18 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
-import { KeyRound, ShieldX } from "lucide-react";
+import { KeyRound,ShieldX } from "lucide-react";
+import { useMemo,useState } from "react";
 
 import { ButtonIcon } from "@/components/common/button";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
-import { listAdminUsersAction } from "@/actions/admin/users/list";
-import { maskCPF, maskPhoneNumber, unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
-import { useUserStore } from "@/stores/userStore";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { useModal } from "@/providers/ModalProvider";
+import { listAdminUsersAction } from "@/server/actions/admin/users/list";
+import { useUserStore } from "@/stores/userStore";
+import { maskCPF,maskPhoneNumber,unMaskCPF,unMaskPhoneNumber } from "@/utils/masks";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { UserRolesViewModal } from "./UserRolesViewModal";
 
 type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";

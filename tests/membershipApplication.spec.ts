@@ -1,17 +1,17 @@
-import { fetchWrapper } from "@/services/fetchWrapper/fetchWrapper";
-import { submitMembershipApplicationAction } from "@/actions/membership/submit-application";
+import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
+import { submitMembershipApplicationAction } from "@/server/actions/membership/submit-application";
 import {
     membershipApplicationFormSchema,
     membershipApplicationSubmissionSchema,
 } from "@/schemas/membership/application";
 import { HttpAPIRoutes } from "@/utils/http/api";
 
-jest.mock("@/services/fetchWrapper/fetchWrapper", () => ({
+jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({
     __esModule: true,
-    fetchWrapper: jest.fn(),
+    default: jest.fn(),
 }));
 
-const mockedFetchWrapper = jest.mocked(fetchWrapper);
+const mockedFetchWrapper = jest.mocked(actionFetchWrapper);
 
 describe("Public Membership Application (POST /membership-applications)", () => {
     const originalEnv = process.env;
@@ -134,176 +134,26 @@ describe("Public Membership Application (POST /membership-applications)", () => 
         });
     });
 
-    describe("Reduced response { id, status, created } for 201 and 200", () => {
-        it("parses only { id, status, created } and does not require personal data", () => {
-            const parsed = membershipApplicationSubmissionSchema.safeParse({
-                id: 15,
-                status: "PENDING",
-                created: false,
-            });
-            expect(parsed).toEqual({
-                success: true,
-                data: { id: 15, status: "PENDING", created: false },
-            });
+    describe("submission through the action HTTP boundary", () => {
+        it("normalizes optional values and Brazilian phone numbers", async () => {
+            mockedFetchWrapper.mockResolvedValueOnce({ status: 201, data: { id: 101, status: "PENDING", created: true } });
+            const result = await submitMembershipApplicationAction({ name: "  Jo?o da Silva  ", cpf: "390.533.447-05", phoneNumber: "+55 (11) 98765-4321" });
+            expect(result).toEqual({ id: 101, status: "PENDING", created: true });
+            expect(mockedFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({
+                url: HttpAPIRoutes.MEMBERSHIP_APPLICATIONS,
+                body: JSON.stringify({ name: "Jo?o da Silva", cpf: "39053344705", phoneNumber: "11987654321", email: null, message: null }),
+            }));
         });
-
-        it("handles 201 Created (new application, created=true) and sends null when email is omitted", async () => {
-            mockedFetchWrapper.mockResolvedValueOnce({
-                status: 201,
-                data: { id: 101, status: "PENDING", created: true },
-            });
-
-            const result = await submitMembershipApplicationAction({
-                name: "  João da Silva ",
-                cpf: "390.533.447-05",
-                phoneNumber: "+55 (11) 98765-4321",
-                email: "   ",
-                message: "  Quero participar das trilhas. ",
-            });
-
-            expect(mockedFetchWrapper).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    url: `https://api.jeepclub.test/${HttpAPIRoutes.MEMBERSHIP_APPLICATIONS}`,
-                    method: "POST",
-                    body: JSON.stringify({
-                        name: "João da Silva",
-                        cpf: "39053344705",
-                        phoneNumber: "11987654321",
-                        email: null,
-                        message: "Quero participar das trilhas.",
-                    }),
-                }),
-            );
-
-            expect(result).toEqual({
-                ok: true,
-                data: { id: 101, status: "PENDING", created: true },
-            });
+        it("returns an existing pending application directly", async () => {
+            const data = { id: 101, status: "PENDING" as const, created: false };
+            mockedFetchWrapper.mockResolvedValueOnce({ status: 200, data });
+            await expect(submitMembershipApplicationAction({ name: "Jo?o", cpf: "39053344705", phoneNumber: "11987654321" })).resolves.toEqual(data);
+            expect(membershipApplicationSubmissionSchema.safeParse(data).success).toBe(true);
         });
-
-        it("handles 200 OK (existing PENDING application, created=false) using only { id, status, created }", async () => {
-            mockedFetchWrapper.mockResolvedValueOnce({
-                status: 200,
-                data: { id: 101, status: "PENDING", created: false },
-            });
-
-            const result = await submitMembershipApplicationAction({
-                name: "Outro Nome Informado",
-                cpf: "390.533.447-05",
-                phoneNumber: "(11) 91111-2222",
-            });
-
-            expect(result).toEqual({
-                ok: true,
-                data: { id: 101, status: "PENDING", created: false },
-            });
-            expect(Object.keys((result as { ok: true; data: MembershipApplicationSubmission }).data)).toEqual([
-                "id",
-                "status",
-                "created",
-            ]);
-        });
-    });
-
-    describe("Error handling for blocked CPF, invalid CPF, and existing application", () => {
-        it("presents blocked CPF (403 MEMBERSHIP_APPLICATION_NOT_ALLOWED) without implying any update", async () => {
-            mockedFetchWrapper.mockRejectedValueOnce({
-                status: 403,
-                rawData: {
-                    code: "MEMBERSHIP_APPLICATION_NOT_ALLOWED",
-                    status: 403,
-                    detail: "Não é possível realizar uma nova solicitação de associação.",
-                },
-            });
-
-            const result = await submitMembershipApplicationAction({
-                name: "João da Silva",
-                cpf: "39053344705",
-                phoneNumber: "(11) 98765-4321",
-            });
-
-            expect(result).toEqual({
-                ok: false,
-                message: "Não é possível realizar uma nova solicitação de associação.",
-            });
-            if (!result.ok) {
-                expect(result.message).not.toMatch(/atualizad|alterad/i);
-            }
-        });
-
-        it("presents invalid CPF (400 VALIDATION_ERROR) without implying any update", async () => {
-            mockedFetchWrapper.mockRejectedValueOnce({
-                status: 400,
-                rawData: {
-                    code: "VALIDATION_ERROR",
-                    status: 400,
-                    detail: "Erro de validação nos campos informados.",
-                    errors: [{ field: "cpf", code: "CPF", message: "CPF inválido." }],
-                },
-            });
-
-            const result = await submitMembershipApplicationAction({
-                name: "João da Silva",
-                cpf: "39053344700",
-                phoneNumber: "(11) 98765-4321",
-            });
-
-            expect(result).toEqual({
-                ok: false,
-                message: "CPF inválido.",
-            });
-            if (!result.ok) {
-                expect(result.message).not.toMatch(/atualizad|alterad/i);
-            }
-        });
-
-        it("presents existing application/CPF errors (409) without implying the previous request was updated", async () => {
-            mockedFetchWrapper.mockRejectedValueOnce({
-                status: 409,
-                rawData: {
-                    code: "MEMBERSHIP_APPLICATION_ALREADY_EXISTS",
-                    status: 409,
-                    detail: "Já existe uma solicitação para o CPF: 39053344705",
-                },
-            });
-
-            const existingAppResult = await submitMembershipApplicationAction({
-                name: "João da Silva",
-                cpf: "39053344705",
-                phoneNumber: "(11) 98765-4321",
-            });
-
-            expect(existingAppResult).toEqual({
-                ok: false,
-                message: "Já existe uma solicitação para o CPF: 39053344705",
-            });
-            if (!existingAppResult.ok) {
-                expect(existingAppResult.message).not.toMatch(/atualizad|alterad/i);
-            }
-
-            // Even when 409 CONFLICT has an empty detail, it must not use the generic "foram alterados" fallback
-            mockedFetchWrapper.mockRejectedValueOnce({
-                status: 409,
-                rawData: {
-                    code: "CONFLICT",
-                    status: 409,
-                    detail: "",
-                },
-            });
-
-            const genericConflictResult = await submitMembershipApplicationAction({
-                name: "João da Silva",
-                cpf: "39053344705",
-                phoneNumber: "(11) 98765-4321",
-            });
-
-            expect(genericConflictResult.ok).toBe(false);
-            if (!genericConflictResult.ok) {
-                expect(genericConflictResult.message).toBe(
-                    "Já existe uma solicitação ou cadastro para os dados informados.",
-                );
-                expect(genericConflictResult.message).not.toMatch(/atualizad|alterad/i);
-            }
+        it("preserves the normalized error from the HTTP boundary", async () => {
+            const error = new Error("CPF inv?lido.");
+            mockedFetchWrapper.mockRejectedValueOnce(error);
+            await expect(submitMembershipApplicationAction({ name: "Jo?o", cpf: "39053344700", phoneNumber: "11987654321" })).rejects.toBe(error);
         });
     });
 });

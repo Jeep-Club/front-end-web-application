@@ -1,12 +1,12 @@
 'use client';
 import { confirmAction } from '@/components/common/tour/confirmTourExit';
 
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ban, ChevronDown, Mail, RefreshCw } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { getUserActivationInvitationAction, resendUserActivationInvitationAction, revokeUserActivationInvitationAction } from '@/actions/admin/users/activation-invitation';
 import { Button } from '@/components/common/button';
+import { getUserActivationInvitationAction,resendUserActivationInvitationAction,revokeUserActivationInvitationAction } from '@/server/actions/admin/users/activation-invitation';
+import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query';
+import { Ban,ChevronDown,Mail,RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const labels: Record<AdminInvitationStatus, string> = {
     QUEUED: 'Na fila de envio',
@@ -37,7 +37,7 @@ export function UserActivationInvitation({ userId, userStatus }: { userId: numbe
             queryClient.setQueryData(['admin-users', userId, 'activation-invitation'], data);
             toast.success('Convite reenviado.');
         },
-        onError: (error) => toast.error(error.message),
+
     });
     const revoke = useMutation({
         mutationFn: () => revokeUserActivationInvitationAction(userId),
@@ -48,7 +48,7 @@ export function UserActivationInvitation({ userId, userStatus }: { userId: numbe
             });
             toast.success('Convite revogado. O link de ativação não poderá mais ser usado.');
         },
-        onError: (error) => toast.error(error.message),
+
     });
     const isRevoked = query.data?.invitationStatus === 'REVOKED';
     const isBusy = query.isFetching || resend.isPending || revoke.isPending;

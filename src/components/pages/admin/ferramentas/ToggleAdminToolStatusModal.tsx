@@ -6,8 +6,8 @@ import { Power, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { ConfirmButton } from "@/components/common/button/ConfirmButton";
 import { useModal } from "@/providers/ModalProvider";
-import { activateToolAdminAction } from "@/actions/admin/tools/activate";
-import { deactivateToolAdminAction } from "@/actions/admin/tools/deactivate";
+import { activateToolAdminAction } from "@/server/actions/admin/tools/activate";
+import { deactivateToolAdminAction } from "@/server/actions/admin/tools/deactivate";
 
 interface ToggleAdminToolStatusModalProps {
     toolId: number;

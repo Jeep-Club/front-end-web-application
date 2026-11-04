@@ -1,15 +1,15 @@
 'use client';
 
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, LoaderCircle, Plus, X } from "lucide-react";
+import { AlertCircle,LoaderCircle,Plus,X } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
+import { listUserRolesAction } from "@/server/actions/authorization/list-user-roles";
 import { useUserStore } from "@/stores/userStore";
-import { hasPermission } from "@/utils/permission/hasPermission";
-import { listUserRolesAction } from "@/actions/authorization/list-user-roles";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { ROLE_STATUS_LABEL } from "../users/user-display";
 import { AddUserRoleModal } from "./AddUserRoleModal";
 import { RevokeUserRoleModal } from "./RevokeUserRoleModal";
@@ -137,7 +137,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                                     {role.description}
                                 </span>
 
-                                {canRevoke && role.kind === "CUSTOM" && role.status !== "DELETED" && (
+                                {canRevoke && role.kind === "CUSTOM" && role.status !== "ARCHIVED" && (
                                     <div className="mt-1 flex justify-end border-t border-j-gray-100 pt-2">
                                         <button
                                             type="button"

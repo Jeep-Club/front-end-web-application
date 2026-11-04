@@ -1,6 +1,6 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { listPublicationFeedAction, getPublicationFeedDetailAction, setPublicationLikeAction, listPublicationCommentsAction, createPublicationCommentAction } from "@/actions/publications/feed";
+import { listPublicationFeedAction, getPublicationFeedDetailAction, setPublicationLikeAction, listPublicationCommentsAction, createPublicationCommentAction } from "@/server/actions/publications/feed";
 import { publicationFeedItemSchema, publicationFeedDetailSchema } from "@/schemas/publications/feed";
 import { renderPublicationContent } from "@/utils/publications/renderContent";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";

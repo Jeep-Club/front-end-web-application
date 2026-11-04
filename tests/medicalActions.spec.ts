@@ -18,7 +18,7 @@ describe("medical server authorization and API routes", () => {
         ["MEDICAL_PROFILE_EXPORT", () => exportMedicalProfilesAction("CSV")],
     ] as const)("blocks requests without %s", async (permission, operation) => {
         jest.mocked(haveActionPermission).mockResolvedValue(false);
-        expect((await operation()).ok).toBe(false);
+        await expect(operation()).rejects.toThrow();
         expect(haveActionPermission).toHaveBeenCalledWith("HEALTH", permission);
         expect(fetchAction).not.toHaveBeenCalled();
     });
@@ -32,7 +32,7 @@ describe("medical server authorization and API routes", () => {
         expect(JSON.parse(jest.mocked(fetchAction).mock.calls[0][0].body as string)).toEqual(data);
     });
     it("rejects invalid owner types rather than defaulting to users", async () => {
-        expect((await putMedicalProfileAction({ id: 7, ownerType: "INVALID", data })).ok).toBe(false);
+        await expect(putMedicalProfileAction({ id: 7, ownerType: "INVALID", data })).rejects.toThrow();
         expect(fetchAction).not.toHaveBeenCalled();
     });
     it("deletes by profile ID", async () => {
@@ -42,7 +42,7 @@ describe("medical server authorization and API routes", () => {
     it("downloads selected profiles and deletion history from separate endpoints", async () => {
         jest.mocked(fetchAction).mockResolvedValue({ status: 200, data: new Blob(["report"], { type: "application/pdf" }) });
         const result = await exportMedicalProfilesAction("PDF", 5);
-        expect(result.ok).toBe(true);
+        expect(result.contentType).toBe("application/pdf");
         expect(fetchAction).toHaveBeenLastCalledWith(expect.objectContaining({ url: "admin/medical-profiles/export?format=PDF&profileId=5", responseType: "blob", cache: "no-store" }));
         await exportMedicalProfilesAction("CSV", undefined, true);
         expect(fetchAction).toHaveBeenLastCalledWith(expect.objectContaining({ url: "admin/medical-profiles/history/export?format=CSV" }));

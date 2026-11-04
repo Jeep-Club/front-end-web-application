@@ -1,0 +1,4 @@
+/* Include Canvas padding in the component theme, independently of the Docs theme. */
+.sbdocs-preview .docs-story {
+  background: var(--background);
+}

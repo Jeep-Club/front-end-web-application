@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
-import { ArrowRight, CheckCircle2, LoaderCircle, LockKeyhole, MailWarning } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { Form } from '@/components/common/form';
 import { Button } from '@/components/common/button';
+import { Form } from '@/components/common/form';
 import InputPassword from '@/components/common/input/input-password';
-import { activateAccountWithInvitationAction, validateAccountActivationInvitationAction } from '@/actions/auth/activate-account-invitation';
-import { accountActivationSchema, type AccountActivationForm } from '@/schemas/auth/account-activation';
+import { accountActivationSchema,type AccountActivationForm } from '@/schemas/auth/account-activation';
+import { activateAccountWithInvitationAction,validateAccountActivationInvitationAction } from '@/server/actions/auth/activate-account-invitation';
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight,CheckCircle2,LoaderCircle,LockKeyhole,MailWarning } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect,useState } from 'react';
+import toast from 'react-hot-toast';
 
 export default function ActivateInvitation({ token }: { token: string }) {
     const router = useRouter();
@@ -25,7 +25,7 @@ export default function ActivateInvitation({ token }: { token: string }) {
             toast.success('Conta ativada. Entre com sua nova senha.');
             router.replace('/login');
         },
-        onError: (error) => toast.error(error.message),
+
     });
 
     useEffect(() => {

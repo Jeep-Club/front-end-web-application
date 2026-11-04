@@ -5,10 +5,10 @@ import MedicalManagement from "@/components/pages/admin/medical-profiles/Managem
 import { useUserStore } from "@/stores/userStore";
 import { putMedicalProfileRequestSchema, getMedicalProfileResponseSchema } from "@/schemas/admin/medical-profile";
 
-jest.mock("@/actions/admin/medical-profile/manage", () => ({ listMedicalProfilesAction: jest.fn(), getMedicalProfileAdminAction: jest.fn(), deleteMedicalProfileAction: jest.fn(), exportMedicalProfilesAction: jest.fn() }));
-jest.mock("@/actions/admin/medical-profile/put", () => ({ putMedicalProfileAction: jest.fn() }));
-jest.mock("@/actions/profile/medical-profile", () => ({ saveMedicalProfileAction: jest.fn() }));
-jest.mock("@/actions/admin/users/options", () => ({ listUserOptionsAction: jest.fn() }));
+jest.mock("@/server/actions/admin/medical-profile/manage", () => ({ listMedicalProfilesAction: jest.fn(), getMedicalProfileAdminAction: jest.fn(), deleteMedicalProfileAction: jest.fn(), exportMedicalProfilesAction: jest.fn() }));
+jest.mock("@/server/actions/admin/medical-profile/put", () => ({ putMedicalProfileAction: jest.fn() }));
+jest.mock("@/server/actions/profile/medical-profile", () => ({ saveMedicalProfileAction: jest.fn() }));
+jest.mock("@/server/actions/admin/users/options", () => ({ listUserOptionsAction: jest.fn() }));
 jest.mock("@/providers/ModalProvider", () => ({ useModal: () => ({ setContent: jest.fn(), setOpen: jest.fn(), setClose: jest.fn() }) }));
 jest.mock("@/stores/userStore", () => ({ useUserStore: jest.fn() }));
 

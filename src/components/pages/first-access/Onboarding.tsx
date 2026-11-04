@@ -1,22 +1,21 @@
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { CarFront, Check, HeartPulse, LoaderCircle, RefreshCw } from "lucide-react";
-import toast from "react-hot-toast";
 import { Button } from "@/components/common/button";
-import { useModal } from "@/providers/ModalProvider";
-import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
-import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
-import { IncludeVehicleModal } from "@/components/pages/profile/tabs/vehicles/IncludeVehicleModal";
 import { EditMedicalProfileModal } from "@/components/pages/profile/tabs/medical/EditMedicalProfileModal";
-import { completeFirstAccessOnboardingAction } from "@/actions/auth/complete-first-access-onboarding";
+import { IncludeVehicleModal } from "@/components/pages/profile/tabs/vehicles/IncludeVehicleModal";
+import { useModal } from "@/providers/ModalProvider";
+import { completeFirstAccessOnboardingAction } from "@/server/actions/auth/complete-first-access-onboarding";
+import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
+import { listVehiclesMemberAction } from "@/server/actions/vehicles/list-member";
+import { useMutation,useQuery } from "@tanstack/react-query";
+import { CarFront,Check,HeartPulse,LoaderCircle,RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export function FirstAccessOnboarding() {
     const router = useRouter();
     const { setContent, setOpen } = useModal();
-    const [isCompleting, setIsCompleting] = useState(false);
+
     const vehicles = useQuery({
         queryKey: ["vehicles", "list-member", 0],
         queryFn: () => listVehiclesMemberAction({ page: 0, size: 1 }),
@@ -42,18 +41,15 @@ export function FirstAccessOnboarding() {
         setOpen();
     };
 
-    const finish = async () => {
-        setIsCompleting(true);
-        try {
-            await completeFirstAccessOnboardingAction();
+    const completion = useMutation({
+        mutationFn: completeFirstAccessOnboardingAction,
+        onSuccess: () => {
             toast.success("Cadastro inicial concluído. Bem-vindo ao sistema!");
             router.refresh();
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Não foi possível concluir seu cadastro.");
-        } finally {
-            setIsCompleting(false);
-        }
-    };
+        },
+    });
+    const isCompleting = completion.isPending;
+    const finish = () => completion.mutate();
 
     return (
         <main className="flex min-h-dvh items-center justify-center bg-j-gray-100 p-4">

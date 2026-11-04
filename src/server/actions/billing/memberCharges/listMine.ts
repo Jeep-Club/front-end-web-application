@@ -1,15 +1,11 @@
 "use server";
 
-import { captureAction } from "@/utils/actions/captureAction";
-import { ActionError } from "@/utils/actions/actionResult";
-
 import { memberChargeSummaryResponseSchema } from "@/schemas/billing/memberCharge";
 import { pageResponseSchema } from "@/schemas/page";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from "@/utils/http/api";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
 
-async function listMyMemberChargesActionImpl(
+export async function listMyMemberChargesAction(
     searchParams: MemberChargeSearchParams = {},
 ): Promise<PageResponse<MemberChargeSummary>> {
     const query = new URLSearchParams(
@@ -18,23 +14,11 @@ async function listMyMemberChargesActionImpl(
         ),
     );
 
-    try {
-        const response = await actionFetchWrapper({
-            url: `${HttpAPIRoutes.BILLING_MY_MEMBER_CHARGES}?${query.toString()}`,
-            method: "GET",
-            schema: pageResponseSchema(memberChargeSummaryResponseSchema),
-        });
+    const response = await actionFetchWrapper({
+        url: `${HttpAPIRoutes.BILLING_MY_MEMBER_CHARGES}?${query.toString()}`,
+        method: "GET",
+        schema: pageResponseSchema(memberChargeSummaryResponseSchema),
+    });
 
-        return response.data;
-    } catch (error) {
-        throw new ActionError(
-            extractApiErrorMessage(error, "Erro ao carregar seu histórico financeiro"),
-            { cause: error },
-        );
-    }
-}
-
-
-export async function listMyMemberChargesAction(...args: Parameters<typeof listMyMemberChargesActionImpl>) {
-    return captureAction(() => listMyMemberChargesActionImpl(...args));
+    return response.data;
 }

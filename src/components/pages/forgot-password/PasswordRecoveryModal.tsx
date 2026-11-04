@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Button,ButtonIcon } from "@/components/common/button";
+import { useModal } from "@/providers/ModalProvider";
+import forgotPasswordEmailTokenAction from "@/server/actions/auth/forgot-password-email-token";
 import { useMutation } from "@tanstack/react-query";
+import { CheckCircle2,LoaderCircle,Mail,ShieldCheck,X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect,useState } from "react";
 import toast from "react-hot-toast";
 import { twMerge } from "tailwind-merge";
-import { ShieldCheck, Mail, X, LoaderCircle, CheckCircle2 } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
-import { useModal } from "@/providers/ModalProvider";
-import forgotPasswordEmailTokenAction from "@/actions/auth/forgot-password-email-token";
 
 const AUTO_CLOSE_SECONDS = 30;
 
@@ -30,7 +30,7 @@ export function PasswordRecoveryModal({ cpf }: PasswordRecoveryModalProps) {
                 router.push('/login');
             }, 1000);
         },
-        onError: (error) => toast.error(error.message || 'Erro ao enviar o e-mail de redefinição.'),
+
     });
 
     useEffect(() => {

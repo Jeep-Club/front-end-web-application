@@ -10,6 +10,7 @@ export const adminUserSchema = z.object({
     birthDate: z.string().nullish().transform((value) => value ?? null),
     cpf: z.string(),
     email: z.string().nullish().transform((value) => value ?? null),
+    membershipNumber: z.string().nullish(),
     rg: z.string().nullish().transform((value) => value ?? null),
     phoneNumber: z.string().nullish().transform((value) => value ?? null),
     profilePhotoStorageKey: z.string().nullish(),

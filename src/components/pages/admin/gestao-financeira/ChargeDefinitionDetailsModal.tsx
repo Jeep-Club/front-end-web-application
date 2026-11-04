@@ -1,7 +1,7 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { getChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/get";
 import { useModal } from "@/providers/ModalProvider";
+import { getChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/get";
+import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { displayBillingValue } from "./billingDisplay";
 

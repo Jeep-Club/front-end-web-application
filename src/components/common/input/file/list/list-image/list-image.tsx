@@ -7,7 +7,7 @@ import { RemoveFile } from "../../actions/remove";
 
 export type ListImageProps = ListProps;
 
-export function ListFileImage({ files, onRemove, className }: ListImageProps) {
+export function ListFileImage({ files, onRemove, className, variant = "white" }: ListImageProps) {
     if (!files || files.length === 0) return null;
 
     return (
@@ -16,6 +16,7 @@ export function ListFileImage({ files, onRemove, className }: ListImageProps) {
                 <ImageThumbnail 
                     key={`${file.name}-${idx}`} 
                     file={file} 
+                    variant={variant}
                 >
                     {/* Fundo escuro sutil ao passar o mouse para dar contraste no botão */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />

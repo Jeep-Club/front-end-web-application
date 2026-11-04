@@ -6,6 +6,8 @@ import { Eye, Pencil, Plus, Power, RotateCcw, ShieldX, Trash2, Wrench } from "lu
 import { twMerge } from "tailwind-merge";
 
 import { PageHeader } from "@/components/common/page-header";
+import { getToolsTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
 import { InputSearch } from "@/components/common/input/input-search";
@@ -14,7 +16,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
-import { listToolsAdminAction } from "@/actions/admin/tools/list";
+import { listToolsAdminAction } from "@/server/actions/admin/tools/list";
 
 import { ToolDetailModal } from "./ToolDetailModal";
 import { IncludeAdminToolModal } from "./IncludeAdminToolModal";
@@ -38,6 +40,12 @@ export default function ToolManagement() {
     const canActivate = hasPermission(permissions, "TOOLS", "TOOL_ACTIVATE");
     const canDeactivate = hasPermission(permissions, "TOOLS", "TOOL_DEACTIVATE");
     const canDelete = hasPermission(permissions, "TOOLS", "TOOL_DELETE");
+    usePageTour({
+        storageKey: "tour_completed_admin_tools",
+        steps: getToolsTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: canRead,
+    });
 
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -121,6 +129,7 @@ export default function ToolManagement() {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
+                    id="tour-tools-header"
                     title="Gestão de ferramentas"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
@@ -154,6 +163,7 @@ export default function ToolManagement() {
 
                             {canCreate && (
                                 <Button
+                                    id="tour-tools-create-btn"
                                     onClick={handleOpenCreate}
                                     className="h-11 shrink-0 gap-2"
                                 >
@@ -164,7 +174,7 @@ export default function ToolManagement() {
                             )}
                         </div>
 
-                        <div className="flex flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3 lg:flex-row lg:items-center">
+                        <div id="tour-tools-filters" className="flex flex-col gap-3 rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3 lg:flex-row lg:items-center">
                             <div className="flex-1">
                                 <InputSearch
                                     value={nameFilter}
@@ -214,6 +224,7 @@ export default function ToolManagement() {
                             </div>
                         </div>
 
+                        <div id="tour-tools-list">
                         {isLoading && (
                             <p className="text-sm text-j-gray-400">Carregando ferramentas...</p>
                         )}
@@ -248,7 +259,7 @@ export default function ToolManagement() {
                                 </div>
 
                                 <div className="divide-y divide-j-gray-100">
-                                    {data?.content.map((tool) => {
+                                    {data?.content.map((tool, index) => {
                                         const isArchived = tool.status === "ARCHIVED";
                                         const canToggleToolStatus =
                                             !isArchived &&
@@ -314,7 +325,7 @@ export default function ToolManagement() {
                                                     {TOOL_STATUS_LABEL[tool.status] ?? tool.status}
                                                 </span>
 
-                                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                                <div id={index === 0 ? "tour-tools-actions" : undefined} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenDetail(tool.id)}
@@ -379,6 +390,8 @@ export default function ToolManagement() {
                                 </div>
                             </div>
                         )}
+
+                        </div>
 
                         {data && !error && (
                             <ListPagination

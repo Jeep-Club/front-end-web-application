@@ -52,6 +52,7 @@ function InputSearchField({
     labelClassName,
     iconClassName,
     clearButtonClassName,
+    variant = "white",
     ...props
 }: InputSearchFieldProps) {
     const { handleSubmit, setValue, watch } = useFormContext<InputSearchFormData>();
@@ -85,6 +86,7 @@ function InputSearchField({
             label={label}
             placeholder={placeholder}
             disabled={disabled}
+            variant={variant}
             autoComplete="off"
             onChange={handleChange}
             className={twMerge("pl-10 pr-10", className)}
@@ -94,7 +96,8 @@ function InputSearchField({
                 aria-hidden="true"
                 size={18}
                 className={twMerge(
-                    "pointer-events-none absolute left-3 text-j-transparent-white",
+                    "pointer-events-none absolute left-3",
+                    variant === "white" ? "text-j-gray-500" : "text-j-white/70",
                     iconClassName,
                 )}
             />
@@ -103,7 +106,7 @@ function InputSearchField({
                 <LoaderCircle
                     aria-hidden="true"
                     size={17}
-                    className="pointer-events-none absolute right-3 animate-spin text-j-yellow-300"
+                    className={twMerge("pointer-events-none absolute right-3 animate-spin", variant === "white" ? "text-j-blue-700" : "text-j-yellow-300")}
                 />
             ) : currentValue ? (
                 <button
@@ -111,7 +114,8 @@ function InputSearchField({
                     aria-label="Limpar busca"
                     onClick={handleClear}
                     className={twMerge(
-                        "absolute right-2 cursor-pointer rounded-md p-1 text-j-transparent-white transition-colors hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-j-yellow-400",
+                        "absolute right-2 cursor-pointer rounded-md p-1 transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-500",
+                        variant === "white" ? "text-j-gray-500 hover:text-j-blue-700" : "text-j-white/70 hover:text-j-yellow-300",
                         clearButtonClassName,
                     )}
                 >

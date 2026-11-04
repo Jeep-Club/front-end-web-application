@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const roleStatusSchema: z.ZodType<RoleStatus> = z.enum(["ACTIVE", "INACTIVE", "DELETED"]);
+export const roleStatusSchema: z.ZodType<RoleStatus> = z.enum(["ACTIVE", "INACTIVE", "ARCHIVED"]);
 
 export const roleKindSchema: z.ZodType<RoleKind> = z.enum(["ROOT", "CUSTOM"]);
 

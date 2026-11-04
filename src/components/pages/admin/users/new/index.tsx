@@ -1,22 +1,22 @@
 'use client';
 
-import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
-import toast from "react-hot-toast";
-import { ArrowRight, Check, Copy, LoaderCircle, Mail } from "lucide-react";
+import { ArrowRight,Check,Copy,LoaderCircle,Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useFormContext,useWatch } from "react-hook-form";
+import toast from "react-hot-toast";
 import { UserWorkspace } from "../UserWorkspace";
 
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
-import { InputRegister } from "@/components/common/input/input-register";
-import InputEmail from "@/components/common/input/input-email";
+import { Form } from "@/components/common/form";
 import InputCPF from "@/components/common/input/input-cpf";
 import InputDate from "@/components/common/input/input-date";
+import InputEmail from "@/components/common/input/input-email";
 import InputPhoneNumber from "@/components/common/input/input-phonenumber";
+import { InputRegister } from "@/components/common/input/input-register";
 import { adminCreateUserFormSchema } from "@/schemas/admin/create-user";
-import { createFirstAccessUserAction } from "@/actions/admin/users/create-first-access";
+import { createFirstAccessUserAction } from "@/server/actions/admin/users/create-first-access";
 
 const fieldStyle = {
     labelClassName: "text-j-gray-600 [&>span]:text-j-red-500",
@@ -38,9 +38,7 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
                 ? "Usuário cadastrado com sucesso!"
                 : "Cadastro criado. Confira o status do convite.");
         },
-        onError: (error) => {
-            toast.error(error.message || 'Erro ao cadastrar usuário. Verifique os dados e tente novamente.');
-        },
+
     });
 
     const isLoading = mutation.isPending;
@@ -201,7 +199,6 @@ function CreateUserFields() {
                     </div>
                 </div>
             </section>
-
 
         </>
     );

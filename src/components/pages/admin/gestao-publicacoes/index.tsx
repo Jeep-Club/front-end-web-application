@@ -1,22 +1,23 @@
 "use client";
-import { useModal } from "@/providers/ModalProvider";
-import { publicationCreationTypes } from "@/config/publicationCreation";
-import { CreatePublicationModal } from "./CreatePublicationModal";
 import { Button } from "@/components/common/button";
+import { publicationCreationTypes } from "@/config/publicationCreation";
+import { useModal } from "@/providers/ModalProvider";
+import { listAdminPublicationsAction } from "@/server/actions/publications/list";
+import { parsePublicationPagination,updatePublicationPagination } from "@/utils/publications/pagination";
+import { parsePublicationStatus,publicationStatusOptions } from "@/utils/publications/statusFilters";
 import { useQuery } from "@tanstack/react-query";
-import { listAdminPublicationsAction } from "@/actions/publications/list";
-import { publicationStatusOptions, parsePublicationStatus } from "@/utils/publications/statusFilters";
+import { CreatePublicationModal } from "./CreatePublicationModal";
 import { PublicationList } from "./PublicationList";
-import { parsePublicationPagination, updatePublicationPagination } from "@/utils/publications/pagination";
 
-
-import { usePathname, useSearchParams } from "next/navigation";
-import { resolvePublicationTypes } from "@/utils/publications/typeFilters";
-import { CalendarDays, Megaphone, Wrench, Plus, LayoutGrid } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
+import { getPublicationsTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { publicationManagementSections } from "@/config/publicationManagement";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
+import { resolvePublicationTypes } from "@/utils/publications/typeFilters";
+import { CalendarDays,LayoutGrid,Megaphone,Plus,Wrench } from "lucide-react";
+import { usePathname,useSearchParams } from "next/navigation";
 
 const sectionIcons = { events: CalendarDays, notices: Megaphone, services: Wrench };
 
@@ -39,6 +40,13 @@ export default function PublicationManagement() {
     const orderedSections = [...sections].sort((a, b) => ["SERVICE", "NOTICE", "EVENT"].indexOf(a.type) - ["SERVICE", "NOTICE", "EVENT"].indexOf(b.type));
     const selectedSections = sections.filter((section) => selectedTypes.includes(section.type));
 
+    usePageTour({
+        storageKey: "tour_completed_admin_publications",
+        steps: getPublicationsTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: sections.length > 0 || canCreate,
+    });
+
     const publications = useQuery({
         queryKey: ["publications", "admin", selectedTypes, status, pagination.pageIndex, pagination.pageSize, permissions],
         queryFn: () => listAdminPublicationsAction({ types: selectedTypes, status, page: pagination.pageIndex, size: pagination.pageSize }),
@@ -58,6 +66,7 @@ export default function PublicationManagement() {
         <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-6">
                 <PageHeader
+                    id="tour-publications-header"
                     title="Gestão de publicações"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
@@ -67,7 +76,7 @@ export default function PublicationManagement() {
                 />
                 {sections.length > 0 || canCreate ? (
                     <>
-                        <nav aria-label="Filtrar por tipo de publicação" className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+                        <nav id="tour-publications-types" aria-label="Filtrar por tipo de publicação" className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
                             <button type="button" aria-pressed={allTypesSelected} aria-controls="publication-management-content" onClick={() => selectType()} className={`flex min-h-14 min-w-0 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 p-3 text-sm font-bold transition-colors ${allTypesSelected ? "border-j-blue-800 bg-j-blue-800 text-j-white shadow-md" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800"}`}><LayoutGrid size={20} aria-hidden="true" />Todos</button>
                             {orderedSections.map((section) => {
                                 const Icon = sectionIcons[section.key as keyof typeof sectionIcons];
@@ -92,13 +101,13 @@ export default function PublicationManagement() {
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <h2 id="publication-management-title" className="text-center text-lg font-bold text-j-blue-800 sm:text-left">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
                                 {canCreate && (
-                                    <Button onClick={() => { setContent(<CreatePublicationModal />); setOpen(); }} className="w-full sm:w-auto">
+                                    <Button id="tour-publications-create-btn" onClick={() => { setContent(<CreatePublicationModal />); setOpen(); }} className="w-full sm:w-auto">
                                         <Plus size={18} />
                                         Criar publicação
                                     </Button>
                                 )}
                             </div>
-                            <fieldset className="mt-5 w-full min-w-0">
+                            <fieldset id="tour-publications-status" className="mt-5 w-full min-w-0">
                                 <legend className="mb-3 text-base font-bold text-j-gray-700">Estado da publicação</legend>
                                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                     {publicationStatusOptions.map((option) => (

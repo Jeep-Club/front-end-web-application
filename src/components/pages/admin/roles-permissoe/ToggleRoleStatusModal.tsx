@@ -1,13 +1,13 @@
 'use client';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { Power, X } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { activateRoleAction } from "@/actions/authorization/activate-role";
-import { deactivateRoleAction } from "@/actions/authorization/deactivate-role";
+import { activateRoleAction } from "@/server/actions/authorization/activate-role";
+import { deactivateRoleAction } from "@/server/actions/authorization/deactivate-role";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { Power,X } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface ToggleRoleStatusModalProps {
     roleId: number;
@@ -28,7 +28,7 @@ export function ToggleRoleStatusModal({ roleId, roleName, nextStatus }: ToggleRo
             queryClient.invalidateQueries({ queryKey: ["authorization", "roles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao alterar status do cargo."),
+
     });
 
     return (

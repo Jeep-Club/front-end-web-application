@@ -1,11 +1,10 @@
 "use client";
 import { ConfirmButton } from "@/components/common/button/ConfirmButton";
 
+import { LoaderCircle,Power,PowerOff,X } from "lucide-react";
 import { useState } from "react";
-import { LoaderCircle, Power, PowerOff, X } from "lucide-react";
-import toast from "react-hot-toast";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { useModalFocusRestoration } from "./useModalFocusRestoration";
 
@@ -32,8 +31,8 @@ export function UserStatusConfirmationModal({
             const updatedUser = await onConfirm(user.id, isEnabling ? "enable" : "disable");
             onSuccess(updatedUser);
             setClose();
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Não foi possível atualizar o acesso do usuário.");
+        } catch {
+            // The parent mutation already reports the failure; keep this modal open.
         } finally {
             setIsPending(false);
         }

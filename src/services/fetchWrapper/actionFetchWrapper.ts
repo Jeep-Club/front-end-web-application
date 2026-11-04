@@ -1,70 +1,43 @@
-import { getAuthCookies } from "@/utils/auth/get";
+import { getAuthCookies } from '@/utils/auth/get';
+import { login } from '@/utils/auth/login';
+import fetchRefreshToken from '@/utils/auth/refresh';
+import { getApiProblem,isSessionInvalidError,SESSION_EXPIRED_MESSAGE,toActionError } from '@/utils/http/apiError';
+import { fetchWrapper,FetchWrapperProps,FetchWrapperResponse } from './fetchWrapper';
 import { frontendHeaders } from './frontendHeaders';
-import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWrapper";
-import fetchRefreshToken from "@/utils/auth/refresh";
-import { login } from "@/utils/auth/login";
-import { isSessionInvalidError, SESSION_EXPIRED_MESSAGE } from "@/utils/http/apiError";
-import { getFrontendAccessHeaders } from "./frontendAccess";
 
-interface ActionFetchWapperProps<T> extends FetchWrapperProps<T> {
-
-}
-
-interface ActionFetchWrapperResponse<T> extends FetchWrapperResponse<T> {
-
-}
-
-export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWapperProps<T>): Promise<ActionFetchWrapperResponse<T>> {
-
-    const { url, ...fetchProps } = props;
-
-    const apiURL = process.env.API_URL;
-
-    if (!apiURL) {
-        throw new Error("API_URL is not defined");
-    }
-
-    const authCookies = await getAuthCookies.SERVER();
-    const requestHeaders = new Headers(fetchProps.headers);
-    if (authCookies?.AuthAccessToken) requestHeaders.set('Authorization', `Bearer ${authCookies.AuthAccessToken}`);
-    fetchProps.headers = frontendHeaders(requestHeaders);
-
-
+export default async function actionFetchWrapper<T>(props: FetchWrapperProps<T>): Promise<FetchWrapperResponse<T>> {
     try {
-        return await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
-    } catch (error) {
-        if (!isSessionInvalidError(error)) {
-            throw error;
-        }
-
-        // Token invalido/expirado e sem refresh token pra tentar renovar:
-        // sessao nao tem mais o que fazer. O redirect pro login acontece no
-        // client (ver handlers globais de erro do QueryProvider) — chamar
-        // redirect() aqui seria engolido pelo try/catch de cada action.
-        if (!authCookies?.AuthRefreshToken) {
-            throw new Error(SESSION_EXPIRED_MESSAGE);
-        }
-
+        const { url, ...fetchProps } = props;
+        const apiURL = process.env.API_URL;
+        if (!apiURL) throw new Error('API_URL is not defined');
+        const auth = await getAuthCookies.SERVER();
+        const headers = new Headers(fetchProps.headers);
+        if (auth?.AuthAccessToken) headers.set('Authorization', `Bearer ${auth.AuthAccessToken}`);
+        const request = () => fetchWrapper<T>({ ...fetchProps, url: `${apiURL.replace(/\/$/, '')}/${url}`, headers: frontendHeaders(headers) });
         try {
-            const refreshResponse = await fetchRefreshToken({
-                ApiURL: apiURL,
-                refreshToken: authCookies.AuthRefreshToken,
-            });
-            await login(
-                refreshResponse.accessToken,
-                refreshResponse.refreshToken,
-                new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString(),
-            );
-
-            return await fetchWrapper<T>({
-                url: `${apiURL}/${url}`,
-                ...fetchProps,
-                headers: { ...fetchProps.headers, 'authorization': `Bearer ${refreshResponse.accessToken}` },
-            });
-        } catch {
-            // Refresh token tambem invalido/expirado: nao ha como renovar
-            // a sessao.
-            throw new Error(SESSION_EXPIRED_MESSAGE);
+            return await request();
+        } catch (error) {
+            if (!isSessionInvalidError(error)) throw error;
+            if (!auth?.AuthRefreshToken) throw new Error(SESSION_EXPIRED_MESSAGE);
+            let tokens: RefreshTokenResponse;
+            try {
+                tokens = await fetchRefreshToken({ ApiURL: apiURL, refreshToken: auth.AuthRefreshToken });
+            } catch (refreshError) {
+                // An outage during refresh is recoverable and must keep the session.
+                const problem = getApiProblem(refreshError);
+                if (problem?.status === 401 || problem?.code === 'REFRESH_TOKEN_NOT_FOUND') throw new Error(SESSION_EXPIRED_MESSAGE);
+                throw refreshError;
+            }
+            await login(tokens.accessToken, tokens.refreshToken, new Date(Date.now() + tokens.expiresInSeconds * 1000).toISOString());
+            headers.set('Authorization', `Bearer ${tokens.accessToken}`);
+            try {
+                return await request();
+            } catch (retryError) {
+                if (isSessionInvalidError(retryError)) throw new Error(SESSION_EXPIRED_MESSAGE);
+                throw retryError;
+            }
         }
+    } catch (error) {
+        throw toActionError(error);
     }
 }

@@ -1,6 +1,7 @@
+import { toActionError } from "@/utils/http/apiError";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
-import { confirmPaymentAction, getPaymentAction, listPaymentsAction, rejectPaymentAction } from "@/actions/payments";
+import { confirmPaymentAction, getPaymentAction, listPaymentsAction, rejectPaymentAction } from "@/server/actions/payments";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
@@ -71,9 +72,9 @@ describe("análise administrativa de pagamentos", () => {
     });
 
     it("preserva a mensagem de conflito para decisões concorrentes", async () => {
-        fetchAction.mockRejectedValue({ status: 409, rawData: {
+        fetchAction.mockRejectedValue(toActionError({ status: 409, rawData: {
             status: 409, code: "INVALID_MEMBER_PAYMENT_STATE", detail: "O pagamento já foi analisado.",
-        } });
+        } }));
         await expect(confirmPaymentAction(12)).rejects.toThrow("O pagamento já foi analisado.");
     });
 

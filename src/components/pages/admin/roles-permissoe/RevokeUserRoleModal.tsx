@@ -1,12 +1,12 @@
 'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle,X } from "lucide-react";
 import toast from "react-hot-toast";
-import { AlertTriangle, X } from "lucide-react";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { revokeRoleFromUserAction } from "@/actions/authorization/revoke-role-from-user";
+import { revokeRoleFromUserAction } from "@/server/actions/authorization/revoke-role-from-user";
 import { UserRolesViewModal } from "./UserRolesViewModal";
 
 interface RevokeUserRoleModalProps {
@@ -36,7 +36,7 @@ export function RevokeUserRoleModal({
             await queryClient.invalidateQueries({ queryKey: ["authorization", "users", userId, "roles"] });
             backToRolesView();
         },
-        onError: (error) => toast.error(error.message || "Erro ao revogar cargo."),
+
     });
 
     return (

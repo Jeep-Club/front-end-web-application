@@ -1,5 +1,5 @@
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { listBillingAction, mutateBillingAction } from "@/actions/billing/management";
+import { listBillingAction, mutateBillingAction } from "@/server/actions/billing/management";
 import { chargeSchema, cycleSchema, refundSchema } from "@/schemas/billing/management";
 import { adminModules, canAccessAdminModule } from "@/config/adminModules";
 import { displayBillingValue } from "@/components/pages/admin/gestao-financeira/billingDisplay";

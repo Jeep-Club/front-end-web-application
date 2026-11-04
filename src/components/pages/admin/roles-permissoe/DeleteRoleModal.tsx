@@ -1,12 +1,12 @@
 'use client';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { AlertTriangle, X } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { deleteRoleAction } from "@/actions/authorization/delete-role";
+import { deleteRoleAction } from "@/server/actions/authorization/delete-role";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle,X } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface DeleteRoleModalProps {
     roleId: number;
@@ -20,11 +20,11 @@ export function DeleteRoleModal({ roleId, roleName }: DeleteRoleModalProps) {
     const mutation = useMutation({
         mutationFn: () => deleteRoleAction(roleId),
         onSuccess: () => {
-            toast.success("Cargo excluído com sucesso!");
+            toast.success("Cargo arquivado com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["authorization", "roles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao excluir cargo."),
+
     });
 
     return (

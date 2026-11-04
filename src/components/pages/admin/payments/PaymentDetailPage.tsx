@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, X } from "lucide-react";
 import toast from "react-hot-toast";
-import { confirmPaymentAction, getPaymentAction, rejectPaymentAction } from "@/actions/payments";
+import { confirmPaymentAction, getPaymentAction, rejectPaymentAction } from "@/server/actions/payments";
 import { Button } from "@/components/common/button";
 import { paymentPermissions } from "@/config/paymentPermissions";
 import { rejectPaymentSchema } from "@/schemas/payments";

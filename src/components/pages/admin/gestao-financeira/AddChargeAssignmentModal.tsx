@@ -1,22 +1,21 @@
 'use client';
 
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { AlertCircle,LoaderCircle,X } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { AlertCircle, LoaderCircle, X } from "lucide-react";
 
-import { Button, ButtonIcon } from "@/components/common/button";
-import { Select } from "@/components/common/select";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Input } from "@/components/common/input/input";
+import { Select } from "@/components/common/select";
 import { useModal } from "@/providers/ModalProvider";
-import { listRolesAction } from "@/actions/authorization/list-roles";
+import { listRolesAction } from "@/server/actions/authorization/list-roles";
 import {
-    assignChargeToAllMembersAction,
-    assignChargeToEventParticipantsAction,
-    assignChargeToRoleAction,
-    assignChargeToUserAction,
-} from "@/actions/billing/chargeAssignments/assign";
-import { extractApiErrorMessage } from "@/utils/http/apiError";
+	assignChargeToAllMembersAction,
+	assignChargeToEventParticipantsAction,
+	assignChargeToRoleAction,
+	assignChargeToUserAction,
+} from "@/server/actions/billing/chargeAssignments/assign";
 import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
 
 interface AddChargeAssignmentModalProps {
@@ -87,7 +86,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions", chargeDefinitionId, "assignments"] });
             backToAssignmentsList();
         },
-        onError: (error) => toast.error(extractApiErrorMessage(error, "Erro ao criar atribuição.")),
+
     });
 
     const canSubmit = audienceType === "ALL_MEMBERS"

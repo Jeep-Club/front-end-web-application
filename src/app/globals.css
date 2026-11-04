@@ -121,20 +121,24 @@
   --button-text-disabled: var(--gray-400);
 
   /* Inputs */
-  --input-bg: var(--gray-500);
-  --input-bg-disabled: var(--gray-400);
-  --input-bg-focus: var(--gray-400);
+  --input-bg: var(--surface);
+  --input-bg-disabled: var(--gray-100);
+  --input-bg-focus: var(--surface);
+  /* Explicit gray variants remain compatible; new fields use the theme above. */
+  --input-legacy-bg: #595959;
+  --input-legacy-text: var(--white);
   
-  --input-border: var(--gray-600);
+  --input-border: var(--gray-400);
   --input-border-hover: var(--gray-500);
-  --input-border-focus: var(--yellow-300);
+  --input-border-focus: var(--blue-500);
   --input-border-error: var(--red-300);
   --input-border-success: var(--green-400);
   
-  --input-text: var(--white);
-  --input-text-focus: var(--white);
+  --input-text: var(--gray-700);
+  --input-text-focus: var(--gray-700);
   --input-text-disabled: var(--gray-500);
-  --input-placeholder: var(--placeholder);
+  --input-placeholder: var(--gray-500);
+  --input-error-text: var(--red-500);
 
   /* Status */
   --success: var(--green-400);
@@ -260,6 +264,9 @@
   --color-input-text-focus: var(--input-text-focus);
   --color-input-text-disabled: var(--input-text-disabled);
   --color-input-placeholder: var(--input-placeholder);
+  --color-input-error-text: var(--input-error-text);
+  --color-input-legacy-bg: var(--input-legacy-bg);
+  --color-input-legacy-text: var(--input-legacy-text);
 
   /* Status */
   --color-success: var(--success);
@@ -444,7 +451,9 @@ body {
   --button-outline-border: #9baac0;
   --button-outline-text: #d9e2ef;
   --button-text-disabled: #bac7d9;
-  --input-bg: #182438;
+  --input-bg: var(--surface);
+  --input-legacy-bg: #182438;
+  --input-legacy-text: #f1f5f9;
   --input-bg-focus: #26354c;
   --input-bg-disabled: #26354c;
   --input-text: #f1f5f9;
@@ -452,6 +461,16 @@ body {
   --input-text-disabled: #9baac0;
   --input-border: #52627a;
   --input-border-hover: #9baac0;
+  --input-border-focus: var(--yellow-300);
+  --input-error-text: var(--red-200);
+}
+
+/* Local native actions receive the same cursor affordance as shared controls. */
+@layer base {
+  button:enabled, select:enabled, input[type="checkbox"]:enabled, input[type="radio"]:enabled,
+  [role="button"]:not(:disabled):not([aria-disabled="true"]) { cursor: pointer; }
+  button:disabled, select:disabled, input:disabled, textarea:disabled,
+  [role="button"][aria-disabled="true"] { cursor: not-allowed; }
 }
 
 @layer utilities {

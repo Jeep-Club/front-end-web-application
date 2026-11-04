@@ -1,20 +1,19 @@
 "use client";
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import toast from "react-hot-toast";
-import { Table } from "@/components/common/table";
 import { Button } from "@/components/common/button";
+import { Table } from "@/components/common/table";
 import { useModal } from "@/providers/ModalProvider";
+import type { BillingRecord,BillingResource } from "@/schemas/billing/management";
+import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
+import { downloadBillingAction } from "@/server/actions/billing/download";
+import { listBillingAction } from "@/server/actions/billing/management";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { listBillingAction } from "@/actions/billing/management";
-import { listChargeDefinitionsAction } from "@/actions/billing/chargeDefinitions/list";
-import { downloadBillingAction } from "@/actions/billing/download";
-import type { BillingResource, BillingRecord } from "@/schemas/billing/management";
-import { BillingRecordModal } from "./BillingRecordModal";
+import { useMutation,useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
 import { BillingExport } from "./BillingExport";
-import { billingLabels, displayBillingValue, saveBillingFile } from "./billingDisplay";
+import { BillingRecordModal } from "./BillingRecordModal";
+import { billingLabels,displayBillingValue,saveBillingFile } from "./billingDisplay";
 
 const config = {
     cycles: { title: "Ciclos de cobrança", read: "CHARGE_CYCLE_READ", statuses: ["GENERATED", "CANCELED", "FINISHED", "ARCHIVED"], fields: ["code", "chargeDefinitionNameSnapshot", "dueDate", "status"], labels: ["Referência", "Definição", "Vencimento", "Situação"] },
@@ -38,7 +37,7 @@ export function BillingOperations({ resource }: { resource: BillingResource }) {
     const filters = { page, size, ...(resource === "cycles" && definitionId ? { definitionId: Number(definitionId) } : {}), ...(resource === "member-charges" && userId ? { userId: Number(userId) } : {}), ...(resource === "refunds" && cycleId ? { cycleId: Number(cycleId) } : {}), ...(status ? { status } : {}) };
     const validFilters = (!userId || Number(userId) > 0) && (!cycleId || Number(cycleId) > 0) && (!definitionId || Number(definitionId) > 0);
     const records = useQuery({ queryKey: ["billing", resource, filters], queryFn: () => listBillingAction(resource, filters), enabled: can(settings.read) && validFilters && (resource !== "cycles" || Number(definitionId) > 0), placeholderData: (previous) => previous });
-    const receipt = useMutation({ mutationFn: async (id: number) => saveBillingFile(await downloadBillingAction("receipt", "PDF", {}, id)), onError: (error) => toast.error(error.message) });
+    const receipt = useMutation({ mutationFn: async (id: number) => saveBillingFile(await downloadBillingAction("receipt", "PDF", {}, id)) });
     function open(id: number, title: string, operation?: string, explanation?: string) { setContent(<BillingRecordModal resource={resource} id={id} title={title} operation={operation} explanation={explanation} />); setOpen(); }
     const columns: ColumnDef<BillingRecord, unknown>[] = [
         { accessorKey: "id", header: "Código" },

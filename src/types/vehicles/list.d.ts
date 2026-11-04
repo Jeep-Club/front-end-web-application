@@ -14,6 +14,7 @@ interface VehicleListItem {
     modelYear: number;
     model: string;
     color: string;
+    status: VehicleStatus;
     ownerId?: number | null;
     ownerName?: string | null;
 }

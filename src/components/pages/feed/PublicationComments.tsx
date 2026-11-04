@@ -1,16 +1,17 @@
 "use client";
 
 import { useId, useState } from "react";
-import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import { ChevronDown, ChevronUp, Send } from "lucide-react";
 import { Button } from "@/components/common/button";
+import { createPublicationCommentAction, listPublicationCommentsAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
-import { hasPermission } from "@/utils/permission/hasPermission";
-import { createPublicationCommentAction, listPublicationCommentsAction } from "@/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { PublicationCommentAuthor } from "./PublicationCommentAuthor";
+
+import Image from "next/image";
+import toast from "react-hot-toast";
 
 export function PublicationComments({ publicationId }: { publicationId: number }) {
     const permissions = useUserStore((state) => state.permissions);
@@ -25,7 +26,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
     const mutation = useMutation({
         mutationFn: () => createPublicationCommentAction({ id: publicationId, text }),
         onSuccess: async () => { setText(""); setPage(0); await client.invalidateQueries({ queryKey: ["publications"] }); toast.success("Comentário enviado!"); },
-        onError: (error) => toast.error(error.message || "Não foi possível enviar o comentário."),
+
     });
     if (!canRead && !canCreate) return null;
     return <section aria-label="Comentários" className="border-t border-j-gray-200 p-5 md:p-8">

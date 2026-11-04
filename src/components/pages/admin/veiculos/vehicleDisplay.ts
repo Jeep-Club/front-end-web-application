@@ -1,15 +1,13 @@
-export const VEHICLE_STATUS_LABEL: Record<string, string> = {
+export const VEHICLE_STATUS_LABEL: Record<VehicleStatus, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
-    PENDING: "Pendente",
-    SOFT_DELETED: "Excluído",
+    ARCHIVED: "Arquivado",
 };
 
-export const VEHICLE_STATUS_STYLE: Record<string, string> = {
+export const VEHICLE_STATUS_STYLE: Record<VehicleStatus, string> = {
     ACTIVE: "bg-green-50 text-j-green-600",
     INACTIVE: "bg-red-50 text-red-500",
-    PENDING: "bg-yellow-50 text-yellow-600",
-    SOFT_DELETED: "bg-gray-100 text-gray-500",
+    ARCHIVED: "bg-gray-100 text-gray-500",
 };
 
 export const FUEL_TYPE_LABEL: Record<FuelType, string> = {

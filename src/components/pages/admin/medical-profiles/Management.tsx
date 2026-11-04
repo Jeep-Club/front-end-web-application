@@ -6,6 +6,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, HeartPulse, Pencil, Plus, ShieldX, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { PageHeader } from "@/components/common/page-header";
+import { getMedicalProfilesTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
 import { Table } from "@/components/common/table";
@@ -14,7 +16,7 @@ import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { medicalPermissions as permissionsConfig } from "@/config/medicalPermissions";
 import MedicalDetails from "./MedicalDetails";
-import { listMedicalProfilesAction, getMedicalProfileAdminAction, getMedicalOwnerAction, deleteMedicalProfileAction, exportMedicalProfilesAction } from "@/actions/admin/medical-profile/manage";
+import { listMedicalProfilesAction, getMedicalProfileAdminAction, getMedicalOwnerAction, deleteMedicalProfileAction, exportMedicalProfilesAction } from "@/server/actions/admin/medical-profile/manage";
 import MedicalForm from "./MedicalForm";
 
 const key = ["admin", "medical-profiles"];
@@ -37,7 +39,7 @@ function ExportButtons({ profileId }: { profileId?: number }) {
         onError: error => toast.error(error.message),
     });
     if (!hasPermission(permissions, permissionsConfig.module, permissionsConfig.export)) return null;
-    return <div className="flex flex-wrap items-center gap-2">
+    return <div id={!profileId ? "tour-medical-export" : undefined} className="flex flex-wrap items-center gap-2">
         {!profileId && <label className="flex items-center gap-2 text-sm text-j-gray-600"><input type="checkbox" checked={history} disabled={download.isPending} onChange={event => setHistory(event.target.checked)} />Histórico de exclusões</label>}
         {(["CSV", "PDF"] as const).map(format => <Button key={format} disabled={download.isPending} onClick={() => download.mutate(format)} className="h-10 px-3 py-0 text-sm">{download.isPending ? "Exportando..." : `Exportar ${format}`}</Button>)}
     </div>;
@@ -82,6 +84,12 @@ export default function MedicalManagement() {
     const permissions = useUserStore(state => state.permissions);
     const can = (action: string) => hasPermission(permissions, permissionsConfig.module, action);
     const canRead = can(permissionsConfig.read);
+    usePageTour({
+        storageKey: "tour_completed_admin_medical",
+        steps: getMedicalProfilesTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: canRead,
+    });
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
     const { setContent, setOpen, setClose } = useModal();
     const query = useQuery({ queryKey: [...key, "list", pagination, permissions], queryFn: () => listMedicalProfilesAction(pagination.pageIndex, pagination.pageSize), enabled: canRead, gcTime: 0 });
@@ -99,12 +107,12 @@ export default function MedicalManagement() {
         </div> },
     ];
     return <div className="min-h-full w-full p-3 md:p-4"><div className="flex w-full flex-col gap-4 pb-6">
-        <PageHeader title="Gestão de dados médicos" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Dados médicos" }]} />
+        <PageHeader id="tour-medical-header" title="Gestão de dados médicos" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Dados médicos" }]} />
         {!canRead ? <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center"><ShieldX size={42} className="mb-3 text-j-gray-400" /><h3 className="text-lg font-black text-j-blue-800">Acesso não permitido</h3><p className="mt-1 text-sm text-j-gray-600">Seu usuário não possui permissão para consultar dados médicos.</p></section> : <>
             <div className="flex items-center gap-3"><ManagementBackButton /><p className="text-sm text-j-gray-600">Gerencie os perfis médicos de usuários e dependentes ativos.</p></div>
             <Table.Root data={query.data?.content ?? []} columns={columns} getRowId={profile => String(profile.id)} isLoading={query.isPending} isFetching={query.isFetching} error={query.error ? <div className="flex flex-col gap-3"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Tentar novamente</Button></div> : undefined} emptyState="Nenhum perfil médico cadastrado." pagination={{ ...pagination, pageCount: query.data?.totalPages ?? 0, rowCount: query.data?.totalElements, pageSizeOptions: [10, 20, 50], onChange: next => setPagination({ ...next, pageIndex: next.pageSize !== pagination.pageSize ? 0 : next.pageIndex }) }} footer={<Table.Pagination itemLabel="perfil médico" />}>
-                <Table.Header title="Perfis médicos" description="Abra um perfil para consultar os dados completos."><ExportButtons />{can(permissionsConfig.update) && <Button onClick={() => open("create")} className="h-10 gap-2 px-4 py-0 text-sm"><Plus size={16} />Cadastrar perfil</Button>}</Table.Header>
-                <Table.Content loadingRows={pagination.pageSize} />
+                <Table.Header title="Perfis médicos" description="Abra um perfil para consultar os dados completos."><ExportButtons />{can(permissionsConfig.update) && <Button id="tour-medical-create-btn" onClick={() => open("create")} className="h-10 gap-2 px-4 py-0 text-sm"><Plus size={16} />Cadastrar perfil</Button>}</Table.Header>
+                <div id="tour-medical-table"><Table.Content loadingRows={pagination.pageSize} /></div>
             </Table.Root>
         </>}
     </div></div>;

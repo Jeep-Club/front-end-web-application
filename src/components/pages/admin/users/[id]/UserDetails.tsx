@@ -1,26 +1,26 @@
 "use client";
 
-import { AlertCircle, LoaderCircle, LockKeyhole, Plus, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
-import { twMerge } from "tailwind-merge";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { AlertCircle,LoaderCircle,LockKeyhole,Plus,RefreshCw,ShieldCheck,UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect,useMemo,useState } from "react";
+import { twMerge } from "tailwind-merge";
 
-import { getAdminUserAction } from "@/actions/admin/users/detail";
 import { Button } from "@/components/common/button";
-import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { ModalRoot } from "@/components/common/modal/root";
-import { listUserRolesAction } from "@/actions/authorization/list-user-roles";
+import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { AddUserRoleModal } from "@/components/pages/admin/roles-permissoe/AddUserRoleModal";
 import { useModal } from "@/providers/ModalProvider";
+import { getAdminUserAction } from "@/server/actions/admin/users/detail";
+import { listUserRolesAction } from "@/server/actions/authorization/list-user-roles";
 import { useUserStore } from "@/stores/userStore";
-import { maskCPF, maskDate, maskPhoneNumber } from "@/utils/masks";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { ROLE_STATUS_LABEL, USER_STATUS_LABEL, USER_STATUS_STYLE } from "../user-display";
-import { UserWorkspace, type UserWorkspaceOption } from "../UserWorkspace";
-import { hasAdminSecurityReadPermission, UserSecurityTab } from "./UserSecurityTab";
+import { maskCPF,maskDate,maskPhoneNumber } from "@/utils/masks";
+import { hasPermission } from "@/utils/permission/hasPermission";
+import { ROLE_STATUS_LABEL,USER_STATUS_LABEL,USER_STATUS_STYLE } from "../user-display";
+import { UserWorkspace,type UserWorkspaceOption } from "../UserWorkspace";
 import { UserActivationInvitation } from "./UserActivationInvitation";
+import { hasAdminSecurityReadPermission,UserSecurityTab } from "./UserSecurityTab";
 
 interface UserDetailsModalProps {
     user: AdminUser;

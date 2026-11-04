@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, MessageCircle, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
-import { listPublicationFeedAction } from "@/actions/publications/feed";
+import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/providers/ModalProvider";
 import { hasPermission } from "@/utils/permission/hasPermission";

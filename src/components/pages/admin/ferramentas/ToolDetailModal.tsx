@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
-import { getToolDetailAdminAction } from "@/actions/admin/tools/detail";
+import { getToolDetailAdminAction } from "@/server/actions/admin/tools/detail";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { TOOL_STATUS_DOT_STYLE, TOOL_STATUS_LABEL } from "./toolDisplay";
 

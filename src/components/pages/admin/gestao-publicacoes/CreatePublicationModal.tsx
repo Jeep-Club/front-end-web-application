@@ -14,14 +14,16 @@ import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister
 import { InputFile } from "@/components/common/input/file";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
+
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationCreationTypes } from "@/config/publicationCreation";
 import { publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
-import { createPublicationAction } from "@/actions/publications/create";
-import { mutateDraftPublicationAction } from "@/actions/publications/draft";
-import { uploadImageAction } from "@/actions/media/upload-image";
+import { createPublicationAction } from "@/server/actions/publications/create";
+import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
+import { uploadImageAction } from "@/server/actions/media/upload-image";
 import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
+
 
 function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
     const { setClose } = useModal();
@@ -56,7 +58,7 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
                             <InputRegister name="chargeName" label="Descrição do valor" placeholder="Entrada, Inscrição ou Por veículo" />
                             <InputRegister name="chargeDescription" label="Informações adicionais da cobrança" placeholder="Opcional" />
                         </>}
-                        <p className="mt-2 text-xs leading-relaxed text-j-gray-500">O valor será exibido no evento e associado à cobrança financeira dos participantes inscritos.</p>
+                        <p className="mt-2 text-xs leading-relaxed text-j-gray-500">O valor será exibido no evento e associado à cobrança dos participantes inscritos.</p>
                     </div> : <p className="text-xs text-j-gray-500">Seu perfil nao pode configurar cobrancas; o evento sera gratuito.</p>}
                 </>}
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">

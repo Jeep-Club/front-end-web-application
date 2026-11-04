@@ -7,7 +7,7 @@ export const relationshipSchema = z.enum(['CHILD', 'GUEST', 'OTHER', 'PARENT', '
 export const dependentResponseSchema: z.ZodType<MemberDependent> = z.object({
   id: z.number(), name: z.string(), cpf: z.string(), birthDate: z.string(),
   relationshipType: relationshipSchema, phoneNumber: z.string().nullable(),
-  userId: z.number(), status: z.enum(['ACTIVE', 'DISABLED', 'INACTIVE', 'ARCHIVED']),
+  userId: z.number(), status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']),
   photoUrl: z.string().nullable().optional(),
   createdAt: z.string(), updatedAt: z.string().nullable(),
 });

@@ -1,37 +1,61 @@
-# Mensagens de erro em produção
+# Contratos HTTP e erros de Server Actions
 
-As funções em `src/server/actions` são as Server Actions reais. Elas retornam
-`ActionResult<T>`: sucesso com `data`, ou falha com uma mensagem preparada para
-exibição. Falhas esperadas não devem atravessar essa fronteira como exceções:
-o Next.js oculta as mensagens de exceções do servidor em builds de produção.
+Versões estáveis verificadas no npm: Next.js 16.4.3, React e React DOM 19.3.1.
+Types de React/React DOM e eslint-config-next foram atualizados em conjunto.
 
-Os adaptadores em `src/actions` mantêm a API usada pelas telas. Eles recebem o
-resultado e só então reconstroem `ActionError` no chamador. Assim, os fluxos
-existentes de React Query (`onError`, `mutation.error`, `mutateAsync`) continuam
-funcionando, sem importar cookies ou credenciais no navegador.
+As funções reais ficam somente em src/server/actions. Componentes, queries,
+mutations e outras actions importam diretamente desse diretório. A função executa
+sua operação e retorna os dados de sucesso; falhas são lançadas. Catch local existe
+apenas para comportamento específico, como retornar null para um 404 ou limpar os
+cookies de uma sessão parcialmente criada no login. Não há adaptadores por action,
+fábricas de action, envelopes ActionResult, bindAction ou captureAction.
 
-Para criar uma ação:
+O actionFetchWrapper concentra autenticação, refresh e normalização em ActionError.
+Ele preserva status HTTP, code e errors do Problem Details, priorizando a mensagem
+do campo inválido e depois detail. Apenas 401 com código de access token inválido
+tenta refresh. Credenciais incorretas são exibidas no formulário. 402, 403, 409 e
+503, inclusive após refresh, não se tornam expiração de sessão. Uma indisponibilidade
+durante refresh mantém a sessão; um refresh rejeitado exige novo login.
 
-1. Implemente a operação em `src/server/actions` e envolva sua execução com
-   `captureAction`. Prepare falhas esperadas com `ActionError` e
-   `extractApiErrorMessage`, preservando a causa quando disponível.
-2. Exponha um adaptador em `src/actions` usando `unwrapActionResult`.
-3. Importe o adaptador nas telas. Não importe a Server Action diretamente
-   se a tela espera que erros sejam tratados pelo React Query.
+Next.js/React continuam removendo mensagens e propriedades de exceções em produção.
+Isso foi verificado no protocolo real depois da atualização. ActionError prepara
+centralmente um digest identificado e contendo somente os campos públicos destinados
+à interface: message, status, code e errors. O framework preserva esse digest.
+Causas, stacks, resposta bruta e diagnósticos internos não entram nele. Erros
+inesperados conservam o digest opaco e a mensagem genérica do framework. Esse
+transporte usa uma propriedade do erro, sem alterar os retornos das actions nem
+configurar o framework para divulgar exceções arbitrárias.
 
-O extrator prioriza a mensagem de validação de campo e depois `detail` da API.
-Erros inesperados recebem uma mensagem genérica; stacks e causas não integram
-o resultado enviado ao navegador. Redirecionamentos do Next.js são relançados.
-A expiração de sessão continua sendo tratada pelo handler global, mesmo quando
-a mutação possui tratamento local. Os demais erros geram toast global apenas
-quando a mutação não possui seu próprio `onError`.
+Os handlers globais mutationErrorHandler e queryErrorHandler compartilham a mesma
+implementação em QueryProvider/handlers/onError.ts. Eles recuperam os campos públicos
+antes dos callbacks locais, atualizam error.message e mostram o toast. Somente a
+expiração de sessão navega até a rota que limpa os cookies. Os componentes mantêm
+feedback de sucesso, validação local e efeitos específicos; não repetem toasts de
+falhas HTTP. Fluxos imperativos de salvar perfil e concluir onboarding usam o mesmo
+MutationCache por meio de useMutation.
 
-Para disponibilizar a correção, faça um novo build e deploy do frontend após
-integrar a branch. Não exige alteração nem novo deploy do backend.
+fetchWrapper mantém os contratos JSON existentes. HTTP 204 retorna sem consumir o
+corpo nem validar JSON. Downloads usam responseType blob, schema Blob e uma lista
+explícita de Content-Types aceitos. Status e Content-Type são verificados antes dos
+bytes. Problem Details e JSON de erro, mesmo com HTTP 200 incorreto, não viram arquivo.
 
-Validação: `npm run build` e `npm test -- --runInBand --coverage=false`.
-Após o build, `npm run test:production-errors` inicia o Next.js em produção e
-uma API simulada local para conferir a mensagem no protocolo HTTP real das
-Server Actions, sem acessar a API publicada.
-`tests/serverActionErrors.spec.ts` cobre transporte JSON, mensagens da API,
-sucesso, validação, sessão expirada, redirecionamentos e toasts duplicados.
+Validação:
+
+- npx tsc --noEmit
+- npm run build
+- npm test -- --runInBand --coverage=false
+- npm run test:production-errors
+- npx playwright test tests/e2e/http-contracts.spec.mjs --workers=1
+
+O Playwright usa Chrome instalado, ou E2E_BROWSER_CHANNEL. A suíte é independente
+do arquivo de configuração compartilhado da outra branch e exige backend dev ativo.
+Ela lê application-dev.properties e cria usuário e ferramentas E2E HTTP via API no
+MySQL local, imprimindo apenas IDs. Registros sintéticos ficam identificados para
+inspeção; a ferramenta do teste DELETE é removida pela própria operação. Também é
+possível executar node tests/e2e/seed-local.mjs para preparar dados.
+
+JSON, validação, 204, 403 por propriedade, 409 por estado e CSV usam o backend local.
+402/503, falhas de refresh e exportações inválidas usam uma API intermediária local.
+Os testes de navegador exercitam toast de mutation, toast de query e manutenção de
+sessão. O teste de produção também verifica que exceções inesperadas continuam
+sanitizadas. Nenhum cenário usa a API publicada.

@@ -1,5 +1,5 @@
 import { createPublicationSchema } from "@/schemas/publications/create";
-import { createPublicationAction } from "@/actions/publications/create";
+import { createPublicationAction } from "@/server/actions/publications/create";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 

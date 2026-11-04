@@ -2,7 +2,7 @@ jest.mock('server-only', () => ({}));
 jest.mock('@/services/fetchWrapper/actionFetchWrapper', () => ({ __esModule: true, default: jest.fn() }));
 
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { saveDependentWithPhotoAction, removeDependentPhotoAction } from '@/actions/dependents/photo';
+import { saveDependentWithPhotoAction, removeDependentPhotoAction } from '@/server/actions/dependents/photo';
 import { dependentResponseSchema } from '@/schemas/dependents';
 import { imageUploadErrorMessage } from '@/utils/media/uploadError';
 import { fetchWrapper } from '@/services/fetchWrapper/fetchWrapper';

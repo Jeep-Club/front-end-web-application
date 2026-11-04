@@ -1,23 +1,23 @@
 'use client';
 import { confirmAction } from '@/components/common/tour/confirmTourExit';
 
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, ChevronLeft, ChevronRight, Clipboard, LoaderCircle, Mail, MessageCircle, RefreshCw, ShieldAlert, X } from 'lucide-react';
-import toast from 'react-hot-toast';
-import {
-    approveMembershipApplicationWithLinkAction,
-    approveMembershipApplicationWithTemporaryPasswordAction,
-    generateUserTemporaryPasswordAction,
-    listMembershipApplicationsAction,
-    rejectAndBlockMembershipApplicantAction,
-    rejectMembershipApplicationAction,
-    resendMembershipActivationLinkAction,
-} from '@/actions/admin/membership-applications';
 import { Button } from '@/components/common/button';
+import {
+	approveMembershipApplicationWithLinkAction,
+	approveMembershipApplicationWithTemporaryPasswordAction,
+	generateUserTemporaryPasswordAction,
+	listMembershipApplicationsAction,
+	rejectAndBlockMembershipApplicantAction,
+	rejectMembershipApplicationAction,
+	resendMembershipActivationLinkAction,
+} from '@/server/actions/admin/membership-applications';
 import { useUserStore } from '@/stores/userStore';
+import { maskCPF,maskPhoneNumber } from '@/utils/masks';
 import { hasPermission } from '@/utils/permission/hasPermission';
-import { maskCPF, maskPhoneNumber } from '@/utils/masks';
+import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query';
+import { Check,ChevronLeft,ChevronRight,Clipboard,LoaderCircle,Mail,MessageCircle,RefreshCw,ShieldAlert,X } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 type GeneratedPasswordForWhatsApp = TemporaryPasswordApproval & { name: string; phoneNumber: string };
 
@@ -65,7 +65,7 @@ export function MembershipApplicationsTab() {
             toast.success('Solicitação aprovada e usuário criado.');
             await refreshList();
         },
-        onError: (error) => toast.error(error.message),
+
     });
     const approveByLink = useMutation({
         mutationFn: approveMembershipApplicationWithLinkAction,
@@ -74,22 +74,22 @@ export function MembershipApplicationsTab() {
             toast.success('Solicitação aprovada e convite enviado por e-mail.');
             await refreshList();
         },
-        onError: (error) => toast.error(error.message),
+
     });
     const reject = useMutation({
         mutationFn: ({ id, reason }: { id: number; reason: string }) => rejectMembershipApplicationAction(id, reason),
         onSuccess: async () => { toast.success('Solicitação rejeitada.'); await refreshList(); },
-        onError: (error) => toast.error(error.message),
+
     });
     const rejectAndBlock = useMutation({
         mutationFn: ({ id, reason }: { id: number; reason: string }) => rejectAndBlockMembershipApplicantAction(id, reason),
         onSuccess: async () => { toast.success('Solicitação rejeitada e CPF bloqueado.'); await refreshList(); },
-        onError: (error) => toast.error(error.message),
+
     });
     const resend = useMutation({
         mutationFn: resendMembershipActivationLinkAction,
         onSuccess: async () => { toast.success('Convite reenviado.'); await refreshList(); },
-        onError: (error) => toast.error(error.message),
+
     });
     const generatePassword = useMutation({
         mutationFn: ({ userId }: { userId: number; name: string; phoneNumber: string }) => generateUserTemporaryPasswordAction(userId),
@@ -97,7 +97,7 @@ export function MembershipApplicationsTab() {
             setTemporaryPassword({ ...result, name: variables.name, phoneNumber: variables.phoneNumber });
             toast.success('Senha provisória gerada.');
         },
-        onError: (error) => toast.error(error.message),
+
     });
 
     if (!canRead) return <p className="rounded-xl bg-j-gray-50 p-5 text-sm text-j-gray-600">Seu usuário não tem permissão para consultar solicitações de associação.</p>;
@@ -111,7 +111,7 @@ export function MembershipApplicationsTab() {
                     <h2 className="text-lg font-extrabold text-j-blue-800">Solicitações de associação</h2>
                     <p className="mt-1 text-sm text-j-gray-600">Analise os dados e a apresentação antes de aprovar ou rejeitar.</p>
                 </div>
-                <label className="flex flex-col gap-1 text-xs font-bold text-j-gray-600">Status
+                <label id="tour-applications-status-filter" className="flex flex-col gap-1 text-xs font-bold text-j-gray-600">Status
                     <select value={status} onChange={(event) => { setStatus(event.target.value as MembershipApplicationStatus | ''); setPage(0); }} className="h-10 min-w-44 rounded-lg border border-j-gray-300 bg-white px-3 text-sm font-normal text-j-gray-800">
                         <option value="PENDING">Pendentes</option><option value="APPROVED">Aprovadas</option><option value="REJECTED">Rejeitadas</option><option value="COMPLETED">Concluídas</option><option value="">Todos os status</option>
                     </select>
@@ -135,11 +135,12 @@ export function MembershipApplicationsTab() {
                 </section>
             )}
 
+            <div id="tour-applications-list" className="flex flex-col gap-4">
             {query.isLoading ? <div className="flex min-h-40 items-center justify-center gap-2 text-sm text-j-gray-500"><LoaderCircle size={20} className="animate-spin" /> Carregando solicitações...</div> : null}
             {query.isError && <div role="alert" className="flex flex-col items-center gap-3 rounded-xl border border-j-red-200 bg-j-red-50 p-6 text-center"><p className="text-sm text-j-red-700">{query.error.message}</p><Button type="button" onClick={() => void query.refetch()}><RefreshCw size={16} /> Tentar novamente</Button></div>}
             {query.data?.empty && <div className="rounded-xl border border-dashed border-j-gray-300 p-10 text-center text-sm text-j-gray-500">Nenhuma solicitação encontrada neste status.</div>}
 
-            {query.data?.content.map((application) => {
+            {query.data?.content.map((application, index) => {
                 const reason = reasons[application.id] ?? '';
                 const isPending = application.status === 'PENDING';
                 const phone = applicationPhone(application.phoneNumber);
@@ -158,7 +159,7 @@ export function MembershipApplicationsTab() {
                         </div>
                         <div className="mt-4 rounded-xl bg-j-gray-50 p-4"><h4 className="text-sm font-bold text-j-gray-700">Carta de apresentação</h4><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-j-gray-700">{application.message || 'Nenhuma apresentação informada.'}</p></div>
                         {application.rejectionReason && <p className="mt-3 text-sm text-j-red-700"><strong>Motivo da rejeição:</strong> {application.rejectionReason}</p>}
-                        {isPending && (canApprove || canReject) && <div className="mt-4 border-t border-j-gray-100 pt-4">
+                        {isPending && (canApprove || canReject) && <div id={index === 0 ? "tour-applications-actions" : undefined} className="mt-4 border-t border-j-gray-100 pt-4">
                             {canReject && <label className="mb-3 block text-xs font-bold text-j-gray-600">Motivo (opcional para rejeitar; obrigatório para bloquear)
                                 <textarea value={reason} maxLength={2000} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} className="mt-1 block w-full rounded-lg border border-j-gray-300 p-3 text-sm font-normal text-j-gray-800" placeholder="Registre o motivo, se necessário." />
                             </label>}
@@ -191,6 +192,7 @@ export function MembershipApplicationsTab() {
                 <span className="text-xs text-j-gray-600">Página {query.data.number + 1} de {query.data.totalPages} · {query.data.totalElements} solicitação(ões)</span>
                 <div className="flex gap-2"><Button type="button" disabled={query.data.first} onClick={() => setPage((current) => Math.max(0, current - 1))}><ChevronLeft size={16} /> Anterior</Button><Button type="button" disabled={query.data.last} onClick={() => setPage((current) => current + 1)}>Próxima <ChevronRight size={16} /></Button></div>
             </footer>}
+            </div>
         </div>
     );
 }

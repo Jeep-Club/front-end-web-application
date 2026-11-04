@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from "react";
-import { useVehicleDetailsSteps } from "@/hooks/useVehicleDetailsSteps";
-import { useQuery } from "@tanstack/react-query";
-import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
+import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { useVehicleDetailsSteps } from "@/hooks/useVehicleDetailsSteps";
 import { useModal } from "@/providers/ModalProvider";
-import { getVehicleDetailAdminAction } from "@/actions/admin/vehicles/detail";
+import { getVehicleDetailAdminAction } from "@/server/actions/admin/vehicles/detail";
 import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
-import { FUEL_TYPE_LABEL, VEHICLE_STATUS_LABEL, VEHICLE_STATUS_STYLE } from "./vehicleDisplay";
-import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { useState } from "react";
+import { twMerge } from "tailwind-merge";
+import { FUEL_TYPE_LABEL,VEHICLE_STATUS_LABEL,VEHICLE_STATUS_STYLE } from "./vehicleDisplay";
 
 const STEPS = [
     { step: 1, label: "Identificação" },

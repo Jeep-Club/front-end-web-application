@@ -1,13 +1,9 @@
 'use server';
 
-import { captureAction } from "@/utils/actions/captureAction";
-import { ActionError } from "@/utils/actions/actionResult";
-
-import { z } from 'zod';
 import { birthDateSchema } from '@/schemas/auth/user/birthDate';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
 import { HttpAPIRoutes } from '@/utils/http/api';
+import { z } from 'zod';
 
 interface UpdatePersonalDataRequest {
     name: string;
@@ -17,28 +13,19 @@ interface UpdatePersonalDataRequest {
     phoneNumber: string | null;
 }
 
-async function updatePersonalDataActionImpl(data: UpdatePersonalDataRequest): Promise<void> {
+export async function updatePersonalDataAction(data: UpdatePersonalDataRequest): Promise<void> {
     birthDateSchema.nullable().parse(data.birthDate);
-    try {
-        const { email, ...profile } = data;
-        await actionFetchWrapper({
-            url: HttpAPIRoutes.IDENTITY_ME,
-            method: 'PATCH',
-            schema: z.unknown(),
-            body: JSON.stringify(profile),
-        });
-        await actionFetchWrapper({
-            url: HttpAPIRoutes.IDENTITY_ME_EMAIL,
-            method: 'PATCH',
-            schema: z.unknown(),
-            body: JSON.stringify({ email }),
-        });
-    } catch (error) {
-        throw new ActionError(extractApiErrorMessage(error, 'Erro ao atualizar os dados pessoais'), { cause: error });
-    }
-}
-
-
-export async function updatePersonalDataAction(...args: Parameters<typeof updatePersonalDataActionImpl>) {
-    return captureAction(() => updatePersonalDataActionImpl(...args));
+    const { email, ...profile } = data;
+    await actionFetchWrapper({
+        url: HttpAPIRoutes.IDENTITY_ME,
+        method: 'PATCH',
+        schema: z.unknown(),
+        body: JSON.stringify(profile),
+    });
+    await actionFetchWrapper({
+        url: HttpAPIRoutes.IDENTITY_ME_EMAIL,
+        method: 'PATCH',
+        schema: z.unknown(),
+        body: JSON.stringify({ email }),
+    });
 }

@@ -1,24 +1,24 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { X, KeyRound, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
 import { ButtonIcon } from "@/components/common/button";
 import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
 import { useModal } from "@/providers/ModalProvider";
-import { getRoleAction } from "@/actions/authorization/get-role";
+import { getRoleAction } from "@/server/actions/authorization/get-role";
 import { maskDate } from "@/utils/masks";
+import { useQuery } from "@tanstack/react-query";
+import { KeyRound,LoaderCircle,X } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 
 const ROLE_STATUS_LABEL: Record<RoleStatus, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
-    DELETED: "Excluído",
+    ARCHIVED: "Arquivado",
 };
 
 const ROLE_STATUS_DOT_STYLE: Record<RoleStatus, string> = {
     ACTIVE: "bg-j-green-500",
     INACTIVE: "bg-j-gray-400",
-    DELETED: "bg-red-500",
+    ARCHIVED: "bg-red-500",
 };
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -97,8 +97,8 @@ export function ViewRoleModal({ roleId }: ViewRoleModalProps) {
                             <ReadOnlyField label="Atualizado em" value={maskDate(role.updatedAt)} />
                         </div>
 
-                        {role.status === "DELETED" && (
-                            <ReadOnlyField label="Excluído em" value={maskDate(role.deletedAt)} />
+                        {role.status === "ARCHIVED" && (
+                            <ReadOnlyField label="Arquivado em" value={maskDate(role.deletedAt)} />
                         )}
                     </div>
                 )}

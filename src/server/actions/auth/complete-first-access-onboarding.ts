@@ -1,13 +1,11 @@
 'use server';
+import { ActionError } from "@/utils/http/ActionError";
 
-import { captureAction } from "@/utils/actions/captureAction";
-import { ActionError } from "@/utils/actions/actionResult";
-
+import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
+import { listVehiclesMemberAction } from "@/server/actions/vehicles/list-member";
 import { cookies } from "next/headers";
-import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
-import { getMedicalProfileAction } from "@/actions/profile/medical-profile";
 
-async function completeFirstAccessOnboardingActionImpl() {
+export async function completeFirstAccessOnboardingAction() {
     const [vehicles, medicalProfile] = await Promise.all([
         listVehiclesMemberAction({ page: 0, size: 1 }),
         getMedicalProfileAction(),
@@ -19,9 +17,4 @@ async function completeFirstAccessOnboardingActionImpl() {
     const cookieStore = await cookies();
     cookieStore.delete("FirstAccessOnboardingUserId");
     return { success: true };
-}
-
-
-export async function completeFirstAccessOnboardingAction(...args: Parameters<typeof completeFirstAccessOnboardingActionImpl>) {
-    return captureAction(() => completeFirstAccessOnboardingActionImpl(...args));
 }

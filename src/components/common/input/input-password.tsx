@@ -19,7 +19,7 @@ export type InputPasswordProps = Omit<InputProps, "label" | "name"> & {
     stepErrors?: boolean
 }
 
-export function InputPassword({label="Senha", name='senha', placeholder, className, value, notSeePassword=false, onChange, stepErrors=false, autoComplete='new-password', ...props}: InputPasswordProps){
+export function InputPassword({label="Senha", name='senha', placeholder, className, value, notSeePassword=false, onChange, stepErrors=false, autoComplete='new-password', variant = "white", disabled, ...props}: InputPasswordProps){
     const [isVisible, setIsVisible] = useState<boolean>(false);
     
     const { control } = useFormContext();
@@ -34,6 +34,8 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
         <div className="w-full flex flex-col gap-3">
             <Input
                 {...props}
+                variant={variant}
+                disabled={disabled}
                 type={isVisible ? 'text' : 'password'}
                 autoComplete={autoComplete}
                 ref={ref}
@@ -47,20 +49,20 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                     onChange?.(e);
                     setStepsErrors(validPassword(e.target.value));
                 }}
-                placeholder={placeholder || isVisible ? 'Senha-1#' : "********"}
+                placeholder={placeholder ?? (isVisible ? 'Senha-1#' : "********")}
                 className={twMerge(
                     `pl-10 pr-10`,
                     className
                 )}
             >
-                <KeyRound size={20} className="absolute left-2.5 text-j-blue-800"/>
+                <KeyRound aria-hidden="true" size={20} className={twMerge("absolute left-2.5", variant === "white" ? "text-j-blue-800" : "text-j-white/70")}/>
                 <ButtonIcon
-                    disabled={notSeePassword}
+                    disabled={notSeePassword || disabled}
                     aria-label={isVisible ? 'Ocultar senha' : 'Mostrar senha'}
                     aria-pressed={isVisible}
                     onClick={()=>{setIsVisible((prev)=>!prev)}}
 
-                    className="absolute right-2.5"
+                    className={twMerge("absolute right-2.5", variant === "white" ? "text-j-gray-500" : "text-j-white/70")}
                 >
                     {isVisible ? <EyeClosed /> : <Eye />}
                 </ButtonIcon>
@@ -68,23 +70,23 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
             {stepErrors && stepsErrors &&
                 <ul className="text-xs text-j-red-300 flex flex-col gap-1 text-left">
                     <li className={twMerge(
-                            stepsErrors.hasMinLength ? "text-j-green-300" : "text-j-red-500",
+                            stepsErrors.hasMinLength ? "text-j-green-700" : "text-j-red-500",
                             "flex items-center gap-1"
                         )}>{stepsErrors.hasMinLength ? <Check size={18}/> : <X size={18}/>} Minimo de 8 caracteres</li>
                     <li className={twMerge(
-                        stepsErrors.hasNumber ? "text-j-green-300" : "text-j-red-500",
+                        stepsErrors.hasNumber ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
                     )}>{stepsErrors.hasNumber ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos um número</li>
                     <li className={twMerge(
-                        stepsErrors.hasUppercase ? "text-j-green-300" : "text-j-red-500",
+                        stepsErrors.hasUppercase ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
                     )}>{stepsErrors.hasUppercase ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos uma letra maiúscula</li>
                     <li className={twMerge(
-                        stepsErrors.hasLowercase ? "text-j-green-300" : "text-j-red-500",
+                        stepsErrors.hasLowercase ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
                     )}>{stepsErrors.hasLowercase ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos uma letra minúscula</li>
                     <li className={twMerge(
-                        stepsErrors.hasSpecialChar ? "text-j-green-300" : "text-j-red-500",
+                        stepsErrors.hasSpecialChar ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
                     )}>{stepsErrors.hasSpecialChar ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos um caractere especial</li>
                 </ul>

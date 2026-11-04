@@ -4,8 +4,7 @@ import { z } from "zod";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { extractApiErrorMessage } from "@/utils/http/apiError";
-import { ActionError } from "@/utils/actions/actionResult";
-import { captureAction } from "@/utils/actions/captureAction";
+import { ActionError } from "@/utils/http/ActionError";
 
 const participantSchema = z.object({
     registrationId: z.number().nullable(), userId: z.number(), name: z.string().nullable(), profilePhotoStorageKey: z.string().nullable(),
@@ -25,6 +24,4 @@ async function listEventParticipantsActionImpl(eventId: number) {
     }
 }
 
-export async function listEventParticipantsAction(eventId: number) {
-    return captureAction(() => listEventParticipantsActionImpl(eventId));
-}
+export const listEventParticipantsAction = listEventParticipantsActionImpl;

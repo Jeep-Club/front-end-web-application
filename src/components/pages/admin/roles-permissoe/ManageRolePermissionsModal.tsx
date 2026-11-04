@@ -1,19 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
-import { Check, CheckCheck, ListChecks, LoaderCircle, Search, Save, X, XCircle } from 'lucide-react';
-import { twMerge } from 'tailwind-merge';
 import { ButtonIcon } from '@/components/common/button';
 import { useModal } from '@/providers/ModalProvider';
+import { assignPermissionToRoleAction } from '@/server/actions/authorization/assign-role-permission';
+import { listPermissionsAction } from '@/server/actions/authorization/list-permissions';
+import { listRolePermissionsAction } from '@/server/actions/authorization/list-role-permissions';
+import { revokePermissionFromRoleAction } from '@/server/actions/authorization/revoke-role-permission';
 import { useUserStore } from '@/stores/userStore';
 import { hasPermission } from '@/utils/permission/hasPermission';
-import { listPermissionsAction } from '@/actions/authorization/list-permissions';
-import { listRolePermissionsAction } from '@/actions/authorization/list-role-permissions';
-import { assignPermissionToRoleAction } from '@/actions/authorization/assign-role-permission';
-import { revokePermissionFromRoleAction } from '@/actions/authorization/revoke-role-permission';
-import { getModuleLabel, getPermissionDescription, getPermissionName } from './permissionLabels';
+import { useQuery,useQueryClient } from '@tanstack/react-query';
+import { Check,CheckCheck,ListChecks,LoaderCircle,Save,Search,X,XCircle } from 'lucide-react';
+import { useMemo,useState } from 'react';
+import toast from 'react-hot-toast';
+import { twMerge } from 'tailwind-merge';
+import { getModuleLabel,getPermissionDescription,getPermissionName } from './permissionLabels';
 
 interface Props { roleId: number; roleName: string; roleKind: RoleKind }
 

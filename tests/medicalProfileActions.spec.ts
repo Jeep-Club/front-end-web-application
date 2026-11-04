@@ -1,8 +1,9 @@
+import { toActionError } from '@/utils/http/apiError';
 import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import {
     getMedicalProfileAction,
     saveMedicalProfileAction,
-} from '@/actions/profile/medical-profile';
+} from '@/server/actions/profile/medical-profile';
 import { medicalProfileResponseSchema } from '@/schemas/profile/medical-profile';
 import { HttpAPIRoutes } from '@/utils/http/api';
 
@@ -63,7 +64,7 @@ describe('ações do perfil médico', () => {
     });
 
     it('retorna null quando o usuário ainda não possui perfil médico', async () => {
-        mockedActionFetchWrapper.mockRejectedValue({ status: 404, rawData: {} });
+        mockedActionFetchWrapper.mockRejectedValue(toActionError({ status: 404, rawData: {} }));
 
         await expect(getMedicalProfileAction()).resolves.toBeNull();
     });
@@ -82,7 +83,7 @@ describe('ações do perfil médico', () => {
     });
 
     it('apresenta a mensagem de validação retornada pela API ao salvar', async () => {
-        mockedActionFetchWrapper.mockRejectedValue({
+        mockedActionFetchWrapper.mockRejectedValue(toActionError({
             status: 400,
             rawData: {
                 code: 'VALIDATION_ERROR',
@@ -90,18 +91,18 @@ describe('ações do perfil médico', () => {
                 detail: 'Existem campos inválidos na requisição.',
                 errors: [{ field: 'allergies', message: 'As alergias devem ter no máximo 2000 caracteres.' }],
             },
-        });
+        }));
 
         await expect(saveMedicalProfileAction(formData)).rejects.toThrow(
             'As alergias devem ter no máximo 2000 caracteres.',
         );
     });
 
-    it('usa mensagem genérica quando a API não retorna um erro reconhecido', async () => {
-        mockedActionFetchWrapper.mockRejectedValue(new Error('network error'));
+    it('relança falhas sem adicionar tratamento local de mensagens', async () => {
+        mockedActionFetchWrapper.mockRejectedValue(new TypeError('network error'));
 
         await expect(saveMedicalProfileAction(formData)).rejects.toThrow(
-            'Erro ao salvar o perfil médico',
+            'network error',
         );
     });
 });

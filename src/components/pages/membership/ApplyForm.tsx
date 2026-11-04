@@ -1,21 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Button } from "@/components/common/button";
+import { useMutation } from "@tanstack/react-query";
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, LoaderCircle, Send } from "lucide-react";
+import { Form } from "@/components/common/form";
+import { InputRegister } from "@/components/common/input/input-register";
+import { TextareaRegister } from "@/components/common/textarea/textarea-register";
+import { membershipApplicationFormSchema } from "@/schemas/membership/application";
+import { submitMembershipApplicationAction } from "@/server/actions/membership/submit-application";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import ClubBackground from '@/components/common/ClubBackground';
 import ClubFormHeader from '@/components/common/ClubFormHeader';
-import { useMutation } from '@tanstack/react-query';
-import { AlertCircle, ArrowLeft, CheckCircle2, Clock, LoaderCircle, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Form } from '@/components/common/form';
-import { Button } from '@/components/common/button';
-import { InputRegister } from '@/components/common/input/input-register';
-import InputEmail from '@/components/common/input/input-email';
 import InputCPF from '@/components/common/input/input-cpf';
+import InputEmail from '@/components/common/input/input-email';
 import InputPhoneNumber from '@/components/common/input/input-phonenumber';
-import { TextareaRegister } from '@/components/common/textarea/textarea-register';
-import { membershipApplicationFormSchema } from '@/schemas/membership/application';
-import { submitMembershipApplicationAction } from '@/actions/membership/submit-application';
 
 const fieldStyle = {
     labelClassName: 'text-sm font-semibold text-white',
@@ -40,22 +41,9 @@ export default function ApplyForm() {
             setSubmitError(null);
         },
         onSuccess: (result) => {
-            if (!result.ok) {
-                setSubmitError(result.message);
-                toast.error(result.message);
-                return;
-            }
             setSubmitError(null);
-            setSubmission({
-                id: result.data.id,
-                status: result.data.status,
-                created: result.data.created,
-            });
-            toast.success(
-                result.data.created
-                    ? 'Solicitação enviada para análise.'
-                    : 'Solicitação pendente já existente localizada.'
-            );
+            setSubmission(result);
+            toast.success(result.created ? 'Solicita??o enviada para an?lise.' : 'Solicita??o pendente j? existente localizada.');
         },
         onError: (error) => {
             const message = error.message || 'Não foi possível enviar sua solicitação. Tente novamente.';

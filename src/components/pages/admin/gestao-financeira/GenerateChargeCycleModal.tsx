@@ -1,14 +1,14 @@
 "use client";
 
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { CalendarPlus,X } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarPlus, X } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { generateChargeCycleAction } from "@/actions/billing/chargeCycles/generate";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Input } from "@/components/common/input/input";
 import { useModal } from "@/providers/ModalProvider";
+import { generateChargeCycleAction } from "@/server/actions/billing/chargeCycles/generate";
 
 interface GenerateChargeCycleModalProps {
     chargeDefinitionId: number;
@@ -39,7 +39,7 @@ export function GenerateChargeCycleModal({
             queryClient.invalidateQueries({ queryKey: ["billing"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao gerar cobrança."),
+
     });
 
     const canSubmit = code.trim().length > 0 && dueDate.length > 0;

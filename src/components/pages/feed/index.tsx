@@ -1,28 +1,32 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
-import { listPublicationFeedAction } from "@/actions/publications/feed";
-import { feedTypeSchema } from "@/schemas/publications/feed";
-import { useUserStore } from "@/stores/userStore";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { useModal } from "@/providers/ModalProvider";
+import { feedTypeSchema } from "@/schemas/publications/feed";
+import { listPublicationFeedAction } from "@/server/actions/publications/feed";
+import { useUserStore } from "@/stores/userStore";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
-import { nextFeedPage, mergeFeedPages } from "@/utils/publications/infiniteFeed";
+import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
+import { feedTypes } from "./feedDisplay";
 import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
 import { PublicationDetailModal } from "./PublicationDetailModal";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
-import { feedTypes } from "./feedDisplay";
-import { RelativeTime } from "./RelativeTime";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
+import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
+import { FeedSidebar } from "./FeedSidebar";
+import { usePageTour } from "@/hooks/useTour";
+import { getFeedTourSteps } from "@/config/tourSteps";
+
+import Image from "next/image";
 
 const icons = {
     NOTICE: Megaphone,
@@ -71,6 +75,13 @@ export default function Feed() {
     const openedDeepLinkRef = useRef<number | null>(null);
     const filterNavRef = useRef<HTMLElement>(null);
     const [showFilterHint, setShowFilterHint] = useState(false);
+
+    usePageTour({
+        storageKey: "tour_completed_feed",
+        steps: getFeedTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: canRead,
+    });
 
     useEffect(() => {
         const nav = filterNavRef.current;
@@ -233,7 +244,8 @@ export default function Feed() {
 
     return (
         <div className="min-h-full w-full px-3 py-4 md:px-6 md:py-6">
-            <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-5 md:gap-6">
+            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+              <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                 {!canRead ? (
                     <div
                         role="status"
@@ -248,17 +260,19 @@ export default function Feed() {
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="relative min-w-0 flex-1">
                                 <nav
+                                    id="tour-feed-filters"
                                     ref={filterNavRef}
                                     aria-label="Tipos de publicação"
                                     aria-describedby="feed-filter-swipe-hint"
                                     className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+
 
                                 >
                                     <button
                                         type="button"
                                         onClick={() => filterType()}
                                         aria-pressed={!type}
-                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                             !type
                                                 ? "bg-j-blue-800 text-j-white shadow-sm"
                                                 : "text-j-gray-600 hover:bg-j-gray-100"
@@ -278,7 +292,7 @@ export default function Feed() {
                                                     type="button"
                                                     onClick={() => filterType(key)}
                                                     aria-pressed={type === key}
-                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${
+                                                    className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 md:flex-1 md:shrink ${
                                                         type === key
                                                             ? "bg-j-blue-800 text-j-white shadow-sm"
                                                             : "text-j-gray-600 hover:bg-j-gray-100"
@@ -319,6 +333,7 @@ export default function Feed() {
 
                             {canCreateCurrentType && (
                                 <button
+                                    id="tour-feed-create-btn"
                                     type="button"
                                     aria-label={`Criar ${creationLabel}`}
                                     title={`Criar ${creationLabel}`}
@@ -334,6 +349,7 @@ export default function Feed() {
                             )}
                         </div>
 
+                        <div id="tour-feed-list">
                         {query.isLoading ? (
                             <div
                                 role="status"
@@ -631,6 +647,7 @@ export default function Feed() {
                                 })}
                             </div>
                         )}
+                        </div>
 
                         <div
                             ref={loadMoreRef}
@@ -668,6 +685,8 @@ export default function Feed() {
                         )}
                     </>
                 )}
+              </div>
+              {canRead && <FeedSidebar />}
             </div>
         </div>
     );

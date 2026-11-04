@@ -1,14 +1,14 @@
 'use client';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import toast from "react-hot-toast";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
-import { activateChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/activate";
-import { deactivateChargeDefinitionAction } from "@/actions/billing/chargeDefinitions/deactivate";
+import { activateChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/activate";
+import { deactivateChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/deactivate";
 
 interface ToggleChargeDefinitionStatusModalProps {
     chargeDefinitionId: number;
@@ -35,7 +35,7 @@ export function ToggleChargeDefinitionStatusModal({
             queryClient.invalidateQueries({ queryKey: ["billing", "charge-definitions"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao alterar status da definição de cobrança."),
+
     });
 
     return (

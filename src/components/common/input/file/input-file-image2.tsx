@@ -23,6 +23,7 @@ export function InputFileImage2({
     multiple = false || maxFiles > 1,
     className,
     cropShape = "square",
+    variant = "white",
 }: InputFileImageProps) {
     const accept = imageAccept;
     const id = useId();
@@ -72,7 +73,7 @@ export function InputFileImage2({
     return (
         <div className={twMerge("w-full flex flex-col gap-2", className)}>
             {label && (
-                <label htmlFor={id} className="text-sm font-medium text-j-gray-300">
+                <label htmlFor={id} className="text-sm font-medium text-j-gray-700">
                     {label} {required && <span className="text-j-red-200">*</span>}
                 </label>
             )}
@@ -82,12 +83,15 @@ export function InputFileImage2({
 
                 {currentFiles.length < 1 || multiple ? 
                     <DropZone.Image
+                        inputId={id}
+                        inputLabel={label ?? "Selecionar imagens"}
+                        variant={variant}
                         onDrop={handleDrop}
                         multiple={multiple}
                         maxFiles={maxFiles > 0 ? maxFiles : undefined}
                         maxSize={maxSizeMB * 1024 * 1024}
                         accept={accept}
-                        className={error ? "border-j-red-300 bg-j-red-300/10 " : ""}
+                        className={twMerge(variant === "gray" && "bg-input-legacy-bg", error && "border-j-red-500 bg-j-red-100/10")}
                     >
                         {({ isDragReject }) => (
                             <>
@@ -101,6 +105,7 @@ export function InputFileImage2({
                     <ImageThumbnail 
                         key={`${file.name}-${idx}`} 
                         file={file} 
+                        variant={variant}
                     >
                         {/* Fundo escuro sutil ao passar o mouse para dar contraste no botão */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />

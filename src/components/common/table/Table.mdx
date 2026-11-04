@@ -1,0 +1,92 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as TableStories from './Table.stories';
+
+<Meta of={TableStories} />
+
+# Table
+
+`Table` é uma composição para listas administrativas que precisam apresentar dados tabulares, estados de consulta e paginação. Use `Table.Root` como fronteira do contexto e componha dentro dele os subcomponentes necessários: `Header`, `Search`, `Filters` e `Content`; `Pagination` pode ser filho ou `footer` quando deve ficar fora do card.
+
+## Composição e dependências
+
+- **Root e contexto interno:** cria o modelo TanStack Table v8, calcula as colunas visíveis e compartilha dados, paginação e estados com os subcomponentes. `Search`, `Filters`, `Content`, `Pagination` e `Sortable` precisam estar dentro de `Root`.
+- **TanStack Table:** fornece o modelo de linhas e a paginação manual. Quando `pagination` é informado, o consumidor entrega a página atual em `data`, informa `pageCount`/`rowCount` e atualiza `onChange`; busca, filtros e ordenação continuam pertencendo ao consumidor.
+- **Search/InputSearch:** `Table.Search` adapta `InputSearch`, que usa o formulário e o schema internos de React Hook Form/Zod. O componente emite o texto; não chama API nem filtra dados sozinho. Veja também a [documentação de InputSearch](?path=/docs/componentes-input-inputsearch--docs).
+- **Content/Skeleton:** `Table.Content` escolhe entre skeleton, erro, vazio e linhas. Com `isFetching`, preserva as linhas e exibe a faixa de atualização; `isLoading` representa o carregamento inicial.
+- **Responsividade:** em telas menores que `lg`, as linhas são apresentadas como acordeões. `meta.label` nas definições de coluna nomeia os campos expandidos, inclusive quando o cabeçalho desktop é um `Table.Sortable`.
+
+Não há TanStack Query, sessão, autenticação ou backend nas stories: os registros são fixtures determinísticas e a paginação/filtragem local existe apenas para tornar a composição observável.
+
+## Uso completo e Controls
+
+Importe a composição pública e forneça colunas tipadas e registros. A configuração mínima não precisa de paginação, busca ou filtros:
+
+```tsx
+import { Table } from '@/components/common/table';
+import type { ColumnDef } from '@tanstack/react-table';
+
+type Member = { id: string; name: string };
+const columns: ColumnDef<Member>[] = [
+  { accessorKey: 'name', header: 'Nome', meta: { label: 'Nome' } },
+];
+
+<Table.Root columns={columns} data={members} getRowId={(member) => member.id}>
+  <Table.Header title="Membros" />
+  <Table.Content />
+</Table.Root>
+```
+
+`members` é a lista fornecida pela tela. Prefira IDs estáveis em `getRowId`. O renderizador padrão representa valores ausentes ou vazios por um traço; para badges, datas e ações, configure `cell` na coluna.
+
+| Parte | Como compor |
+| --- | --- |
+| Root | Recebe colunas, dados e estados; envolve todos os controles que consomem seu contexto. |
+| Header | Organiza título, descrição e ações/controles fornecidos por `children`. |
+| Search | Emite o termo por `onSubmit`; o consumidor aplica a busca e volta à primeira página quando necessário. |
+| Filters | Recebe os campos por `children`; mostra a limpeza quando há `onClear` e `hasActiveFilters`. |
+| Content | Renderiza dados ou estados; as primeiras duas colunas formam o resumo mobile e as demais aparecem ao expandir. |
+| Sortable | Recebe `field`, `label`, `sort` e `onSortChange`; comunica intenção, não reordena registros. |
+| Pagination | Usa a configuração de paginação do Root; `footer` permite posicioná-la fora do card mantendo o contexto. |
+| Skeleton | Apresenta a estrutura de carregamento, usada pelo Content no loading inicial. |
+
+Para ordenação, `sort` usa o formato `campo,asc` ou `campo,desc`. O callback recebe o campo clicado; cabe à tela implementar o ciclo crescente, decrescente e sem ordenação e entregar os dados na ordem correta.
+
+Na paginação manual, `pageIndex` começa em zero, `pageSize` define o tamanho e `pageCount` informa o total de páginas. `rowCount` informa o total de registros, não apenas o tamanho da página atual. Atualize a configuração em `onChange` e forneça a página correspondente em `data`. Root não recorta nem consulta a lista por conta própria.
+
+<Canvas of={TableStories.ComposicaoCompleta} />
+
+<div role="region" aria-label="Propriedades da tabela" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={TableStories.ComposicaoCompleta} />
+</div>
+
+Digite no campo de busca para reduzir os registros, selecione um status e use **Limpar filtros** para restaurar a lista. A ordenação desktop é comunicada por `Table.Sortable`; a implementação que consome o evento decide a ordem dos dados. A story também verifica a mudança para a segunda página.
+
+`Table.Pagination` usa a configuração fornecida por `Root`. Os controles de `columns`, `data`, `pagination` e callbacks não aparecem no painel porque são objetos e funções da composição, não valores seguros para edição serializada. O exemplo mantém esses contratos tipados na implementação da story.
+
+## Estados de consulta
+
+<Canvas of={TableStories.Atualizando} />
+
+`isFetching` mantém as linhas renderizadas, marca o conteúdo como ocupado, mostra o indicador no campo de busca e desabilita a paginação enquanto a atualização está em andamento.
+
+<Canvas of={TableStories.Carregando} />
+
+`isLoading` substitui `Table.Content` por `Table.Skeleton`. A quantidade de linhas do skeleton é controlada por `loadingRows`.
+
+<Canvas of={TableStories.Erro} />
+
+Quando `error` existe, `Table.Content` mostra o conteúdo de erro e não renderiza as linhas. Retry, toast e nova consulta são responsabilidades do consumidor.
+
+<Canvas of={TableStories.Vazio} />
+
+Sem linhas, `emptyState` é exibido. A mensagem pode representar uma lista sem registros ou uma busca sem resultados; a distinção e as ações de recuperação pertencem à tela que usa a tabela.
+
+## Mobile e acessibilidade observável
+
+<Canvas of={TableStories.AcordeaoMobile} />
+
+No mobile, cada linha é um botão com `aria-expanded`; ao abrir, os campos restantes aparecem com seus rótulos. No desktop, `Content` usa uma tabela semântica com cabeçalhos `scope="col"`. A story verifica a abertura do acordeão; foco, zoom, contraste e validação completa de teclado ainda exigem inspeção manual no navegador.
+
+## Referência
+
+Consulte a [documentação oficial do TanStack Table](https://tanstack.com/table/latest/docs/introduction) para o modelo de colunas e paginação usado pela composição. As APIs e defaults do Jeep Club permanecem nos tipos reais e nos Controls desta página.

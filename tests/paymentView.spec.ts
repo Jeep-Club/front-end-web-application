@@ -5,7 +5,7 @@ import PaymentDetailPage from "@/components/pages/admin/payments/PaymentDetailPa
 import { useUserStore } from "@/stores/userStore";
 import type { PaymentDetail } from "@/schemas/payments";
 
-jest.mock("@/actions/payments", () => ({ confirmPaymentAction: jest.fn(), getPaymentAction: jest.fn(), rejectPaymentAction: jest.fn() }));
+jest.mock("@/server/actions/payments", () => ({ confirmPaymentAction: jest.fn(), getPaymentAction: jest.fn(), rejectPaymentAction: jest.fn() }));
 jest.mock("@/stores/userStore", () => ({ useUserStore: jest.fn() }));
 jest.mock("@/components/pages/admin/payments/PaymentReceipt", () => ({ __esModule: true, default: () => null }));
 

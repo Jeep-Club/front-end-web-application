@@ -1,30 +1,27 @@
 'use server';
 
-import { captureAction } from "@/utils/actions/captureAction";
-import { ActionError } from "@/utils/actions/actionResult";
-import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { loginResponseSchema } from "@/schemas/auth/login/loginResponse";
-import { login } from '@/utils/auth/login';
-import { HttpAPIRoutes } from '@/utils/http/api';
 import {
-    authorizationMeResponseSchema,
-    identityMeResponseSchema,
-    meResponseSchema,
+	authorizationMeResponseSchema,
+	identityMeResponseSchema,
+	meResponseSchema,
 } from '@/schemas/auth/me/me';
-import { me } from '@/utils/auth/me';
-import { logout } from '@/utils/auth/logout';
-import { unMaskCPF } from '@/utils/masks/maskCPF';
-import { extractApiErrorMessage } from '@/utils/http/apiError';
-import { cookies } from "next/headers";
+import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
 import { authCookieOptions } from "@/utils/auth/cookieOptions";
+import { login } from '@/utils/auth/login';
+import { logout } from '@/utils/auth/logout';
+import { me } from '@/utils/auth/me';
+import { ActionError } from "@/utils/http/ActionError";
+import { HttpAPIRoutes } from '@/utils/http/api';
+import { unMaskCPF } from '@/utils/masks/maskCPF';
+import { cookies } from "next/headers";
 
-async function loginActionImpl({ cpf, senha }: LoginRequest) {
+export default async function loginAction({ cpf, senha }: LoginRequest) {
     if (!senha || !cpf) {
         throw new ActionError('CPF e senha são obrigatórios');
     }
 
     const cleanCpf = unMaskCPF(cpf);
-
 
     try {
         const cookieStore = await cookies();
@@ -88,14 +85,6 @@ async function loginActionImpl({ cpf, senha }: LoginRequest) {
         // The /me request happens after tokens are stored. If any step fails,
         // do not leave a partial session in the browser.
         await logout();
-        throw new ActionError(
-            extractApiErrorMessage(error, 'Erro ao realizar login. Verifique suas credenciais e tente novamente.'),
-            { cause: error },
-        );
+        throw error;
     }
-}
-
-
-export default async function loginAction(...args: Parameters<typeof loginActionImpl>) {
-    return captureAction(() => loginActionImpl(...args));
 }

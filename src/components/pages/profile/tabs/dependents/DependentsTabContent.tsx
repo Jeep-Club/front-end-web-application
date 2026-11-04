@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { Button } from '@/components/common/button';
 import { ListPagination } from '@/components/common/table/ListPagination';
+import { useModal } from '@/providers/ModalProvider';
+import { listDependentsAction } from '@/server/actions/dependents';
+import { maskCPF,maskPhoneNumber } from '@/utils/masks';
 import { useQuery } from '@tanstack/react-query';
 import { Eye,Pencil,Plus,RefreshCw,Trash2 } from 'lucide-react';
-import { listDependentsAction } from '@/actions/dependents';
-import { Button } from '@/components/common/button';
-import { useModal } from '@/providers/ModalProvider';
+import { useState } from 'react';
 import { CreateDependentModal } from './CreateDependentModal';
 import { DeleteDependentModal } from './DeleteDependentModal';
-import { ViewDependentModal } from './ViewDependentModal';
-import { maskCPF, maskPhoneNumber } from '@/utils/masks';
 import { DependentPhoto } from './DependentPhoto';
+import { ViewDependentModal } from './ViewDependentModal';
 
 const RELATIONSHIP_LABELS:Record<MemberDependentRelationshipType,string>={
     CHILD:'Filho(a)',GUEST:'Convidado(a)',OTHER:'Outro',PARENT:'Pai/Mãe',SIBLING:'Irmão/Irmã',SPOUSE:'Cônjuge',

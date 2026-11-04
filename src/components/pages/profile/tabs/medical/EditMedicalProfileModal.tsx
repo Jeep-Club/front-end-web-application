@@ -1,18 +1,18 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { HeartPulse, LoaderCircle, Save, X } from "lucide-react";
-import { useController, useFormContext } from "react-hook-form";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { HeartPulse,LoaderCircle,Save,X } from "lucide-react";
+import { useController,useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
-import { saveMedicalProfileAction } from "@/actions/profile/medical-profile";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
 import { InputRegister } from "@/components/common/input/input-register";
 import { SelectRegister } from "@/components/common/select/select-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
 import { medicalProfileFormSchema } from "@/schemas/profile/medical-profile";
+import { saveMedicalProfileAction } from "@/server/actions/profile/medical-profile";
 import { maskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
 
 interface EditMedicalProfileModalProps {
@@ -31,7 +31,6 @@ const BLOOD_TYPES: Array<{ value: MedicalProfileBloodType; label: string }> = [
 ];
 
 const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
-
 
 const NOT_APPLICABLE = "Não se aplica";
 
@@ -109,7 +108,7 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
             toast.success("Perfil médico atualizado com sucesso!");
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao salvar o perfil médico."),
+
     });
 
     const defaultValues: MedicalProfileFormData = {

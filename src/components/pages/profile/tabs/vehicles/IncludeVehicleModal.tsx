@@ -1,29 +1,29 @@
 'use client';
 
-import { useState } from "react";
-import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormContext } from "react-hook-form";
-import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
-import toast from "react-hot-toast";
-import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { InputFile } from "@/components/common/input/file";
+import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputRegister } from "@/components/common/input/input-register";
 import { SelectRegister } from "@/components/common/select/select-register";
-import { InputCheckbox } from "@/components/common/input/input-checkbox";
-import { InputFile } from "@/components/common/input/file";
-import { includeVehicleMemberFormSchema } from "@/schemas/vehicles/include";
-import { includeVehicleMemberAction } from "@/actions/vehicles/include-member";
-import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
-import { editVehicleMemberAction } from "@/actions/vehicles/edit-member";
-import { getVehicleDetailForEditAction } from "@/actions/vehicles/detail-for-edit-member";
+import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
 import { useModal } from "@/providers/ModalProvider";
+import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
+import { includeVehicleMemberFormSchema } from "@/schemas/vehicles/include";
+import { getVehicleDetailForEditAction } from "@/server/actions/vehicles/detail-for-edit-member";
+import { editVehicleMemberAction } from "@/server/actions/vehicles/edit-member";
+import { includeVehicleMemberAction } from "@/server/actions/vehicles/include-member";
+import { maskDecimal } from "@/utils/masks/maskDecimal";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
 import { maskYear } from "@/utils/masks/maskYear";
-import { maskDecimal } from "@/utils/masks/maskDecimal";
+import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import toast from "react-hot-toast";
+import { twMerge } from "tailwind-merge";
 
 const FUEL_TYPE_OPTIONS: { value: FuelType; label: string }[] = [
     { value: "GASOLINE", label: "Gasolina" },
@@ -48,8 +48,8 @@ const LIGHT_FIELDS_CLASS = `
     [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
 `;
 
-import { createVehicleMultipart, appendVehicleGalleryMultipart } from "@/utils/media/vehicleGallery";
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { appendVehicleGalleryMultipart,createVehicleMultipart } from "@/utils/media/vehicleGallery";
 
 interface VehicleStepsFieldsProps {
     currentStep: number;
@@ -297,7 +297,7 @@ export function IncludeVehicleModal({ vehicleId }: IncludeVehicleModalProps) {
             queryClient.invalidateQueries({ queryKey: ["vehicles", "list-member"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || (isEditMode ? "Erro ao editar veículo." : "Erro ao cadastrar veículo.")),
+
     });
 
     const handleSubmit = async (data: IncludeVehicleMemberFormData | EditVehicleMemberFormData) => {

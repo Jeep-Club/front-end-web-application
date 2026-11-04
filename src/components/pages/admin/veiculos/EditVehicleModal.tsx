@@ -1,30 +1,30 @@
 'use client';
 
-import { useState } from "react";
-import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormContext } from "react-hook-form";
-import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
-import toast from "react-hot-toast";
-import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { InputFile } from "@/components/common/input/file";
+import { InputCheckbox } from "@/components/common/input/input-checkbox";
 import { InputRegister } from "@/components/common/input/input-register";
 import { SelectRegister } from "@/components/common/select/select-register";
-import { InputCheckbox } from "@/components/common/input/input-checkbox";
-import { InputFile } from "@/components/common/input/file";
-import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
-import { editVehicleAdminAction } from "@/actions/admin/vehicles/edit";
-import { getVehicleDetailForEditAdminAction } from "@/actions/admin/vehicles/detail-for-edit";
-import { appendVehicleGalleryMultipart } from "@/utils/media/vehicleGallery";
+import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
+import { useVehicleModalSteps } from "@/hooks/useVehicleModalSteps";
 import { useModal } from "@/providers/ModalProvider";
+import { editVehicleMemberFormSchema } from "@/schemas/vehicles/edit";
+import { getVehicleDetailForEditAdminAction } from "@/server/actions/admin/vehicles/detail-for-edit";
+import { editVehicleAdminAction } from "@/server/actions/admin/vehicles/edit";
+import { maskDecimal } from "@/utils/masks/maskDecimal";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { maskRenavam } from "@/utils/masks/maskRenavam";
 import { maskYear } from "@/utils/masks/maskYear";
-import { maskDecimal } from "@/utils/masks/maskDecimal";
+import { appendVehicleGalleryMultipart } from "@/utils/media/vehicleGallery";
+import { vehiclePhotoKeys } from "@/utils/media/vehiclePhotos";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import toast from "react-hot-toast";
+import { twMerge } from "tailwind-merge";
 import { FUEL_TYPE_OPTIONS } from "./vehicleDisplay";
-import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 
 const STEPS = [
     { step: 1, label: "Identificação", fields: ["plate", "renavam", "brand", "nickname"] as const },
@@ -312,7 +312,7 @@ export function EditVehicleModal({ vehicleId }: EditVehicleModalProps) {
             queryClient.invalidateQueries({ queryKey: ["admin", "vehicles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao editar veículo."),
+
     });
 
     const handleSubmit = async (data: EditVehicleMemberFormData) => {

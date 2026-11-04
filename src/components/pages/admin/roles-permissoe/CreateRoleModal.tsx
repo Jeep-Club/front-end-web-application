@@ -1,15 +1,15 @@
 'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
-import { X } from "lucide-react";
+import { Button,ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Button, ButtonIcon } from "@/components/common/button";
 import { InputRegister } from "@/components/common/input/input-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
 import { useModal } from "@/providers/ModalProvider";
 import { createRoleRequestSchema } from "@/schemas/authorization/create";
-import { createRoleAction } from "@/actions/authorization/create-role";
+import { createRoleAction } from "@/server/actions/authorization/create-role";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
+import toast from "react-hot-toast";
 
 const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
 
@@ -24,7 +24,7 @@ export function CreateRoleModal() {
             queryClient.invalidateQueries({ queryKey: ["authorization", "roles"] });
             setClose();
         },
-        onError: (error) => toast.error(error.message || "Erro ao criar cargo."),
+
     });
 
     const handleSubmit = async (data: CreateRoleRequest) => {

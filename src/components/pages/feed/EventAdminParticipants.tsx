@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, UsersRound } from "lucide-react";
-import { listEventParticipantsAction } from "@/actions/publications/event-participants";
+import { listEventParticipantsAction } from "@/server/actions/publications/event-participants";
 import { Avatar } from "@/components/common/avatar";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 

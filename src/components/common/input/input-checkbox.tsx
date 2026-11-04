@@ -3,6 +3,7 @@
 import { useFormContext, useController } from "react-hook-form";
 import { Check } from "lucide-react";
 import { twMerge } from "tailwind-merge";
+import type { InputVariant } from "./input";
 
 export interface InputCheckboxProps {
     label: string;
@@ -10,9 +11,10 @@ export interface InputCheckboxProps {
     value?: boolean;
     className?: string;
     required?: boolean;
+    variant?: InputVariant;
 }
 
-export function InputCheckbox({ label, name, value, className, required = false }: InputCheckboxProps) {
+export function InputCheckbox({ label, name, value, className, required = false, variant = "white" }: InputCheckboxProps) {
     const { control } = useFormContext();
     const {
         field: { value: fieldValue, onChange, onBlur, ref }
@@ -31,10 +33,10 @@ export function InputCheckbox({ label, name, value, className, required = false 
                 onBlur={onBlur}
                 className="peer sr-only"
             />
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-j-transparent-white bg-input-bg text-transparent transition-colors peer-checked:border-j-yellow-400 peer-checked:bg-j-yellow-400 peer-checked:text-j-blue-800 peer-focus-visible:outline-2 peer-focus-visible:outline-j-yellow-400">
+            <span className={twMerge("flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 text-transparent transition-colors peer-checked:border-j-yellow-400 peer-checked:bg-j-yellow-400 peer-checked:text-j-blue-800 peer-focus-visible:outline-2 peer-focus-visible:outline-j-blue-500", variant === "white" ? "border-j-gray-300 bg-j-white" : "border-j-gray-400 bg-input-bg")}>
                 <Check size={14} strokeWidth={3} />
             </span>
-            <span className="text-sm font-medium text-j-white">{label}{required && <span className="ml-1 text-j-red-500" aria-hidden="true">*</span>}</span>
+            <span className="text-sm font-medium text-j-gray-700">{label}{required && <span className="ml-1 text-j-red-500" aria-hidden="true">*</span>}</span>
         </label>
     );
 }

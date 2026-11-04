@@ -3,6 +3,7 @@
 import FormRegister from "./form";
 import Link from "next/link";
 import { Logo } from "@/components/common/logo";
+import LegalLinks from "@/components/common/legal-links";
 
 export default function Register() {
     return (
@@ -32,6 +33,7 @@ export default function Register() {
                     <p className="text-sm text-j-transparent-white mt-4">
                         Já faz parte do clube? <Link href={"/login"} className="text-j-gray-200 hover:text-j-yellow-300 transition-colors duration-300 hover:cursor-pointer">Faça login</Link>
                     </p>
+                    <LegalLinks className="mt-6 text-j-gray-200" />
                 </div>
             </div>
         </div>
