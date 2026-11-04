@@ -92,9 +92,8 @@ export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
                         role="menuitem"
                         id="tour-manage-account-btn"
                         onClick={() => {
-                            // Encerra o tour ativo e navega para o perfil forçando o tour do perfil
+                            // Encerra o tour ativo ao navegar para o perfil
                             if (typeof window !== "undefined") {
-                                sessionStorage.setItem('force_branch_tour', 'true');
                                 window.dispatchEvent(new CustomEvent('tour:destroy-and-diverge'));
                             }
                             setIsOpen(false);
@@ -126,11 +125,7 @@ export function AvatarMenu({ src, fullName }: AvatarMenuProps) {
                             onClick={() => {
                                 setIsOpen(false);
                                 resetAllTours();
-                                if (typeof window !== "undefined" && window.location.pathname !== '/feed') {
-                                    router.push('/feed');
-                                } else {
-                                    tourContext.restartTour();
-                                }
+                                tourContext.startCurrentPageTour();
                             }}
                             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-j-blue-800 hover:bg-j-blue-50 transition-colors cursor-pointer"
                         >

@@ -191,7 +191,6 @@ export default function Sidebar({
                             onClick={() => {
                                 onCloseMobile();
                                 if (typeof window !== "undefined") {
-                                    sessionStorage.setItem('force_branch_tour', 'true');
                                     window.dispatchEvent(new CustomEvent('tour:destroy-and-diverge'));
                                 }
                             }}

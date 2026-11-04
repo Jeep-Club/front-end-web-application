@@ -33,7 +33,7 @@ export default function Profile() {
     const { restartTour } = usePageTour({
         storageKey: "tour_completed_profile",
         steps: getProfileTourSteps,
-        autoStartOnFirstVisit: true,
+        autoStartOnFirstVisit: false,
     });
 
     return (
