@@ -20,7 +20,6 @@ import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
-import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { FeedSidebar } from "./FeedSidebar";
 import { usePageTour } from "@/hooks/useTour";
@@ -543,14 +542,6 @@ export default function Feed() {
                                                 <FeedMetadata
                                                     publication={publication}
                                                 />
-
-                                                {publication.type === "EVENT" && (
-                                                    <EventParticipants
-                                                        details={
-                                                            publication.details
-                                                        }
-                                                    />
-                                                )}
 
                                                 {publication.type === "EVENT" && (
                                                     <EventParticipation

@@ -7,16 +7,9 @@ const common = z.object({
     likeCount: z.number().nonnegative(), commentCount: z.number().nonnegative(), likedByMe: z.boolean(),
 });
 const notice = common.extend({ type: z.literal("NOTICE"), details: z.object({}) });
-const eventParticipant = z.object({
-    id: z.number().optional(), userId: z.number().optional(), name: z.string(),
-    profilePhotoStorageKey: z.string().nullish(), profilePhotoUrl: z.string().nullish(),
-    photoStorageKey: z.string().nullish(), photoUrl: z.string().nullish(),
-});
 const event = common.extend({ type: z.literal("EVENT"), details: z.object({
     startsAt: z.string(), endsAt: z.string().nullable(), status: z.enum(["OPEN", "IN_PROGRESS", "FINISHED", "CANCELLED"]),
     charges: z.array(z.object({ name: z.string(), description: z.string().nullish(), amount: z.number(), requiredForParticipation: z.boolean() })).optional(),
-    registrationCount: z.number().int().nonnegative().optional(),
-    participants: z.array(eventParticipant).optional(),
 }) });
 const service = common.extend({ type: z.literal("SERVICE"), details: z.object({ amount: z.number(), contactPhone: z.string() }) });
 export const publicationFeedItemSchema = z.discriminatedUnion("type", [notice, event, service]);
