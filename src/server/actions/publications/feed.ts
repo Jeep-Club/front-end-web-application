@@ -43,9 +43,33 @@ export async function listPublicationCommentsAction(input: { id: number; page: n
     return result.data;
 }
 
-export async function createPublicationCommentAction(input: { id: number; text: string }) {
-    const data = z.object({ id: idSchema, text: z.string().trim().min(1, "Escreva seu comentário.") }).parse(input);
+export async function createPublicationCommentAction(input: {
+    id: number;
+    text?: string;
+    images: { storageKey: string; position: number }[];
+}) {
+    const data = z.object({
+        id: idSchema,
+        text: z.string().trim().max(10_000).optional(),
+        images: z.array(z.object({ storageKey: z.string().trim().min(1), position: z.number().int().nonnegative() })).max(10),
+    }).superRefine((value, context) => {
+        const text = value.text?.trim() ?? "";
+        if (!text && value.images.length === 0) {
+            context.addIssue({ code: "custom", message: "Escreva um comentário ou anexe uma imagem." });
+        }
+        if (new Set(value.images.map(image => image.storageKey)).size !== value.images.length) {
+            context.addIssue({ code: "custom", message: "As imagens do comentário precisam ser diferentes." });
+        }
+        if (value.images.some((image, index) => image.position !== index)) {
+            context.addIssue({ code: "custom", message: "A ordem das imagens do comentário é inválida." });
+        }
+    }).parse(input);
     await requirePermission("COMMENT_CREATE");
-    const result = await actionFetchWrapper({ url: `publications/${data.id}/comments`, method: "POST", body: JSON.stringify({ text: data.text, images: [] }), schema: publicationCommentSchema });
+    const result = await actionFetchWrapper({
+        url: `publications/${data.id}/comments`,
+        method: "POST",
+        body: JSON.stringify({ text: data.text?.trim() || null, images: data.images }),
+        schema: publicationCommentSchema,
+    });
     return result.data;
 }

@@ -3,6 +3,7 @@ import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { RelativeTime } from "./RelativeTime";
 
 interface PublicationCommentAuthorProps {
+    authorUserId: number;
     name?: string | null;
     photo?: string | null;
     createdAt: string;
@@ -12,8 +13,8 @@ function initials(name: string) {
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => Array.from(part)[0]?.toLocaleUpperCase("pt-BR")).join("");
 }
 
-export function PublicationCommentAuthor({ name, photo, createdAt }: PublicationCommentAuthorProps) {
-    const displayName = name?.trim() || "Associado";
+export function PublicationCommentAuthor({ authorUserId, name, photo, createdAt }: PublicationCommentAuthorProps) {
+    const displayName = name?.trim() || `Associado #${authorUserId}`;
     const photoUrl = getMediaImageUrl(photo);
 
     return <div className="flex min-w-0 items-center gap-2.5">
