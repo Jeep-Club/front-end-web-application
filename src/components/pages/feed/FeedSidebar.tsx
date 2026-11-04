@@ -59,7 +59,7 @@ export function FeedSidebar() {
     const notices = (noticesQuery.data?.content ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "NOTICE" }> => item.type === "NOTICE");
 
     return (
-        <aside aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
+        <aside id="tour-feed-sidebar" aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
             <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                 <div className="bg-j-blue-900 p-5 text-j-white">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-j-yellow-300">Jeep Clube Tamoios</p>
@@ -115,7 +115,7 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum aviso recente.</p>}
             </SideCard>
 
-            <section className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm">
+            <section id="tour-feed-quick-access" className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm">
                 <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><Users size={17} aria-hidden="true" />Acesso rápido</h2>
                 <div className="grid grid-cols-2 gap-2">
                     <Link href="/agenda" className="rounded-xl bg-j-gray-100 px-3 py-2.5 text-center text-xs font-bold text-j-blue-800 hover:bg-j-yellow-100">Minha agenda</Link>

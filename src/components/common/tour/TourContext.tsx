@@ -6,6 +6,8 @@ export interface TourContextType {
     isTourCompleted: boolean;
     startTour: () => void;
     restartTour: () => void;
+    startCurrentPageTour: () => void;
+    registerPageTour?: (handler: (() => void) | null) => void;
 }
 
 export const TourContext = createContext<TourContextType | null>(null);

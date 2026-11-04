@@ -15,11 +15,14 @@ import { PublicationComments } from "./PublicationComments";
 import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
+import { EventAdminParticipants } from "./EventAdminParticipants";
+import { hasPermission } from "@/utils/permission/hasPermission";
 
 
 export function PublicationDetailModal({ publicationId, onClose }: { publicationId: number; onClose?: () => void }) {
     const { setClose } = useModal();
     const permissions = useUserStore((state) => state.permissions);
+    const canReadEventParticipants = hasPermission(permissions, "PUBLICATIONS", "EVENT_ADMIN_DASHBOARD_READ");
     const query = useQuery({ queryKey: ["publications", "detail", publicationId, permissions], queryFn: () => getPublicationFeedDetailAction(publicationId) });
     const publication = query.data;
     return <div role="dialog" aria-modal="true" aria-labelledby="feed-detail-title" className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
@@ -43,7 +46,8 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
                 {publication.type === "EVENT" && <EventParticipants details={publication.details} />}
-                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventStatus={publication.details.status} charges={publication.details.charges} />}
+                {publication.type === "EVENT" && canReadEventParticipants && <EventAdminParticipants eventId={publication.id} />}
+                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventTitle={publication.title} eventStatus={publication.details.status} charges={publication.details.charges} />}
                 <RichTextContent content={publication.content} />
                 <FeedInteractions publication={publication} />
             </div>
