@@ -28,7 +28,7 @@ import { twMerge } from "tailwind-merge";
 
 import { Button } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { Input } from "@/components/common/input";
+import { InputRegister } from "@/components/common/input/input-register";
 import { ModalRoot } from "@/components/common/modal/root";
 import { ReadOnlyField } from "@/components/common/ReadOnlyField";
 import { Select } from "@/components/common/select";
@@ -366,13 +366,13 @@ function UserBasicRegistrationSection({
                     )}
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <Input.Register
+                        <InputRegister
                             name="name"
                             label="Nome completo *"
                             placeholder="Nome completo do usuário"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="cpf"
                             label="CPF *"
                             placeholder="000.000.000-00"
@@ -380,27 +380,27 @@ function UserBasicRegistrationSection({
                             inputMode="numeric"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="rg"
                             label="RG (apenas dígitos)"
                             placeholder="Somente números"
                             inputMode="numeric"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="birthDate"
                             type="date"
                             label="Data de nascimento"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="email"
                             type="email"
                             label="E-mail"
                             placeholder="usuario@exemplo.com"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="phoneNumber"
                             label="Telefone"
                             placeholder="(00) 00000-0000"
@@ -580,19 +580,19 @@ function UserComplementaryProfileSection({
                     )}
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <Input.Register
+                        <InputRegister
                             name="occupation"
                             label="Profissão / Ocupação"
                             placeholder="Ex.: Engenheiro"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="workplace"
                             label="Empresa / Local de trabalho"
                             placeholder="Nome da empresa ou organização"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="postalCode"
                             label="CEP residencial"
                             placeholder="00000-000"
@@ -600,37 +600,37 @@ function UserComplementaryProfileSection({
                             inputMode="numeric"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="street"
                             label="Logradouro"
                             placeholder="Rua, Avenida..."
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="number"
                             label="Número"
                             placeholder="Nº ou S/N"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="complement"
                             label="Complemento"
                             placeholder="Apto, Bloco..."
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="neighborhood"
                             label="Bairro"
                             placeholder="Bairro"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Input.Register
+                        <InputRegister
                             name="city"
                             label="Cidade"
                             placeholder="Cidade"
                             labelClassName="text-xs font-bold text-j-gray-700"
                         />
-                        <Select.Register
+                        <Select
                             name="state"
                             label="UF"
                             labelClassName="text-xs font-bold text-j-gray-700"
@@ -642,7 +642,7 @@ function UserComplementaryProfileSection({
                                     {uf}
                                 </option>
                             ))}
-                        </Select.Register>
+                        </Select>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
