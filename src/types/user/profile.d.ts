@@ -1,10 +1,3 @@
-type UserStatus =
-    | 'ACTIVE'
-    | 'DISABLED'
-    | 'LOCKED'
-    | 'CHANGE_PASSWORD_REQUIRED'
-    | 'PENDING_FIRST_ACCESS';
-
 /** View model do perfil; a action normaliza email ausente para string vazia. */
 interface UserProfile {
     id: number;
@@ -38,7 +31,7 @@ interface MeProfileResponse {
     phoneNumber: string | null;
     profilePhotoStorageKey: string | null;
     profilePhotoUrl: string | null;
-    status: 'ACTIVE' | 'DISABLED';
+    status: UserStatus;
     createdAt: string;
     disabledAt: string | null;
     updatedAt: string | null;
