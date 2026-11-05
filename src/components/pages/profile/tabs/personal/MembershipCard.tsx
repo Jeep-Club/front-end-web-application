@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { Maximize2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { CardExportActions, type CardExportRequest } from "@/components/common/card-export/CardExportActions";
 import { captureCardElement, exportCardAsPng } from "@/utils/card-export/exportCard";
@@ -85,8 +87,8 @@ function CardFace({ side, data, logo, photo }: { side: CardSide; data: Membershi
     const nameUnderline = nameBaseline + (lines.length - 1) * nameLineHeight + 18;
     const firstFieldY = nameUnderline + (compactName ? 26 : 34);
     const secondFieldY = firstFieldY + 86;
-    return <div data-card-side={side} className="aspect-[856/540] w-full overflow-hidden bg-white shadow-md">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" className="block h-full w-full" role="img" aria-label={`${side === "front" ? "Frente" : "Verso"} da carteirinha de ${name}`} fontFamily="Arial, Helvetica, sans-serif">
+    return <div data-card-side={side} className="relative w-full overflow-hidden bg-white shadow-md" style={{ aspectRatio: "856 / 540" }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" className="absolute inset-0 block h-full w-full" role="img" aria-label={`${side === "front" ? "Frente" : "Verso"} da carteirinha de ${name}`} fontFamily="Arial, Helvetica, sans-serif">
             <defs><clipPath id={`${id}-frame`}><rect width="856" height="540" /></clipPath><clipPath id={`${id}-photo`}><rect x="36" y="151" width="240" height="345" rx="12" /></clipPath></defs>
             <g clipPath={`url(#${id}-frame)`}>
                 <rect width="856" height="540" fill={side === "front" ? "#ffffff" : NAVY} />
@@ -135,11 +137,44 @@ function CardFace({ side, data, logo, photo }: { side: CardSide; data: Membershi
     </div>;
 }
 
+function PortraitCardFace({ side, data, logo, photo }: { side: CardSide; data: MembershipCardProps; logo?: string; photo?: string }) {
+    return (
+        <div className="relative mx-auto w-full overflow-hidden bg-white shadow-md" style={{ aspectRatio: "540 / 856" }}>
+            <div className="absolute left-1/2 top-1/2 w-[158.52%] -translate-x-1/2 -translate-y-1/2 rotate-90">
+                <CardFace side={side} data={data} logo={logo} photo={photo} />
+            </div>
+        </div>
+    );
+}
+
 export function MembershipCard(props: MembershipCardProps) {
     const [side, setSide] = useState<CardSide>("front");
+    const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
     const exportFaces = useRef<HTMLDivElement>(null);
+    const fullscreenTriggerRef = useRef<HTMLButtonElement>(null);
+    const fullscreenCloseRef = useRef<HTMLButtonElement>(null);
     const logo = useCardImage("/images/jeepclube-emblema.png");
     const photo = useCardImage(props.profilePhotoUrl);
+
+    useEffect(() => {
+        if (!isFullscreenOpen) return;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        fullscreenCloseRef.current?.focus();
+
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === "Escape") setIsFullscreenOpen(false);
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", handleKeyDown);
+            fullscreenTriggerRef.current?.focus();
+        };
+    }, [isFullscreenOpen]);
+
     const handleExport = async ({ format, scope }: CardExportRequest) => {
         try {
             if (logo.error) throw new Error("O logotipo não carregou. Atualize a página e tente novamente.");
@@ -157,13 +192,29 @@ export function MembershipCard(props: MembershipCardProps) {
     };
     return <section className="flex w-full flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
         <header className="flex min-h-20 shrink-0 flex-wrap content-start items-start justify-between gap-3 border-b-4 border-j-yellow-300 bg-j-blue-800 px-5 py-4 sm:h-20">
-            <div><h2 className="text-sm font-extrabold text-j-white">Carteirinha digital</h2><p className="mt-1 text-[11px] text-j-white/60">85,6 × 53,98 mm · Frente e verso</p></div>
+            <div className="flex w-full items-start justify-between gap-2 sm:w-auto"><div><h2 className="text-sm font-extrabold text-j-white">Carteirinha digital</h2><p className="mt-1 text-[11px] text-j-white/60"><span className="sm:hidden">53,98 × 85,6 mm</span><span className="hidden sm:inline">85,6 × 53,98 mm</span> · Frente e verso</p></div><button ref={fullscreenTriggerRef} type="button" onClick={() => setIsFullscreenOpen(true)} aria-label="Expandir carteirinha para tela cheia" title="Tela cheia" className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-j-white/80 transition-colors hover:bg-white/10 hover:text-j-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"><Maximize2 size={18} aria-hidden="true" /></button></div>
             <div className="grid w-full grid-cols-2 gap-1 rounded-lg bg-j-blue-700 p-1 sm:w-auto" aria-label="Selecionar lado da carteirinha">{(["front", "back"] as const).map((option) => <button key={option} type="button" aria-pressed={side === option} aria-label={`Visualizar ${option === "front" ? "frente" : "verso"}`} onClick={() => setSide(option)} className={`rounded-md border px-4 py-2 text-xs font-bold transition-colors ${side === option ? "border-j-yellow-300 bg-j-yellow-300 text-j-blue-800" : "border-j-white/40 text-j-white/80 hover:border-j-white hover:bg-j-blue-800"}`}>{option === "front" ? "Frente" : "Verso"}</button>)}</div>
         </header>
         <div className="flex flex-col gap-4 p-4 sm:p-5">
-            <div className="mx-auto w-full max-w-[720px]"><CardFace side={side} data={props} logo={logo.data} photo={photo.data} /></div>
+            <div className="mx-auto w-full max-w-[280px] sm:hidden"><PortraitCardFace side={side} data={props} logo={logo.data} photo={photo.data} /></div>
+            <div className="mx-auto hidden w-full max-w-[720px] sm:block"><CardFace side={side} data={props} logo={logo.data} photo={photo.data} /></div>
             <CardExportActions onExport={handleExport} disabled={!logo.ready || !photo.ready} className="mx-auto w-full max-w-[720px]" />
         </div>
+        {isFullscreenOpen && typeof document !== "undefined" ? createPortal(
+            <div role="dialog" aria-modal="true" aria-labelledby="membership-card-fullscreen-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-j-blue-950/95 p-4 backdrop-blur-sm">
+                <h2 id="membership-card-fullscreen-title" className="sr-only">Carteirinha digital em tela cheia</h2>
+                <button ref={fullscreenCloseRef} type="button" onClick={() => setIsFullscreenOpen(false)} aria-label="Fechar tela cheia" className="absolute right-4 top-4 flex size-11 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300">
+                    <X size={22} aria-hidden="true" />
+                </button>
+                <div className="overflow-hidden shadow-2xl sm:hidden" style={{ width: "min(88vw, 53.6dvh)", height: "min(85dvh, 139.5vw)" }}>
+                    <PortraitCardFace side={side} data={props} logo={logo.data} photo={photo.data} />
+                </div>
+                <div className="hidden overflow-hidden shadow-2xl sm:block" style={{ width: "min(90vw, 126.8dvh)", height: "min(80dvh, 56.8vw)" }}>
+                    <CardFace side={side} data={props} logo={logo.data} photo={photo.data} />
+                </div>
+            </div>,
+            document.body,
+        ) : null}
         <div ref={exportFaces} aria-hidden="true" style={{ position: "fixed", left: "-10000px", top: 0, width: 856, pointerEvents: "none" }}><CardFace side="front" data={props} logo={logo.data} photo={photo.data} /><CardFace side="back" data={props} logo={logo.data} photo={photo.data} /></div>
     </section>;
 }

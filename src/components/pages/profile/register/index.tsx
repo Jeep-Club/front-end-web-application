@@ -14,6 +14,7 @@ export default function Register() {
             `
         }>
             <Logo
+                sizes="160px"
                 className="w-40 h-40 md:w-40 md:h-40 z-10 relative top-16"
             /> 
             <div 

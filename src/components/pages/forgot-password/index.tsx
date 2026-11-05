@@ -35,7 +35,7 @@ export default function ForgotPassword() {
                     `
                 }
             >
-                <Logo className="hidden md:block md:w-[100px] md:h-[100px] lg:w-[110px] lg:h-[110px] mb-2" />
+                <Logo sizes="(min-width: 1024px) 110px, (min-width: 768px) 100px, 0px" className="hidden md:block md:w-[100px] md:h-[100px] lg:w-[110px] lg:h-[110px] mb-2" />
                 <div className="flex flex-col items-center md:contents">
                     <h1 className="text-xl md:text-2xl font-extrabold text-j-white pt-4 md:pt-0 pb-2 text-center">RECUPERAR SENHA</h1>
                     <p className="text-xs md:text-sm text-j-transparent-white text-center px-5 pb-2">

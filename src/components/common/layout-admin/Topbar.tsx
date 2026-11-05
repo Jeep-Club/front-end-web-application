@@ -1,12 +1,13 @@
 "use client";
 
 import { useContext } from "react";
-import { AvatarMenu } from "@/components/common/layout-admin/AvatarMenu";
-import { NotificationBell } from "@/components/common/layout-admin/NotificationBell";
 import { TourContext } from "@/components/common/tour/TourContext";
+import { Avatar } from "@/components/common/avatar";
 import { getUserProfileAction } from "@/server/actions/profile/get";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Menu,PanelLeftClose,PanelLeftOpen } from "lucide-react";
+import NotificationBell from "@/components/common/layout-admin/NotificationBell";
 
 interface TopbarProps {
     isSidebarCollapsed: boolean;
@@ -27,6 +28,7 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
     });
     const displayName = profile?.name ?? fullName;
     const profilePhotoUrl = profile ? profile.profilePhotoUrl : initialProfilePhotoUrl;
+    const initials = displayName.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("pt-BR") || "?";
 
     return (
         <header className="sticky top-0 z-10 flex h-14 w-full shrink-0 items-center justify-between bg-j-blue-800 pl-2 pr-4 text-j-white shadow-md md:pl-4 md:pr-8">
@@ -62,9 +64,27 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
                     Precisa de ajuda?
                 </button>
                 <NotificationBell />
-                <span className="h-8 w-px bg-j-transparent-white" />
+                <span className="hidden h-8 w-px bg-j-transparent-white md:block" />
                 <span className="hidden text-sm font-bold text-j-white md:inline">{displayName}</span>
-                <AvatarMenu src={profilePhotoUrl} fullName={displayName} />
+                <Link
+                    href="/profile"
+                    id="tour-avatar-container"
+                    aria-label="Conta"
+                    title="Conta"
+                    onClick={() => {
+                        sessionStorage.setItem("force_branch_tour", "true");
+                        window.dispatchEvent(new CustomEvent("tour:destroy-and-diverge"));
+                    }}
+                    className="cursor-pointer rounded-full ring-2 ring-white/40 transition hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-j-yellow-300"
+                >
+                    {profilePhotoUrl ? (
+                        <Avatar src={profilePhotoUrl} alt={`Foto de ${displayName}`} loading="eager" />
+                    ) : (
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-j-yellow-300 text-xs font-extrabold text-j-blue-900">
+                            {initials}
+                        </span>
+                    )}
+                </Link>
             </div>
         </header>
     );
