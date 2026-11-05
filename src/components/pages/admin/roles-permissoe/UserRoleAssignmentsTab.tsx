@@ -55,11 +55,16 @@ export function UserRoleAssignmentsTab() {
 
     const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => [
         {
-            accessorKey: "id",
+            accessorKey: "membershipNumber",
             header: "Matrícula",
             meta: { label: "Matrícula" },
             cell: ({ row }) => (
-                <span className="font-bold text-j-gray-700">{row.original.id}</span>
+                <div className="flex flex-col">
+                    <span className="font-bold text-j-gray-700">
+                        {row.original.membershipNumber ?? "—"}
+                    </span>
+                    <span className="text-[11px] text-j-gray-400">ID #{row.original.id}</span>
+                </div>
             ),
         },
         {
@@ -137,7 +142,7 @@ export function UserRoleAssignmentsTab() {
                 pageSize,
                 pageCount: data?.totalPages ?? 0,
                 rowCount: data?.totalElements,
-                pageSizeOptions: [5, 10, 20, 50, 100],
+                pageSizeOptions: [5, 10, 20, 50],
                 onChange: (next) => {
                     setPage(next.pageIndex);
                     setPageSize(next.pageSize);
