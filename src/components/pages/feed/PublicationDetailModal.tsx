@@ -13,7 +13,6 @@ import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationComments } from "./PublicationComments";
 import { RelativeTime } from "./RelativeTime";
-import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { EventAdminParticipants } from "./EventAdminParticipants";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -45,8 +44,7 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
             <div className="flex flex-col gap-5 p-5 md:p-8">
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
-                {publication.type === "EVENT" && <EventParticipants details={publication.details} />}
-                {publication.type === "EVENT" && canReadEventParticipants && <EventAdminParticipants eventId={publication.id} />}
+
                 {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventTitle={publication.title} eventStatus={publication.details.status} charges={publication.details.charges} />}
                 <RichTextContent content={publication.content} />
                 <FeedInteractions publication={publication} />
