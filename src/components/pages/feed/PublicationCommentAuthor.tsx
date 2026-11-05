@@ -22,7 +22,6 @@ export function PublicationCommentAuthor({ authorUserId, name, photo, createdAt 
     const displayName = name?.trim() || (isCurrentUser ? currentUser?.name : null) || `Associado #${authorUserId}`;
     const photoUrl = getMediaImageUrl(photo ?? (isCurrentUser ? currentUser?.photoUrl : null));
 
-
     return <div className="flex min-w-0 items-center gap-2.5">
         {photoUrl ? <Avatar src={photoUrl} alt={`Foto de ${displayName}`} className="h-9 w-9 shrink-0 bg-j-gray-200" /> : <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-j-blue-800 text-xs font-extrabold text-j-white">{initials(displayName) || "A"}</span>}
         <div className="flex min-w-0 flex-col">
