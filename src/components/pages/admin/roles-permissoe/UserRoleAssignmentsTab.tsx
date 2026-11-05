@@ -219,7 +219,6 @@ export function UserRoleAssignmentsTab() {
 
                 <Table.Content loadingRows={pageSize} />
             </Table.Root>
-        </section>
     );
 }
 
