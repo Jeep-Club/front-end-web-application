@@ -17,6 +17,25 @@ import {
 	assignChargeToUserAction,
 } from "@/server/actions/billing/chargeAssignments/assign";
 import { ChargeAssignmentsModal } from "./ChargeAssignmentsModal";
+import { getPermissionNameByCode } from "../roles-permissoe/permissionLabels";
+import { ActionError, getActionFailure } from "@/utils/http/ActionError";
+import { getApiProblem } from "@/utils/http/apiError";
+
+const roleReadName = getPermissionNameByCode("AUTHORIZATION_ROLE_READ")!;
+const assignmentCreateName = getPermissionNameByCode("BILLING_CHARGE_ASSIGNMENT_CREATE")!;
+const roleReadMessage = `Para consultar os cargos, você precisa da permissão “${roleReadName}”. Solicite essa permissão a um administrador.`;
+const roleAssignmentMessage = `Para atribuir a cobrança a um cargo, são necessárias as permissões “${roleReadName}” e “${assignmentCreateName}”. Solicite as permissões a um administrador.`;
+
+function isForbidden(error: unknown): boolean {
+    const status = getActionFailure(error)?.status ?? getApiProblem(error)?.status
+        ?? (error && typeof error === "object" && "status" in error ? error.status : undefined);
+    return status === 403;
+}
+
+function explainForbidden(error: unknown, message: string): never {
+    if (isForbidden(error)) throw new ActionError(message, { status: 403, code: "ACCESS_DENIED" });
+    throw error;
+}
 
 interface AddChargeAssignmentModalProps {
     chargeDefinitionId: number;
@@ -54,15 +73,19 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
         data: roles,
         isLoading: isLoadingRoles,
         isError: isRolesError,
+        error: rolesError,
     } = useQuery({
         queryKey: ["admin-roles-list"],
-        queryFn: () => listRolesAction(),
+        queryFn: async () => {
+            try { return await listRolesAction(); }
+            catch (error) { return explainForbidden(error, roleReadMessage); }
+        },
         enabled: audienceType === "ROLE",
         retry: false,
     });
 
     const mutation = useMutation({
-        mutationFn: () => {
+        mutationFn: async () => {
             if (audienceType === "ALL_MEMBERS") {
                 return assignChargeToAllMembersAction(chargeDefinitionId);
             }
@@ -72,7 +95,8 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
             }
 
             if (audienceType === "ROLE") {
-                return assignChargeToRoleAction(chargeDefinitionId, Number(roleId));
+                try { return await assignChargeToRoleAction(chargeDefinitionId, Number(roleId)); }
+                catch (error) { return explainForbidden(error, roleAssignmentMessage); }
             }
 
             if (audienceType === "EVENT_PARTICIPANTS") {
@@ -127,6 +151,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                     value={audienceType}
                     onChange={(event) => {
                         setAudienceType(event.target.value as ChargeAudienceType);
+                        mutation.reset();
                         setUserId("");
                         setRoleId("");
                         setEventId("");
@@ -161,9 +186,9 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                             Carregando cargos...
                         </div>
                     ) : isRolesError || !roles ? (
-                        <div className="flex items-center gap-2 text-sm text-red-500">
+                        <div role="alert" className="flex items-center gap-2 text-sm text-red-500">
                             <AlertCircle size={16} />
-                            Não foi possível carregar os cargos.
+                            {isForbidden(rolesError) ? roleReadMessage : "Não foi possível carregar os cargos."}
                         </div>
                     ) : (
                         <Select.Unregister
@@ -194,6 +219,10 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                         labelClassName="text-j-gray-700"
                         className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
                     />
+                )}
+
+                {audienceType === "ROLE" && mutation.error && isForbidden(mutation.error) && (
+                    <p role="alert" className="text-sm text-red-500">{roleAssignmentMessage}</p>
                 )}
 
                 <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
