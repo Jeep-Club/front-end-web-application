@@ -21,7 +21,7 @@ import { publicationFormSchema, type PublicationFormData, type CreatePublication
 import { createPublicationAction } from "@/server/actions/publications/create";
 import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
 import { uploadImageAction } from "@/server/actions/media/upload-image";
-import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
+import { maskServiceAmount, parseServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
 
 
@@ -108,9 +108,9 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             const common = { title: data.title, content: data.content, images };
             const payload: CreatePublicationRequest = data.type === "EVENT"
                 ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null,
-                    charges: data.amount.trim() ? [{ name: (data.chargeName.trim() || "Entrada").slice(0, 120), description: (data.chargeDescription.trim() || `Cobrança de participação no evento: ${data.title}`).slice(0, 255), amount: Number(data.amount.replace(",", ".")), billingRequired: true, requiredForParticipation: true }] : [] }
+                    charges: data.amount.trim() ? [{ name: (data.chargeName.trim() || "Entrada").slice(0, 120), description: (data.chargeDescription.trim() || `Cobrança de participação no evento: ${data.title}`).slice(0, 255), amount: parseServiceAmount(data.amount), billingRequired: true, requiredForParticipation: true }] : [] }
                 : data.type === "SERVICE"
-                    ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: unMaskPhoneNumber(data.contactPhone) }
+                    ? { ...common, type: "SERVICE", amount: parseServiceAmount(data.amount), contactPhone: unMaskPhoneNumber(data.contactPhone) }
                     : { ...common, type: "NOTICE" };
             const created = await createPublicationAction(payload);
             if (created.type !== "EVENT" || !publishEventImmediately) return { ...created, published: false };
