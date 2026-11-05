@@ -165,7 +165,14 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
 
 
             </header>
-            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="px-5 py-5 md:px-8 md:py-6">
+            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A falha fica visível no próprio formulário. */ } }} onError={(errors) => {
+                const firstError = Object.values(errors).map((error) => error?.message).find((message) => typeof message === "string");
+                toast.error(typeof firstError === "string" ? firstError : "Confira os campos destacados.");
+            }} className="px-5 py-5 md:px-8 md:py-6">
+                {mutation.isError && <div role="alert" className="w-full rounded-xl border border-j-red-300 bg-j-red-100 p-4 text-sm text-j-red-700">
+                    <p className="font-bold">Não foi possível concluir o cadastro.</p>
+                    <p className="mt-1 break-words">{mutation.error.message || "Tente novamente após conferir os campos."}</p>
+                </div>}
                 <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} />
             </Form>
         </div>
