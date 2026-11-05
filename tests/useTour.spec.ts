@@ -288,6 +288,30 @@ describe("Tour Configuration & Logic", () => {
         );
         expect(vehicleQueryResults[0]?.id).toBe("profile-account");
 
+        const aondeQueryResults = filterTutorials(
+            TUTORIAL_CATALOG,
+            memberPermissions,
+            "aonde eu cadastro meu veiculo",
+            "all",
+        );
+        expect(aondeQueryResults[0]?.id).toBe("profile-account");
+
+        const synonymCarQuery = filterTutorials(
+            TUTORIAL_CATALOG,
+            memberPermissions,
+            "onde coloco meu carro",
+            "all",
+        );
+        expect(synonymCarQuery[0]?.id).toBe("profile-account");
+
+        const typoVehicleQuery = filterTutorials(
+            TUTORIAL_CATALOG,
+            memberPermissions,
+            "como cadastrar veiclo",
+            "all",
+        );
+        expect(typoVehicleQuery[0]?.id).toBe("profile-account");
+
         const adminPermissions: PermissionModule[] = [
             { module: "VEHICLES", actions: ["VEHICLE_READ"] },
             { module: "BILLING", actions: ["PAYMENT_READ"] },
@@ -313,7 +337,6 @@ describe("Tour Configuration & Logic", () => {
         expect(getTutorialsPageTourSteps(false).map((step) => step.element)).toEqual([
             "#tour-tutorials-header",
             "#tour-tutorials-search",
-            "#tour-tutorials-categories",
             "#tour-tutorials-results",
             "#tour-tutorials-start-btn",
             "#tour-header-help-btn",

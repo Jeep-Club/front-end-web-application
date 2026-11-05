@@ -22,6 +22,9 @@ export function getTourStorageKey(canAccessAdmin: boolean): string {
 export function requestTourStart(target: string = "current") {
     if (typeof window === "undefined") return;
     sessionStorage.setItem(FORCE_START_TOUR_KEY, target);
+    if (typeof window.dispatchEvent === "function") {
+        window.dispatchEvent(new Event("tour:force-start"));
+    }
 }
 
 export function resetAllTours() {
@@ -75,10 +78,19 @@ export function usePageTour({
     const driverRef = useRef<Driver | null>(null);
     const exitConfirmationRef = useRef<AbortController | null>(null);
     const enabledRef = useRef<boolean>(enabled);
+    const stepsRef = useRef(steps);
+    const onBeforeStartRef = useRef(onBeforeStart);
+    const onCompletedRef = useRef(onCompleted);
 
     useEffect(() => {
         enabledRef.current = enabled;
     }, [enabled]);
+
+    useEffect(() => {
+        stepsRef.current = steps;
+        onBeforeStartRef.current = onBeforeStart;
+        onCompletedRef.current = onCompleted;
+    }, [steps, onBeforeStart, onCompleted]);
 
     useEffect(() => () => exitConfirmationRef.current?.abort(), []);
 
@@ -86,9 +98,12 @@ export function usePageTour({
         if (typeof window !== "undefined" && storageKey) {
             localStorage.setItem(storageKey, "true");
             setCompletedKeys((prev) => ({ ...prev, [storageKey]: true }));
+            if (typeof window.dispatchEvent === "function") {
+                window.dispatchEvent(new Event("tour:progress-updated"));
+            }
         }
-        onCompleted?.();
-    }, [storageKey, onCompleted]);
+        onCompletedRef.current?.();
+    }, [storageKey]);
 
     useEffect(() => {
         const handleDiverge = () => {
@@ -112,7 +127,7 @@ export function usePageTour({
     const startTour = useCallback(() => {
         if (typeof window === "undefined") return;
 
-        onBeforeStart?.();
+        onBeforeStartRef.current?.();
         localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
 
         if (driverRef.current) {
@@ -123,7 +138,8 @@ export function usePageTour({
         document.querySelectorAll('.driver-overlay, .driver-popover').forEach((el) => el.remove());
 
         const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-        const resolvedSteps = typeof steps === "function" ? steps(isMobile) : steps;
+        const currentSteps = stepsRef.current;
+        const resolvedSteps = typeof currentSteps === "function" ? currentSteps(isMobile) : currentSteps;
 
         if (!resolvedSteps || resolvedSteps.length === 0) return;
 
@@ -192,7 +208,7 @@ export function usePageTour({
         } else {
             executeDrive();
         }
-    }, [steps, confirmOnExit, exitConfirmMessage, markAsCompleted, onBeforeStart]);
+    }, [confirmOnExit, exitConfirmMessage, markAsCompleted]);
 
     const restartTour = useCallback(() => {
         if (typeof window !== "undefined" && storageKey) {
@@ -221,35 +237,56 @@ export function usePageTour({
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
-        if (!forcedTarget) return;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+        let intervalId: ReturnType<typeof setInterval> | null = null;
 
-        const currentPath = window.location.pathname;
-        const currentFullRoute = `${currentPath}${window.location.search}`;
+        const tryTriggerForcedTour = () => {
+            const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
+            if (!forcedTarget) return;
 
-        const matchesTarget = isShellTour
-            ? forcedTarget === storageKey
-            : (forcedTarget === "current" || forcedTarget === storageKey || forcedTarget === currentPath || forcedTarget === currentFullRoute);
+            const currentPath = window.location.pathname;
+            const currentFullRoute = `${currentPath}${window.location.search}`;
 
-        if (!matchesTarget) return;
+            const matchesTarget = isShellTour
+                ? forcedTarget === storageKey
+                : (forcedTarget === "current" ||
+                    forcedTarget === storageKey ||
+                    forcedTarget === currentPath ||
+                    forcedTarget === currentFullRoute);
 
-        sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+            if (!matchesTarget) return;
 
-        let attempts = 0;
-        const interval = setInterval(() => {
-            attempts++;
-            if (enabledRef.current || attempts > 30) {
-                clearInterval(interval);
-                if (storageKey) {
-                    setCompletedKeys((prev) => ({ ...prev, [storageKey]: false }));
+            if (intervalId !== null) clearInterval(intervalId);
+            if (timeoutId !== null) clearTimeout(timeoutId);
+
+            let attempts = 0;
+            intervalId = setInterval(() => {
+                attempts++;
+                if (enabledRef.current || attempts > 30) {
+                    if (intervalId !== null) {
+                        clearInterval(intervalId);
+                        intervalId = null;
+                    }
+                    timeoutId = setTimeout(() => {
+                        sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+                        if (storageKey) {
+                            localStorage.removeItem(storageKey);
+                            setCompletedKeys((prev) => ({ ...prev, [storageKey]: false }));
+                        }
+                        startTour();
+                    }, 150);
                 }
-                setTimeout(() => {
-                    startTour();
-                }, 100);
-            }
-        }, 100);
+            }, 100);
+        };
 
-        return () => clearInterval(interval);
+        tryTriggerForcedTour();
+        window.addEventListener("tour:force-start", tryTriggerForcedTour);
+
+        return () => {
+            window.removeEventListener("tour:force-start", tryTriggerForcedTour);
+            if (intervalId !== null) clearInterval(intervalId);
+            if (timeoutId !== null) clearTimeout(timeoutId);
+        };
     }, [isShellTour, storageKey, startTour]);
 
     // O tutorial automático inicial permanece desativado por padrão (autoStartOnFirstVisit = false).

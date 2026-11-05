@@ -2,7 +2,7 @@ import type { DriveStep } from "driver.js";
 
 function createStepHeader(title: string, svgPath: string, badge?: string): string {
     const badgeHtml = badge
-        ? `<span style="margin-left:auto; background:#e0e7ff; color:#1e3a8a; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase; letter-spacing:0.05em;">${badge}</span>`
+        ? `<span style="margin-left:auto; background:var(--accent-surface); color:var(--accent-text); font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; text-transform:uppercase; letter-spacing:0.04em;">${badge}</span>`
         : "";
 
     return `
@@ -12,7 +12,7 @@ function createStepHeader(title: string, svgPath: string, badge?: string): strin
                     ${svgPath}
                 </svg>
             </span>
-            <span style="font-weight:800; color:#061e50; font-size:14px; letter-spacing:-0.01em;">${title}</span>
+            <span style="font-weight:800; color:var(--accent-text); font-size:15px; letter-spacing:-0.01em;">${title}</span>
             ${badgeHtml}
         </div>
     `;
@@ -1000,19 +1000,10 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
             },
         },
         {
-            element: "#tour-tutorials-categories",
-            popover: {
-                title: createStepHeader("Filtros por Categoria", ICONS.layers),
-                description: "Filtre os tutoriais entre <strong>Todos</strong>, guias de <strong>Navegação & Associado</strong> ou módulos de <strong>Gestão Administrativa</strong> liberados para o seu perfil.",
-                side: "bottom",
-                align: isMobile ? "center" : "start",
-            },
-        },
-        {
             element: "#tour-tutorials-results",
             popover: {
-                title: createStepHeader("Resultados Logo Abaixo da Busca", ICONS.checkCircle),
-                description: "Os tutoriais correspondentes à sua pesquisa aparecem imediatamente aqui abaixo, mostrando os tópicos abordados e a quantidade de passos.",
+                title: createStepHeader("Resultados e Sumário de Tutoriais", ICONS.checkCircle),
+                description: "Os tutoriais disponíveis para você aparecem em formato de lista simples logo abaixo, com a quantidade de passos e status de conclusão.",
                 side: isMobile ? "bottom" : "top",
                 align: "center",
             },

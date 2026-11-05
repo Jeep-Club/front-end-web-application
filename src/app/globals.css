@@ -144,6 +144,9 @@
   --success: var(--green-400);
   --success-light: var(--green-300);
   --success-dark: var(--green-600);
+  --success-surface: #eafaea;
+  --success-text: var(--green-700);
+  --success-border: #86efac;
   
   --danger: var(--red-300);
   --danger-light: var(--red-200);
@@ -463,6 +466,9 @@ body {
   --input-border-hover: #9baac0;
   --input-border-focus: var(--yellow-300);
   --input-error-text: var(--red-200);
+  --success-surface: rgba(48, 201, 48, 0.14);
+  --success-text: var(--green-100);
+  --success-border: rgba(95, 219, 95, 0.4);
 }
 
 /* Local native actions receive the same cursor affordance as shared controls. */
@@ -486,4 +492,19 @@ body {
   background-color: var(--surface) !important;
   color: var(--text-primary) !important;
 }
-:root[data-theme="dark"] .driver-popover-title { color: var(--accent-text) !important; }
+:root[data-theme="dark"] .driver-popover-title,
+:root[data-theme="dark"] .driver-popover-title span {
+  color: var(--accent-text) !important;
+}
+:root[data-theme="dark"] .driver-popover-description {
+  color: var(--text-secondary) !important;
+}
+:root[data-theme="dark"] .driver-popover-prev-btn {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--gray-300) !important;
+}
+:root[data-theme="dark"] .driver-popover-prev-btn:hover {
+  background-color: var(--background-tertiary) !important;
+  color: var(--accent-text) !important;
+}
