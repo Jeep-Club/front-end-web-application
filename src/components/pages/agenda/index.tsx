@@ -212,9 +212,9 @@ export default function AgendaPage() {
                             {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
                             {!events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda. Datas de aniversários também aparecem marcadas.</p>}
                         </section>}
-            {birthdayQuery.isFetching && <p role="status" className="text-center text-xs text-j-gray-500">Carregando aniversariantes...</p>}
-            {birthdayQuery.isError && <div role="alert" className="flex flex-col items-center gap-2 text-center text-xs text-red-600"><span>Não foi possível carregar todos os aniversariantes.</span><button type="button" onClick={() => void birthdayQuery.refetch()} className="cursor-pointer font-bold underline">Tentar novamente</button></div>}
-            <p className="text-center text-xs text-j-gray-400">Eventos e aniversários aparecem marcados no calendário. Toque em um dia para ver os detalhes.</p>
+            {birthdayQuery.canReadUsers && birthdayQuery.isFetching && <p role="status" className="text-center text-xs text-j-gray-500">Carregando aniversariantes...</p>}
+            {birthdayQuery.canReadUsers && birthdayQuery.isError && <div role="alert" className="flex flex-col items-center gap-2 text-center text-xs text-red-600"><span>Não foi possível carregar todos os aniversariantes.</span><button type="button" onClick={() => void birthdayQuery.refetch()} className="cursor-pointer font-bold underline">Tentar novamente</button></div>}
+            <p className="text-center text-xs text-j-gray-400">{birthdayQuery.canReadUsers ? "Eventos e aniversários aparecem marcados no calendário. Toque em um dia para ver os detalhes." : "Os eventos aparecem marcados no calendário. Toque em um dia para ver os detalhes."}</p>
         </div>
     </div>;
 }

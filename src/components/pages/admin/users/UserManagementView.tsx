@@ -109,7 +109,7 @@ export function UserManagementView({
                 ),
                 meta: { label: "Nome completo" },
                 cell: ({ row }) => (
-                    <div className="flex min-w-44 items-center gap-3">
+                    <div className="flex min-w-0 max-w-full flex-1 items-center gap-2">
                         {row.original.profilePhotoUrl ? (
                             <Avatar
                                 src={row.original.profilePhotoUrl}
@@ -130,7 +130,7 @@ export function UserManagementView({
                                     .toLocaleUpperCase("pt-BR")}
                             </span>
                         )}
-                        <span className="font-bold text-j-gray-700">{row.original.name}</span>
+                        <span className="min-w-0 whitespace-normal break-words text-sm font-bold text-j-gray-700">{row.original.name}</span>
                     </div>
                 ),
             },
@@ -397,7 +397,7 @@ export function UserManagementView({
             />
 
             <div id="tour-users-table">
-                <Table.Content loadingRows={pageSize} />
+                <Table.Content loadingRows={pageSize} mobileColumnHeaders />
             </div>
         </Table.Root>
     );

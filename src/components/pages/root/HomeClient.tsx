@@ -24,15 +24,15 @@ import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
 
 const contributors = [
-  { username: "Vitorram", name: "Vitorram" },
-  { username: "joaogabrielbeserra", name: "joaogabrielbeserra" },
-  { username: "TulioKenji", name: "TulioKenji" },
-  { username: "joaoapassos", name: "joaoapassos" },
-  { username: "vinikyo", name: "vinikyo" },
-  { username: "KauanLeonel", name: "KauanLeonel" },
-  { username: "gumello244", name: "gumello244" },
-  { username: "DanielPMorais", name: "DanielPMorais" },
-  { username: "Luskahz", name: "Lucas Alves" },
+  { username: "Luskahz", name: "Lucas", role: "Desenvolvedor Back-end / Tech Lead" },
+  { username: "Vitorram", name: "Vitor", role: "Desenvolvedor Front-end / Tech Lead" },
+  { username: "joaogabrielbeserra", name: "João Gabriel", role: "Desenvolvedor Full Stack" },
+  { username: "joaoapassos", name: "João Alves", role: "Desenvolvedor Front-end" },
+  { username: "TulioKenji", name: "Túlio Kenji", role: "Desenvolvedor Front-end" },
+  { username: "vinikyo", name: "Vini", role: "Desenvolvedor Full Stack" },
+  { username: "DanielPMorais", name: "Dani", role: "Desenvolvedor Full Stack" },
+  { username: "gumello244", name: "Gumello", role: "Desenvolvedor Full Stack" },
+  { username: "KauanLeonel", name: "Kauan", role: "Desenvolvedor Full Stack" },
 ];
 
 export default function HomeClient() {
@@ -296,18 +296,19 @@ export default function HomeClient() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {contributors.map(({ username, name }) => (
+            {contributors.map(({ username, name, role }) => (
               <article key={username} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center transition-colors hover:border-yellow-400/40 hover:bg-white/[0.07]">
                 <div className="relative mx-auto mb-5 h-28 w-28 overflow-hidden rounded-full border-2 border-yellow-400/70 bg-[#202020] shadow-lg shadow-black/30">
                   <Image
                     src={`https://github.com/${username}.png?size=256`}
-                    alt={`Foto de perfil de ${username}`}
+                    alt={`Foto de perfil de ${name}`}
                     fill
                     sizes="112px"
                     className="object-cover"
                   />
                 </div>
                 <h3 className="break-all text-base font-extrabold text-white">{name}</h3>
+                <p className="mt-2 text-sm text-white/60">{role}</p>
                 <a
                   href={`https://github.com/${username}`}
                   target="_blank"

@@ -12,15 +12,7 @@ const MODULE_LABELS: Record<string, string> = {
 };
 
 export function getModuleLabel(module: string): string {
-    return (
-        MODULE_LABELS[module] ??
-        module
-            .replaceAll("_", " ")
-            .toLocaleLowerCase("pt-BR")
-            .replace(/\b\p{L}/gu, (letter) =>
-                letter.toLocaleUpperCase("pt-BR"),
-            )
-    );
+    return MODULE_LABELS[module] ?? "Outros";
 }
 
 const PERMISSION_NAME_LABELS: Record<string, string> = {
@@ -40,14 +32,15 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
         "Gerar senha provisória",
     AUTHENTICATION_SESSION_READ: "Consultar sessões",
     AUTHENTICATION_SESSION_LOGOUT: "Encerrar sessões de usuários",
-    AUTHENTICATION_REFRESH_TOKEN_READ: "Consultar refresh tokens",
-    AUTHENTICATION_REFRESH_TOKEN_REVOKE: "Revogar refresh tokens",
+    AUTHENTICATION_REFRESH_TOKEN_READ: "Consultar tokens de renovação",
+    AUTHENTICATION_REFRESH_TOKEN_REVOKE: "Revogar tokens de renovação",
     AUTHENTICATION_PASSWORD_RECOVERY_READ:
         "Consultar pedidos de recuperação de senha",
     AUTHENTICATION_PASSWORD_RECOVERY_CANCEL:
         "Cancelar pedidos de recuperação de senha",
 
     AUTHORIZATION_ROLE_READ: "Consultar cargos",
+    BILLING_CHARGE_ASSIGNMENT_CREATE: "Criar atribuições de cobrança",
     AUTHORIZATION_ROLE_CREATE: "Criar cargos",
     AUTHORIZATION_ROLE_UPDATE: "Atualizar cargos",
     AUTHORIZATION_ROLE_DELETE: "Excluir cargos",
@@ -77,7 +70,7 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
 
     PUBLICATIONS_EVENT_CREATE: "Criar eventos",
     PUBLICATIONS_EVENT_READ: "Consultar eventos",
-    PUBLICATIONS_EVENT_READ_ADMIN: "Consultar eventos como administrador",
+    PUBLICATIONS_EVENT_READ_ADMIN: "Consultar eventos em qualquer estado",
     PUBLICATIONS_EVENT_UPDATE: "Atualizar eventos",
     PUBLICATIONS_EVENT_PUBLISH: "Publicar eventos",
     PUBLICATIONS_EVENT_CANCEL: "Cancelar eventos",
@@ -102,9 +95,9 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     PUBLICATIONS_EVENT_GUEST_HISTORY_READ:
         "Consultar histórico de alterações do convidado",
     PUBLICATIONS_EVENT_GUEST_ADMIN_CREATE:
-        "Cadastrar convidado como administrador",
+        "Cadastrar convidado",
     PUBLICATIONS_EVENT_GUEST_ADMIN_READ:
-        "Consultar convidados como administrador",
+        "Consultar convidados",
     PUBLICATIONS_EVENT_GUEST_APPROVE: "Aprovar solicitação de convidado",
     PUBLICATIONS_EVENT_GUEST_REJECT: "Rejeitar solicitação de convidado",
 
@@ -113,7 +106,7 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     PUBLICATIONS_EVENT_RIDE_OFFER_SELECT: "Selecionar oferta de carona",
 
     PUBLICATIONS_EVENT_ADMIN_DASHBOARD_READ:
-        "Consultar painel administrativo de eventos",
+        "Consultar painel de eventos",
     PUBLICATIONS_EVENT_HEALTH_EMERGENCY_READ:
         "Consultar dados médicos de emergência em eventos",
 
@@ -135,6 +128,64 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     PUBLICATIONS_NOTICE_PUBLISH: "Publicar avisos",
     PUBLICATIONS_NOTICE_ARCHIVE: "Arquivar avisos",
     PUBLICATIONS_NOTICE_DELETE: "Excluir avisos com histórico",
+};
+
+const PERMISSION_ACTION_LABELS: Record<string, string> = {
+    READ: "Consultar",
+    CREATE: "Cadastrar",
+    UPDATE: "Editar",
+    DELETE: "Excluir",
+    ENABLE: "Ativar",
+    DISABLE: "Desativar",
+    ACTIVATE: "Ativar",
+    DEACTIVATE: "Desativar",
+    ARCHIVE: "Arquivar",
+    UNARCHIVE: "Desarquivar",
+    EXPORT: "Exportar",
+    ASSIGN: "Atribuir",
+    REVOKE: "Revogar",
+    APPROVE: "Aprovar",
+    REJECT: "Rejeitar",
+    CANCEL: "Cancelar",
+    PUBLISH: "Publicar",
+    FINISH: "Finalizar",
+    REGISTER: "Inscrever",
+    RESPOND: "Responder",
+    SELECT: "Selecionar",
+    ALLOCATE: "Alocar",
+    UNASSIGN: "Remover",
+};
+
+const PERMISSION_RESOURCE_LABELS: Record<string, string> = {
+    DEPENDENT: "dependentes",
+    DEPENDENTS: "dependentes",
+    MEMBER_DEPENDENT: "dependentes",
+    USER: "usuários",
+    MEMBER: "associados",
+    VEHICLE: "veículos",
+    TOOL: "ferramentas",
+    PAYMENT: "pagamentos",
+    CHARGE: "cobranças",
+    CHARGE_DEFINITION: "definições de cobrança",
+    CHARGE_ASSIGNMENT: "atribuições de cobrança",
+    MEMBERSHIP_REQUEST: "solicitações de adesão",
+    MEMBERSHIP_APPLICATION: "solicitações de associação",
+    APPLICANT: "solicitantes",
+    ROLE: "cargos",
+    PERMISSION: "permissões",
+    EVENT: "eventos",
+    EVENT_REGISTRATION: "inscrições em eventos",
+    EVENT_GUEST: "convidados de eventos",
+    GUEST: "convidados",
+    NOTICE: "avisos",
+    COMMENT: "comentários",
+    PUBLICATION: "publicações",
+    FEED: "mural de publicações",
+    MEDICAL_PROFILE: "perfil médico",
+    SESSION: "sessões",
+    PASSWORD_RECOVERY: "recuperação de senha",
+    PROFILE: "perfis",
+    DOCUMENT: "documentos",
 };
 
 const ENGLISH_DESCRIPTION_LABELS: Record<string, string> = {
@@ -202,13 +253,65 @@ const ENGLISH_DESCRIPTION_LABELS: Record<string, string> = {
         "Consultar dados médicos de emergência em eventos.",
 };
 
-export function getPermissionName(permission: PermissionResponse): string {
-    const code = permission.code.trim().toLocaleUpperCase("pt-BR");
+const MEMBER_PERMISSION_CODES = new Set([
+    "PUBLICATIONS_INTERACTION_LIKE",
+    "PUBLICATIONS_COMMENT_CREATE",
+    "PUBLICATIONS_COMMENT_READ",
+    "PUBLICATIONS_FEED_READ",
+    "PUBLICATIONS_PUBLICATION_READ",
+    "PUBLICATIONS_EVENT_READ",
+    "PUBLICATIONS_EVENT_REGISTER",
+    "PUBLICATIONS_EVENT_REGISTRATION_CANCEL",
+    "PUBLICATIONS_EVENT_GUEST_REQUEST_CREATE",
+    "PUBLICATIONS_EVENT_GUEST_REQUEST_READ",
+    "PUBLICATIONS_EVENT_GUEST_REQUEST_CANCEL",
+    "PUBLICATIONS_EVENT_RIDE_OFFER_READ",
+    "PUBLICATIONS_EVENT_RIDE_OFFER_RESPOND",
+    "PUBLICATIONS_EVENT_RIDE_OFFER_SELECT",
+    "PUBLICATIONS_SERVICE_REQUEST_CREATE",
+    "PUBLICATIONS_SERVICE_REQUEST_READ",
+    "PUBLICATIONS_SERVICE_CHANGE_REQUEST_CREATE",
+    "PUBLICATIONS_SERVICE_CHANGE_REQUEST_READ",
+    "PUBLICATIONS_SERVICE_READ",
+    "PUBLICATIONS_SERVICE_DELETE",
+]);
 
-    return (
-        PERMISSION_NAME_LABELS[code] ??
-        getPermissionDescription(permission)
-    );
+function getPermissionScopeLabel(code: string): string {
+    return MEMBER_PERMISSION_CODES.has(code.trim().toLocaleUpperCase("pt-BR"))
+        ? "Acesso de associado"
+        : "Acesso administrativo";
+}
+
+export function getPermissionNameByCode(code: string): string | undefined {
+    const normalizedCode = code.trim().toLocaleUpperCase("pt-BR");
+    const name = PERMISSION_NAME_LABELS[normalizedCode];
+    return name ? `${getPermissionScopeLabel(normalizedCode)}: ${name}` : undefined;
+}
+
+export function getPermissionName(permission: PermissionResponse): string {
+    const scopeLabel = getPermissionScopeLabel(permission.code);
+    const normalizedPermissionCode = permission.code.trim().toLocaleUpperCase("pt-BR");
+    const knownName = PERMISSION_NAME_LABELS[normalizedPermissionCode];
+    if (knownName) return `${scopeLabel}: ${knownName}`;
+
+    const normalizedCode = permission.code.trim().toLocaleUpperCase("pt-BR");
+    const modulePrefix = `${permission.module.trim().toLocaleUpperCase("pt-BR")}_`;
+    const moduleCode = normalizedCode.startsWith(modulePrefix)
+        ? normalizedCode.slice(modulePrefix.length)
+        : normalizedCode;
+    const action = Object.keys(PERMISSION_ACTION_LABELS)
+        .sort((left, right) => right.length - left.length)
+        .find((candidate) => moduleCode.endsWith(`_${candidate}`) || moduleCode === candidate);
+    const resourceCode = action
+        ? moduleCode.replace(new RegExp(`_${action}$`), "")
+        : moduleCode;
+    const resource = PERMISSION_RESOURCE_LABELS[resourceCode]
+        ?? getModuleLabel(permission.module).toLocaleLowerCase("pt-BR");
+
+    const name = action
+        ? `${PERMISSION_ACTION_LABELS[action]} ${resource}`
+        : `Permissão de ${resource}`;
+    return `${scopeLabel}: ${name}`;
 }
 
 export function getPermissionDescription(
@@ -223,5 +326,13 @@ export function getPermissionDescription(
             english.toLocaleLowerCase("en-US") === normalizedDescription,
     )?.[1];
 
-    return translated ?? description;
+    if (translated) return translated;
+
+    const knownName = getPermissionNameByCode(permission.code);
+    if (knownName) return knownName;
+
+    const permissionName = getPermissionName(permission);
+    return permissionName.startsWith("Permissão de ")
+        ? `Permissão relacionada a ${permissionName.slice("Permissão de ".length)}.`
+        : `Permite ${permissionName.toLocaleLowerCase("pt-BR")}.`;
 }

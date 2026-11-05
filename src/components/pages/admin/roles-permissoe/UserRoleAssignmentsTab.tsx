@@ -5,7 +5,8 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { KeyRound,ShieldX } from "lucide-react";
 import { useMemo,useState } from "react";
 
-import { ButtonIcon } from "@/components/common/button";
+import { Button } from "@/components/common/button";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
 import { useModal } from "@/providers/ModalProvider";
@@ -30,6 +31,7 @@ export function UserRoleAssignmentsTab() {
 
     const permissions = useUserStore((state) => state.permissions);
     const canReadUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ");
+    const canAssignUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_ASSIGN");
 
     const [searchType, setSearchType] = useState<SearchType>("q");
     const [searchValue, setSearchValue] = useState("");
@@ -101,24 +103,25 @@ export function UserRoleAssignmentsTab() {
             meta: { label: "Ações" },
             cell: ({ row }) => (
                 <div className="flex items-center justify-end">
-                    <ButtonIcon
+                    <Button
                         type="button"
-                        title="Ver cargos"
-                        aria-label={`Ver cargos de ${row.original.name}`}
+                        title={canAssignUserRoles ? "Gerenciar cargos" : "Ver cargos"}
+                        aria-label={`${canAssignUserRoles ? "Gerenciar" : "Ver"} cargos de ${row.original.name}`}
                         onClick={() => {
                             setContent(
                                 <UserRolesViewModal userId={row.original.id} userName={row.original.name} />,
                             );
                             setOpen();
                         }}
-                        className="rounded-lg bg-j-blue-800 p-2 text-j-yellow-300 hover:bg-j-blue-600 hover:text-j-yellow-300"
+                        className="min-h-10 whitespace-nowrap px-3 py-2 text-sm"
                     >
-                        <KeyRound size={18} />
-                    </ButtonIcon>
+                        <KeyRound size={17} />
+                        {canAssignUserRoles ? "Gerenciar cargos" : "Ver cargos"}
+                    </Button>
                 </div>
             ),
         },
-    ], [setContent, setOpen]);
+    ], [canAssignUserRoles, setContent, setOpen]);
 
     if (!canReadUserRoles) {
         return (
@@ -179,7 +182,7 @@ export function UserRoleAssignmentsTab() {
                                 ? maskPhoneNumber
                                 : undefined}
                         inputMode={searchType === "cpf" || searchType === "phoneNumber" ? "numeric" : "search"}
-                        formClassName="w-full sm:flex-1"
+                        formClassName="w-0 min-w-0 flex-1"
                         className="rounded-r-none"
                     />
                     <div className="w-fit shrink-0">
@@ -193,7 +196,7 @@ export function UserRoleAssignmentsTab() {
                                 setSearchValue("");
                                 setPage(0);
                             }}
-                            className="h-10 w-fit rounded-l-none bg-j-blue-600 py-2 text-sm text-j-white focus:bg-j-blue-700"
+                            className="h-10 w-32 min-w-32 rounded-l-none border-j-gray-200 border-l-0 bg-j-gray-100 px-3 py-2 text-sm text-j-blue-800 focus:bg-j-white"
                         >
                             <option value="q">Geral</option>
                             <option value="name">Nome</option>
@@ -203,19 +206,20 @@ export function UserRoleAssignmentsTab() {
                         </Select.Unregister>
                     </div>
                 </div>
-            </Table.Header>
+                </Table.Header>
 
-            <Table.Filters
-                hasActiveFilters={hasActiveFilters}
-                onClear={() => {
-                    setSearchValue("");
-                    setPage(0);
-                }}
-                className="justify-end border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6"
-            />
+                <Table.Filters
+                    hasActiveFilters={hasActiveFilters}
+                    onClear={() => {
+                        setSearchValue("");
+                        setPage(0);
+                    }}
+                    className="justify-end border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6"
+                />
 
-            <Table.Content loadingRows={pageSize} />
-        </Table.Root>
+                <Table.Content loadingRows={pageSize} />
+            </Table.Root>
+        </section>
     );
 }
 

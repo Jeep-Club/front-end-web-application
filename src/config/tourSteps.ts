@@ -507,8 +507,8 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
         {
             element: "#tour-roles-header",
             popover: {
-                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield, "RBAC"),
-                description: "Administração central de papéis e níveis de autorização do sistema.",
+                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield),
+                description: "Administração central dos cargos e níveis de acesso ao sistema.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",
             },
@@ -517,7 +517,7 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-roles-tabs",
             popover: {
                 title: createStepHeader("Áreas de Governança", ICONS.layers),
-                description: "Alterne entre <strong>Cargos do sistema</strong>, o catálogo de <strong>Permissões</strong> por módulo e as <strong>Atribuições de usuários</strong>.",
+                description: "Alterne entre <strong>Cargos do sistema</strong>, a lista de <strong>Permissões</strong> por módulo e as <strong>Atribuições de pessoas</strong>.",
                 side: "bottom",
                 align: "center",
             },

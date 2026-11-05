@@ -78,7 +78,7 @@ export default function Admin() {
                                 onSubmit={setSearchQuery}
                                 submitOnChange
                                 label="Buscar módulo administrativo"
-                                placeholder="Buscar módulo pelo nome ou descrição..."
+                                placeholder="Buscar módulo..."
                             />
                         </div>
 
