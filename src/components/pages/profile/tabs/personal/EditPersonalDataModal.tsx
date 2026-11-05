@@ -45,12 +45,8 @@ const statusLabels: Record<
     string
 > = {
     ACTIVE: "Ativo",
-    DISABLED: "Desativado",
-    LOCKED: "Bloqueado",
-    CHANGE_PASSWORD_REQUIRED:
-        "Alteração de senha obrigatória",
-    PENDING_FIRST_ACCESS:
-        "Primeiro acesso pendente",
+    INACTIVE: "Desativado",
+    ARCHIVED: "Arquivado",
 };
 
 function formatCpf(value: string) {

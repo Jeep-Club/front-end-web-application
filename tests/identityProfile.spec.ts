@@ -7,7 +7,7 @@ import {
     adminUserSchema,
     adminUserSearchParamsSchema,
 } from '@/schemas/admin/users';
-import { activationInvitationStatusSchema } from '@/schemas/admin/create-user';
+import { adminUserInvitationStatusResponseSchema } from '@/schemas/admin/create-user';
 import { parseAdminUserSearchParams } from '@/utils/searchParam/admin/user';
 
 const identity = {
@@ -71,9 +71,11 @@ describe('current API identity & admin user management contract', () => {
             membershipNumber: '125',
             size: '100',
         });
-        expect(urlQuery.get('status')).toBe('INACTIVE');
-        expect(urlQuery.get('membershipNumber')).toBe('125');
-        expect(urlQuery.get('size')).toBeNull();
+        expect(urlQuery).toMatchObject({
+            status: 'INACTIVE',
+            membershipNumber: '125',
+        });
+        expect(urlQuery).not.toHaveProperty('size');
     });
 
     it('normalizes basic admin user update form and complementary profile form payloads', () => {
@@ -118,18 +120,13 @@ describe('current API identity & admin user management contract', () => {
         });
     });
 
-    it('parses activation invitation statuses including INVALIDATED, complementary profile, and deletion history', () => {
+    it('parses invitation status, complementary profile, and deletion history', () => {
         expect(
-            activationInvitationStatusSchema.parse({
+            adminUserInvitationStatusResponseSchema.parse({
                 userId: 10,
-                email: 'user@exemplo.com',
-                status: 'INVALIDATED',
-                expiresAt: '2026-12-01T00:00:00Z',
-                usedAt: null,
-                createdAt: '2026-11-01T00:00:00Z',
-                updatedAt: '2026-11-02T00:00:00Z',
-            }).status,
-        ).toBe('INVALIDATED');
+                invitationStatus: 'INVALIDATED',
+            }),
+        ).toEqual({ userId: 10, invitationStatus: 'INVALIDATED' });
 
         expect(
             adminUserComplementaryProfileSchema.parse({
