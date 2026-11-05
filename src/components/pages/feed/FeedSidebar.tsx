@@ -99,7 +99,8 @@ export function FeedSidebar() {
             </SideCard>
 
             <SideCard title="Aniversariantes do mês" icon={Cake}>
-                {birthdayQuery.isPending || (birthdayQuery.hasNextPage && !birthdayQuery.isError) ? <p role="status" className="text-sm text-j-gray-500">Carregando aniversariantes...</p>
+                {!birthdayQuery.canReadUsers ? <p className="text-sm text-j-gray-500">A lista de aniversariantes está disponível para a administração.</p>
+                    : birthdayQuery.isPending || (birthdayQuery.hasNextPage && !birthdayQuery.isError) ? <p role="status" className="text-sm text-j-gray-500">Carregando aniversariantes...</p>
                     : birthdayQuery.isError && !birthdayQuery.users.length ? <div role="alert" className="text-sm text-j-gray-600"><p>Não foi possível carregar os aniversariantes.</p><button type="button" onClick={() => void birthdayQuery.refetch()} className="mt-2 cursor-pointer font-bold text-j-blue-800 hover:underline">Tentar novamente</button></div>
                         : upcomingBirthdays.length ? <ul className="space-y-3">
                             {upcomingBirthdays.map(({ id, name, date }) => (
