@@ -59,8 +59,13 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
                     </div>
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                         <Button type="button" onClick={async () => {
-                            await navigator.clipboard.writeText(createdUser.temporaryPassword);
-                            setCopied(true);
+                            try {
+                                await navigator.clipboard.writeText(createdUser.temporaryPassword);
+                                setCopied(true);
+                                toast.success("Senha copiada para a área de transferência.");
+                            } catch {
+                                toast.error("Não foi possível copiar automaticamente. Selecione e copie a senha.");
+                            }
                         }} className="min-h-11 flex-1 gap-2">
                             {copied ? <Check size={16} /> : <Copy size={16} />}
                             {copied ? "Senha copiada" : "Copiar senha provisória"}

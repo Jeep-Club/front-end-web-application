@@ -57,11 +57,16 @@ export function UserRoleAssignmentsTab() {
 
     const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => [
         {
-            accessorKey: "id",
+            accessorKey: "membershipNumber",
             header: "Matrícula",
             meta: { label: "Matrícula" },
             cell: ({ row }) => (
-                <span className="font-bold text-j-gray-700">{row.original.id}</span>
+                <div className="flex flex-col">
+                    <span className="font-bold text-j-gray-700">
+                        {row.original.membershipNumber ?? "—"}
+                    </span>
+                    <span className="text-[11px] text-j-gray-400">ID #{row.original.id}</span>
+                </div>
             ),
         },
         {
@@ -131,43 +136,33 @@ export function UserRoleAssignmentsTab() {
     }
 
     return (
-        <section className="flex flex-col gap-3">
-            <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
-                <ManagementBackButton />
-                <div>
-                    <h2 className="text-base font-extrabold text-j-blue-800">Cargos por pessoa</h2>
-                    <p className="mt-1 text-sm text-j-gray-600">
-                        Encontre uma pessoa e selecione <strong>Gerenciar cargos</strong> para atribuir um cargo ou consultar os vínculos existentes.
-                    </p>
-                </div>
-            </div>
-            <Table.Root
-                data={data?.content ?? []}
-                columns={columns}
-                getRowId={(user) => String(user.id)}
-                pagination={{
-                    pageIndex: page,
-                    pageSize,
-                    pageCount: data?.totalPages ?? 0,
-                    rowCount: data?.totalElements,
-                    pageSizeOptions: [5, 10, 20, 50, 100],
-                    onChange: (next) => {
-                        setPage(next.pageIndex);
-                        setPageSize(next.pageSize);
-                    },
-                }}
-                footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
-                isLoading={isLoading}
-                isFetching={isFetching}
-                error={error ? error.message : undefined}
-                emptyState={
-                    hasActiveFilters
-                        ? "Nenhum usuário corresponde à busca ou aos filtros atuais."
-                        : "Nenhum usuário cadastrado."
-                }
-            >
-                <Table.Header className="items-stretch border-b-0">
-                <div className="flex w-full min-w-0 items-center sm:min-w-64">
+        <Table.Root
+            data={data?.content ?? []}
+            columns={columns}
+            getRowId={(user) => String(user.id)}
+            pagination={{
+                pageIndex: page,
+                pageSize,
+                pageCount: data?.totalPages ?? 0,
+                rowCount: data?.totalElements,
+                pageSizeOptions: [5, 10, 20, 50],
+                onChange: (next) => {
+                    setPage(next.pageIndex);
+                    setPageSize(next.pageSize);
+                },
+            }}
+            footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
+            isLoading={isLoading}
+            isFetching={isFetching}
+            error={error ? error.message : undefined}
+            emptyState={
+                hasActiveFilters
+                    ? "Nenhum usuário corresponde à busca ou aos filtros atuais."
+                    : "Nenhum usuário cadastrado."
+            }
+        >
+            <Table.Header className="items-stretch border-b-0">
+                <div className="flex w-full sm:min-w-64">
                     <Table.Search
                         value={searchType === "cpf"
                             ? maskCPF(searchValue)

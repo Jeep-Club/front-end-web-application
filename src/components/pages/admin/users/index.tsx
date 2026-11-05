@@ -3,8 +3,8 @@
 import { useMutation } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { ShieldX } from "lucide-react";
-import { usePathname,useRouter,useSearchParams } from "next/navigation";
-import { useCallback,useMemo,useState,useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -12,19 +12,26 @@ import { getMembershipApplicationsTourSteps, getUsersTourSteps } from "@/config/
 import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
+import { exportAdminUsersAction } from "@/server/actions/admin/users/export";
 import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
 import { useUserStore } from "@/stores/userStore";
-import { unMaskCPF,unMaskPhoneNumber } from "@/utils/masks";
+import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { isValidCPF } from "@/utils/validate";
 import { MembershipApplicationsTab } from "./MembershipApplicationsTab";
 import { NewAdminUserPage } from "./new";
-import { UserManagementView } from "./UserManagementView";
+import { UserManagementView, type UserSearchType } from "./UserManagementView";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 
-type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
-
-const SEARCH_PARAMS: SearchType[] = ["q", "name", "email", "cpf", "phoneNumber"];
+const SEARCH_PARAMS: UserSearchType[] = [
+    "q",
+    "name",
+    "membershipNumber",
+    "email",
+    "cpf",
+    "rg",
+    "phoneNumber",
+];
 const PHONE_SEARCH_PATTERN = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
 const FILTER_PARAMS: (keyof AdminUserSearchParams)[] = [
     ...SEARCH_PARAMS,
@@ -36,7 +43,7 @@ const FILTER_PARAMS: (keyof AdminUserSearchParams)[] = [
     "updatedTo",
 ];
 
-function normalizeSearchValue(value: string, type: SearchType) {
+function normalizeSearchValue(value: string, type: UserSearchType) {
     const trimmedValue = value.trim();
 
     if (type === "cpf") {
@@ -45,6 +52,10 @@ function normalizeSearchValue(value: string, type: SearchType) {
 
     if (type === "phoneNumber") {
         return unMaskPhoneNumber(trimmedValue);
+    }
+
+    if (type === "rg") {
+        return trimmedValue.replace(/\D/g, "");
     }
 
     if (type === "q" && isValidCPF(trimmedValue)) {
@@ -58,6 +69,23 @@ function normalizeSearchValue(value: string, type: SearchType) {
     return trimmedValue;
 }
 
+function downloadBase64File(base64: string, contentType: string, filename: string) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
 interface Props {
     users: PageResponse<AdminUser>;
     searchParams: AdminUserSearchParams;
@@ -66,7 +94,6 @@ interface Props {
 export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const permissionsFromStore = useUserStore((state) => state.permissions);
     const { setContent, setOpen, setClose } = useModal();
-    // const queryClient = useQueryClient();
     const router = useRouter();
     const pathname = usePathname();
     const currentSearchParams = useSearchParams();
@@ -79,83 +106,32 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         enabled: permissionsFromStore.length > 0 && (canReadApplications || hasPermission(permissionsFromStore, "IDENTITY", "USER_READ")),
     });
     const [isPending, startTransition] = useTransition();
-    const [selectedSearchType, setSelectedSearchType] = useState<SearchType>(() =>
+    const [exportingFormat, setExportingFormat] = useState<"CSV" | "PDF" | null>(null);
+    const [selectedSearchType, setSelectedSearchType] = useState<UserSearchType>(() =>
         SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? "q",
     );
-    const searchType = SEARCH_PARAMS.find((param) => Boolean(query[param]))
-        ?? selectedSearchType;
+    const searchType = SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? selectedSearchType;
 
     const permissions = useMemo<UserManagementPermissions>(() => ({
         canReadUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_READ"),
         canCreateUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_CREATE"),
+        canUpdateUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_UPDATE"),
         canDisableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_DISABLE"),
         canEnableUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_ENABLE"),
+        canArchiveUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_ARCHIVE"),
+        canUnarchiveUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_UNARCHIVE"),
+        canDeleteUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_DELETE"),
+        canExportUsers: hasPermission(permissionsFromStore, "IDENTITY", "USER_EXPORT"),
+        canReadUserHistory: hasPermission(permissionsFromStore, "IDENTITY", "USER_HISTORY_READ"),
         canReadRoleCatalog: hasPermission(permissionsFromStore, "AUTHORIZATION", "ROLE_READ"),
         canReadUserRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_READ"),
         canAssignRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_ASSIGN"),
         canRevokeRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_REVOKE"),
     }), [permissionsFromStore]);
 
-    // const usersQuery = useQuery({
-    //     queryKey: ["admin-users", "list", query],
-    //     queryFn: () => dataSource.listUsers(query),
-    //     enabled: permissions.canReadUsers,
-    //     placeholderData: keepPreviousData,
-    //     retry: false,
-    // });
-    // const rolesQuery = useQuery({
-    //     queryKey: ["admin-users", "role-catalog"],
-    //     queryFn: dataSource.listRoles,
-    //     enabled: permissions.canReadRoleCatalog && permissions.canReadUserRoles,
-    //     retry: false,
-    // });
-
-    // const refreshUsers = useCallback(() => {
-    //     void queryClient.invalidateQueries({ queryKey: ["admin-users", "list"] });
-    //     void queryClient.invalidateQueries({ queryKey: ["admin-users", "details"] });
-    // }, [queryClient]);
-
-    // const updateUserInCache = useCallback((updatedUser: AdminUser) => {
-    //     queryClient.setQueriesData<PageResponse<UserListItem>>(
-    //         { queryKey: ["admin-users", "list"] },
-    //         (current) => current
-    //             ? {
-    //                 ...current,
-    //                 content: current.content.map((user) => user.id === updatedUser.id ? updatedUser : user),
-    //             }
-    //             : current,
-    //     );
-    //     queryClient.setQueryData(["admin-users", "details", updatedUser.id], updatedUser);
-    //     refreshUsers();
-    // }, [queryClient, refreshUsers]);
-
     const updateUserInCache = useCallback(() => {
         router.refresh();
     }, [router]);
-
-    // const updateRolesInCache = useCallback((userId: number, roles: AdminRole[]) => {
-    //     queryClient.setQueriesData<PageResponse<UserListItem>>(
-    //         { queryKey: ["admin-users", "list"] },
-    //         (current) => current
-    //             ? {
-    //                 ...current,
-    //                 content: current.content.map((user) => user.id === userId ? { ...user, roles } : user),
-    //             }
-    //             : current,
-    //     );
-    //     refreshUsers();
-    // }, [queryClient, refreshUsers]);
-
-    // const handleViewUser = useCallback((userId: number) => {
-    //     setContent(
-    //         <UserDetailsModal
-    //             userId={userId}
-    //             canReadRoles={permissions.canReadUserRoles}
-    //             onLoadUser={dataSource.getUser}
-    //         />,
-    //     );
-    //     setOpen();
-    // }, [dataSource, permissions.canReadUserRoles, setContent, setOpen]);
 
     const handleViewUser = useCallback((userId: number) => {
         router.push(`/admin/users/${userId}`);
@@ -163,29 +139,54 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
     const updateUserStatusMutation = useMutation({
         mutationFn: patchUserStatusAction,
-        onSuccess: (updatedUser) => {
-            toast.success(`Usuário ${updatedUser.status === "ACTIVE" ? "reativado" : "desativado"} com sucesso!`);
+        onSuccess: (_updatedUser, variables) => {
+            const messages: Record<AdminUserLifecycleAction, string> = {
+                enable: "Usuário reativado com sucesso!",
+                disable: "Usuário inativado com sucesso!",
+                archive: "Usuário arquivado com sucesso!",
+                unarchive: "Usuário desarquivado (inativo) com sucesso!",
+            };
+            toast.success(messages[variables.status]);
         },
     });
 
-    const updateUserStatus = useCallback(async (userId: number, status: "enable" | "disable"): Promise<AdminUser> => {
-        return updateUserStatusMutation.mutateAsync({ userId, status });
-    }, [updateUserStatusMutation]);
+    const updateUserStatus = useCallback(
+        async (userId: number, status: AdminUserLifecycleAction): Promise<AdminUser> => {
+            return updateUserStatusMutation.mutateAsync({ userId, status });
+        },
+        [updateUserStatusMutation],
+    );
 
-    const handleChangeUserStatus = useCallback((user: AdminUser) => {
-        // const onConfirm = user.status === "DISABLED"
-        //     ? dataSource.enableUser
-        //     : dataSource.disableUser;
+    const handleChangeUserStatus = useCallback(
+        (user: AdminUser, action: AdminUserLifecycleAction) => {
+            setContent(
+                <UserStatusConfirmationModal
+                    user={user}
+                    action={action}
+                    onConfirm={updateUserStatus}
+                    onSuccess={updateUserInCache}
+                />,
+            );
+            setOpen();
+        },
+        [setContent, setOpen, updateUserInCache, updateUserStatus],
+    );
 
-        setContent(
-            <UserStatusConfirmationModal
-                user={user}
-                onConfirm={updateUserStatus}
-                onSuccess={updateUserInCache}
-            />,
-        );
-        setOpen();
-    }, [setContent, setOpen, updateUserInCache, updateUserStatus]);
+    const handleExportUsers = useCallback(
+        async (format: "CSV" | "PDF") => {
+            setExportingFormat(format);
+            try {
+                const file = await exportAdminUsersAction(query, format, "MEMBER");
+                downloadBase64File(file.base64, file.contentType, file.filename);
+                toast.success(`Exportação ${format} concluída.`);
+            } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Não foi possível exportar os usuários.");
+            } finally {
+                setExportingFormat(null);
+            }
+        },
+        [query],
+    );
 
     function replaceSearchParams(
         patch: Partial<AdminUserSearchParams>,
@@ -221,7 +222,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         replaceSearchParams(patch, { resetPage: true });
     }
 
-    function updateSearchType(type: SearchType) {
+    function updateSearchType(type: UserSearchType) {
         setSelectedSearchType(type);
 
         if (SEARCH_PARAMS.some((param) => Boolean(query[param]))) {
@@ -265,7 +266,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                 <div className="flex w-full flex-col gap-6">
                     <PageHeader
                         id="tour-users-header"
-                    title="Gestão de usuários"
+                        title="Gestão de usuários"
                         breadcrumbs={[
                             { label: "Home", href: "/feed" },
                             { label: "Gestão Administrativa", href: "/admin" },
@@ -298,54 +299,86 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     ]}
                 />
 
-                {(permissions.canReadUsers || canReadApplications) && <div id="tour-users-tabs" className="flex w-full flex-wrap items-center gap-x-2 border-b border-j-gray-200">
-                    <div className="basis-full pb-2"><ManagementBackButton /></div>
-                    {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-3 text-xs font-bold sm:px-4 sm:text-sm ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
-                    {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`min-w-0 flex-1 whitespace-nowrap border-b-2 px-2 py-3 text-[11px] font-bold sm:flex-none sm:px-4 sm:text-sm ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}
-                </div>}
+                {(permissions.canReadUsers || canReadApplications) && (
+                    <div id="tour-users-tabs" className="flex items-center gap-2 border-b border-j-gray-200">
+                        <ManagementBackButton />
+                        {permissions.canReadUsers && (
+                            <button
+                                type="button"
+                                onClick={() => replaceSearchParams({ tab: undefined })}
+                                className={`border-b-2 px-4 py-3 text-sm font-bold ${
+                                    activeTab === "users"
+                                        ? "border-j-yellow-400 text-j-blue-800"
+                                        : "border-transparent text-j-gray-500"
+                                }`}
+                            >
+                                Usuários
+                            </button>
+                        )}
+                        {canReadApplications && (
+                            <button
+                                type="button"
+                                onClick={() => replaceSearchParams({ tab: "applications" })}
+                                className={`border-b-2 px-4 py-3 text-sm font-bold ${
+                                    activeTab === "applications"
+                                        ? "border-j-yellow-400 text-j-blue-800"
+                                        : "border-transparent text-j-gray-500"
+                                }`}
+                            >
+                                Solicitações de associação
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {activeTab === "applications" && canReadApplications && <MembershipApplicationsTab />}
-                {activeTab === "users" && permissions.canReadUsers && <UserManagementView
-                    onCreateUser={() => {
-                        setContent(
-                            <div role="dialog" aria-modal="true" aria-label="Novo usuário" className="max-h-[92dvh] w-full max-w-4xl overflow-y-auto overflow-x-hidden rounded-3xl bg-j-white p-3 shadow-2xl sm:p-5">
-                                <NewAdminUserPage onClose={setClose} onCreated={() => router.refresh()} />
-                            </div>,
-                        );
-                        setOpen();
-                    }}
-                    users={users.content}
-                    query={query}
-                    searchType={searchType}
-                    // roles={rolesQuery.data ?? []}
-                    permissions={permissions}
-                    totalItems={users.totalElements}
-                    totalPages={users.totalPages}
-                    pageIndex={users.number}
-                    pageSize={users.size}
-                    isLoading={false}
-                    isFetching={isPending}
-                    // error={usersQuery.error
-                    //     ? extractApiErrorMessage(usersQuery.error, "Não foi possível carregar os usuários. Tente novamente.")
-                    //     : undefined}
-                    onSearchChange={updateSearch}
-
-                    onStatusChange={(status) => replaceSearchParams(
-                        { status: status === "ACTIVE" ? undefined : status },
-                        { resetPage: true },
-                    )}
-
-                    // onRoleChange não existe na nova tipagem explicitamente (a não ser que backend use Q ou fields)
-                    // onRoleChange={(roleIds) => updateFilters({ roleIds })} // Reavalie se precisa manter
-
-                    onClearFilters={clearFilters}
-                    onPaginationChange={handlePaginationChange}
-                    onSortChange={handleSortChange}
-                    onViewUser={handleViewUser}
-                    onChangeUserStatus={handleChangeUserStatus}
-                    setSearchType={updateSearchType}
-                />}
-                {activeTab === "users" && !permissions.canReadUsers && <section className="rounded-xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center text-sm text-j-gray-600">Você tem acesso à análise de solicitações, mas não à lista de usuários.</section>}
+                {activeTab === "users" && permissions.canReadUsers && (
+                    <UserManagementView
+                        onCreateUser={() => {
+                            setContent(
+                                <div
+                                    role="dialog"
+                                    aria-modal="true"
+                                    aria-label="Novo usuário"
+                                    className="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-j-white p-2 shadow-2xl sm:p-3"
+                                >
+                                    <NewAdminUserPage onClose={setClose} onCreated={() => router.refresh()} />
+                                </div>,
+                            );
+                            setOpen();
+                        }}
+                        users={users.content}
+                        query={query}
+                        searchType={searchType}
+                        permissions={permissions}
+                        totalItems={users.totalElements}
+                        totalPages={users.totalPages}
+                        pageIndex={users.number}
+                        pageSize={users.size}
+                        isLoading={false}
+                        isFetching={isPending}
+                        isExporting={exportingFormat}
+                        onSearchChange={updateSearch}
+                        onStatusChange={(status) =>
+                            replaceSearchParams(
+                                { status: status === "ACTIVE" ? undefined : status },
+                                { resetPage: true },
+                            )
+                        }
+                        onClearFilters={clearFilters}
+                        onPaginationChange={handlePaginationChange}
+                        onSortChange={handleSortChange}
+                        onViewUser={handleViewUser}
+                        onChangeUserStatus={handleChangeUserStatus}
+                        onExportUsers={handleExportUsers}
+                        setSearchType={updateSearchType}
+                    />
+                )}
+                {activeTab === "users" && !permissions.canReadUsers && (
+                    <section className="rounded-xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center text-sm text-j-gray-600">
+                        Você tem acesso à análise de solicitações, mas não à lista de usuários.
+                    </section>
+                )}
             </div>
         </div>
     );
