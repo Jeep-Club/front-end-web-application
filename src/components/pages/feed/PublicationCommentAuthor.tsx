@@ -16,6 +16,7 @@ function initials(name: string) {
 }
 
 export function PublicationCommentAuthor({ authorUserId, name, photo, createdAt }: PublicationCommentAuthorProps) {
+
     const currentUser = useContext(CurrentUserContext);
     const isCurrentUser = String(currentUser?.userId) === String(authorUserId);
     const displayName = name?.trim() || (isCurrentUser ? currentUser?.name : null) || `Associado #${authorUserId}`;

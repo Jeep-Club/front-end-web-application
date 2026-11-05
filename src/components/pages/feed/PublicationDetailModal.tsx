@@ -41,6 +41,7 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
             <div className="flex flex-col gap-5 p-5 md:p-8">
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
+
                 {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventTitle={publication.title} eventStatus={publication.details.status} charges={publication.details.charges} />}
                 <RichTextContent content={publication.content} />
                 <FeedInteractions publication={publication} />
