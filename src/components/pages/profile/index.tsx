@@ -44,7 +44,7 @@ export default function Profile() {
                     title="Gerenciamento de conta"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
-                        { label: "Gerenciamento de conta" },
+                        { label: "Conta" },
                         { label: activeTabLabel ?? "" },
                     ]}
                     actions={

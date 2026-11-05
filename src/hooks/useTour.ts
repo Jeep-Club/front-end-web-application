@@ -80,7 +80,6 @@ export function usePageTour({
             }
             markAsCompleted();
             if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
                 document.querySelectorAll('.driver-overlay, .driver-popover').forEach((el) => el.remove());
             }
         };
@@ -122,7 +121,6 @@ export function usePageTour({
                     if (!confirmed || !d.isActive()) return;
                 }
                 markAsCompleted();
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
                 d.destroy();
             };
 
@@ -141,17 +139,11 @@ export function usePageTour({
                 onDestroyStarted: requestExit,
                 onDoneClick: (_element, _step, { driver: d }) => {
                     markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
                     d.destroy();
                 },
                 onDestroyed: () => {
                     exitConfirmationRef.current?.abort();
                     markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
                 },
             });
 
@@ -201,7 +193,7 @@ export function usePageTour({
         sessionStorage.removeItem('force_branch_tour');
 
         // Tutoriais de rota só podem iniciar automaticamente na primeira visita.
-        // O atalho explícito "Reiniciar tutorial" continua disponível.
+        // O atalho para refazer o tutorial continua disponível nas configurações.
         const alreadySeen = localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true";
         const legacyCompletion = storageKey && localStorage.getItem(storageKey) === "true";
         if (alreadySeen || legacyCompletion) {

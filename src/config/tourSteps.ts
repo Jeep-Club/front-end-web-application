@@ -110,13 +110,13 @@ export const feedStep: DriveStep = {
     },
 };
 
-export const avatarMenuStep: DriveStep = {
-    element: "#tour-avatar-container",
+export const accountNavigationStep: DriveStep = {
+    element: "#tour-manage-account-btn",
     popover: {
         title: createStepHeader("Gerenciar Conta", ICONS.user),
-        description: "Abra o menu do perfil e clique em 'Gerenciar conta' para acessar e atualizar seus dados pessoais, veículos e ficha médica.",
-        side: "bottom",
-        align: "end",
+        description: "Acesse Conta pela navegação lateral para atualizar seus dados pessoais, veículos e ficha médica.",
+        side: "right",
+        align: "center",
     },
 };
 
@@ -133,7 +133,7 @@ export const adminStep: DriveStep = {
 export const completionStep: DriveStep = {
     popover: {
         title: createStepHeader("Tour Concluído", ICONS.checkCircle),
-        description: "Configuração concluída. Você pode reiniciar este guia quando desejar pelo menu do seu perfil.",
+        description: "Configuração concluída. Você pode rever este guia em Configurações, na opção Tutorial.",
         side: "bottom",
         align: "center",
     },
@@ -174,23 +174,9 @@ export function getTourSteps(
     }
 
     steps.push({
-        element: "#tour-avatar-container",
-        popover: {
-            title: createStepHeader("Gerenciar Conta", ICONS.user),
-            description: "Abra o menu e clique em 'Gerenciar conta' para acessar suas informações de perfil, veículos 4x4 e ficha médica.",
-            side: "bottom",
-            align: isMobile ? "center" : "end",
-        },
+        ...accountNavigationStep,
         onHighlightStarted: () => {
-            if (isMobile) setMobileMenuOpen?.(false);
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:open-avatar-menu'));
-            }
-        },
-        onDeselected: () => {
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-            }
+            if (isMobile) setMobileMenuOpen?.(true);
         },
     });
 
@@ -198,9 +184,6 @@ export function getTourSteps(
         ...completionStep,
         onHighlightStarted: () => {
             if (isMobile) setMobileMenuOpen?.(false);
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-            }
         },
     });
 
