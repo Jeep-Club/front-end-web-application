@@ -82,8 +82,8 @@ export function UserManagementView({
         const baseColumns: ColumnDef<AdminUser, unknown>[] = [
             {
                 accessorKey: "id",
-                header: "Matrícula",
-                meta: { label: "Matrícula" },
+                header: "Mat",
+                meta: { label: "Mat" },
                 cell: ({ row }) => (
                     <span className="font-bold text-j-gray-700">{row.original.id}</span>
                 ),
@@ -95,7 +95,7 @@ export function UserManagementView({
                 ),
                 meta: { label: "Nome completo" },
                 cell: ({ row }) => (
-                    <div className="flex min-w-44 items-center gap-3">
+                    <div className="flex min-w-0 max-w-full flex-1 items-center gap-2">
                         {row.original.profilePhotoUrl ? (
                             <Avatar src={row.original.profilePhotoUrl} alt={`Foto de ${row.original.name}`} className="h-10 w-10 shrink-0 bg-j-gray-200" />
                         ) : (
@@ -103,7 +103,7 @@ export function UserManagementView({
                                 {row.original.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("pt-BR")}
                             </span>
                         )}
-                        <span className="font-bold text-j-gray-700">{row.original.name}</span>
+                        <span className="min-w-0 whitespace-normal break-words text-sm font-bold text-j-gray-700">{row.original.name}</span>
                     </div>
                 ),
             },
@@ -345,7 +345,7 @@ export function UserManagementView({
             </Table.Filters>
 
             <div id="tour-users-table">
-                <Table.Content loadingRows={pageSize} />
+                <Table.Content loadingRows={pageSize} mobileColumnHeaders />
             </div>
         </Table.Root>
     );

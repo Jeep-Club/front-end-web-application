@@ -28,7 +28,7 @@ export function UserWorkspace({ title, description, options, selected, onSelect,
     const active = options.find((option) => option.key === selected) ?? options[0];
 
     return (
-        <div className="w-full min-w-0 px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
+        <div className={twMerge("w-full min-w-0", modal ? "px-0 py-0" : "px-3 py-3 sm:px-4 sm:py-4 lg:px-6")}>
             {!modal && <div className="sticky top-0 z-20 -mx-3 -mt-3 mb-2 bg-j-gray-100/95 px-3 pt-3 backdrop-blur sm:-mx-4 sm:-mt-4 sm:px-4 sm:pt-4 lg:-mx-6 lg:-mt-6 lg:px-6 lg:pt-6">
             <button type="button" disabled={disabled} onClick={onBack} className="mb-1 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg pr-3 text-sm font-semibold text-j-blue-800 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
                 <ArrowLeft size={18} aria-hidden="true" /> Usuários
@@ -39,7 +39,9 @@ export function UserWorkspace({ title, description, options, selected, onSelect,
                 <h1 className="text-2xl font-extrabold tracking-tight text-j-blue-800">{title}</h1>
                 <p className="mt-1 text-sm text-j-gray-500">{description}</p>
             </header>
-            <div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+            <div className={twMerge(
+                modal ? "overflow-visible" : "overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm",
+            )}>
                 {summary}
                 {options.length > 0 && <nav aria-label="Informações do usuário" className="flex gap-1 border-b border-j-gray-200 p-2">
                     {options.map((option) => {

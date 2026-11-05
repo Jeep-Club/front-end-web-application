@@ -15,9 +15,10 @@ import { useUserStore } from '@/stores/userStore';
 import { maskCPF,maskPhoneNumber } from '@/utils/masks';
 import { hasPermission } from '@/utils/permission/hasPermission';
 import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query';
-import { Check,ChevronLeft,ChevronRight,Clipboard,LoaderCircle,Mail,MessageCircle,RefreshCw,ShieldAlert,X } from 'lucide-react';
+import { Check,Clipboard,LoaderCircle,Mail,MessageCircle,RefreshCw,ShieldAlert,X } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { ListPagination } from '@/components/common/table/ListPagination';
 
 type GeneratedPasswordForWhatsApp = TemporaryPasswordApproval & { name: string; phoneNumber: string };
 
@@ -43,13 +44,14 @@ export function MembershipApplicationsTab() {
     const canGeneratePassword = hasPermission(permissions, 'AUTHENTICATION', 'USER_TEMPORARY_PASSWORD_GENERATE');
     const [status, setStatus] = useState<MembershipApplicationStatus | ''>('PENDING');
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
     const [reasons, setReasons] = useState<Record<number, string>>({});
     const [temporaryPassword, setTemporaryPassword] = useState<GeneratedPasswordForWhatsApp | null>(null);
     const [approvedUserIds, setApprovedUserIds] = useState<Record<number, number>>({});
     const queryClient = useQueryClient();
     const query = useQuery({
-        queryKey: ['admin', 'membership-applications', status, page],
-        queryFn: () => listMembershipApplicationsAction({ page, status: status || undefined }),
+        queryKey: ['admin', 'membership-applications', status, page, pageSize],
+        queryFn: () => listMembershipApplicationsAction({ page, size: pageSize, status: status || undefined }),
         enabled: canRead,
         retry: false,
     });
@@ -146,24 +148,24 @@ export function MembershipApplicationsTab() {
                 const phone = applicationPhone(application.phoneNumber);
                 const userId = application.userId ?? approvedUserIds[application.id];
                 return (
-                    <article key={application.id} className="rounded-2xl border border-j-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                    <article key={application.id} className="rounded-2xl border border-j-gray-200 bg-white p-3 shadow-sm sm:p-4">
                         <header className="flex flex-wrap items-start justify-between gap-3">
-                            <div><p className="text-xs font-bold uppercase tracking-wide text-j-gray-500">Solicitação #{application.id}</p><h3 className="mt-1 text-lg font-extrabold text-j-blue-800">{application.name}</h3></div>
+                            <div><h3 className="text-lg font-extrabold text-j-blue-800">{application.name}</h3></div>
                             <span className={`rounded-full px-3 py-1 text-xs font-bold ${application.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : application.status === 'APPROVED' || application.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-j-gray-100 text-j-gray-600'}`}>{statusLabel[application.status]}</span>
                         </header>
-                        <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm lg:grid-cols-4">
                             <p><span className="block text-xs font-semibold text-j-gray-500">CPF</span><span className="font-medium text-j-gray-800">{maskCPF(application.cpf)}</span></p>
                             <p><span className="block text-xs font-semibold text-j-gray-500">Celular</span><a className="font-medium text-j-blue-700 underline" href={`https://wa.me/${phone.whatsapp}`} target="_blank" rel="noreferrer">{phone.display}</a></p>
-                            <p><span className="block text-xs font-semibold text-j-gray-500">E-mail</span><span className="break-all font-medium text-j-gray-800">{application.email || 'Não informado'}</span></p>
+                            <p className="col-span-2 min-w-0 lg:col-span-1"><span className="block text-xs font-semibold text-j-gray-500">E-mail</span><span className="break-words font-medium text-j-gray-800">{application.email || 'Não informado'}</span></p>
                             <p><span className="block text-xs font-semibold text-j-gray-500">Recebida</span><span className="font-medium text-j-gray-800">{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(application.requestedAt))}</span></p>
                         </div>
-                        <div className="mt-4 rounded-xl bg-j-gray-50 p-4"><h4 className="text-sm font-bold text-j-gray-700">Carta de apresentação</h4><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-j-gray-700">{application.message || 'Nenhuma apresentação informada.'}</p></div>
+                        <div className="mt-3 rounded-xl bg-j-gray-50 px-0 py-2"><h4 className="text-sm font-bold text-j-gray-700">Carta de apresentação</h4><p className="mt-1 whitespace-pre-wrap text-sm leading-5 text-j-gray-700">{application.message || 'Nenhuma apresentação informada.'}</p></div>
                         {application.rejectionReason && <p className="mt-3 text-sm text-j-red-700"><strong>Motivo da rejeição:</strong> {application.rejectionReason}</p>}
-                        {isPending && (canApprove || canReject) && <div id={index === 0 ? "tour-applications-actions" : undefined} className="mt-4 border-t border-j-gray-100 pt-4">
+                        {isPending && (canApprove || canReject) && <div id={index === 0 ? "tour-applications-actions" : undefined} className="mt-3 border-t border-j-gray-100 pt-3">
                             {canReject && <label className="mb-3 block text-xs font-bold text-j-gray-600">Motivo (opcional para rejeitar; obrigatório para bloquear)
-                                <textarea value={reason} maxLength={2000} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} className="mt-1 block w-full rounded-lg border border-j-gray-300 p-3 text-sm font-normal text-j-gray-800" placeholder="Registre o motivo, se necessário." />
+                                <textarea value={reason} maxLength={2000} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={1} className="mt-1 block w-full rounded-lg border border-j-gray-300 p-2 text-sm font-normal text-j-gray-800" placeholder="Registre o motivo, se necessário." />
                             </label>}
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap justify-end gap-2">
                                 {canApprove && <Button type="button" disabled={busy} onClick={async () => {
                                     if (await confirmAction(`Aprovar ${application.name} e gerar uma senha provisória?`)) approve.mutate(application.id);
                                 }}><Check size={16} /> Aprovar e gerar senha</Button>}
@@ -188,10 +190,17 @@ export function MembershipApplicationsTab() {
                 );
             })}
 
-            {query.data && query.data.totalPages > 1 && <footer className="flex items-center justify-between rounded-xl border border-j-gray-200 bg-white p-3">
-                <span className="text-xs text-j-gray-600">Página {query.data.number + 1} de {query.data.totalPages} · {query.data.totalElements} solicitação(ões)</span>
-                <div className="flex gap-2"><Button type="button" disabled={query.data.first} onClick={() => setPage((current) => Math.max(0, current - 1))}><ChevronLeft size={16} /> Anterior</Button><Button type="button" disabled={query.data.last} onClick={() => setPage((current) => current + 1)}>Próxima <ChevronRight size={16} /></Button></div>
-            </footer>}
+            {query.data && query.data.totalElements > 0 && <ListPagination itemLabel="solicitação" isFetching={query.isFetching} pagination={{
+                pageIndex: query.data.number,
+                pageSize,
+                pageCount: query.data.totalPages,
+                rowCount: query.data.totalElements,
+                pageSizeOptions: [10, 20, 50],
+                onChange: (next) => {
+                    setPage(next.pageSize !== pageSize ? 0 : next.pageIndex);
+                    setPageSize(next.pageSize);
+                },
+            }} />}
             </div>
         </div>
     );
