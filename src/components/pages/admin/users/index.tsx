@@ -8,6 +8,8 @@ import { useCallback,useMemo,useState,useTransition } from "react";
 import toast from "react-hot-toast";
 
 import { PageHeader } from "@/components/common/page-header";
+import { getMembershipApplicationsTourSteps, getUsersTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
 import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
@@ -70,6 +72,12 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const currentSearchParams = useSearchParams();
     const canReadApplications = hasPermission(permissionsFromStore, "MEMBERSHIP", "MEMBERSHIP_REQUEST_READ");
     const activeTab = currentSearchParams.get("tab") === "applications" && canReadApplications ? "applications" : "users";
+    usePageTour({
+        storageKey: activeTab === "applications" ? "tour_completed_admin_applications" : "tour_completed_admin_users",
+        steps: activeTab === "applications" ? getMembershipApplicationsTourSteps : getUsersTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: permissionsFromStore.length > 0 && (canReadApplications || hasPermission(permissionsFromStore, "IDENTITY", "USER_READ")),
+    });
     const [isPending, startTransition] = useTransition();
     const [selectedSearchType, setSelectedSearchType] = useState<SearchType>(() =>
         SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? "q",
@@ -256,7 +264,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
             <div className="min-h-full w-full p-3 md:p-4">
                 <div className="flex w-full flex-col gap-6">
                     <PageHeader
-                        title="Gestão de usuários"
+                        id="tour-users-header"
+                    title="Gestão de usuários"
                         breadcrumbs={[
                             { label: "Home", href: "/feed" },
                             { label: "Gestão Administrativa", href: "/admin" },
@@ -280,6 +289,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         <div className="min-h-full w-full p-3 md:p-4">
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
+                    id="tour-users-header"
                     title="Gestão de usuários"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
@@ -288,7 +298,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     ]}
                 />
 
-                {(permissions.canReadUsers || canReadApplications) && <div className="flex items-center gap-2 border-b border-j-gray-200">
+                {(permissions.canReadUsers || canReadApplications) && <div id="tour-users-tabs" className="flex items-center gap-2 border-b border-j-gray-200">
                     <ManagementBackButton />
                     {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
                     {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}

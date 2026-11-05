@@ -22,9 +22,10 @@ import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
-import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { FeedSidebar } from "./FeedSidebar";
+import { usePageTour } from "@/hooks/useTour";
+import { getFeedTourSteps } from "@/config/tourSteps";
 
 import Image from "next/image";
 
@@ -60,6 +61,13 @@ export default function Feed() {
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const openedDeepLinkRef = useRef<number | null>(null);
+    usePageTour({
+        storageKey: "tour_completed_feed",
+        steps: getFeedTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: canRead,
+    });
+
     const query = useInfiniteQuery({
         queryKey: ["publications", "feed", "infinite", type, permissions],
         queryFn: ({ pageParam }) =>
@@ -205,6 +213,7 @@ export default function Feed() {
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="relative min-w-0 flex-1">
                                 <nav
+                                    id="tour-feed-filters"
                                     aria-label="Tipos de publicação"
                                     className="flex w-full min-w-0 gap-1.5 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm"
                                 >
@@ -252,6 +261,7 @@ export default function Feed() {
 
                         </div>
 
+                        <div id="tour-feed-list">
                         {query.isLoading ? (
                             <div
                                 role="status"
@@ -436,14 +446,6 @@ export default function Feed() {
                                                 />
 
                                                 {publication.type === "EVENT" && (
-                                                    <EventParticipants
-                                                        details={
-                                                            publication.details
-                                                        }
-                                                    />
-                                                )}
-
-                                                {publication.type === "EVENT" && (
                                                     <EventParticipation
                                                         eventId={publication.id}
                                                         eventStatus={
@@ -451,6 +453,7 @@ export default function Feed() {
                                                                 .status
                                                         }
                                                         charges={publication.details.charges}
+                                                        eventTitle={publication.title}
                                                         compact
                                                     />
                                                 )}
@@ -537,6 +540,7 @@ export default function Feed() {
                                 })}
                             </div>
                         )}
+                        </div>
 
                         <div
                             ref={loadMoreRef}
@@ -579,11 +583,12 @@ export default function Feed() {
             </div>
             {canRead && canCreate && (
                 <button
+                    id="tour-feed-create-mobile-btn"
                     type="button"
                     aria-label="Postar"
                     title="Postar"
                     onClick={() => {
-                        setContent(<CreatePublicationModal />);
+                        setContent(<CreatePublicationModal publishEventImmediately />);
                         setOpen();
                     }}
                     className="fixed bottom-20 right-4 z-20 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-xl active:translate-y-0 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 md:hidden"

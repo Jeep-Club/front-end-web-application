@@ -1,5 +1,7 @@
 "use client";
 
+import { useContext } from "react";
+import { TourContext } from "@/components/common/tour/TourContext";
 import { Avatar } from "@/components/common/avatar";
 import { getUserProfileAction } from "@/server/actions/profile/get";
 import Link from "next/link";
@@ -16,6 +18,7 @@ interface TopbarProps {
 }
 
 export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobileMenu, fullName, initialProfilePhotoUrl }: TopbarProps) {
+    const tourContext = useContext(TourContext);
     const { data: profile } = useQuery({
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
@@ -51,13 +54,21 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
                 </span>
             </button>
 
-            <div className="flex items-center gap-3">
-                <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800">Precisa de ajuda?</span>
+            <div id="tour-avatar-menu" className="flex items-center gap-3">
+                <button
+                    type="button"
+                    id="tour-header-help-btn"
+                    onClick={() => tourContext?.startCurrentPageTour()}
+                    className="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"
+                >
+                    Precisa de ajuda?
+                </button>
                 <NotificationBell />
                 <span className="hidden h-8 w-px bg-j-transparent-white md:block" />
                 <span className="hidden text-sm font-bold text-j-white md:inline">{displayName}</span>
                 <Link
                     href="/profile"
+                    id="tour-avatar-container"
                     aria-label="Conta"
                     title="Conta"
                     onClick={() => {

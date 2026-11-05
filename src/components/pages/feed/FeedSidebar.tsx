@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Cake, CalendarDays, ChevronRight, Megaphone, Plus } from "lucide-react";
 
-import { Avatar } from "@/components/common/avatar";
 import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
 import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useModal } from "@/providers/ModalProvider";
@@ -79,34 +78,18 @@ export function FeedSidebar() {
     const notices = (noticesQuery.data?.content ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "NOTICE" }> => item.type === "NOTICE");
 
     return (
-        <aside aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
+        <aside id="tour-feed-sidebar" aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
             <SideCard title="Próximos eventos" icon={CalendarDays} href="/agenda">
                 {eventsQuery.isPending ? <p className="text-sm text-j-gray-500">Carregando eventos...</p> : events.length ? (
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
 
-                            const participants = event.details.participants ?? [];
-                            const participantCount = event.details.registrationCount ?? participants.length;
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}
                                 <div className="min-w-0 flex-1">
                                     <p className="line-clamp-2 text-sm font-bold text-j-blue-900">{event.title}</p>
                                     <p className="mt-1 text-xs text-j-gray-500">{dateLabel(event.details.startsAt)}</p>
-                                    {participantCount > 0 && <div className="mt-2 flex items-center gap-2" aria-label={`${participantCount} ${participantCount === 1 ? "participante inscrito" : "participantes inscritos"}`}>
-                                        <div className="flex shrink-0 items-center" aria-hidden="true">
-                                            {participants.slice(0, 4).map((participant, index) => {
-                                                const photo = getMediaImageUrl(participant.profilePhotoStorageKey ?? participant.profilePhotoUrl ?? participant.photoStorageKey ?? participant.photoUrl);
-                                                const initials = participant.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => Array.from(part)[0]?.toLocaleUpperCase("pt-BR")).join("");
-                                                return <span key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className={index ? "-ml-2" : ""} title={participant.name}>
-                                                    {photo ? <Avatar src={photo} alt="" className="h-7 w-7 border-2 border-j-white bg-j-gray-200" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 text-[9px] font-bold text-j-white">{initials || "A"}</span>}
-                                                </span>;
-                                            })}
-                                        </div>
-                                        <p className="truncate text-[11px] text-j-gray-500">
-                                            {participants.length ? `${participants.slice(0, 2).map((participant) => participant.name.split(" ")[0]).join(", ")}${participantCount > 2 ? ` +${participantCount - Math.min(participants.length, 2)}` : ""}` : `${participantCount} ${participantCount === 1 ? "inscrito" : "inscritos"}`}
-                                        </p>
-                                    </div>}
                                 </div>
 
                             </li>;
@@ -144,9 +127,10 @@ export function FeedSidebar() {
 
             {canCreate && (
                 <button
+                    id="tour-feed-create-btn"
                     type="button"
                     onClick={() => {
-                        setContent(<CreatePublicationModal />);
+                        setContent(<CreatePublicationModal publishEventImmediately />);
                         setOpen();
                     }}
                     className="hidden min-h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"

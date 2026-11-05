@@ -9,6 +9,7 @@ import Topbar from "@/components/common/layout-admin/Topbar";
 import GuidedTour from "@/components/common/tour/GuidedTour";
 import { FirstAccessOnboarding } from "@/components/pages/first-access/Onboarding";
 import { AdminUserIdContext } from "@/hooks/useAdminFavorites";
+import { CurrentUserContext } from "@/contexts/CurrentUserContext";
 
 const mobileTabs = [
     { href: "/feed", label: "Feed", icon: Newspaper },
@@ -34,6 +35,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
 
     return (
         <GuidedTour setMobileMenuOpen={setIsMobileMenuOpen}>
+            <CurrentUserContext.Provider value={{ userId, name: fullName, photoUrl: initialProfilePhotoUrl }}>
             <AdminUserIdContext.Provider value={userId}>
             <div className="flex h-dvh min-h-0 w-full overflow-hidden bg-j-white">
                 <Sidebar
@@ -75,6 +77,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                 </div>
             </div>
             </AdminUserIdContext.Provider>
+            </CurrentUserContext.Provider>
         </GuidedTour>
     );
 }
