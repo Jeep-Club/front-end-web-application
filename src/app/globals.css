@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "driver.js/dist/driver.css";
+@import "./hero-date.css";
 
 /* Keep scrollbar edges straight only while a modal has vertical overflow. */
 [data-modal-scroll] {

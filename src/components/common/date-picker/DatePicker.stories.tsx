@@ -1,42 +1,57 @@
-import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, fn, waitFor, within } from "storybook/test";
-import { DatePicker, type DatePickerSingleProps } from "./index";
+import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { parseDate, parseDateTime, type DateValue } from '@internationalized/date';
+import { expect, fn, within } from 'storybook/test';
+import { DatePicker, type DatePickerProps } from './index';
 
-function SingleDatePickerStory(props: DatePickerSingleProps) {
-    const [value, setValue] = useState(props.value);
-    return <DatePicker {...props} value={value} onChange={(next: DatePickerSingleProps["value"]) => { setValue(next); props.onChange(next); } } />;
+function Example(args: DatePickerProps) {
+    const [value, setValue] = useState<DateValue | null>(args.defaultValue ?? null);
+    return <div className="space-y-3">
+        <DatePicker {...args} value={value} onChange={next => { setValue(next); args.onChange?.(next); }} />
+        <output aria-label="Data selecionada" className="block text-sm text-secondary">{value?.toString() ?? 'Nenhuma data'}</output>
+    </div>;
 }
 
 const meta = {
-    title: "Componentes/DatePicker/Data única",
-    component: SingleDatePickerStory,
-    tags: ["autodocs"],
-    parameters: {
-        docs: {
-            description: {
-                component: "Seleciona uma data civil por digitação dd/mm/aaaa ou calendário. O valor aplicado usa YYYY-MM-DD, ou YYYY-MM-DDTHH:mm[:ss] sem fuso quando um horário é adicionado. A conversão para timestamps pertence à camada consumidora.",
-            },
-        },
+    title: 'Componentes/DatePicker/Data única',
+    component: DatePicker,
+    tags: ['!autodocs'],
+    args: { label: 'Data de publicação', placeholderValue: parseDate('2026-11-01'), onChange: fn() },
+    argTypes: {
+        label: { control: 'text', type: 'string' },
+        description: { control: 'text', table: { type: { summary: 'ReactNode' } } },
+        errorMessage: { control: 'text', table: { type: { summary: 'ReactNode' } } },
+        isDisabled: { control: 'boolean', type: 'boolean', table: { defaultValue: { summary: 'false' } } },
+        isReadOnly: { control: 'boolean', type: 'boolean', table: { defaultValue: { summary: 'false' } } },
+        isRequired: { control: 'boolean', type: 'boolean', table: { defaultValue: { summary: 'false' } } },
+        granularity: { control: false, table: { type: { summary: "'day' | 'hour' | 'minute' | 'second'" } } },
+        hourCycle: { control: false, table: { type: { summary: '12 | 24' } } },
+        value: { control: false, table: { type: { summary: 'DateValue | null' } } },
+        defaultValue: { control: false, table: { type: { summary: 'DateValue' } } },
+        minValue: { control: false, table: { type: { summary: 'DateValue' } } },
+        maxValue: { control: false, table: { type: { summary: 'DateValue' } } },
+        placeholderValue: { control: false },
+        onChange: { control: false, table: { type: { summary: '(value: DateValue | null) => void' } } },
     },
-    decorators: [(Story) => <div className="w-full max-w-lg p-4"><Story /></div>],
-} satisfies Meta<typeof SingleDatePickerStory>;
-
+    decorators: [Story => <div className="w-full max-w-lg p-4"><Story /></div>],
+    render: args => <Example {...args} />,
+} satisfies Meta<typeof DatePicker>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const DataUnica: Story = {
-    args: { mode: "single", label: "Data de publicação", value: null, onChange: fn() },
     play: async ({ canvas, canvasElement, userEvent, args }) => {
+        await userEvent.click(canvas.getByRole('button', { name: /^Abrir calendário: Data de publicação/ }));
         const page = within(canvasElement.ownerDocument.body);
-        const input = canvas.getByLabelText("Data de publicação");
-        await userEvent.type(input, "30102026");
-        await expect(input).toHaveValue("30/10/2026");
-        await userEvent.click(canvas.getByRole("button", { name: "Abrir calendário: Data de publicação" }));
-        await userEvent.click(page.getByRole("button", { name: "Aplicar" }));
-        await waitFor(() => expect(args.onChange).toHaveBeenCalledWith("2026-10-30"));
+        await userEvent.click(await page.findByRole('button', { name: /15 de novembro de 2026/ }));
+        await expect(canvas.getByRole('status', { name: 'Data selecionada' })).toHaveTextContent('2026-11-15');
+        await expect(args.onChange).toHaveBeenCalled();
     },
 };
-
-export const Preenchida: Story = { args: { mode: "single", label: "Data", value: "2026-10-30", onChange: fn() } };
-export const Desabilitada: Story = { args: { mode: "single", label: "Data", value: null, onChange: fn(), disabled: true } };
+export const Preenchida: Story = { args: { defaultValue: parseDate('2026-11-15') } };
+export const Desabilitada: Story = { args: { isDisabled: true } };
+export const Limites: Story = { args: { minValue: parseDate('2026-11-10'), maxValue: parseDate('2026-11-20'), description: 'Escolha entre 10 e 20 de novembro de 2026.' } };
+export const ComHorario: Story = {
+    args: { defaultValue: parseDateTime('2026-11-15T14:30:00'), granularity: 'second', hourCycle: 24 },
+    argTypes: { granularity: { control: 'select', options: ['day', 'hour', 'minute', 'second'] }, hourCycle: { control: 'radio', options: [12, 24] } },
+};

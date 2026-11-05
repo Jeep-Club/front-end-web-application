@@ -1,0 +1,54 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './DateRangePicker.stories';
+
+<Meta of={Stories} />
+
+# DateRangePicker
+
+Seleciona um intervalo completo com início e fim usando os campos segmentados e o RangeCalendar do HeroUI. Para uma data única, use [DatePicker](?path=/docs/componentes-datepicker-data-única--docs).
+
+## Uso controlado
+
+```tsx
+import { useState } from 'react';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { DateRangePicker } from '@/components/common/date-picker';
+
+const [period, setPeriod] = useState<{ start: CalendarDate; end: CalendarDate } | null>(null);
+
+<DateRangePicker
+  label="Período de publicação"
+  value={period}
+  onChange={setPeriod}
+  minValue={parseDate('2026-01-01')}
+/>
+```
+
+`value`/`defaultValue` seguem o HeroUI: um objeto com dois `DateValue` ou `null` para nenhum intervalo. O callback recebe o intervalo completo; a primeira escolha no calendário inicia a seleção e a segunda a conclui. Um início isolado ainda não é um intervalo aplicado. Os campos permitem editar as datas por segmentos e `granularity` acrescenta horário quando os valores são `CalendarDateTime`.
+
+Não exige FormProvider. Para React Hook Form, conecte com `Controller` e faça as validações de domínio no schema. `minValue`/`maxValue` restringem as datas; `isDateUnavailable` e `validate` permanecem disponíveis pelo contrato do HeroUI. `isInvalid`/`errorMessage` integram erros externos. O idioma é `pt-BR`, configurado pelo próprio componente.
+
+## Aparência e controles
+
+Campo, seleção e calendário em portal usam os tokens do site conforme `data-theme`. Alterne claro/escuro na toolbar; não é necessário passar variante. Em espaços estreitos, o grupo mantém rolagem interna dos segmentos sem aumentar a largura da página.
+
+<Canvas of={Stories.IntervaloVazio} />
+
+<div role="region" aria-label="Propriedades de DateRangePicker" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.IntervaloVazio} />
+</div>
+
+Os Controls expõem estados. Datas complexas ficam nas stories e na edição do campo. A story Com horário permite configurar `granularity` e `hourCycle` no painel com valores que suportam esses formatos. O resultado abaixo do campo e os eventos em Actions mostram a seleção aplicada.
+
+<Canvas of={Stories.IntervaloPreenchido} />
+<Canvas of={Stories.Desabilitado} />
+<Canvas of={Stories.Limites} />
+<Canvas of={Stories.ComHorario} />
+
+## Integração e migração
+
+Importe `DateRangePicker` pelo mesmo index de `DatePicker`, sem `mode="range"`. Use `isDisabled` no lugar de `disabled` e `minValue`/`maxValue` no lugar de strings `minDate`/`maxDate`. Com `CalendarDateTime` e granularidade de horário, os horários podem ser editados nos segmentos do campo. Teclado, foco, escolha de ano e seleção de datas seguem o HeroUI.
+
+No filtro de publicações, novos limites civis representam dias locais completos, convertidos em instantes UTC pela tela consumidora. Limites já existentes preservam a precisão se sua data não mudar. Um filtro recebido pela URL com apenas um limite continua ativo e é descrito abaixo do campo; uma nova escolha o substitui por intervalo completo. A limpeza permanece nas ações dos filtros.
+
+As stories usam estado local sem backend. Não comprovam conversões da API ou fluxos autenticados. Referência: [DateRangePicker do HeroUI](https://heroui.com/en/docs/react/components/date-range-picker). Testes automatizados não certificam acessibilidade completa.

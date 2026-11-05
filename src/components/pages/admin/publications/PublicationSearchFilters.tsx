@@ -5,7 +5,8 @@ import { Search, X } from 'lucide-react';
 import { Button } from '@/components/common/button';
 import { Input } from '@/components/common/input/input';
 import { Select } from '@/components/common/select/select';
-import { DatePicker } from '@/components/common/date-picker';
+import { DateRangePicker } from '@/components/common/date-picker';
+import { parseDate, type CalendarDate } from '@internationalized/date';
 import { localPeriodValueToUtcInstant, utcInstantToLocalPeriodValue } from '@/utils/publications/periodDateTime';
 import { Filters, type FilterItem } from '@/components/common/filters/Filters';
 import { publicationFeedFiltersSchema, type PublicationFeedFilters } from '@/schemas/publications/feed';
@@ -32,10 +33,18 @@ export function PublicationSearchFilters({ type, canReadId, canReadList, publish
     const value = search.trim();
     const searchMode = mode === 'AUTO' ? (!value || /^\d+$/.test(value) ? 'ID' : 'TITLE') : mode;
 
-    function applyPeriod(value: { start: string | null; end: string | null }) {
-        const from = value.start ? localPeriodValueToUtcInstant(value.start, { original: publishedFrom, boundary: 'start' }) : undefined;
-        const to = value.end ? localPeriodValueToUtcInstant(value.end, { original: publishedTo, boundary: 'end' }) : undefined;
-        if ((value.start && !from) || (value.end && !to)) {
+    const localFrom = publishedFrom ? utcInstantToLocalPeriodValue(publishedFrom) : null;
+    const localTo = publishedTo ? utcInstantToLocalPeriodValue(publishedTo) : null;
+    const period = localFrom && localTo ? { start: parseDate(localFrom.slice(0, 10)), end: parseDate(localTo.slice(0, 10)) } : null;
+
+    function applyPeriod(value: { start: CalendarDate; end: CalendarDate } | null) {
+        // Preserve precision of existing API instants for unchanged endpoints.
+        // Newly selected civil dates cover the entire local day, inclusively.
+        const start = value?.start.toString();
+        const end = value?.end.toString();
+        const from = start ? (start === localFrom?.slice(0, 10) ? publishedFrom : localPeriodValueToUtcInstant(start, { boundary: 'start' })) : undefined;
+        const to = end ? (end === localTo?.slice(0, 10) ? publishedTo : localPeriodValueToUtcInstant(end, { boundary: 'end' })) : undefined;
+        if ((start && !from) || (end && !to)) {
             setPeriodError('Horário inválido ou ambíguo.');
             return false;
         }
@@ -54,9 +63,9 @@ export function PublicationSearchFilters({ type, canReadId, canReadList, publish
         ...(type === 'NOTICE' ? [{ id: 'noticePriority', label: 'Prioridade', content: <div className="w-full sm:w-44"><Select name="noticePriority" label="Prioridade" disabled placeholder="Sem suporte na API" /></div> }] : []),
         ...(type === 'SERVICE' ? [{ id: 'serviceCategory', label: 'Categoria do serviço', content: <div className="w-full sm:w-44"><Select name="serviceCategory" label="Categoria do serviço" disabled placeholder="Sem suporte na API" /></div> }] : []),
         ...(type === 'EVENT' ? [{ id: 'eventPeriod', label: 'Período do evento', content: <div className="w-full sm:w-44"><Select name="eventPeriod" label="Período do evento" disabled placeholder="Sem suporte na API" /></div> }] : [{ id: 'publishedPeriod', label: 'Período de publicação', content: <div className="w-full sm:w-72">
-            <DatePicker mode="range" label="Período de publicação" disabled={!canReadList}
-                value={{ start: publishedFrom ? utcInstantToLocalPeriodValue(publishedFrom) : null, end: publishedTo ? utcInstantToLocalPeriodValue(publishedTo) : null }} onChange={applyPeriod} />
-            {periodError && <p role="alert" className="text-sm text-input-error-text">{periodError}</p>}
+            <DateRangePicker label="Período de publicação" isDisabled={!canReadList}
+                value={period} onChange={applyPeriod} isInvalid={Boolean(periodError)} errorMessage={periodError}
+                description={!period && (localFrom || localTo) ? `Filtro atual: ${localFrom ? `a partir de ${localFrom}` : `até ${localTo}`}. Selecione um intervalo completo para substituir.` : undefined} />
         </div> }]),
         ...(type === 'NOTICE' ? [{ id: 'noticeValidity', label: 'Validade', content: <div className="w-full sm:w-44"><Select name="noticeValidity" label="Validade" disabled placeholder="Sem suporte na API" /></div> }] : []),
     ];

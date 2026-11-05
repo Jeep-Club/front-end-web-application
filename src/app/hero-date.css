@@ -1,0 +1,87 @@
+/* Import only calendar structures; HeroUI's global theme/reset would change existing fields. */
+@import "@heroui/styles/utilities";
+@import "@heroui/styles/base/overlay-motion.css";
+@import "@heroui/styles/components/date-picker.css" layer(components);
+@import "@heroui/styles/components/date-range-picker.css" layer(components);
+@import "@heroui/styles/components/date-input-group.css" layer(components);
+@import "@heroui/styles/components/calendar.css" layer(components);
+@import "@heroui/styles/components/range-calendar.css" layer(components);
+@import "@heroui/styles/components/calendar-year-picker.css" layer(components);
+
+@theme inline {
+  --color-foreground: var(--text-primary);
+  --color-accent: var(--hero-accent);
+  --color-accent-foreground: var(--hero-accent-foreground);
+  --color-accent-hover: var(--hero-accent-hover);
+  --color-accent-soft: var(--hero-accent-soft);
+  --color-accent-soft-foreground: var(--text-primary);
+  --color-accent-soft-hover: var(--hero-accent-soft);
+  --color-default: var(--background-secondary);
+  --color-default-foreground: var(--text-primary);
+  --color-muted: var(--text-tertiary);
+  --color-focus: var(--input-border-focus);
+  --color-danger: var(--input-error-text);
+  --color-danger-soft: var(--background-secondary);
+  --color-danger-soft-foreground: var(--input-error-text);
+  --color-overlay: var(--surface);
+  --color-field: var(--input-bg);
+  --color-field-hover: var(--input-bg-focus);
+  --color-field-foreground: var(--input-text);
+  --color-field-placeholder: var(--input-placeholder);
+  --color-field-focus: var(--input-bg-focus);
+  --color-field-border-invalid: var(--input-border-error);
+  --radius-field: 0.5rem;
+  --shadow-field: 0 0 #0000;
+}
+
+.jeep-date-control,
+.jeep-calendar-popover {
+  --hero-accent: var(--yellow-300);
+  --hero-accent-foreground: var(--blue-950);
+  --hero-accent-hover: var(--yellow-400);
+  --hero-accent-soft: var(--accent-surface);
+  --field-border: var(--input-border);
+  --field-border-hover: var(--input-border-hover);
+  --border-width-field: 2px;
+  --ring-offset-width: 0px;
+  --cursor-interactive: pointer;
+  --cursor-disabled: not-allowed;
+  --disabled-opacity: 0.55;
+  --radius: 0.5rem;
+  --ease-smooth: ease;
+  --overlay-shadow: 0 10px 24px rgb(0 0 0 / 0.18);
+  color: var(--text-primary);
+}
+
+.jeep-date-control {
+  gap: 0.5rem;
+
+  .date-input-group {
+    min-height: 2.75rem;
+    height: auto;
+    width: 100%;
+  }
+
+  .date-input-group__input-container { min-width: 0; }
+  .date-input-group__input { min-width: 0; }
+  .date-input-group__suffix { margin-inline-end: 0.5rem; }
+  .date-input-group__input[slot="end"] { flex: none; }
+}
+
+.jeep-calendar-popover {
+  border: 1px solid var(--input-border);
+  border-radius: 0.75rem;
+  max-width: calc(100vw - 1rem);
+  outline: none;
+}
+
+/* Do not let the calendar's fixed width overflow a narrow viewport. */
+.jeep-calendar-popover :is(.calendar, .range-calendar) {
+  width: min(17.5rem, calc(100vw - 3rem));
+  max-width: 100%;
+}
+
+.jeep-calendar-popover :is(.calendar__nav-button, .range-calendar__nav-button) {
+  width: 2rem;
+  height: 2rem;
+}

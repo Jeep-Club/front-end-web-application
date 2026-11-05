@@ -4,7 +4,7 @@ test('lista é padrão e alternância preserva página sem nova consulta', async
     await page.goto('/admin/publications/event?page=1&size=12');
     await expect(page.getByRole('button', { name: 'Lista', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(page.getByText('ID #7', { exact: true })).toBeVisible();
-    await expect(page.getByText('Rascunho', { exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Resultados de publicações' }).getByText('Rascunho', { exact: true })).toBeVisible();
     const count = api.calls.filter(call => call.url.pathname === '/admin/events').length;
     await page.getByRole('button', { name: 'Grade', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Grade', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -56,13 +56,14 @@ test('ordenar eventos usa API, reinicia página e mantém visualização', async
 });
 
 test('período publicado aplica limite real e limpar remove filtros e rascunhos', async ({ page, api }) => {
+    await page.clock.setFixedTime(new Date('2026-11-04T12:00:00Z'));
     api.feedItems = [{ id: 8, type: 'NOTICE', title: 'Aviso publicado', content: 'Conteúdo', authorUserId: 7, primaryImage: null, publishedAt: '2026-10-30T12:00:00Z', likeCount: 0, commentCount: 0, likedByMe: false, details: {} }];
     await page.goto('/admin/publications/notice?view=grid');
-    const start = page.getByLabel('Período de publicação — data inicial');
-    await start.fill('01112026');
     await page.getByRole('button', { name: 'Abrir calendário: Período de publicação' }).click();
-    await page.getByRole('button', { name: 'Aplicar', exact: true }).click();
+    await page.getByRole('button', { name: /domingo, 1 de novembro de 2026/ }).click();
+    await page.getByRole('button', { name: /segunda-feira, 2 de novembro de 2026/ }).click();
     await expect.poll(() => api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('publishedFrom')).toBe('2026-11-01T03:00:00.000000000Z');
+    await expect.poll(() => api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('publishedTo')).toBe('2026-11-03T02:59:59.999999999Z');
     await expect(page.getByText('Nenhuma publicação encontrada', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Limpar filtros', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Aviso publicado', exact: true })).toBeVisible();
