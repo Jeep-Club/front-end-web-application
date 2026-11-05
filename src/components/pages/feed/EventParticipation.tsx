@@ -89,6 +89,18 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
     const requiredCharges = (charges ?? []).filter((charge) => charge.requiredForParticipation);
 
     const requiredAmount = requiredCharges.reduce((total, charge) => total + charge.amount, 0);
+    const chargeSummary = charges === undefined ? (
+        <p className="font-bold text-j-blue-800">Valor não informado</p>
+    ) : requiredAmount > 0 ? (
+        <>
+            <p className="font-bold text-j-blue-800">
+                {currency(requiredAmount)} — {requiredCharges[0]?.name || "Inscrição"}{requiredCharges.length > 1 ? " (total)" : ""}
+            </p>
+            {requiredCharges[0]?.description && <p className="mt-1 text-xs">{requiredCharges[0].description}</p>}
+        </>
+    ) : (
+        <p className="font-bold text-green-700">Gratuito</p>
+    );
     const isPending = register.isPending || cancel.isPending;
 
     const buttonClass = compact
@@ -130,7 +142,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
 
     function openRegistration() {
 
-        if (charges !== undefined && requiredAmount <= 0) {
+        if (requiredAmount <= 0) {
 
             openRegistrationForm();
             return;
@@ -157,8 +169,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
 
     return <div className={`flex flex-col gap-2 ${compact ? "w-full" : ""}`}>
         <div className="rounded-xl bg-j-gray-100 px-3 py-2 text-sm text-j-gray-600" aria-label="Valores do evento">
-
-            {charges === undefined ? <p className="font-bold text-j-blue-800">Valor não informado</p> : requiredAmount > 0 ? <><p className="font-bold text-j-blue-800">{currency(requiredAmount)} — {requiredCharges[0]?.name || "Inscrição"}{requiredCharges.length > 1 ? " (total)" : ""}</p>{requiredCharges[0]?.description && <p className="mt-1 text-xs">{requiredCharges[0].description}</p>}</> : <p className="font-bold text-j-blue-800">Entrada gratuita</p>}
+            {chargeSummary}
             {(charges ?? []).filter((charge) => !charge.requiredForParticipation).map((charge) => <p key={charge.name}>{charge.name}: {currency(charge.amount)} (opcional)</p>)}
 
         </div>
