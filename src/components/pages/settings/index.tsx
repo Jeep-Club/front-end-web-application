@@ -347,7 +347,7 @@ export default function SettingsPage() {
                             <CircleAlert size={18} className="shrink-0 text-j-yellow-700" />
                             <div>
                                 <p className="text-xs font-bold text-j-gray-700">A nova senha deve conter:</p>
-                                <p className="mt-1 text-xs leading-relaxed text-j-gray-500">No mínimo 8 caracteres, incluindo letra maiúscula, letra minúscula, número e caractere especial.</p>
+                                <p className="mt-1 text-xs leading-relaxed text-j-gray-500">Use pelo menos 8 caracteres.</p>
                             </div>
                         </div>
 

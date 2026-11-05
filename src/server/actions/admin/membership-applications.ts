@@ -13,8 +13,8 @@ import { adminTemporaryPasswordResponseSchema } from '@/schemas/auth/recovery';
 const noContentSchema = z.literal('');
 const byId = (route: string, id: number) => route.replace('{id}', String(id));
 
-export async function listMembershipApplicationsAction({ page, status }: { page: number; status?: MembershipApplicationStatus }) {
-    const params = new URLSearchParams({ page: String(page), size: '20', sort: 'requestedAt,desc' });
+export async function listMembershipApplicationsAction({ page, size = 20, status }: { page: number; size?: number; status?: MembershipApplicationStatus }) {
+    const params = new URLSearchParams({ page: String(page), size: String(size), sort: 'requestedAt,desc' });
     if (status) params.set('status', status);
     const result = await actionFetchWrapper<MembershipApplicationPage>({
         url: `${HttpAPIRoutes.ADMIN_MEMBERSHIP_APPLICATIONS}?${params}`,

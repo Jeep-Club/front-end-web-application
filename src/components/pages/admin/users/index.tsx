@@ -298,17 +298,17 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                     ]}
                 />
 
-                {(permissions.canReadUsers || canReadApplications) && <div id="tour-users-tabs" className="flex items-center gap-2 border-b border-j-gray-200">
-                    <ManagementBackButton />
-                    {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
-                    {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`border-b-2 px-4 py-3 text-sm font-bold ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}
+                {(permissions.canReadUsers || canReadApplications) && <div id="tour-users-tabs" className="flex w-full flex-wrap items-center gap-x-2 border-b border-j-gray-200">
+                    <div className="basis-full pb-2"><ManagementBackButton /></div>
+                    {permissions.canReadUsers && <button type="button" onClick={() => replaceSearchParams({ tab: undefined })} className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-3 text-xs font-bold sm:px-4 sm:text-sm ${activeTab === "users" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Usuários</button>}
+                    {canReadApplications && <button type="button" onClick={() => replaceSearchParams({ tab: "applications" })} className={`min-w-0 flex-1 whitespace-nowrap border-b-2 px-2 py-3 text-[11px] font-bold sm:flex-none sm:px-4 sm:text-sm ${activeTab === "applications" ? "border-j-yellow-400 text-j-blue-800" : "border-transparent text-j-gray-500"}`}>Solicitações de associação</button>}
                 </div>}
 
                 {activeTab === "applications" && canReadApplications && <MembershipApplicationsTab />}
                 {activeTab === "users" && permissions.canReadUsers && <UserManagementView
                     onCreateUser={() => {
                         setContent(
-                            <div role="dialog" aria-modal="true" aria-label="Novo usuário" className="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-j-white p-2 shadow-2xl sm:p-3">
+                            <div role="dialog" aria-modal="true" aria-label="Novo usuário" className="max-h-[92dvh] w-full max-w-4xl overflow-y-auto overflow-x-hidden rounded-3xl bg-j-white p-3 shadow-2xl sm:p-5">
                                 <NewAdminUserPage onClose={setClose} onCreated={() => router.refresh()} />
                             </div>,
                         );

@@ -43,7 +43,7 @@ export default function FormRegister() {
                 <InputDate name="birthDate" required/>
                 <InputCPF required/>
                 <InputPhoneNumber required/>
-                <InputPassword required name="password" stepErrors/>
+                <InputPassword required name="password"/>
                 <InputFile name="test1" multiple maxFiles={2} isFallback label="Arquivos"/>
                 <InputFile.Image name="test2" label="Foto de perfil"/>
                 <InputFile.Image2 name="test3" label="Foto de perfil"/>

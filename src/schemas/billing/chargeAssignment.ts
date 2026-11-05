@@ -13,6 +13,7 @@ export const chargeAssignmentResponseSchema: z.ZodType<ChargeAssignment> = z.obj
     audienceType: chargeAudienceTypeSchema,
     userId: z.number().nullable(),
     roleId: z.number().nullable(),
+    roleName: z.string().nullable().default(null),
     eventId: z.number().nullable(),
     active: z.boolean(),
     createdAt: z.string(),
