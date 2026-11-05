@@ -73,10 +73,12 @@ function optionsFromChildren(children: ReactNode): SelectOption[] {
 
         if (!nodes || typeof nodes !== "object" || !("type" in nodes)) return;
 
-        const element = nodes as ReactElement<{ value?: string; disabled?: boolean; children?: ReactNode }>;
+        const element = nodes as ReactElement<{ value?: string | number; disabled?: boolean; children?: ReactNode }>;
         if (element.type === "option") {
             result.push({
-                value: element.props.value ?? "",
+                // Native <select> coerces numeric option values to strings. Keep
+                // the same behavior here so controlled state never receives a number.
+                value: String(element.props.value ?? ""),
                 label: element.props.children,
                 disabled: element.props.disabled,
             });
@@ -90,8 +92,9 @@ function optionsFromChildren(children: ReactNode): SelectOption[] {
     return result;
 }
 
-function normalizeValues(value: string | string[] | readonly string[] | undefined, multiple: boolean): string[] {
+function normalizeValues(value: string | number | string[] | readonly string[] | undefined, multiple: boolean): string[] {
     if (typeof value === "string") return value ? [value] : [];
+    if (typeof value === "number") return Number.isFinite(value) ? [String(value)] : [];
     if (!value) return [];
     const values = [...value];
     return multiple ? values : values.slice(0, 1);
