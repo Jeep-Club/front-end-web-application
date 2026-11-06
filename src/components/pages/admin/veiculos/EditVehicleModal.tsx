@@ -144,6 +144,7 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                             name="color"
                             placeholder="Preto"
                             value={vehicle.color}
+                            mask={(value) => value.replace(/\d/g, "")}
                             required
                         />
                     </div>
@@ -176,6 +177,8 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                     <div className="grid w-full gap-4 sm:grid-cols-2">
                         <InputRegister
                             type="number"
+                            min={1}
+                            max={50}
                             label="Assentos"
                             name="seatingCapacity"
                             placeholder="5"
@@ -188,7 +191,10 @@ function EditVehicleSteps({ currentStep, onNext, onBack, vehicle }: EditVehicleS
                             label="Cilindrada"
                             name="engineDisplacement"
                             placeholder="2.0"
-                            mask={maskDecimal}
+                            mask={(value) => {
+                                const displacement = maskDecimal(value);
+                                return Number(displacement) > 3 ? "3.0" : displacement;
+                            }}
                             value={vehicle.engineDisplacement.toFixed(1)}
                             required
                         />

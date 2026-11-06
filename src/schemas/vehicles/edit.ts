@@ -23,7 +23,7 @@ export const editVehicleMemberFormSchema: z.ZodType<EditVehicleMemberFormData> =
     model: z.string().trim().min(1, { message: "O modelo é obrigatório" }).max(100, { message: "O modelo deve ter no máximo 100 caracteres" }),
     manufacturingYear: vehicleYearSchema,
     modelYear: vehicleYearSchema,
-    color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }),
+    color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }).refine((value) => !/\d/.test(value), { message: "A cor não pode conter números" }),
     seatingCapacity: z.string()
         .min(1, { message: "O nº assentos é obrigatório" })
         .transform((value) => Number(value))
@@ -34,7 +34,7 @@ export const editVehicleMemberFormSchema: z.ZodType<EditVehicleMemberFormData> =
     engineDisplacement: z.string()
         .min(1, { message: "A cilindrada é obrigatória" })
         .transform((value) => Number(value))
-        .pipe(z.number().gt(0, { message: "A cilindrada deve ser maior que zero" })),
+        .pipe(z.number().gt(0, { message: "A cilindrada deve ser maior que zero" }).max(3, { message: "A cilindrada máxima é 3000 cc (3,0 L)" })),
     towing: z.boolean(),
 });
 
