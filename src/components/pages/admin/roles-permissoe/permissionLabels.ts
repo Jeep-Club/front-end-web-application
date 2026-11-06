@@ -61,6 +61,8 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     MEMBERSHIP_MEMBERSHIP_REQUEST_REJECT: "Rejeitar solicitações de adesão",
     MEMBERSHIP_MEMBERSHIP_REQUEST_INVITE_RESEND: "Reenviar convite de adesão",
     MEMBERSHIP_MEMBERSHIP_APPLICANT_BLOCK: "Bloquear CPF de solicitante",
+    MEMBERSHIP_MEMBER_READ: "Consultar matrículas",
+    MEMBERSHIP_MEMBER_REGISTRATION_MANAGE: "Atribuir e retificar matrículas",
 
     PUBLICATIONS_INTERACTION_LIKE: "Curtir publicações",
     PUBLICATIONS_COMMENT_CREATE: "Comentar em publicações",
