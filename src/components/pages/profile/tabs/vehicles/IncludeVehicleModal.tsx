@@ -113,7 +113,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
             <div className={currentStep === 2 ? twMerge("flex w-full flex-col gap-4", LIGHT_FIELDS_CLASS) : "hidden"}>
                 <div className="grid w-full gap-4 sm:grid-cols-2">
                     <InputRegister label="Modelo" name="model" placeholder="Ex: Wrangler" value={vehicle?.model} required />
-                    <InputRegister label="Cor" name="color" placeholder="Ex: Preto" value={vehicle?.color} required />
+                    <InputRegister label="Cor" name="color" placeholder="Ex: Preto" value={vehicle?.color} mask={(value) => value.replace(/\d/g, "")} required />
                 </div>
 
                 <div className="grid w-full gap-4 sm:grid-cols-2">
@@ -144,6 +144,8 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                 <div className="grid w-full gap-4 sm:grid-cols-2">
                     <InputRegister
                         type="number"
+                        min={1}
+                        max={50}
                         label="Assentos"
                         name="seatingCapacity"
                         placeholder="5"
@@ -156,7 +158,10 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                         label="Cilindrada"
                         name="engineDisplacement"
                         placeholder="2.0"
-                        mask={maskDecimal}
+                        mask={(value) => {
+                            const displacement = maskDecimal(value);
+                            return Number(displacement) > 3 ? "3.0" : displacement;
+                        }}
                         value={vehicle ? vehicle.engineDisplacement.toFixed(1) : undefined}
                         required
                     />
