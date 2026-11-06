@@ -3,6 +3,7 @@
 export const footerInfo = {
   name: "Jeep Clube Tamoios", // Nome ou razão social completa.
   cnpj: "", // Exemplo de formato: 00.000.000/0000-00.
+  email: "", // E-mail público de contato.
   address: "", // Rua, número, bairro, cidade/UF e CEP.
   instagram: "", // Link completo do perfil oficial.
   facebook: "", // Link completo da página oficial.

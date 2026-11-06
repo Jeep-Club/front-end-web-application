@@ -1,5 +1,7 @@
 "use client";
 
+import ExperiencesCarousel from "./ExperiencesCarousel";
+import ImpactCards from "./ImpactCards";
 import { Logo } from "@/components/common/logo";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -7,15 +9,12 @@ import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
-  FaGift,
   FaEnvelope,
   FaIdCard,
-  FaUsers,
   FaChevronRight,
   FaChevronDown,
 } from "react-icons/fa";
 import { GiJeep } from "react-icons/gi";
-import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
 
 export default function HomeClient({ footer }: { footer: ReactNode }) {
   const router = useRouter();
@@ -99,44 +98,12 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
       </section>
 
       {/* ── EXPERIÊNCIAS ── */}
-      <section id="experiencias" className="px-6 py-16 md:py-24 bg-[#111]">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
-          <p className="text-xl md:text-2xl text-white/70 italic mb-10">Onde o asfalto termina, a vida começa.</p>
+      <section id="experiencias" className="px-6 py-12 md:px-0 md:py-16 bg-[#111]">
+        <div className="max-w-6xl mx-auto md:max-w-none">
+          <p className="text-center text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
+          <p className="text-center text-xl md:text-2xl text-white/70 italic mb-6">Onde o asfalto termina, a vida começa.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
-              <div className="relative h-64 md:h-80">
-                <Image 
-                src="/images/jeep_vermelho.jpeg" 
-                alt="Expedições" fill className="object-cover" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <MdOutlineExplore size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Expedições & Trilhas</h3>
-                </div>
-                <p className="text-sm md:text-base text-white/50 leading-relaxed">
-                  Trilhas icônicas do Litoral Norte. De passeios leves a desafios técnicos extremos em meio à Mata Atlântica.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
-              <div className="relative h-64 md:h-80">
-                <Image src="/images/mato.jpeg" alt="Eventos" fill className="object-cover" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <FaUsers size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Eventos & Encontros</h3>
-                </div>
-                <p className="text-sm md:text-base text-white/50 leading-relaxed">
-                  Muito mais que carros — celebramos a amizade com encontros gastronômicos e workshops técnicos.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ExperiencesCarousel />
         </div>
       </section>
 
@@ -198,36 +165,22 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {[
-            { icon: <MdGroups size={26} />, title: "Apoio em Calamidades", text: "Logística e transporte de mantimentos em áreas isoladas por chuvas no Litoral Norte." },
-            { icon: <FaGift size={24} />, title: "Dia das Crianças", text: "Tradicional caravana de entrega de brinquedos e cestas básicas para comunidades." },
-            { icon: <MdVolunteerActivism size={26} />, title: "Doações Regulares", text: "Apoio contínuo a instituições locais de assistência social e proteção ambiental." }
-          ].map((item, i) => (
-            <div key={i} className="bg-white/5 rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-400/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <span className="text-yellow-400">{item.icon}</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
+        <ImpactCards />
       </section>
 
       {/* ── CTA ── */}
-      <section className="px-6 py-20 bg-[#f5f7fb]">
-        <div className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
-          <div className="relative z-10 text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-black text-[#00236F] leading-tight mb-4">
-              Pronto para a sua<br className="hidden md:block" />próxima aventura?
+      <section className="px-6 py-12 md:py-20 bg-[#f5f7fb]">
+        <div className="max-w-5xl mx-auto bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden relative px-6 py-9 md:p-16 flex items-center shadow-xl shadow-[#00236F]/10">
+          <div className="relative z-10 mx-auto max-w-md text-center md:mx-0 md:max-w-[60%] md:text-left">
+            <h2 className="text-2xl md:text-5xl font-black text-[#00236F] leading-tight mb-3 md:mb-4">
+              Pronto para a sua<span className="md:hidden"> </span><br className="hidden md:block" />próxima aventura?
             </h2>
-            <p className="text-base text-[#00236F]/80 mb-8 font-medium">
+            <p className="text-sm md:text-base leading-relaxed text-[#00236F]/80 mb-6 md:mb-8 font-medium">
               Junte-se à maior família off-road do Litoral Norte.
             </p>
             <button
               onClick={handleRegister}
-              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-all active:scale-95 shadow-lg"
+              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00236F] transition-all active:scale-95 shadow-lg"
             >
               <FaIdCard size={18} />
               Quero ser Sócio
@@ -235,8 +188,8 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
             </button>
           </div>
 
-          <div className="mt-10 md:mt-0 md:absolute md:right-[-20px] md:bottom-[-20px] opacity-10 md:opacity-20 pointer-events-none">
-            <GiJeep size={280} className="text-[#00236F]" />
+          <div className="pointer-events-none absolute bottom-4 right-20 hidden text-[#00236F]/20 md:block" aria-hidden="true">
+            <GiJeep size={280} />
           </div>
         </div>
       </section>
