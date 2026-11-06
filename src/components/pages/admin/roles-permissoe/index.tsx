@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect,useMemo,useRef,useState } from "react";
 
-import { Eye,KeyRound,ListChecks,Lock,Pencil,Plus,Power,PowerOff,ShieldCheck,Trash2,Users } from "lucide-react";
+import { Check,ChevronDown,Eye,KeyRound,ListChecks,Lock,Pencil,Plus,Power,PowerOff,Search,ShieldCheck,Trash2,Users } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { Button } from "@/components/common/button";
@@ -84,6 +84,30 @@ export default function RolesPermissions() {
     );
     const activeTab = isTabVisible(selectedTab) ? selectedTab : visibleTabs[0]?.key ?? TABS[0].key;
     const [roleStatusFilter, setRoleStatusFilter] = useState<RoleStatusFilter>("ACTIVE");
+    const [permissionSearch, setPermissionSearch] = useState("");
+    const [responsibilityFilter, setResponsibilityFilter] = useState("all");
+    const [isResponsibilityMenuOpen, setIsResponsibilityMenuOpen] = useState(false);
+    const responsibilityMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isResponsibilityMenuOpen) return;
+
+        const closeOnOutsideClick = (event: PointerEvent) => {
+            if (!responsibilityMenuRef.current?.contains(event.target as Node)) {
+                setIsResponsibilityMenuOpen(false);
+            }
+        };
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setIsResponsibilityMenuOpen(false);
+        };
+
+        document.addEventListener("pointerdown", closeOnOutsideClick);
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.removeEventListener("pointerdown", closeOnOutsideClick);
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [isResponsibilityMenuOpen]);
 
     // Tour do módulo de Roles e Permissões (Mobile e Desktop)
     const { restartTour } = usePageTour({
@@ -130,7 +154,21 @@ export default function RolesPermissions() {
         enabled: activeTab === "permissions" && isTabVisible("permissions"),
     });
 
-    const permissionsByModule = (permissionsList ?? []).reduce<Record<string, PermissionResponse[]>>((acc, permission) => {
+    const permissionResponsibilities = useMemo(
+        () => [...new Set((permissionsList ?? []).map((permission) => permission.module))]
+            .sort((left, right) => getModuleLabel(left).localeCompare(getModuleLabel(right), "pt-BR")),
+        [permissionsList],
+    );
+    const filteredPermissions = useMemo(() => {
+        const query = permissionSearch.trim().toLocaleLowerCase("pt-BR");
+        return (permissionsList ?? []).filter((permission) => {
+            const matchesResponsibility = responsibilityFilter === "all" || permission.module === responsibilityFilter;
+            const searchableText = `${getPermissionName(permission)} ${getPermissionDescription(permission)}`
+                .toLocaleLowerCase("pt-BR");
+            return matchesResponsibility && (!query || searchableText.includes(query));
+        });
+    }, [permissionsList, permissionSearch, responsibilityFilter]);
+    const permissionsByModule = filteredPermissions.reduce<Record<string, PermissionResponse[]>>((acc, permission) => {
         (acc[permission.module] ??= []).push(permission);
         return acc;
     }, {});
@@ -183,7 +221,13 @@ export default function RolesPermissions() {
             <div className="flex w-full flex-col gap-4 pb-6">
                 <PageHeader
                     id="tour-roles-header"
-                    title="Gestão de roles e permissões"
+                    title={
+                        activeTab === "roles"
+                            ? "Gestão de cargos"
+                            : activeTab === "permissions"
+                                ? "Gestão de permissões"
+                                : "Atribuição de cargos"
+                    }
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
                         { label: "Gestão Administrativa", href: "/admin" },
@@ -226,30 +270,31 @@ export default function RolesPermissions() {
 
                 {activeTab === "roles" && isTabVisible("roles") && (
                     <div className="flex w-full flex-col gap-4">
-                        <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                            <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                                <div className="flex items-center gap-3">
-                                    <ManagementBackButton />
-                                    <div>
-                                        <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
-                                    </div>
+                        <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <ManagementBackButton />
+                                <div>
+                                    <h2 className="font-black text-j-blue-800">Cargos cadastrados</h2>
+                                    <p className="text-sm text-j-gray-600">Crie e organize os cargos e seus acessos.</p>
                                 </div>
-
+                            </div>
+                        </div>
+                        <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                            <div className="flex flex-col gap-3 border-b border-j-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-6">
+                                <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filtrar cargos por situação">
+                                    {ROLE_FILTERS.map(({ key, label }) => (
+                                        <button key={key} type="button" role="tab" aria-selected={roleStatusFilter === key} onClick={() => setRoleStatusFilter(key)}
+                                            className={twMerge("inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors", roleStatusFilter === key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800")}>
+                                            {label}<span className={twMerge("rounded-full px-2 py-0.5 text-xs", roleStatusFilter === key ? "bg-j-white/15" : "bg-j-gray-100")}>{roleCounts[key]}</span>
+                                        </button>
+                                    ))}
+                                </div>
                                 {canCreateRole && (
-                                    <Button id="tour-create-role-btn" onClick={handleOpenCreateRole}>
+                                    <Button id="tour-create-role-btn" onClick={handleOpenCreateRole} className="w-full justify-center sm:w-auto">
                                         <Plus size={18} />
                                         Criar cargo
                                     </Button>
                                 )}
-                            </div>
-
-                            <div className="flex flex-wrap gap-2 border-b border-j-gray-200 px-4 py-3 md:px-6" role="tablist" aria-label="Filtrar cargos por situação">
-                                {ROLE_FILTERS.map(({ key, label }) => (
-                                    <button key={key} type="button" role="tab" aria-selected={roleStatusFilter === key} onClick={() => setRoleStatusFilter(key)}
-                                        className={twMerge("inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors", roleStatusFilter === key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800")}>
-                                        {label}<span className={twMerge("rounded-full px-2 py-0.5 text-xs", roleStatusFilter === key ? "bg-j-white/15" : "bg-j-gray-100")}>{roleCounts[key]}</span>
-                                    </button>
-                                ))}
                             </div>
 
                             {isError && (
@@ -391,19 +436,84 @@ export default function RolesPermissions() {
                 )}
 
                 {activeTab === "permissions" && isTabVisible("permissions") && (
-                    <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                        <div className="flex items-center justify-between border-b border-j-gray-200 p-4 md:px-6">
-                            <div className="flex items-center gap-3">
+                    <div className="flex w-full flex-col gap-4">
+                        <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <ManagementBackButton />
                                 <div>
-                                <h2 className="font-black text-j-blue-800">Permissões cadastradas</h2>
-                                <p className="text-sm text-j-gray-600">
-                                    {isLoadingPermissions ? "Carregando..." : `${permissionsList?.length ?? 0} cadastrada(s)`}
-                                </p>
+                                    <h2 className="font-black text-j-blue-800">Permissões cadastradas</h2>
+                                    <p className="text-sm text-j-gray-600">Consulte as permissões disponíveis e o que cada uma permite fazer.</p>
                                 </div>
                             </div>
-
-                            <ShieldCheck size={24} className="text-j-gray-400" />
+                        </div>
+                        <section className="relative overflow-visible rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                        <div className="grid gap-3 border-b border-j-gray-200 p-4 md:grid-cols-[minmax(0,1fr)_280px] md:px-6">
+                            <label className="flex flex-col gap-1.5 text-xs font-bold text-j-gray-600">
+                                Pesquisar permissões
+                                <span className="relative block">
+                                    <Search size={17} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-j-gray-400" />
+                                    <input
+                                        type="search"
+                                        value={permissionSearch}
+                                        onChange={(event) => setPermissionSearch(event.target.value)}
+                                        placeholder="Digite o nome ou a descrição"
+                                        className="h-11 w-full rounded-xl border border-j-gray-200 bg-j-gray-100 pl-10 pr-3 text-sm font-normal text-j-gray-700 outline-none placeholder:text-j-gray-400 focus:border-j-blue-400 focus:bg-j-white"
+                                    />
+                                </span>
+                            </label>
+                            <div className="flex flex-col gap-1.5 text-xs font-bold text-j-gray-600">
+                                Responsabilidade
+                                <div className="relative" ref={responsibilityMenuRef}>
+                                    <button
+                                        type="button"
+                                        aria-haspopup="listbox"
+                                        aria-expanded={isResponsibilityMenuOpen}
+                                        aria-label="Filtrar por responsabilidade"
+                                        onClick={() => setIsResponsibilityMenuOpen((open) => !open)}
+                                        className="flex h-11 w-full items-center justify-between rounded-xl border border-j-gray-200 bg-j-white px-3 text-left text-sm font-semibold text-j-blue-800 shadow-sm outline-none transition-colors hover:border-j-blue-300 focus-visible:border-j-blue-500 focus-visible:ring-2 focus-visible:ring-j-blue-200"
+                                    >
+                                        <span>
+                                            {responsibilityFilter === "all"
+                                                ? "Todas as responsabilidades"
+                                                : getModuleLabel(responsibilityFilter)}
+                                        </span>
+                                        <ChevronDown size={18} className={`text-j-blue-800 transition-transform ${isResponsibilityMenuOpen ? "rotate-180" : ""}`} />
+                                    </button>
+                                    {isResponsibilityMenuOpen && (
+                                        <div
+                                            role="listbox"
+                                            aria-label="Responsabilidade"
+                                            className="absolute left-0 top-full z-50 mt-2 max-h-64 w-full overflow-y-auto rounded-xl border border-j-blue-200 bg-j-white p-1.5 shadow-xl"
+                                        >
+                                            {[{ value: "all", label: "Todas as responsabilidades" }, ...permissionResponsibilities.map((responsibility) => ({
+                                                value: responsibility,
+                                                label: getModuleLabel(responsibility),
+                                            }))].map((option) => {
+                                                const selected = responsibilityFilter === option.value;
+                                                return (
+                                                    <button
+                                                        key={option.value}
+                                                        type="button"
+                                                        role="option"
+                                                        aria-selected={selected}
+                                                        onClick={() => {
+                                                            setResponsibilityFilter(option.value);
+                                                            setIsResponsibilityMenuOpen(false);
+                                                        }}
+                                                        className={`flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${selected
+                                                            ? "bg-j-blue-800 font-bold text-j-white"
+                                                            : "text-j-gray-700 hover:bg-j-yellow-100 hover:text-j-blue-800"
+                                                        }`}
+                                                    >
+                                                        {option.label}
+                                                        {selected && <Check size={16} className="text-j-yellow-300" />}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         {isPermissionsError && (
@@ -412,13 +522,18 @@ export default function RolesPermissions() {
                             </p>
                         )}
 
-                        {!isLoadingPermissions && !isPermissionsError && permissionsList && permissionsList.length > 0 && (
-                            <div className="flex flex-col divide-y divide-j-gray-100">
+                        {!isLoadingPermissions && !isPermissionsError && filteredPermissions.length > 0 && (
+                            <div className="flex flex-col gap-4 p-4 md:p-6">
                                 {Object.entries(permissionsByModule).map(([module, items]) => (
-                                    <div key={module} className="p-4 md:px-6">
-                                        <h3 className="mb-3 text-sm font-black text-j-blue-800">
-                                            {getModuleLabel(module)}
-                                        </h3>
+                                    <section key={module} className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm md:p-5">
+                                        <div className="mb-3 flex items-center justify-between gap-3">
+                                            <h3 className="text-sm font-black text-j-blue-800">
+                                                {getModuleLabel(module)}
+                                            </h3>
+                                            <span className="rounded-full bg-j-blue-50 px-2.5 py-1 text-xs font-bold text-j-blue-800">
+                                                {items.length} {items.length === 1 ? "permissão" : "permissões"}
+                                            </span>
+                                        </div>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                             {items.map((permission) => (
                                                 <div
@@ -439,27 +554,30 @@ export default function RolesPermissions() {
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
+                                    </section>
                                 ))}
                             </div>
                         )}
 
-                        {!isLoadingPermissions && !isPermissionsError && permissionsList && permissionsList.length === 0 && (
+                        {!isLoadingPermissions && !isPermissionsError && filteredPermissions.length === 0 && (
                             <div className="flex flex-col items-center justify-center p-8 text-center min-h-72">
                                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-j-gray-100 text-j-gray-400">
                                     <ShieldCheck size={31} />
                                 </div>
 
                                 <h3 className="text-lg font-black text-j-blue-800">
-                                    Nenhuma permissão cadastrada
+                                    {permissionsList?.length === 0 ? "Nenhuma permissão cadastrada" : "Nenhuma permissão encontrada"}
                                 </h3>
 
                                 <p className="mt-1 max-w-md text-sm text-j-gray-600">
-                                    As permissões sincronizadas pelo sistema vão aparecer aqui.
+                                    {permissionsList?.length === 0
+                                        ? "As permissões disponíveis vão aparecer aqui."
+                                        : "Ajuste a pesquisa ou escolha outra responsabilidade."}
                                 </p>
                             </div>
                         )}
-                    </section>
+                        </section>
+                    </div>
                 )}
 
                 {activeTab === "users" && isTabVisible("users") && (

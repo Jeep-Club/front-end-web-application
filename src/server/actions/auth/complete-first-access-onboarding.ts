@@ -2,16 +2,16 @@
 import { ActionError } from "@/utils/http/ActionError";
 
 import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
-import { listVehiclesMemberAction } from "@/server/actions/vehicles/list-member";
+import { getUserProfileAction } from "@/server/actions/profile/get";
 import { cookies } from "next/headers";
 
 export async function completeFirstAccessOnboardingAction() {
-    const [vehicles, medicalProfile] = await Promise.all([
-        listVehiclesMemberAction({ page: 0, size: 1 }),
+    const [profile, medicalProfile] = await Promise.all([
+        getUserProfileAction(),
         getMedicalProfileAction(),
     ]);
-    if (vehicles.content.length === 0 || !medicalProfile) {
-        throw new ActionError("Cadastre pelo menos um veículo e seus dados médicos antes de continuar.");
+    if (!profile.profilePhotoUrl || !medicalProfile) {
+        throw new ActionError("Adicione uma foto de perfil e preencha seus dados médicos antes de continuar.");
     }
 
     const cookieStore = await cookies();

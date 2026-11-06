@@ -72,7 +72,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                     Cargos de {userName}
                 </h2>
                 <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                    Papéis de acesso atribuídos a este usuário.
+                    Cargos de acesso atribuídos a esta pessoa.
                 </p>
             </header>
 

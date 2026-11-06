@@ -16,7 +16,7 @@ interface IdentityMeResponse {
     rg: string | null;
     phoneNumber: string | null;
     profilePhotoStorageKey: string | null;
-    status: 'ACTIVE' | 'DISABLED';
+    status: UserStatus;
     createdAt: string;
     disabledAt: string | null;
     updatedAt: string | null;

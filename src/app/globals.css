@@ -7,6 +7,30 @@
   border-bottom-right-radius: 0 !important;
 }
 
+#tour-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--yellow-300) var(--blue-900);
+}
+
+#tour-sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+#tour-sidebar::-webkit-scrollbar-track {
+  background: var(--blue-900);
+}
+
+#tour-sidebar::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border: 3px solid var(--blue-900);
+  border-radius: 999px;
+  background: var(--yellow-300);
+}
+
+#tour-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--yellow-200);
+}
+
 :root {
   /* Colors */
   --transparent-black: rgba(0, 0, 0, 0.48);
@@ -471,6 +495,16 @@ body {
   [role="button"]:not(:disabled):not([aria-disabled="true"]) { cursor: pointer; }
   button:disabled, select:disabled, input:disabled, textarea:disabled,
   [role="button"][aria-disabled="true"] { cursor: not-allowed; }
+}
+
+/* Keep iOS Safari from zooming the page when a small form control receives focus. */
+@media (max-width: 767px) {
+  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  select,
+  textarea,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
 }
 
 @layer utilities {

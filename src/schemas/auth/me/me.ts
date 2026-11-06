@@ -18,7 +18,9 @@ export const identityMeResponseSchema = z.object({
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),
     profilePhotoStorageKey: z.string().nullable(),
-    status: z.enum(['ACTIVE', 'DISABLED']),
+    status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED', 'DISABLED']).transform((status): UserStatus => (
+        status === 'DISABLED' ? 'INACTIVE' : status
+    )),
     createdAt: z.string(),
     disabledAt: z.string().nullable(),
     updatedAt: z.string().nullable()

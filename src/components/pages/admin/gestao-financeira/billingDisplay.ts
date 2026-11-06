@@ -9,7 +9,7 @@ export const billingLabels: Record<string, string> = {
     ACTIVE: "Ativa", INACTIVE: "Inativa", ALL_MEMBERS: "Todos os associados", USER: "Usuário específico", ROLE: "Cargo", EVENT_PARTICIPANTS: "Participantes do evento",
 };
 export const fieldLabels: Record<string, string> = {
-    id: "Código do registro", userId: "Código do associado", chargeDefinitionId: "Código da definição", chargeCycleId: "Código do ciclo", memberChargeId: "Código da cobrança", memberPaymentId: "Código do pagamento",
+    id: "Código do registro", userId: "Matrícula do associado", chargeDefinitionId: "Código da definição", chargeCycleId: "Código do ciclo", memberChargeId: "Código da cobrança", memberPaymentId: "Código do pagamento",
     code: "Referência", dueDate: "Vencimento", status: "Situação", effectiveStatus: "Situação atual", amount: "Valor", originalAmount: "Valor original", finalAmount: "Valor final",
     paymentMethod: "Forma de pagamento", paymentAcceptancePolicy: "Política de pagamento", paymentAllowedUntil: "Pagamento permitido até", latePaymentGraceDays: "Tolerância (dias)",
     reason: "Motivo", rejectionReason: "Motivo da rejeição", notes: "Observações", eligibleUntil: "Elegível até", eligibleAt: "Elegibilidade criada em", requestedAt: "Solicitado em",

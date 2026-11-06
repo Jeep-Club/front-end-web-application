@@ -33,7 +33,7 @@ export function parseAdminUserSearchParams(
             continue;
         }
 
-        validParams[key] = rawValue;
+        validParams[key] = String(result.data);
     }
 
     // A listagem administrativa começa mostrando apenas contas ativas.

@@ -12,12 +12,13 @@ export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' |
     children?: React.ReactNode;
     labelClassName?: string;
     errorClassName?: string;
+    labelAction?: React.ReactNode;
     /** @deprecated Compatibilidade visual; novos usos seguem os tokens de data-theme. */
     variant?: InputVariant;
 }
 
 
-export function Input({label, error, name, value, className, labelClassName, errorClassName, variant, type="text", children, required, id: idProp, ...props}: InputProps) {
+export function Input({label, error, name, value, className, labelClassName, errorClassName, labelAction, variant, type="text", children, required, id: idProp, ...props}: InputProps) {
     const generatedId = useId();
     const id = idProp ?? generatedId;
     const isError = Boolean(error && error !== 'undefined');
@@ -25,12 +26,15 @@ export function Input({label, error, name, value, className, labelClassName, err
     
     return (
         <div className="w-full flex flex-col gap-1.5">
-            <label
-                htmlFor={id}
-                className={twMerge("text-xs md:text-sm font-bold text-j-gray-700", labelClassName)}
-            >
-                {label} {required ? <span aria-hidden="true" className="text-input-error-text">*</span> : null}
-            </label>
+            <div className="flex items-center justify-between gap-3">
+                <label
+                    htmlFor={id}
+                    className={twMerge("text-xs md:text-sm font-bold text-j-gray-700", labelClassName)}
+                >
+                    {label} {required ? <span aria-hidden="true" className="text-input-error-text">*</span> : null}
+                </label>
+                {labelAction}
+            </div>
             <div className="w-full relative flex items-center">
                 <input
                     {...props}

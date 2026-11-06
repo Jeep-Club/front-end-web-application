@@ -21,14 +21,15 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
       statusLabel="Falha ao carregar a página"
       marker="Ops!"
       title="Um imprevisto no caminho."
+      mobileTitle="Falha ao carregar a página"
       description="Não foi possível carregar esta página. Tente novamente para retomar o caminho ou volte para o início."
-      illustrationCaption="Até as melhores trilhas têm imprevistos."
+      illustrationCaption="Até as melhores viagens têm imprevistos."
       actions={
         <>
-          <button type="button" onClick={reset} className="inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-j-yellow-300 px-6 py-3 text-sm font-bold text-j-blue-950 transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-yellow-300 sm:w-auto">
+          <button type="button" onClick={reset} className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-j-yellow-300 px-2 py-2 text-[11px] font-bold leading-tight text-j-blue-950 transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-yellow-300 sm:min-h-12 sm:w-auto sm:gap-2 sm:px-6 sm:py-3 sm:text-sm">
             <RefreshCw size={18} aria-hidden="true" /> Tentar novamente
           </button>
-          <Link prefetch={false} href="/" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-yellow-300 sm:w-auto">
+          <Link prefetch={false} href="/" className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full border border-white/25 px-2 py-2 text-[11px] font-semibold leading-tight text-white transition-colors hover:border-white/50 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-yellow-300 sm:min-h-12 sm:w-auto sm:gap-2 sm:px-6 sm:py-3 sm:text-sm">
             <House size={18} aria-hidden="true" /> Voltar para o início
           </Link>
         </>
