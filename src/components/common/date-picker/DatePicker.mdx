@@ -47,3 +47,5 @@ A edição por segmentos, navegação do calendário, seletor de ano, Escape e s
 As stories usam estado local e valores determinísticos, sem backend. Conversão de fuso, persistência e regras do domínio são responsabilidade do consumidor. A integração não preserva o antigo contrato de strings nem a máscara de digitação contínua. Para o input date nativo registrado em formulários, consulte [InputDate](?path=/docs/componentes-input-inputdate--docs).
 
 Referência: [DatePicker do HeroUI](https://heroui.com/en/docs/react/components/date-picker). Testes automatizados não certificam acessibilidade completa.
+
+Os campos segmentados no topo do calendário permitem editar a data e, quando disponível, o horário em 24 horas. Os segundos não são exibidos; alterar hora ou minuto define segundos e fração como zero.

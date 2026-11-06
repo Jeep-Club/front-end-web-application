@@ -53,6 +53,32 @@
   color: var(--text-primary);
 }
 
+.jeep-calendar-fields {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0 0 0.75rem;
+}
+
+.jeep-calendar-fields .date-input-group { width: 100%; min-height: 2.25rem; }
+
+/* The literal between the hour and minute is decorative in the segmented field. */
+:is(.jeep-date-control, .jeep-calendar-popover) [data-type="hour"] + [data-type="literal"] {
+  font-size: 0;
+}
+
+:is(.jeep-date-control, .jeep-calendar-popover) [data-type="hour"] + [data-type="literal"]::after {
+  content: "h";
+  font-size: var(--text-sm);
+}
+
+:is(.jeep-date-control, .jeep-calendar-popover) [data-type="hour"] {
+  padding-inline-end: 0;
+}
+
+:is(.jeep-date-control, .jeep-calendar-popover) [data-type="hour"] + [data-type="literal"] + [data-type="minute"] {
+  padding-inline-start: 0;
+}
+
 .jeep-date-control {
   gap: 0.5rem;
 

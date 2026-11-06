@@ -47,3 +47,17 @@ test('calendário bloqueia datas fora dos limites e campo disabled não abre', a
     await page.goto(new URL('/iframe.html?id=componentes-datepicker-data-única--desabilitada&embed=true', storybookUrl).href);
     await expect(page.getByRole('button', { name: 'Abrir calendário: Data de publicação' })).toBeDisabled();
 });
+
+
+test('campos do popover refletem o intervalo e normalizam segundos ao editar horário', async ({ page }) => {
+    await page.goto(new URL('/iframe.html?id=componentes-datepicker-intervalo--com-horario&embed=true', storybookUrl).href);
+    const trigger = page.getByRole('button', { name: /Abrir calend/ });
+    await trigger.click();
+    const fields = page.locator('.jeep-calendar-fields');
+    await expect(fields.locator('[data-type="second"]')).toHaveCount(0);
+    await expect(fields.locator('[data-type="hour"]')).toHaveCount(2);
+    const endHour = fields.locator('[data-type="hour"]').nth(1);
+    await endHour.focus();
+    await page.keyboard.press('ArrowUp');
+    await expect(page.getByRole('status', { name: 'Intervalo selecionado' })).toHaveText('2026-11-15T14:30:00 / 2026-11-16T19:45:00');
+});

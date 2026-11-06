@@ -52,3 +52,5 @@ Importe `DateRangePicker` pelo mesmo index de `DatePicker`, sem `mode="range"`. 
 No filtro de publicações, novos limites civis representam dias locais completos, convertidos em instantes UTC pela tela consumidora. Limites já existentes preservam a precisão se sua data não mudar. Um filtro recebido pela URL com apenas um limite continua ativo e é descrito abaixo do campo; uma nova escolha o substitui por intervalo completo. A limpeza permanece nas ações dos filtros.
 
 As stories usam estado local sem backend. Não comprovam conversões da API ou fluxos autenticados. Referência: [DateRangePicker do HeroUI](https://heroui.com/en/docs/react/components/date-range-picker). Testes automatizados não certificam acessibilidade completa.
+
+Os campos segmentados no topo do calendário permitem editar a data e, quando disponível, o horário em 24 horas. Os segundos não são exibidos; alterar hora ou minuto define segundos e fração como zero.
