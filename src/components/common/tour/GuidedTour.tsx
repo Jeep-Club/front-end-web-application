@@ -9,10 +9,24 @@ interface GuidedTourProps {
 }
 
 export function GuidedTour({ children, setMobileMenuOpen }: GuidedTourProps) {
-    const { isTourCompleted, startTour, restartTour } = useTour(setMobileMenuOpen);
+    const {
+        isTourCompleted,
+        startTour,
+        restartTour,
+        startCurrentPageTour,
+        registerPageTour,
+    } = useTour(setMobileMenuOpen);
 
     return (
-        <TourContext.Provider value={{ isTourCompleted, startTour, restartTour }}>
+        <TourContext.Provider
+            value={{
+                isTourCompleted,
+                startTour,
+                restartTour,
+                startCurrentPageTour,
+                registerPageTour,
+            }}
+        >
             {children}
         </TourContext.Provider>
     );

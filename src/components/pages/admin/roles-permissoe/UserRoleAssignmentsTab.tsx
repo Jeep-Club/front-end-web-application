@@ -4,10 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
 import { KeyRound,ShieldX } from "lucide-react";
 import { useMemo,useState } from "react";
+import { twMerge } from "tailwind-merge";
 
-import { ButtonIcon } from "@/components/common/button";
+import { Button } from "@/components/common/button";
+import { Avatar } from "@/components/common/avatar";
+import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
+import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "@/components/pages/admin/users/user-display";
 import { useModal } from "@/providers/ModalProvider";
 import { listAdminUsersAction } from "@/server/actions/admin/users/list";
 import { useUserStore } from "@/stores/userStore";
@@ -30,6 +34,7 @@ export function UserRoleAssignmentsTab() {
 
     const permissions = useUserStore((state) => state.permissions);
     const canReadUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ");
+    const canAssignUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_ASSIGN");
 
     const [searchType, setSearchType] = useState<SearchType>("q");
     const [searchValue, setSearchValue] = useState("");
@@ -55,11 +60,34 @@ export function UserRoleAssignmentsTab() {
 
     const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => [
         {
-            accessorKey: "id",
+            id: "photo",
+            header: "Foto",
+            meta: { label: "Foto" },
+            cell: ({ row }) => row.original.profilePhotoUrl ? (
+                <Avatar src={row.original.profilePhotoUrl} alt={`Foto de ${row.original.name}`} />
+            ) : (
+                <span
+                    aria-hidden="true"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-j-blue-100 text-xs font-bold text-j-blue-800"
+                >
+                    {row.original.name
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toLocaleUpperCase("pt-BR")}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "membershipNumber",
             header: "Matrícula",
             meta: { label: "Matrícula" },
             cell: ({ row }) => (
-                <span className="font-bold text-j-gray-700">{row.original.id}</span>
+                <span className="font-bold text-j-gray-700">
+                    {row.original.membershipNumber ?? "—"}
+                </span>
             ),
         },
         {
@@ -69,12 +97,6 @@ export function UserRoleAssignmentsTab() {
             cell: ({ row }) => (
                 <span className="font-bold text-j-gray-700">{row.original.name}</span>
             ),
-        },
-        {
-            accessorKey: "email",
-            header: "E-mail",
-            meta: { label: "E-mail" },
-            cell: ({ row }) => row.original.email ?? "—",
         },
         {
             accessorKey: "cpf",
@@ -91,29 +113,45 @@ export function UserRoleAssignmentsTab() {
                 : "—",
         },
         {
+            accessorKey: "status",
+            header: "Status",
+            meta: { label: "Status" },
+            cell: ({ row }) => (
+                <span
+                    className={twMerge(
+                        "inline-flex rounded-full px-2.5 py-1 text-xs font-bold",
+                        USER_STATUS_STYLE[row.original.status],
+                    )}
+                >
+                    {USER_STATUS_LABEL[row.original.status]}
+                </span>
+            ),
+        },
+        {
             id: "actions",
-            header: "Ações",
+            header: () => <div className="text-right">Ações</div>,
             meta: { label: "Ações" },
             cell: ({ row }) => (
                 <div className="flex items-center justify-end">
-                    <ButtonIcon
+                    <Button
                         type="button"
-                        title="Ver cargos"
-                        aria-label={`Ver cargos de ${row.original.name}`}
+                        title={canAssignUserRoles ? "Gerenciar cargos" : "Ver cargos"}
+                        aria-label={`${canAssignUserRoles ? "Gerenciar" : "Ver"} cargos de ${row.original.name}`}
                         onClick={() => {
                             setContent(
                                 <UserRolesViewModal userId={row.original.id} userName={row.original.name} />,
                             );
                             setOpen();
                         }}
-                        className="rounded-lg bg-j-blue-800 p-2 text-j-yellow-300 hover:bg-j-blue-600 hover:text-j-yellow-300"
+                        className="min-h-10 whitespace-nowrap px-3 py-2 text-sm"
                     >
-                        <KeyRound size={18} />
-                    </ButtonIcon>
+                        <KeyRound size={17} />
+                        {canAssignUserRoles ? "Gerenciar cargos" : "Ver cargos"}
+                    </Button>
                 </div>
             ),
         },
-    ], [setContent, setOpen]);
+    ], [canAssignUserRoles, setContent, setOpen]);
 
     if (!canReadUserRoles) {
         return (
@@ -128,33 +166,46 @@ export function UserRoleAssignmentsTab() {
     }
 
     return (
-        <Table.Root
-            data={data?.content ?? []}
-            columns={columns}
-            getRowId={(user) => String(user.id)}
-            pagination={{
-                pageIndex: page,
-                pageSize,
-                pageCount: data?.totalPages ?? 0,
-                rowCount: data?.totalElements,
-                pageSizeOptions: [5, 10, 20, 50, 100],
-                onChange: (next) => {
-                    setPage(next.pageIndex);
-                    setPageSize(next.pageSize);
-                },
-            }}
-            footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            error={error ? error.message : undefined}
-            emptyState={
-                hasActiveFilters
-                    ? "Nenhum usuário corresponde à busca ou aos filtros atuais."
-                    : "Nenhum usuário cadastrado."
-            }
-        >
-            <Table.Header className="items-stretch border-b-0">
-                <div className="flex w-full sm:min-w-64">
+        <div className="flex w-full flex-col gap-4">
+            <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <ManagementBackButton />
+                    <div>
+                        <h2 className="font-black text-j-blue-800">Atribuições de cargos</h2>
+                        <p className="text-sm text-j-gray-600">
+                            Consulte os cargos atribuídos aos usuários e gerencie seus acessos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <Table.Root
+                data={data?.content ?? []}
+                columns={columns}
+                getRowId={(user) => String(user.id)}
+                pagination={{
+                    pageIndex: page,
+                    pageSize,
+                    pageCount: data?.totalPages ?? 0,
+                    rowCount: data?.totalElements,
+                    pageSizeOptions: [5, 10, 20, 50],
+                    onChange: (next) => {
+                        setPage(next.pageIndex);
+                        setPageSize(next.pageSize);
+                    },
+                }}
+                footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
+                isLoading={isLoading}
+                isFetching={isFetching}
+                error={error ? error.message : undefined}
+                emptyState={
+                    hasActiveFilters
+                        ? "Nenhum usuário corresponde à busca ou aos filtros atuais."
+                        : "Nenhum usuário cadastrado."
+                }
+            >
+                <Table.Header className="items-stretch border-b-0">
+                <div className="flex w-full items-end sm:min-w-64">
                     <Table.Search
                         value={searchType === "cpf"
                             ? maskCPF(searchValue)
@@ -174,7 +225,7 @@ export function UserRoleAssignmentsTab() {
                                 ? maskPhoneNumber
                                 : undefined}
                         inputMode={searchType === "cpf" || searchType === "phoneNumber" ? "numeric" : "search"}
-                        formClassName="w-full sm:flex-1"
+                        formClassName="w-0 min-w-0 flex-1"
                         className="rounded-r-none"
                     />
                     <div className="w-fit shrink-0">
@@ -188,7 +239,7 @@ export function UserRoleAssignmentsTab() {
                                 setSearchValue("");
                                 setPage(0);
                             }}
-                            className="h-10 w-fit rounded-l-none bg-j-blue-600 py-2 text-sm text-j-white focus:bg-j-blue-700"
+                            className="h-10 w-32 min-w-32 rounded-l-none border-j-gray-200 border-l-0 bg-j-gray-100 px-3 py-2 text-sm text-j-blue-800 focus:bg-j-white"
                         >
                             <option value="q">Geral</option>
                             <option value="name">Nome</option>
@@ -198,19 +249,20 @@ export function UserRoleAssignmentsTab() {
                         </Select.Unregister>
                     </div>
                 </div>
-            </Table.Header>
+                </Table.Header>
 
-            <Table.Filters
-                hasActiveFilters={hasActiveFilters}
-                onClear={() => {
-                    setSearchValue("");
-                    setPage(0);
-                }}
-                className="justify-end border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6"
-            />
+                <Table.Filters
+                    hasActiveFilters={hasActiveFilters}
+                    onClear={() => {
+                        setSearchValue("");
+                        setPage(0);
+                    }}
+                    className="justify-end border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6"
+                />
 
-            <Table.Content loadingRows={pageSize} />
-        </Table.Root>
+                <Table.Content loadingRows={pageSize} />
+            </Table.Root>
+        </div>
     );
 }
 

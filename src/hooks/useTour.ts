@@ -1,16 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { driver, type Driver, type DriveStep } from "driver.js";
-import { getTourSteps } from "@/config/tourSteps";
+import { resolveRouteTourSteps } from "@/config/tourSteps";
 import { useUserStore } from "@/stores/userStore";
 import { hasAnyAdminAccess } from "@/config/adminModules";
 import { confirmTourExit } from "@/components/common/tour/confirmTourExit";
+import { TourContext } from "@/components/common/tour/TourContext";
 
 const INITIAL_TOUR_SEEN_KEY = "tour_initial_seen_v1";
+export const FORCE_START_TOUR_KEY = "tour_force_start_target";
 
 export function getTourStorageKey(canAccessAdmin: boolean): string {
     return canAccessAdmin ? "tour_completed_admin" : "tour_completed_member";
+}
+
+/**
+ * Solicita que o tutorial da rota ou chave informada inicie automaticamente
+ * assim que a página de destino terminar de montar.
+ */
+export function requestTourStart(target: string = "current") {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem(FORCE_START_TOUR_KEY, target);
 }
 
 export function resetAllTours() {
@@ -25,6 +36,7 @@ export function resetAllTours() {
     keysToRemove.forEach((key) => localStorage.removeItem(key));
     localStorage.removeItem(INITIAL_TOUR_SEEN_KEY);
     sessionStorage.removeItem("force_branch_tour");
+    sessionStorage.removeItem(FORCE_START_TOUR_KEY);
 }
 
 export interface PageTourOptions {
@@ -34,7 +46,9 @@ export interface PageTourOptions {
     enabled?: boolean;
     confirmOnExit?: boolean;
     exitConfirmMessage?: string;
+    onBeforeStart?: () => void;
     onCompleted?: () => void;
+    isShellTour?: boolean;
 }
 
 export function usePageTour({
@@ -44,30 +58,34 @@ export function usePageTour({
     enabled = true,
     confirmOnExit = true,
     exitConfirmMessage = "Deseja realmente sair do tutorial? Você poderá reiniciá-lo a qualquer momento pelo botão de ajuda.",
+    onBeforeStart,
     onCompleted,
+    isShellTour = false,
 }: PageTourOptions) {
-    const [isTourCompleted, setIsTourCompleted] = useState<boolean>(() => {
-        if (typeof window === "undefined" || !storageKey) return false;
-        return localStorage.getItem(storageKey) === "true";
-    });
+    const tourContext = useContext(TourContext);
+    const registerPageTour = tourContext?.registerPageTour;
+
+    const [completedKeys, setCompletedKeys] = useState<Record<string, boolean>>({});
+    const isTourCompleted = Boolean(
+        storageKey && (
+            completedKeys[storageKey] ?? (typeof window !== "undefined" && localStorage.getItem(storageKey) === "true")
+        )
+    );
 
     const driverRef = useRef<Driver | null>(null);
     const exitConfirmationRef = useRef<AbortController | null>(null);
-    const hasAutoStartedRef = useRef<boolean>(false);
-
-    useEffect(() => () => exitConfirmationRef.current?.abort(), []);
+    const enabledRef = useRef<boolean>(enabled);
 
     useEffect(() => {
-        if (typeof window !== "undefined" && storageKey) {
-            const completed = localStorage.getItem(storageKey) === "true";
-            setIsTourCompleted(completed);
-        }
-    }, [storageKey]);
+        enabledRef.current = enabled;
+    }, [enabled]);
+
+    useEffect(() => () => exitConfirmationRef.current?.abort(), []);
 
     const markAsCompleted = useCallback(() => {
         if (typeof window !== "undefined" && storageKey) {
             localStorage.setItem(storageKey, "true");
-            setIsTourCompleted(true);
+            setCompletedKeys((prev) => ({ ...prev, [storageKey]: true }));
         }
         onCompleted?.();
     }, [storageKey, onCompleted]);
@@ -80,7 +98,6 @@ export function usePageTour({
             }
             markAsCompleted();
             if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
                 document.querySelectorAll('.driver-overlay, .driver-popover').forEach((el) => el.remove());
             }
         };
@@ -94,7 +111,7 @@ export function usePageTour({
     const startTour = useCallback(() => {
         if (typeof window === "undefined") return;
 
-        // Qualquer tutorial já exibido consome a apresentação automática inicial.
+        onBeforeStart?.();
         localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
 
         if (driverRef.current) {
@@ -122,7 +139,6 @@ export function usePageTour({
                     if (!confirmed || !d.isActive()) return;
                 }
                 markAsCompleted();
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
                 d.destroy();
             };
 
@@ -141,17 +157,11 @@ export function usePageTour({
                 onDestroyStarted: requestExit,
                 onDoneClick: (_element, _step, { driver: d }) => {
                     markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
                     d.destroy();
                 },
                 onDestroyed: () => {
                     exitConfirmationRef.current?.abort();
                     markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
                 },
             });
 
@@ -174,12 +184,12 @@ export function usePageTour({
         } else {
             executeDrive();
         }
-    }, [steps, confirmOnExit, exitConfirmMessage, markAsCompleted]);
+    }, [steps, confirmOnExit, exitConfirmMessage, markAsCompleted, onBeforeStart]);
 
     const restartTour = useCallback(() => {
         if (typeof window !== "undefined" && storageKey) {
             localStorage.removeItem(storageKey);
-            setIsTourCompleted(false);
+            setCompletedKeys((prev) => ({ ...prev, [storageKey]: false }));
         }
         if (driverRef.current) {
             driverRef.current.destroy();
@@ -190,39 +200,41 @@ export function usePageTour({
         }, 100);
     }, [storageKey, startTour]);
 
-    // Lê force_branch_tour na montagem para iniciar o tour de uma rota específica.
-    // Esse efeito não depende de `enabled` porque as permissões chegam de forma assíncrona.
+    // Registra o tour específico da página no TourContext para que o botão "Precisa de ajuda?" no Topbar o acione.
+    useEffect(() => {
+        if (isShellTour || !registerPageTour) return;
+        registerPageTour(restartTour);
+        return () => {
+            registerPageTour(null);
+        };
+    }, [isShellTour, registerPageTour, restartTour]);
+
+    // Disparo sob demanda quando o usuário solicita explicitamente iniciar um tutorial de outra rota (ex.: via /tutoriais).
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        const isBranchTour = sessionStorage.getItem('force_branch_tour') === 'true';
-        if (!isBranchTour) return;
+        const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
+        if (!forcedTarget) return;
 
-        sessionStorage.removeItem('force_branch_tour');
+        const currentPath = window.location.pathname;
+        const currentFullRoute = `${currentPath}${window.location.search}`;
 
-        // Tutoriais de rota só podem iniciar automaticamente na primeira visita.
-        // O atalho explícito "Reiniciar tutorial" continua disponível.
-        const alreadySeen = localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true";
-        const legacyCompletion = storageKey && localStorage.getItem(storageKey) === "true";
-        if (alreadySeen || legacyCompletion) {
-            localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
-            return;
-        }
+        const matchesTarget = isShellTour
+            ? forcedTarget === storageKey
+            : (forcedTarget === "current" || forcedTarget === storageKey || forcedTarget === currentPath || forcedTarget === currentFullRoute);
 
-        localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
+        if (!matchesTarget) return;
 
-        if (storageKey) {
-            localStorage.setItem(storageKey, "true");
-        }
-        hasAutoStartedRef.current = true;
+        sessionStorage.removeItem(FORCE_START_TOUR_KEY);
 
         let attempts = 0;
         const interval = setInterval(() => {
             attempts++;
-            const isEnabled = enabled;
-            if (isEnabled || attempts > 30) {
+            if (enabledRef.current || attempts > 30) {
                 clearInterval(interval);
-                setIsTourCompleted(false);
+                if (storageKey) {
+                    setCompletedKeys((prev) => ({ ...prev, [storageKey]: false }));
+                }
                 setTimeout(() => {
                     startTour();
                 }, 100);
@@ -230,29 +242,10 @@ export function usePageTour({
         }, 100);
 
         return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isShellTour, storageKey, startTour]);
 
-    useEffect(() => {
-        if (typeof window === "undefined" || !enabled) return;
-        if (!autoStartOnFirstVisit || hasAutoStartedRef.current) return;
-
-        const alreadySeen = localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true";
-        const legacyCompletion = storageKey && localStorage.getItem(storageKey) === "true";
-        if (!alreadySeen && !legacyCompletion) {
-            const timer = setTimeout(() => {
-                // Revalida no momento de abrir para evitar dois tours em áreas simultâneas.
-                if (localStorage.getItem(INITIAL_TOUR_SEEN_KEY) === "true") return;
-                hasAutoStartedRef.current = true;
-                localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
-                startTour();
-            }, 350);
-            return () => clearTimeout(timer);
-        }
-        if (legacyCompletion) {
-            localStorage.setItem(INITIAL_TOUR_SEEN_KEY, "true");
-        }
-    }, [autoStartOnFirstVisit, enabled, storageKey, startTour]);
+    // O tutorial automático inicial permanece desativado por padrão (autoStartOnFirstVisit = false).
+    void autoStartOnFirstVisit;
 
     return {
         isTourCompleted,
@@ -265,17 +258,44 @@ export function useTour(setMobileMenuOpen?: (open: boolean) => void) {
     const permissions = useUserStore((state) => state.permissions);
     const canAccessAdmin = hasAnyAdminAccess(permissions);
     const storageKey = getTourStorageKey(canAccessAdmin);
+    const pageTourHandlerRef = useRef<(() => void) | null>(null);
+
+    const registerPageTour = useCallback((handler: (() => void) | null) => {
+        pageTourHandlerRef.current = handler;
+    }, []);
 
     const getSteps = useCallback((isMobile: boolean) => {
-        return getTourSteps(canAccessAdmin, isMobile, setMobileMenuOpen);
+        const pathname = typeof window !== "undefined" ? window.location.pathname : "/feed";
+        const tab = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") : null;
+        return resolveRouteTourSteps(pathname, {
+            canAccessAdmin,
+            isMobile,
+            setMobileMenuOpen,
+            tab,
+        });
     }, [canAccessAdmin, setMobileMenuOpen]);
 
-    return usePageTour({
+    const shellTour = usePageTour({
         storageKey,
         steps: getSteps,
-        autoStartOnFirstVisit: true,
+        autoStartOnFirstVisit: false,
         enabled: permissions.length > 0,
         confirmOnExit: true,
-        exitConfirmMessage: "Deseja realmente sair do tutorial? Você poderá reiniciá-lo a qualquer momento pelo menu do seu perfil.",
+        exitConfirmMessage: "Deseja realmente sair do tutorial? Você poderá reiniciá-lo a qualquer momento pelo botão 'Precisa de ajuda?' no topo da tela.",
+        isShellTour: true,
     });
+
+    const startCurrentPageTour = useCallback(() => {
+        if (pageTourHandlerRef.current) {
+            pageTourHandlerRef.current();
+            return;
+        }
+        shellTour.restartTour();
+    }, [shellTour]);
+
+    return {
+        ...shellTour,
+        startCurrentPageTour,
+        registerPageTour,
+    };
 }

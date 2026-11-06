@@ -51,18 +51,72 @@ export function getHomeTourSteps(): DriveStep[] {
             element: "#tour-home-member-btn",
             popover: {
                 title: createStepHeader("Acesso ao Painel do Clube", ICONS.logIn),
-                description: "Já tem uma conta no Jeep Club Tamoios? Clique em <strong>'Entrar'</strong> para acessar o sistema com seu login.",
+                description: "Já tem uma conta no Jeep Club Tamoios? Clique em <strong>'Entrar'</strong> para acessar o sistema com seu CPF e senha.",
                 side: "bottom",
                 align: "start",
             },
         },
         {
+            element: "#tour-home-join-btn",
+            popover: {
+                title: createStepHeader("Associe-se ao Clube", ICONS.userPlus, "Novo Sócio"),
+                description: "Ainda não faz parte? Clique em <strong>'Quero ser sócio'</strong> para preencher o formulário de adesão e enviá-lo para análise da diretoria.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
             element: "#tour-home-scroll-down",
             popover: {
-                title: createStepHeader("Conheça o Clube", ICONS.arrowDown),
-                description: "Conheça a história, as trilhas e o impacto social do clube. Para fazer parte, clique em <strong>'Quero ser sócio'</strong> e envie seu pedido para análise da diretoria.",
+                title: createStepHeader("Explore a Página", ICONS.arrowDown),
+                description: "Role a página ou clique neste indicador para navegar pelas seções de experiências, história e ações do clube.",
                 side: "top",
                 align: "center",
+            },
+        },
+        {
+            element: "#experiencias",
+            popover: {
+                title: createStepHeader("Expedições, Trilhas e Encontros", ICONS.compass),
+                description: "Conheça as principais vivências do clube: trilhas off-road na Mata Atlântica, passeios leves e encontros de confraternização.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#legado",
+            popover: {
+                title: createStepHeader("Legado e Tradição", ICONS.shield, "Desde 1999"),
+                description: "Mais de duas décadas de tradição no Litoral Norte, reunindo dezenas de membros ativos e centenas de trilhas realizadas.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#impacto",
+            popover: {
+                title: createStepHeader("Impacto Social", ICONS.heartPulse, "Solidariedade"),
+                description: "Off-road com propósito: veja como nossa frota 4x4 apoia comunidades isoladas em calamidades, campanhas de Dia das Crianças e doações regulares.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-home-cta",
+            popover: {
+                title: createStepHeader("Pronto para a Próxima Aventura?", ICONS.car),
+                description: "Ao final da página, você encontra outro atalho rápido para solicitar sua associação à família Jeep Club Tamoios.",
+                side: "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-home-help-btn",
+            popover: {
+                title: createStepHeader("Reveja Quando Quiser", ICONS.helpCircle),
+                description: "Sempre que quiser consultar novamente esta apresentação da página inicial, clique em <strong>'Como funciona?'</strong> no topo.",
+                side: "bottom",
+                align: "end",
             },
         },
     ];
@@ -110,13 +164,13 @@ export const feedStep: DriveStep = {
     },
 };
 
-export const avatarMenuStep: DriveStep = {
-    element: "#tour-avatar-container",
+export const accountNavigationStep: DriveStep = {
+    element: "#tour-manage-account-btn",
     popover: {
         title: createStepHeader("Gerenciar Conta", ICONS.user),
-        description: "Abra o menu do perfil e clique em 'Gerenciar conta' para acessar e atualizar seus dados pessoais, veículos e ficha médica.",
-        side: "bottom",
-        align: "end",
+        description: "Acesse Conta pela navegação lateral para atualizar seus dados pessoais, veículos e ficha médica.",
+        side: "right",
+        align: "center",
     },
 };
 
@@ -133,7 +187,7 @@ export const adminStep: DriveStep = {
 export const completionStep: DriveStep = {
     popover: {
         title: createStepHeader("Tour Concluído", ICONS.checkCircle),
-        description: "Configuração concluída. Você pode reiniciar este guia quando desejar pelo menu do seu perfil.",
+        description: "Configuração concluída. Você pode rever este guia em Configurações, na opção Tutorial.",
         side: "bottom",
         align: "center",
     },
@@ -174,23 +228,9 @@ export function getTourSteps(
     }
 
     steps.push({
-        element: "#tour-avatar-container",
-        popover: {
-            title: createStepHeader("Gerenciar Conta", ICONS.user),
-            description: "Abra o menu e clique em 'Gerenciar conta' para acessar suas informações de perfil, veículos 4x4 e ficha médica.",
-            side: "bottom",
-            align: isMobile ? "center" : "end",
-        },
+        ...accountNavigationStep,
         onHighlightStarted: () => {
-            if (isMobile) setMobileMenuOpen?.(false);
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:open-avatar-menu'));
-            }
-        },
-        onDeselected: () => {
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-            }
+            if (isMobile) setMobileMenuOpen?.(true);
         },
     });
 
@@ -198,9 +238,6 @@ export function getTourSteps(
         ...completionStep,
         onHighlightStarted: () => {
             if (isMobile) setMobileMenuOpen?.(false);
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-            }
         },
     });
 
@@ -347,7 +384,16 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-admin-header",
             popover: {
                 title: createStepHeader("Central Administrativa", ICONS.shield, "Diretoria"),
-                description: "Painel de controle com acesso aos módulos de gestão autorizados para o seu perfil.",
+                description: "Painel de controle principal com acesso a todos os módulos de gestão autorizados para o seu cargo.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-admin-search",
+            popover: {
+                title: createStepHeader("Busca Rápida de Módulos", ICONS.compass),
+                description: "Digite o nome ou palavra-chave de uma área administrativa (como <strong>pagamentos</strong>, <strong>publicações</strong> ou <strong>veículos</strong>) para filtrar os cartões instantaneamente.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",
             },
@@ -355,26 +401,35 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
         {
             element: "#tour-admin-modules-grid",
             popover: {
-                title: createStepHeader("Módulos de Gestão", ICONS.layers),
-                description: "Grade de módulos administrativos disponíveis. Clique em 'Gerenciar' no módulo desejado para acessar.",
+                title: createStepHeader("Cartões de Módulos", ICONS.layers),
+                description: "Cada cartão representa um módulo administrativo liberado para o seu perfil, exibindo sua finalidade e atalho direto.",
                 side: isMobile ? "bottom" : "top",
                 align: "center",
             },
         },
         {
-            element: "#tour-admin-module-roles-permissions",
+            element: "#tour-admin-favorite-btn",
             popover: {
-                title: createStepHeader("Cargos e Permissões", ICONS.sliders, "Ativo"),
-                description: "Módulo principal de governança: crie cargos personalizados e defina permissões granulares de acesso.",
-                side: isMobile ? "bottom" : "left",
-                align: isMobile ? "center" : "start",
+                title: createStepHeader("Módulos Favoritos", ICONS.checkCircle, "Atalho"),
+                description: "Clique no ícone de <strong>estrela</strong> no canto superior de qualquer módulo para fixá-lo na seção <strong>Favoritos</strong> do menu lateral esquerdo.",
+                side: "bottom",
+                align: "end",
+            },
+        },
+        {
+            element: "#tour-admin-manage-btn",
+            popover: {
+                title: createStepHeader("Acessar Módulo", ICONS.sliders),
+                description: "Clique em <strong>'Gerenciar'</strong> no cartão desejado para abrir as ferramentas completas daquele módulo.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
             },
         },
         {
             element: "#tour-admin-help-btn",
             popover: {
                 title: createStepHeader("Ajuda Contextual", ICONS.helpCircle),
-                description: "Este guia pode ser reaberto a qualquer momento através deste botão no cabeçalho.",
+                description: "Este guia pode ser reaberto a qualquer momento por este botão ou clicando em <strong>'Precisa de ajuda?'</strong> no topo da página.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },
@@ -384,16 +439,87 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
 
 export const adminPanelTourSteps = getAdminPanelTourSteps(false);
 
+// Tour da tela de Gestão de Publicações (/admin/gestao-publicacoes)
+export function getPublicationsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-publications-header",
+            popover: {
+                title: createStepHeader("Gestão de Publicações", ICONS.feed, "Admin"),
+                description: "Nesta área administrativa você cria, revisa, publica, edita e arquiva os <strong>eventos</strong>, <strong>avisos</strong> e <strong>serviços</strong> divulgados no mural do clube.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-publications-types",
+            popover: {
+                title: createStepHeader("Filtro por Tipo de Publicação", ICONS.layers),
+                description: "Alterne entre <strong>Todos</strong>, <strong>Serviços</strong>, <strong>Avisos</strong> e <strong>Eventos</strong> para focar na categoria que deseja administrar.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-publications-create-btn",
+            popover: {
+                title: createStepHeader("Criar Publicação", ICONS.plus),
+                description: "Clique em <strong>'Criar publicação'</strong> para abrir o formulário de cadastro de novos avisos, eventos oficiais (com datas, vagas e cobranças) ou anúncios de serviços.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-publications-status",
+            popover: {
+                title: createStepHeader("Estado da Publicação", ICONS.sliders),
+                description: "Filtre os registros pelo estágio editorial: visualize <strong>Todos</strong>, apenas os já <strong>Publicados</strong> no mural, os <strong>Rascunhos</strong> em preparação ou os <strong>Arquivados</strong>.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#publication-status-results",
+            popover: {
+                title: createStepHeader("Listagem e Ações Editoriais", ICONS.checkCircle),
+                description: "Cada card exibe o tipo, o status e os botões de ação rápida conforme o estado do item: <strong>Editar</strong>, <strong>Publicar</strong>, <strong>Arquivar</strong>, <strong>Encerrar</strong>, <strong>Cancelar</strong> ou <strong>Excluir</strong>.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser rever como gerenciar as publicações do clube, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const publicationsTourSteps = getPublicationsTourSteps(false);
+
 // Tour da tela de cargos e permissões (/admin/roles-permissoes)
 export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
         {
             element: "#tour-roles-header",
             popover: {
-                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield, "RBAC"),
-                description: "Administração central de papéis e níveis de autorização do sistema.",
+                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield),
+                description: "Administração central dos cargos e níveis de acesso ao sistema.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-roles-tabs",
+            popover: {
+                title: createStepHeader("Áreas de Governança", ICONS.layers),
+                description: "Alterne entre <strong>Cargos do sistema</strong>, a lista de <strong>Permissões</strong> por módulo e as <strong>Atribuições de pessoas</strong>.",
+                side: "bottom",
+                align: "center",
             },
         },
         {
@@ -436,3 +562,599 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
 }
 
 export const rolesTourSteps = getRolesTourSteps(false);
+
+// Tour da tela de Gestão de Usuários (/admin/users)
+export function getUsersTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-users-header",
+            popover: {
+                title: createStepHeader("Gestão de Usuários", ICONS.users, "Admin"),
+                description: "Consulte o quadro completo de associados e administradores, cadastre novos usuários e controle o status de acesso ao sistema.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-tabs",
+            popover: {
+                title: createStepHeader("Usuários e Solicitações", ICONS.layers),
+                description: "Alterne rapidamente entre a lista de <strong>Usuários</strong> cadastrados e a aba de <strong>Solicitações de associação</strong> enviadas por novos candidatos.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-search",
+            popover: {
+                title: createStepHeader("Busca por Critério", ICONS.compass),
+                description: "Pesquise associados utilizando busca <strong>Geral</strong>, <strong>Nome</strong>, <strong>CPF</strong>, <strong>E-mail</strong> ou <strong>Telefone</strong> através do seletor ao lado do campo.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-status-filter",
+            popover: {
+                title: createStepHeader("Filtro por Status", ICONS.sliders),
+                description: "Filtre a listagem entre usuários <strong>Ativos</strong>, <strong>Desativados</strong> ou visualize <strong>Todos os status</strong>.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-users-create-btn",
+            popover: {
+                title: createStepHeader("Cadastrar Novo Usuário", ICONS.userPlus),
+                description: "Clique em <strong>'Novo usuário'</strong> para cadastrar manualmente um associado ou membro da diretoria no sistema.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-users-table",
+            popover: {
+                title: createStepHeader("Tabela de Associados e Ações", ICONS.idCard),
+                description: "Ordene as colunas por nome, e-mail, CPF ou telefone e utilize os botões de ação à direita para <strong>Ver detalhes</strong> do perfil ou <strong>Desativar/Reativar</strong> a conta.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const usersTourSteps = getUsersTourSteps(false);
+
+// Tour da aba de Solicitações de Associação (/admin/users?tab=applications)
+export function getMembershipApplicationsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-users-header",
+            popover: {
+                title: createStepHeader("Solicitações de Associação", ICONS.userPlus, "Adesão"),
+                description: "Analise os pedidos de entrada no Jeep Clube Tamoios enviados através do formulário público de associação.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-users-tabs",
+            popover: {
+                title: createStepHeader("Alternância de Abas", ICONS.layers),
+                description: "Você está na aba de <strong>Solicitações de associação</strong>. Quando desejar consultar os membros já ativos, basta clicar na aba <strong>Usuários</strong>.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-applications-status-filter",
+            popover: {
+                title: createStepHeader("Status das Solicitações", ICONS.sliders),
+                description: "Filtre os pedidos entre <strong>Pendentes</strong> de análise, <strong>Aprovadas</strong>, <strong>Rejeitadas</strong>, <strong>Concluídas</strong> ou veja todo o histórico.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-applications-list",
+            popover: {
+                title: createStepHeader("Ficha e Carta de Apresentação", ICONS.idCard),
+                description: "Cada card exibe CPF, celular com atalho para WhatsApp, e-mail, data de envio e a <strong>Carta de apresentação</strong> redigida pelo candidato.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-applications-actions",
+            popover: {
+                title: createStepHeader("Aprovação ou Recusa", ICONS.checkCircle),
+                description: "Nas propostas pendentes, você pode <strong>Aprovar e gerar senha</strong> (com envio via WhatsApp), <strong>Aprovar e enviar convite</strong> por e-mail, <strong>Rejeitar</strong> ou <strong>Bloquear o CPF</strong>.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser revisar o fluxo de aprovação de novos sócios, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const membershipApplicationsTourSteps = getMembershipApplicationsTourSteps(false);
+
+// Tour da tela de Análise de Pagamentos (/admin/pagamentos)
+export function getPaymentsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-payments-header",
+            popover: {
+                title: createStepHeader("Análise de Pagamentos", ICONS.wallet, "Financeiro"),
+                description: "Central de auditoria de comprovantes enviados pelos associados para quitação de mensalidades, taxas de eventos e cobranças.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-payments-filters",
+            popover: {
+                title: createStepHeader("Filtro por Status e Atualização", ICONS.sliders),
+                description: "Filtre os pagamentos por situação (como <strong>Pendente de validação</strong>, <strong>Confirmado</strong> ou <strong>Rejeitado</strong>) e utilize o botão <strong>Atualizar</strong> para sincronizar a fila.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-payments-table",
+            popover: {
+                title: createStepHeader("Pagamentos Enviados", ICONS.layers),
+                description: "Confira o código do pagamento, a cobrança associada, o valor, o método utilizado, a data de pagamento e o status atual.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-payments-detail-btn",
+            popover: {
+                title: createStepHeader("Conferir Comprovante ('Detalhes')", ICONS.checkCircle),
+                description: "Clique em <strong>'Detalhes'</strong> na linha do pagamento para visualizar o comprovante anexado e confirmar ou rejeitar a operação.",
+                side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const paymentsTourSteps = getPaymentsTourSteps(false);
+
+// Tour da tela de Gestão Financeira (/admin/gestao-financeira)
+export function getFinancialTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-financial-header",
+            popover: {
+                title: createStepHeader("Gestão Financeira", ICONS.wallet, "Tesouraria"),
+                description: "Administração completa das finanças do clube: regras de cobrança, ciclos, faturas de membros, pagamentos e solicitações de reembolso.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-financial-tabs",
+            popover: {
+                title: createStepHeader("Áreas Financeiras", ICONS.layers),
+                description: "Navegue entre o <strong>Dashboard</strong> resumido, <strong>Definições e atribuições</strong>, <strong>Ciclos</strong>, <strong>Cobranças</strong>, <strong>Pagamentos</strong> e <strong>Reembolsos</strong>.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-financial-content",
+            popover: {
+                title: createStepHeader("Painel e Operações da Área", ICONS.sliders),
+                description: "No <strong>Dashboard</strong> você acompanha os indicadores com atalhos diretos; nas demais abas você cria regras de cobrança, gera ciclos, exporta relatórios CSV/PDF e gerencia faturas ou reembolsos.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser revisar como operar as áreas financeiras, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const financialTourSteps = getFinancialTourSteps(false);
+
+// Tour da tela de Gestão de Dados Médicos (/admin/dados-medicos)
+export function getMedicalProfilesTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-medical-header",
+            popover: {
+                title: createStepHeader("Gestão de Dados Médicos", ICONS.heartPulse, "Saúde"),
+                description: "Consulte, cadastre e mantenha atualizadas as fichas médicas de associados e dependentes para segurança nas expedições e trilhas.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-medical-export",
+            popover: {
+                title: createStepHeader("Exportação CSV/PDF e Histórico", ICONS.layers),
+                description: "Exporte os dados médicos em <strong>CSV</strong> ou <strong>PDF</strong> para apoio em trilhas e marque <strong>Histórico de exclusões</strong> quando precisar auditar registros removidos.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-medical-create-btn",
+            popover: {
+                title: createStepHeader("Cadastrar Perfil Médico", ICONS.plus),
+                description: "Clique em <strong>'Cadastrar perfil'</strong> para registrar a ficha médica de um associado ou dependente.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-medical-table",
+            popover: {
+                title: createStepHeader("Perfis Cadastrados e Ações", ICONS.idCard),
+                description: "Consulte o titular e a data de atualização e utilize os botões <strong>Visualizar</strong> (com opção de exportar ficha individual), <strong>Editar</strong> ou <strong>Excluir</strong>.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const medicalProfilesTourSteps = getMedicalProfilesTourSteps(false);
+
+// Tour da tela de Gestão de Veículos (/admin/veiculos)
+export function getVehiclesTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-vehicles-header",
+            popover: {
+                title: createStepHeader("Gestão de Veículos 4x4", ICONS.car, "Frota"),
+                description: "Visualize, cadastre e administre os veículos off-road vinculados aos membros do Jeep Clube Tamoios.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-vehicles-create-btn",
+            popover: {
+                title: createStepHeader("Cadastrar Veículo", ICONS.plus),
+                description: "Clique em <strong>'Cadastrar veículo'</strong> para registrar um novo 4x4 informando proprietário, modelo, apelido, placa, ano e fotos.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-vehicles-list",
+            popover: {
+                title: createStepHeader("Lista da Frota do Clube", ICONS.layers),
+                description: "Acompanhe os veículos cadastrados com galeria de fotos, apelido, modelo, placa e associado proprietário.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-vehicles-actions",
+            popover: {
+                title: createStepHeader("Ações sobre o Veículo", ICONS.sliders),
+                description: "Utilize os botões <strong>Visualizar</strong>, <strong>Editar</strong> ou <strong>Excluir</strong> para consultar todos os detalhes técnicos ou atualizar o registro.",
+                side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Sempre que quiser revisar como administrar a frota do clube, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const vehiclesTourSteps = getVehiclesTourSteps(false);
+
+// Tour da tela de Gestão de Ferramentas (/admin/ferramentas)
+export function getToolsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-tools-header",
+            popover: {
+                title: createStepHeader("Gestão de Ferramentas", ICONS.wrench, "Resgate"),
+                description: "Consulte, cadastre e gerencie os equipamentos de apoio e ferramentas declarados pelos associados do clube.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-tools-create-btn",
+            popover: {
+                title: createStepHeader("Cadastrar Ferramenta", ICONS.plus),
+                description: "Clique em <strong>'Cadastrar ferramenta'</strong> para vincular um novo equipamento de resgate ou apoio a um associado.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-tools-filters",
+            popover: {
+                title: createStepHeader("Busca por Nome e Status", ICONS.compass),
+                description: "Pesquise ferramentas pelo nome em tempo real ou filtre por situação (<strong>Ativas</strong>, <strong>Inativas</strong> ou <strong>Arquivadas</strong>).",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-tools-list",
+            popover: {
+                title: createStepHeader("Catálogo de Equipamentos", ICONS.layers),
+                description: "Confira a foto, nome da ferramenta, ID do associado responsável e o status atual de disponibilidade.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-tools-actions",
+            popover: {
+                title: createStepHeader("Ações da Ferramenta", ICONS.sliders),
+                description: "Utilize os controles para <strong>Visualizar</strong> detalhes, <strong>Editar</strong> dados, <strong>Ativar/Desativar</strong> ou <strong>Excluir</strong> o equipamento.",
+                side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
+                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const toolsTourSteps = getToolsTourSteps(false);
+
+// Tour da Central de Tutoriais (/tutoriais)
+export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-tutorials-header",
+            popover: {
+                title: createStepHeader("Central de Tutoriais", ICONS.helpCircle, "Ajuda"),
+                description: "Bem-vindo à Central de Tutoriais do Jeep Clube Tamoios! Aqui você encontra guias interativos passo a passo para todas as funcionalidades do sistema.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-tutorials-search",
+            popover: {
+                title: createStepHeader("Pesquise sua Dúvida", ICONS.compass),
+                description: "Digite sua dúvida ou o que deseja fazer (ex.: <strong>'como cadastrar veículo'</strong>, <strong>'ficha médica'</strong>, <strong>'aprovar pagamento'</strong>) ou clique em uma das sugestões rápidas.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-tutorials-categories",
+            popover: {
+                title: createStepHeader("Filtros por Categoria", ICONS.layers),
+                description: "Filtre os tutoriais entre <strong>Todos</strong>, guias de <strong>Navegação & Associado</strong> ou módulos de <strong>Gestão Administrativa</strong> liberados para o seu perfil.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-tutorials-results",
+            popover: {
+                title: createStepHeader("Resultados Logo Abaixo da Busca", ICONS.checkCircle),
+                description: "Os tutoriais correspondentes à sua pesquisa aparecem imediatamente aqui abaixo, mostrando os tópicos abordados e a quantidade de passos.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-tutorials-start-btn",
+            popover: {
+                title: createStepHeader("Iniciar Tutorial Interativo", ICONS.sliders),
+                description: "Clique em <strong>'Iniciar tutorial'</strong> em qualquer card: o sistema levará você até a tela correspondente e iniciará a explicação guiada automaticamente.",
+                side: isMobile ? "bottom" : "left",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Botão 'Precisa de ajuda?'", ICONS.helpCircle),
+                description: "Lembre-se: quando já estiver em qualquer página do sistema, basta clicar no botão vermelho <strong>'Precisa de ajuda?'</strong> no cabeçalho para iniciar o tutorial daquela tela na hora!",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const tutorialsPageTourSteps = getTutorialsPageTourSteps(false);
+
+// Tour específico da Home dos Associados / Mural do Clube (/feed)
+export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-feed-filters",
+            popover: {
+                title: createStepHeader("Filtros do Mural", ICONS.feed, "Home"),
+                description: "Alterne rapidamente entre <strong>Tudo</strong>, <strong>Serviços</strong>, <strong>Avisos</strong> oficiais da diretoria e <strong>Eventos</strong> do clube.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: isMobile ? "#tour-feed-create-mobile-btn" : "#tour-feed-create-btn",
+            popover: {
+                title: createStepHeader("Nova Publicação ou Serviço", ICONS.plus),
+                description: "Utilize o botão <strong>'Postar'</strong> para criar uma nova publicação ou solicitar a divulgação de um serviço para a comunidade, conforme suas permissões.",
+                side: "bottom",
+                align: "end",
+            },
+        },
+        {
+            element: "#tour-feed-list",
+            popover: {
+                title: createStepHeader("Mural de Publicações e Eventos", ICONS.layers),
+                description: "Confira os comunicados, serviços e próximos eventos. Clique em qualquer card para ver detalhes completos, curtir, comentar, compartilhar no WhatsApp ou se inscrever em eventos.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-feed-sidebar",
+            popover: {
+                title: createStepHeader("Destaques da Comunidade", ICONS.compass),
+                description: "No painel lateral você acompanha os <strong>Próximos eventos</strong>, os <strong>Aniversariantes do mês</strong> e os <strong>Avisos recentes</strong>.",
+                side: isMobile ? "top" : "left",
+                align: "start",
+            },
+        },
+        {
+            element: isMobile ? "#tour-mobile-menu-btn" : "#tour-sidebar",
+            popover: {
+                title: createStepHeader("Navegação Principal", isMobile ? ICONS.smartphone : ICONS.sidebar),
+                description: "Pelo menu principal você alterna entre a Home, a Agenda, a Central de Tutoriais e, caso faça parte da diretoria, a Gestão Administrativa.",
+                side: isMobile ? "bottom" : "right",
+                align: "start",
+            },
+        },
+        {
+            element: "#tour-avatar-container",
+            popover: {
+                title: createStepHeader("Perfil e Conta", ICONS.user),
+                description: "Clique no seu avatar para abrir a conta e gerenciar seus dados pessoais, ficha médica, veículos 4x4, ferramentas e histórico financeiro.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-header-help-btn",
+            popover: {
+                title: createStepHeader("Ajuda Contextual Dinâmica", ICONS.helpCircle),
+                description: "Sempre que estiver em qualquer página e precisar de orientação, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho para iniciar o tutorial específico da tela atual.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const feedTourSteps = getFeedTourSteps(false);
+
+export interface RouteTourOptions {
+    canAccessAdmin: boolean;
+    isMobile?: boolean;
+    setMobileMenuOpen?: (open: boolean) => void;
+    tab?: string | null;
+}
+
+/**
+ * Resolve dinamicamente os passos do tutorial correspondentes à rota atual.
+ */
+export function resolveRouteTourSteps(
+    pathname: string,
+    { canAccessAdmin, isMobile = false, setMobileMenuOpen, tab }: RouteTourOptions,
+): DriveStep[] {
+    const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+
+    if (normalizedPath === "/") {
+        return getHomeTourSteps();
+    }
+    if (normalizedPath === "/login") {
+        return getLoginTourSteps(isMobile);
+    }
+    if (normalizedPath === "/feed" || normalizedPath === "/avisos" || normalizedPath === "/servicos" || normalizedPath === "/eventos") {
+        return getFeedTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/profile")) {
+        return getProfileTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/tutoriais")) {
+        return getTutorialsPageTourSteps(isMobile);
+    }
+    if (normalizedPath === "/admin") {
+        return getAdminPanelTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/dados-medicos")) {
+        return getMedicalProfilesTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/pagamentos")) {
+        return getPaymentsTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/gestao-financeira")) {
+        return getFinancialTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/gestao-publicacoes")) {
+        return getPublicationsTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/users")) {
+        if (tab === "applications") {
+            return getMembershipApplicationsTourSteps(isMobile);
+        }
+        return getUsersTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/roles-permissoes")) {
+        return getRolesTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/veiculos")) {
+        return getVehiclesTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/ferramentas")) {
+        return getToolsTourSteps(isMobile);
+    }
+
+    return getTourSteps(canAccessAdmin, isMobile, setMobileMenuOpen);
+}

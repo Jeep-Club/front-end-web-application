@@ -28,6 +28,18 @@ import toast from "react-hot-toast";
 import { EventChargeFields } from "./EventChargeFields";
 import { invalidatePublicationAdministration } from "@/utils/publications/administration";
 import styles from "./CreatePublicationModal.module.css";
+import { useFormContext } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { Newspaper, X } from "lucide-react";
+import { Form } from "@/components/common/form";
+import { Button, ButtonIcon } from "@/components/common/button";
+import { InputRegister } from "@/components/common/input/input-register";
+import { SelectRegister } from "@/components/common/select/select-register";
+import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister";
+import { InputFile } from "@/components/common/input/file";
+import { useModal } from "@/providers/ModalProvider";
+import { useUserStore } from "@/stores/userStore";
 
 function Fields({ initialType, publishEventImmediately, serverError }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown }) {
     const { setClose } = useModal();
@@ -81,8 +93,8 @@ function Fields({ initialType, publishEventImmediately, serverError }: { initial
             </fieldset>
             <div className="flex w-full flex-col-reverse gap-3 border-t border-j-gray-200 pt-5 sm:flex-row">
                 <Button disabled={isSubmitting} onClick={setClose} className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700">Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting || !types.some((entry) => entry.type === type)} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">
-                {isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Criar e publicar evento" : type === "EVENT" ? "Criar evento" : "Criar rascunho"}
+            <Button type="submit" disabled={isSubmitting || savedDraft || !types.some((entry) => entry.type === type)} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">
+                {savedDraft ? "Evento salvo como rascunho" : isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Criar e publicar evento" : type === "EVENT" ? "Criar evento" : "Criar rascunho"}
             </Button>
             </div>
         </>
@@ -131,7 +143,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             const payload: CreatePublicationRequest = data.type === "EVENT"
                 ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null, charges: parseEventChargeRows(data.charges ?? [], new Date(data.startsAt).toISOString()) }
                 : data.type === "SERVICE"
-                    ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: unMaskPhoneNumber(data.contactPhone) }
+                    ? { ...common, type: "SERVICE", amount: parseServiceAmount(data.amount), contactPhone: unMaskPhoneNumber(data.contactPhone) }
                     : { ...common, type: "NOTICE" };
             const created = await createPublicationAction(payload);
             if (data.type === 'EVENT' && data.charges?.some(charge => charge.mode === 'inline')) void invalidatePublicationAdministration(queryClient, 'EVENT', created.id, { inline: true });
@@ -151,13 +163,18 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
         onSuccess: (result) => {
             if (result.type === "SERVICE") toast.success("Solicitação enviada para aprovação!");
             else if (result.type === "EVENT" && result.published) toast.success("Evento criado e publicado no feed!");
-            else if (result.type === "EVENT" && "publishError" in result && result.publishError) toast.error(`O evento foi salvo como rascunho, mas não foi publicado: ${result.publishError}`);
+            else if (result.type === "EVENT" && "publishError" in result && result.publishError) {
+                setPublishFailure(result.publishError);
+                toast.error(`O evento foi salvo como rascunho, mas não foi publicado: ${result.publishError}`);
+                void queryClient.invalidateQueries({ queryKey: ["publications"] });
+                return;
+            }
             else if (result.type === "EVENT" && publishEventImmediately) toast.success("Evento salvo como rascunho. Para aparecer no feed, publique em Gestão de publicações.");
             else toast.success("Rascunho criado com sucesso!");
             void queryClient.invalidateQueries({ queryKey: ["publications"] });
             setCreatedResult(result);
         },
-
+        onError: (error) => toast.error(error.message || "Não foi possível criar a publicação."),
     });
     useEffect(() => { pending.current = mutation.isPending; }, [mutation.isPending]);
     if (!types.length) return null;

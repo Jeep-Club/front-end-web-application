@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Eye, Plus, Power, PowerOff } from "lucide-react";
+import { Archive, ArchiveRestore, Download, Eye, KeyRound, LoaderCircle, Plus, Power, PowerOff } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-import { Button, ButtonIcon } from "@/components/common/button";
+import { ButtonIcon } from "@/components/common/button";
 import { Avatar } from "@/components/common/avatar";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
@@ -13,12 +13,11 @@ import { maskCPF, maskPhoneNumber } from "@/utils/masks";
 
 import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "./user-display";
 
-type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
+export type UserSearchType = "q" | "name" | "membershipNumber" | "email" | "cpf" | "rg" | "phoneNumber";
 
 interface UserManagementViewProps {
     users: AdminUser[];
     query: AdminUserSearchParams;
-    // roles: AdminRole[];
     permissions: UserManagementPermissions;
     totalItems: number;
     totalPages: number;
@@ -26,24 +25,25 @@ interface UserManagementViewProps {
     pageSize: number;
     isLoading: boolean;
     isFetching: boolean;
+    isExporting?: "CSV" | "PDF" | null;
     error?: string;
     onSearchChange: (value: string) => void;
-    onStatusChange: (status: "ACTIVE" | "DISABLED" | "ALL") => void;
-    // onRoleChange: (roleIds: number[]) => void;
+    onStatusChange: (status: UserStatus | "ALL") => void;
     onClearFilters: () => void;
     onPaginationChange: (pagination: PaginationState) => void;
     onSortChange: (field: string) => void;
     onViewUser: (userId: number) => void;
     onCreateUser: () => void;
-    onChangeUserStatus: (user: AdminUser) => void;
-    searchType: SearchType;
-    setSearchType: (type: SearchType) => void;
+    onChangeUserStatus: (user: AdminUser, action: AdminUserLifecycleAction) => void;
+    onManageMembershipNumber: (user: AdminUser) => void;
+    onExportUsers?: (format: "CSV" | "PDF") => void;
+    searchType: UserSearchType;
+    setSearchType: (type: UserSearchType) => void;
 }
 
 export function UserManagementView({
     users,
     query,
-    // roles,
     permissions,
     totalItems,
     totalPages,
@@ -51,24 +51,28 @@ export function UserManagementView({
     pageSize,
     isLoading,
     isFetching,
+    isExporting = null,
     error,
     onSearchChange,
     onStatusChange,
-    // onRoleChange,
     onClearFilters,
     onPaginationChange,
     onSortChange,
     onViewUser,
     onCreateUser,
     onChangeUserStatus,
+    onManageMembershipNumber,
+    onExportUsers,
     searchType,
     setSearchType,
 }: UserManagementViewProps) {
     const hasActiveFilters = Boolean(
         query.q
         || query.name
+        || query.membershipNumber
         || query.email
         || query.cpf
+        || query.rg
         || query.phoneNumber
         || query.id
         || (query.status && query.status !== "ACTIVE")
@@ -81,11 +85,13 @@ export function UserManagementView({
     const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => {
         const baseColumns: ColumnDef<AdminUser, unknown>[] = [
             {
-                accessorKey: "id",
-                header: "Matrícula",
-                meta: { label: "Matrícula" },
+                accessorKey: "membershipNumber",
+                header: "MAT",
+                meta: { label: "MAT" },
                 cell: ({ row }) => (
-                    <span className="font-bold text-j-gray-700">{row.original.id}</span>
+                    <span className="font-bold text-j-gray-700">
+                        {row.original.membershipNumber ?? "—"}
+                    </span>
                 ),
             },
             {
@@ -95,15 +101,28 @@ export function UserManagementView({
                 ),
                 meta: { label: "Nome completo" },
                 cell: ({ row }) => (
-                    <div className="flex min-w-44 items-center gap-3">
+                    <div className="flex min-w-0 max-w-full flex-1 items-center gap-2">
                         {row.original.profilePhotoUrl ? (
-                            <Avatar src={row.original.profilePhotoUrl} alt={`Foto de ${row.original.name}`} className="h-10 w-10 shrink-0 bg-j-gray-200" />
+                            <Avatar
+                                src={row.original.profilePhotoUrl}
+                                alt={`Foto de ${row.original.name}`}
+                                className="h-10 w-10 shrink-0 bg-j-gray-200"
+                            />
                         ) : (
-                            <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-j-blue-100 text-sm font-bold text-j-blue-800">
-                                {row.original.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toLocaleUpperCase("pt-BR")}
+                            <span
+                                aria-hidden="true"
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-j-blue-100 text-sm font-bold text-j-blue-800"
+                            >
+                                {row.original.name
+                                    .trim()
+                                    .split(/\s+/)
+                                    .slice(0, 2)
+                                    .map((part) => part[0])
+                                    .join("")
+                                    .toLocaleUpperCase("pt-BR")}
                             </span>
                         )}
-                        <span className="font-bold text-j-gray-700">{row.original.name}</span>
+                        <span className="min-w-0 whitespace-normal break-words text-sm font-bold text-j-gray-700">{row.original.name}</span>
                     </div>
                 ),
             },
@@ -129,9 +148,8 @@ export function UserManagementView({
                     <Table.Sortable field="phoneNumber" label="Telefone" sort={query.sort} onSortChange={onSortChange} />
                 ),
                 meta: { label: "Telefone" },
-                cell: ({ row }) => row.original.phoneNumber
-                    ? maskPhoneNumber(row.original.phoneNumber)
-                    : "—",
+                cell: ({ row }) =>
+                    row.original.phoneNumber ? maskPhoneNumber(row.original.phoneNumber) : "—",
             },
             {
                 accessorKey: "status",
@@ -144,68 +162,82 @@ export function UserManagementView({
                             USER_STATUS_STYLE[row.original.status],
                         )}
                     >
-                        {USER_STATUS_LABEL[row.original.status]}
+                        {USER_STATUS_LABEL[row.original.status] ?? row.original.status}
                     </span>
                 ),
             },
-        ];
-
-        // if (permissions.canReadUserRoles) {
-        //     baseColumns.push({
-        //         accessorKey: "roles",
-        //         header: "Papéis",
-        //         cell: ({ row }) => {
-        //             const userRoles = row.original.roles;
-        //             if (!userRoles.length) return "—";
-
-        //             return (
-        //                 <div className="flex max-w-64 flex-wrap gap-1.5">
-        //                     {userRoles.map((role) => (
-        //                         <span
-        //                             key={role.id}
-        //                             className={twMerge(
-        //                                 "rounded-full border px-2 py-0.5 text-[11px] font-bold",
-        //                                 role.status === "ACTIVE"
-        //                                     ? "border-j-blue-200 bg-j-blue-100/20 text-j-blue-800"
-        //                                     : "border-j-gray-200 bg-j-gray-100 text-j-gray-500",
-        //                             )}
-        //                         >
-        //                             {role.name}{role.status !== "ACTIVE" ? ` · ${role.status === "INACTIVE" ? "inativo" : "excluído"}` : ""}
-        //                         </span>
-        //                     ))}
-        //                 </div>
-        //             );
-        //         },
-        //     });
-        // }
-
-        baseColumns.push(
             {
                 id: "actions",
                 header: "Ações",
                 meta: { label: "Ações" },
                 cell: ({ row }) => {
                     const user = row.original;
-                    const canChangeStatus = user.status === "DISABLED"
-                        ? permissions.canEnableUsers
-                        : permissions.canDisableUsers;
+                    const canDisable = user.status === "ACTIVE" && permissions.canDisableUsers;
+                    const canEnable = user.status === "INACTIVE" && permissions.canEnableUsers;
+                    const canArchive =
+                        (user.status === "ACTIVE" || user.status === "INACTIVE") && permissions.canArchiveUsers;
+                    const canUnarchive = user.status === "ARCHIVED" && permissions.canUnarchiveUsers;
+                    const canManageMembershipNumber = permissions.canManageMembershipRegistration && user.status === "ACTIVE";
 
                     return (
                         <div className="flex items-center justify-end gap-1.5">
-                            {canChangeStatus && (
+                            {canDisable && (
                                 <ButtonIcon
                                     type="button"
-                                    title={user.status === "DISABLED" ? "Reativar usuário" : "Desativar usuário"}
-                                    aria-label={`${user.status === "DISABLED" ? "Reativar" : "Desativar"} ${user.name}`}
-                                    onClick={() => onChangeUserStatus(user)}
-                                    className={twMerge(
-                                        "rounded-lg p-2 text-white hover:text-white",
-                                        user.status === "DISABLED"
-                                            ? "bg-j-green-600 hover:bg-j-green-700"
-                                            : "bg-j-red-500 hover:bg-j-red-600",
-                                    )}
+                                    title="Inativar usuário"
+                                    aria-label={`Inativar ${user.name}`}
+                                    onClick={() => onChangeUserStatus(user, "disable")}
+                                    className="rounded-lg bg-j-red-500 p-2 text-white hover:bg-j-red-600 hover:text-white"
                                 >
-                                    {user.status === "DISABLED" ? <Power size={18} /> : <PowerOff size={18} />}
+                                    <PowerOff size={18} />
+                                </ButtonIcon>
+                            )}
+
+                            {canEnable && (
+                                <ButtonIcon
+                                    type="button"
+                                    title="Reativar usuário"
+                                    aria-label={`Reativar ${user.name}`}
+                                    onClick={() => onChangeUserStatus(user, "enable")}
+                                    className="rounded-lg bg-j-green-600 p-2 text-white hover:bg-j-green-700 hover:text-white"
+                                >
+                                    <Power size={18} />
+                                </ButtonIcon>
+                            )}
+
+                            {canArchive && (
+                                <ButtonIcon
+                                    type="button"
+                                    title="Arquivar usuário"
+                                    aria-label={`Arquivar ${user.name}`}
+                                    onClick={() => onChangeUserStatus(user, "archive")}
+                                    className="rounded-lg bg-amber-600 p-2 text-white hover:bg-amber-700 hover:text-white"
+                                >
+                                    <Archive size={18} />
+                                </ButtonIcon>
+                            )}
+
+                            {canUnarchive && (
+                                <ButtonIcon
+                                    type="button"
+                                    title="Desarquivar usuário"
+                                    aria-label={`Desarquivar ${user.name}`}
+                                    onClick={() => onChangeUserStatus(user, "unarchive")}
+                                    className="rounded-lg bg-j-blue-700 p-2 text-white hover:bg-j-blue-600 hover:text-white"
+                                >
+                                    <ArchiveRestore size={18} />
+                                </ButtonIcon>
+                            )}
+
+                            {canManageMembershipNumber && (
+                                <ButtonIcon
+                                    type="button"
+                                    title="Gerenciar matrícula"
+                                    aria-label={`Gerenciar matrícula de ${user.name}`}
+                                    onClick={() => onManageMembershipNumber(user)}
+                                    className="rounded-lg bg-j-blue-700 p-2 text-white hover:bg-j-blue-600 hover:text-white"
+                                >
+                                    <KeyRound size={18} />
                                 </ButtonIcon>
                             )}
 
@@ -222,10 +254,10 @@ export function UserManagementView({
                     );
                 },
             },
-        );
+        ];
 
         return baseColumns;
-    }, [onChangeUserStatus, onSortChange, onViewUser, permissions, query.sort]);
+    }, [onChangeUserStatus, onManageMembershipNumber, onSortChange, onViewUser, permissions, query.sort]);
 
     return (
         <Table.Root
@@ -237,7 +269,7 @@ export function UserManagementView({
                 pageSize,
                 pageCount: totalPages,
                 rowCount: totalItems,
-                pageSizeOptions: [5, 10, 20, 50, 100],
+                pageSizeOptions: [5, 10, 20, 50],
                 onChange: onPaginationChange,
             }}
             footer={<Table.Pagination itemLabel="usuário" />}
@@ -252,23 +284,31 @@ export function UserManagementView({
         >
             <Table.Header className="items-stretch border-b-0">
                 <div className="flex w-full flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-                    <div className="flex w-full lg:min-w-64 lg:flex-1">
+                    <div id="tour-users-search" className="flex w-full items-end lg:min-w-64 lg:flex-1">
                         <Table.Search
-                            value={searchType === "cpf"
-                                ? maskCPF(query.cpf ?? "")
-                                : searchType === "phoneNumber"
-                                    ? maskPhoneNumber(query.phoneNumber ?? "")
-                                    : query[searchType] ?? ""}
+                            value={
+                                searchType === "cpf"
+                                    ? maskCPF(query.cpf ?? "")
+                                    : searchType === "phoneNumber"
+                                        ? maskPhoneNumber(query.phoneNumber ?? "")
+                                        : query[searchType] ?? ""
+                            }
                             onValueChange={onSearchChange}
                             label="Buscar usuários"
                             placeholder="Digite a busca e pressione Enter"
                             submitOnChange={false}
-                            mask={searchType === "cpf"
-                                ? maskCPF
-                                : searchType === "phoneNumber"
-                                    ? maskPhoneNumber
-                                    : undefined}
-                            inputMode={searchType === "cpf" || searchType === "phoneNumber" ? "numeric" : "search"}
+                            mask={
+                                searchType === "cpf"
+                                    ? maskCPF
+                                    : searchType === "phoneNumber"
+                                        ? maskPhoneNumber
+                                        : undefined
+                            }
+                            inputMode={
+                                searchType === "cpf" || searchType === "phoneNumber" || searchType === "membershipNumber"
+                                    ? "numeric"
+                                    : "search"
+                            }
                             formClassName="w-full lg:flex-1"
                             className="rounded-r-none"
                         />
@@ -278,37 +318,72 @@ export function UserManagementView({
                                 labelClassName="sr-only"
                                 name="searchType"
                                 value={searchType}
-                                onChange={(event) => setSearchType(event.target.value as SearchType)}
+                                onChange={(event) => setSearchType(event.target.value as UserSearchType)}
                                 className="h-10 w-fit rounded-l-none bg-j-blue-600 py-2 text-sm text-j-white focus:bg-j-blue-700"
                             >
                                 <option value="q">Geral</option>
                                 <option value="name">Nome</option>
+                                <option value="membershipNumber">Matrícula</option>
                                 <option value="cpf">CPF</option>
+                                <option value="rg">RG</option>
                                 <option value="email">E-mail</option>
                                 <option value="phoneNumber">Telefone</option>
                             </Select.Unregister>
                         </div>
                     </div>
 
-                    <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
+                    <div id="tour-users-status-filter" className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
                         <Select.Unregister
                             label="Status"
                             labelClassName="sr-only"
                             name="status"
                             value={query.status ?? "ACTIVE"}
-                            onChange={(event) => onStatusChange(
-                                event.target.value as "ACTIVE" | "DISABLED" | "ALL",
-                            )}
+                            onChange={(event) =>
+                                onStatusChange(event.target.value as UserStatus | "ALL")
+                            }
                             className="h-10 w-full border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white lg:w-auto"
                         >
                             <option value="ALL">Todos os status</option>
                             <option value="ACTIVE">{USER_STATUS_LABEL.ACTIVE}</option>
-                            <option value="DISABLED">{USER_STATUS_LABEL.DISABLED}</option>
+                            <option value="INACTIVE">{USER_STATUS_LABEL.INACTIVE}</option>
+                            <option value="ARCHIVED">{USER_STATUS_LABEL.ARCHIVED}</option>
                         </Select.Unregister>
+
+                        {permissions.canExportUsers && onExportUsers && (
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    disabled={Boolean(isExporting)}
+                                    onClick={() => onExportUsers("CSV")}
+                                    className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-j-gray-200 bg-j-white px-3 text-xs font-bold text-j-blue-800 transition-colors hover:bg-j-gray-100 disabled:opacity-50 lg:flex-none"
+                                >
+                                    {isExporting === "CSV" ? (
+                                        <LoaderCircle size={15} className="animate-spin" />
+                                    ) : (
+                                        <Download size={15} />
+                                    )}
+                                    Exportar CSV
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={Boolean(isExporting)}
+                                    onClick={() => onExportUsers("PDF")}
+                                    className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-j-gray-200 bg-j-white px-3 text-xs font-bold text-j-blue-800 transition-colors hover:bg-j-gray-100 disabled:opacity-50 lg:flex-none"
+                                >
+                                    {isExporting === "PDF" ? (
+                                        <LoaderCircle size={15} className="animate-spin" />
+                                    ) : (
+                                        <Download size={15} />
+                                    )}
+                                    Exportar PDF
+                                </button>
+                            </div>
+                        )}
 
                         {permissions.canCreateUsers && (
                             <button
                                 type="button"
+                                id="tour-users-create-btn"
                                 onClick={onCreateUser}
                                 className="flex w-full shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg bg-button-primary-bg p-2.5 text-sm font-bold text-button-primary-text transition-colors duration-300 hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-button-outline-border md:text-base lg:w-auto"
                             >
@@ -324,26 +399,15 @@ export function UserManagementView({
                 hasActiveFilters={hasActiveFilters}
                 onClear={onClearFilters}
                 className="justify-end border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6 [&_label]:text-j-gray-700"
-            >
-                {/* {permissions.canReadRoleCatalog && permissions.canReadUserRoles && (
-                    <Select.Unregister
-                        label="Papel de acesso"
-                        name="role"
-                        value={query.roleIds?.[0] ?? ""}
-                        onChange={(event) => onRoleChange(event.target.value ? [Number(event.target.value)] : [])}
-                        className="h-10 min-w-56 border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white"
-                    >
-                        <option value="">Todos os papéis</option>
-                        {roles.map((role) => (
-                            <option key={role.id} value={role.id}>
-                                {role.name}{role.status !== "ACTIVE" ? ` (${role.status === "INACTIVE" ? "inativo" : "excluído"})` : ""}
-                            </option>
-                        ))}
-                    </Select.Unregister>
-                )} */}
-            </Table.Filters>
+            />
 
-            <Table.Content loadingRows={pageSize} />
+            <div id="tour-users-table">
+                <Table.Content
+                    loadingRows={pageSize}
+                    mobileColumnHeaders
+                    mobileFirstColumnClassName="w-10"
+                />
+            </div>
         </Table.Root>
     );
 }

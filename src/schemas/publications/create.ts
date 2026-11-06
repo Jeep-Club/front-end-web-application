@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicationInstantSchema } from "./feed";
 import { publicationPlainText } from "@/utils/publications/content";
+import { parseServiceAmount } from "@/utils/masks/maskServiceAmount";
 
 const text = z.string().trim().min(1, "Campo obrigatório.");
 const publicationContent = text.refine((value) => publicationPlainText(value).length > 0, "Escreva o conteúdo da publicação.");
@@ -68,7 +69,7 @@ export const publicationFormSchema = z.object({
         if (data.endsAt && (!Number.isFinite(Date.parse(data.endsAt)) || Date.parse(data.endsAt) <= start)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "O término deve ser posterior ao início." });
     }
     if (data.type === "SERVICE") {
-        if (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || Number(data.amount.replace(",", ".")) < 0.01) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe um valor positivo com até duas casas decimais." });
+        if (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || !Number.isFinite(parseServiceAmount(data.amount)) || parseServiceAmount(data.amount) < 0.01) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe um valor positivo com até duas casas decimais." });
         if (!/^\d{10,11}$/.test(data.contactPhone.replace(/\D/g, ""))) ctx.addIssue({ code: "custom", path: ["contactPhone"], message: "Informe o telefone usando apenas números, com até 30 dígitos." });
     }
 });

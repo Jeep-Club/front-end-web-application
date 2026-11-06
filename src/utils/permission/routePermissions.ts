@@ -76,12 +76,16 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         { module: "IDENTITY", actions: ["USER_READ"] },
     ],
 
-    "/admin/gestao-financeira": [
-        {
-            module: "BILLING",
-            actions: ["CHARGE_DEFINITION_READ"],
-        },
-    ],
+    "/admin/gestao-financeira": {
+        match: "any",
+        permissions: [
+            { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
+            { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
+            { module: "BILLING", actions: ["MEMBER_CHARGE_READ"] },
+            { module: "BILLING", actions: ["PAYMENT_READ"] },
+            { module: "BILLING", actions: ["REFUND_READ"] },
+        ],
+    },
 
     "/admin/publications": {
         match: "any",

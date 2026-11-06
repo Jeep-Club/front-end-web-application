@@ -33,7 +33,7 @@ export default function Profile() {
     const { restartTour } = usePageTour({
         storageKey: "tour_completed_profile",
         steps: getProfileTourSteps,
-        autoStartOnFirstVisit: true,
+        autoStartOnFirstVisit: false,
     });
 
     return (
@@ -44,7 +44,7 @@ export default function Profile() {
                     title="Gerenciamento de conta"
                     breadcrumbs={[
                         { label: "Home", href: "/feed" },
-                        { label: "Gerenciamento de conta" },
+                        { label: "Conta" },
                         { label: activeTabLabel ?? "" },
                     ]}
                     actions={

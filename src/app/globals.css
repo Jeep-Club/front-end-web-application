@@ -8,6 +8,30 @@
   border-bottom-right-radius: 0 !important;
 }
 
+#tour-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--yellow-300) var(--blue-900);
+}
+
+#tour-sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+#tour-sidebar::-webkit-scrollbar-track {
+  background: var(--blue-900);
+}
+
+#tour-sidebar::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border: 3px solid var(--blue-900);
+  border-radius: 999px;
+  background: var(--yellow-300);
+}
+
+#tour-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--yellow-200);
+}
+
 :root {
   /* Colors */
   --transparent-black: rgba(0, 0, 0, 0.48);

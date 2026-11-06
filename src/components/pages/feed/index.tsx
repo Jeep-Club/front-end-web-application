@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
+import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
+import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useModal } from "@/providers/ModalProvider";
 import type { PublicationFeedFilters } from "@/schemas/publications/feed";
 import { parsePublicationFeedFilters, updatePublicationFeedFilters } from "@/utils/publications/feedFilters";
@@ -23,17 +25,18 @@ import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
-import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { FeedSidebar } from "./FeedSidebar";
+import { usePageTour } from "@/hooks/useTour";
+import { getFeedTourSteps } from "@/config/tourSteps";
 
 import Image from "next/image";
 
-const icons = {
+const publicationFilterIcons = {
+    SERVICE: Wrench,
     NOTICE: Megaphone,
     EVENT: CalendarDays,
-    SERVICE: Wrench,
-};
+} as const;
 
 function preview(value: string, max: number) {
     const text = Array.from(value);
@@ -50,12 +53,9 @@ export default function Feed() {
     const permissions = useUserStore((state) => state.permissions);
     const canRead = hasPermission(permissions, "PUBLICATIONS", "FEED_READ");
     const canDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
-
-    const canCreate = {
-        EVENT: hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE"),
-        NOTICE: hasPermission(permissions, "PUBLICATIONS", "NOTICE_CREATE"),
-        SERVICE: hasPermission(permissions, "PUBLICATIONS", "SERVICE_REQUEST_CREATE"),
-    };
+    const canCreate = publicationCreationTypes.some((entry) =>
+        hasPermission(permissions, "PUBLICATIONS", entry.action)
+    );
 
     const { setContent, setOpen, content: activeModal } = useModal();
     const params = useSearchParams();
@@ -65,16 +65,6 @@ export default function Feed() {
     const detailValue = params.get('publication');
     const detailId = detailValue && /^\d+$/.test(detailValue) && Number.isSafeInteger(Number(detailValue)) && Number(detailValue) > 0 ? Number(detailValue) : null;
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-
-    const canCreateCurrentType = type
-        ? canCreate[type]
-        : Object.values(canCreate).some(Boolean);
-
-    const creationType = type && canCreate[type] ? type : undefined;
-
-    const creationLabel = creationType
-        ? feedTypes[creationType].label.toLocaleLowerCase("pt-BR")
-        : "publicação";
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const filterNavRef = useRef<HTMLElement>(null);
@@ -200,17 +190,6 @@ export default function Feed() {
         if (next) search.set('type', next);
         for (const key of ['publication', 'page', 'size']) search.delete(key);
         window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
-    }
-
-    function openCreatePublication() {
-        setContent(
-            <CreatePublicationModal
-                initialType={creationType}
-                publishEventImmediately
-            />
-        );
-
-        setOpen();
     }
 
     return (

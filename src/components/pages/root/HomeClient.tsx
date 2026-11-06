@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Logo } from "@/components/common/logo";
 import LegalLinks from "@/components/common/legal-links";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
+  FaGithub,
   FaGift,
   FaUserPlus,
   FaIdCard,
@@ -20,6 +21,19 @@ import { GiJeep } from "react-icons/gi";
 import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
 import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
+import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
+
+const contributors = [
+  { username: "Luskahz", name: "Lucas", role: "Desenvolvedor Back-end / Tech Lead" },
+  { username: "Vitorram", name: "Vitor", role: "Desenvolvedor Front-end / Tech Lead" },
+  { username: "joaogabrielbeserra", name: "João Gabriel", role: "Desenvolvedor Full Stack" },
+  { username: "joaoapassos", name: "João Alves", role: "Desenvolvedor Front-end" },
+  { username: "TulioKenji", name: "Túlio Kenji", role: "Desenvolvedor Front-end" },
+  { username: "vinikyo", name: "Vini", role: "Desenvolvedor Full Stack" },
+  { username: "DanielPMorais", name: "Dani", role: "Desenvolvedor Full Stack" },
+  { username: "gumello244", name: "Gumello", role: "Desenvolvedor Full Stack" },
+  { username: "KauanLeonel", name: "Kauan", role: "Desenvolvedor Full Stack" },
+];
 
 export default function HomeClient() {
   const router = useRouter();
@@ -48,13 +62,27 @@ export default function HomeClient() {
       nextBtnText: "Próximo →",
       prevBtnText: "← Anterior",
       doneBtnText: "Entendido ✓",
-      skipMissingElement: false,
+      skipMissingElement: true,
       steps: getHomeTourSteps(),
     });
 
     driverRef.current = driverObj;
     driverObj.drive();
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+    }
   }, []);
+
+  useEffect(() => {
+    const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
+    if (forcedTarget === "/" || forcedTarget === "tour_completed_home") {
+      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+      const timer = setTimeout(() => {
+        handleHomeTour();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [handleHomeTour]);
 
   return (
     <main className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
@@ -73,7 +101,9 @@ export default function HomeClient() {
 
         {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
-          <div />
+          <a href="#creditos" className="rounded-full border border-white/20 bg-black/30 px-4 py-2.5 text-xs font-bold text-white/90 backdrop-blur-md transition-colors hover:border-yellow-400/60 hover:text-yellow-300 md:text-sm">
+            Créditos
+          </a>
           <div className="flex items-center gap-3">
             {/* Botão de ajuda / tour da tela inicial */}
             <button
@@ -114,6 +144,7 @@ export default function HomeClient() {
 
           <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
           <button
+            id="tour-home-join-btn"
             onClick={handleRegister}
             className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
           >
@@ -253,9 +284,50 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* CRÉDITOS */}
+      <section id="creditos" className="scroll-mt-8 border-t border-white/5 bg-[#111] px-6 py-16 md:py-24">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,2fr)] lg:gap-14">
+          <div className="text-center lg:sticky lg:top-10 lg:self-start lg:text-left">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-yellow-400">Feito em equipe</p>
+            <h2 className="text-3xl font-black text-white md:text-4xl">Créditos</h2>
+            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/60 lg:mx-0 md:text-base">
+              Um projeto construído por pessoas que compartilham a paixão por tecnologia, comunidade e aventura.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {contributors.map(({ username, name, role }) => (
+              <article key={username} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center transition-colors hover:border-yellow-400/40 hover:bg-white/[0.07]">
+                <div className="relative mx-auto mb-5 h-28 w-28 overflow-hidden rounded-full border-2 border-yellow-400/70 bg-[#202020] shadow-lg shadow-black/30">
+                  <Image
+                    src={`https://github.com/${username}.png?size=256`}
+                    alt={`Foto de perfil de ${name}`}
+                    fill
+                    sizes="112px"
+                    className="object-cover"
+                  />
+                </div>
+                <h3 className="break-all text-base font-extrabold text-white">{name}</h3>
+                <p className="mt-2 text-sm text-white/60">{role}</p>
+                <a
+                  href={`https://github.com/${username}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={`Abrir perfil GitHub de ${username} em nova aba`}
+                  className="mx-auto mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/15 px-4 text-sm font-semibold text-yellow-300 transition-colors hover:border-yellow-400/60 hover:bg-yellow-400/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
+                >
+                  <FaGithub size={16} aria-hidden="true" />
+                  GitHub
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="px-6 py-20 bg-[#f5f7fb]">
-        <div className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
           <div className="relative z-10 text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-black text-[#00236F] leading-tight mb-4">
               Pronto para a sua<br className="hidden md:block" />próxima aventura?

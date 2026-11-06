@@ -9,6 +9,7 @@ interface ChargeAssignment {
     audienceType: ChargeAudienceType;
     userId: number | null;
     roleId: number | null;
+    roleName: string | null;
     eventId: number | null;
     active: boolean;
     createdAt: string;

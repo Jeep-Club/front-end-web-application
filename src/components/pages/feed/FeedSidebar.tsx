@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, ChevronRight, Megaphone, Users, Wrench } from "lucide-react";
+import { Cake, CalendarDays, ChevronRight, Megaphone, Plus } from "lucide-react";
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -15,7 +15,9 @@ import { Avatar } from "@/components/common/avatar";
 
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
+import { useUserStore } from "@/stores/userStore";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 
 function SideCard({ title, icon: Icon, href, children }: {
@@ -88,8 +90,6 @@ export function FeedSidebar() {
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
 
-                            const participants = event.details.participants ?? [];
-                            const participantCount = event.details.registrationCount ?? participants.length;
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image && !failedImages.has(image) ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} onError={() => setFailedImages(previous => new Set(previous).add(image))} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}
                                 <div className="min-w-0 flex-1">
@@ -117,6 +117,12 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum evento publicado no momento.</p>}
             </SideCard>
 
+            <SideCard title="Aniversariantes do mês" icon={Cake}>
+                <p className="text-sm text-j-gray-500">
+                    A listagem de aniversariantes está disponível apenas na área administrativa.
+                </p>
+            </SideCard>
+
             <SideCard title="Avisos recentes" icon={Megaphone} href="/avisos">
                 {noticesQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(noticesQuery.error).message}</p><Button onClick={() => void noticesQuery.refetch()}>Tentar avisos novamente</Button></div> : noticesQuery.isPending ? <p className="text-sm text-j-gray-500">Carregando avisos...</p> : notices.length ? (
                     <ul className="space-y-3">
@@ -125,13 +131,20 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum aviso recente.</p>}
             </SideCard>
 
-            <section className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm">
-                <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><Users size={17} aria-hidden="true" />Acesso rápido</h2>
-                <div className="grid grid-cols-2 gap-2">
-                    <Link href="/agenda" className="rounded-xl bg-j-gray-100 px-3 py-2.5 text-center text-xs font-bold text-j-blue-800 hover:bg-j-yellow-100">Minha agenda</Link>
-                    <Link href="/servicos" className="rounded-xl bg-j-gray-100 px-3 py-2.5 text-center text-xs font-bold text-j-blue-800 hover:bg-j-yellow-100">Serviços do clube</Link>
-                </div>
-            </section>
+            {canCreate && (
+                <button
+                    id="tour-feed-create-btn"
+                    type="button"
+                    onClick={() => {
+                        setContent(<CreatePublicationModal publishEventImmediately />);
+                        setOpen();
+                    }}
+                    className="hidden min-h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"
+                >
+                    <Plus size={21} aria-hidden="true" />
+                    Postar
+                </button>
+            )}
         </aside>
     );
 }
