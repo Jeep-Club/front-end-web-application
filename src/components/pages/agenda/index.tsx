@@ -16,6 +16,7 @@ import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { EventParticipation } from "@/components/pages/feed/EventParticipation";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
 import { feedDate } from "@/components/pages/feed/feedDisplay";
+import styles from "./AgendaPage.module.css";
 
 type EventItem = Extract<PublicationFeedItem, { type: "EVENT" }>;
 
@@ -98,6 +99,7 @@ export default function AgendaPage() {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
     });
+    const [monthDirection, setMonthDirection] = useState<"forward" | "back">("forward");
     const today = useMemo(() => calendarDateKey(new Date()), []);
     const query = useInfiniteQuery({
         queryKey: ["publications", "agenda", permissions],
@@ -138,29 +140,44 @@ export default function AgendaPage() {
     }
 
     function moveMonth(offset: number) {
+        setMonthDirection(offset > 0 ? "forward" : "back");
         setMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
     }
 
+    function goToToday() {
+        const now = new Date();
+        setMonthDirection(now >= month ? "forward" : "back");
+        setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    }
+
+    const monthEvents = days.flatMap((day) => {
+        if (day.getMonth() !== month.getMonth()) return [];
+        const dayEvents = eventsByDate.get(calendarDateKey(day)) ?? [];
+        return dayEvents.length ? [{ day, events: dayEvents }] : [];
+    });
+
     return <div className="min-h-full w-full p-3 pb-8 md:p-5">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-            <header className="flex flex-wrap items-end justify-between gap-4">
-                <div>
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
                     <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-j-blue-700">Jeep Clube Tamoios</p>
                     <h1 className="mt-1 text-2xl font-extrabold text-j-gray-700 md:text-3xl">Agenda de eventos</h1>
-                    <p className="mt-1 text-sm text-j-gray-500">Veja o que vem por aí e abra um evento para conferir os detalhes.</p>
+                    <p className="mt-1 max-w-xl text-sm text-j-gray-500">Veja o que vem por aí e abra um evento para conferir os detalhes.</p>
                 </div>
-                <div className="flex items-center gap-2 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm">
-                    <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 items-center justify-center rounded-xl text-j-gray-600 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
-                    <h2 aria-live="polite" className="min-w-36 text-center text-sm font-extrabold capitalize text-j-blue-800">{monthLabel(month)}</h2>
-                    <button type="button" aria-label="Próximo mês" onClick={() => moveMonth(1)} className="flex size-10 items-center justify-center rounded-xl text-j-gray-600 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronRight size={20} /></button>
-                    <button type="button" onClick={() => setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))} className="ml-1 hidden min-h-10 rounded-xl bg-j-gray-100 px-3 text-xs font-bold text-j-gray-600 hover:bg-j-gray-200 sm:block">Hoje</button>
+                <div className="flex w-full items-center justify-between gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:w-auto sm:gap-2">
+                    <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
+                    <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-sm font-extrabold capitalize text-j-blue-800 sm:min-w-36">{monthLabel(month)}</h2>
+                    <button type="button" aria-label="Próximo mês" onClick={() => moveMonth(1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronRight size={20} /></button>
+                    <button type="button" onClick={goToToday} className="ml-1 min-h-10 shrink-0 cursor-pointer rounded-xl bg-j-gray-100 px-3 text-xs font-bold text-j-gray-600 transition-colors hover:bg-j-gray-200 focus-visible:outline-2 focus-visible:outline-j-blue-800">Hoje</button>
                 </div>
             </header>
 
             {!canRead ? <div role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600">Seu usuário não possui permissão para ver os eventos.</div>
                 : query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
                     : query.isError && !events.length ? <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-6"><p className="text-sm text-red-600">{query.error.message}</p><Button className="mt-3" onClick={() => void query.refetch()}>Tentar novamente</Button></div>
-                        : <section aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
+                        : <>
+                        <section aria-label="Calendário mensal" className="hidden overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm md:block">
+                            <div key={calendarDateKey(month)} data-direction={monthDirection} className={styles.monthTransition}>
                             <div className="grid grid-cols-7 border-b border-j-gray-200 bg-j-gray-100/70">
                                 {WEEKDAYS.map((day) => <div key={day} className="py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
                             </div>
@@ -173,8 +190,8 @@ export default function AgendaPage() {
                                     const inMonth = day.getMonth() === month.getMonth();
                                     const isToday = key === today;
                                     const eventLabel = dayEvents.length === 1 ? event.title : `${dayEvents.length} eventos`;
-                                    return <div key={key} className={`relative min-h-[4.6rem] border-b border-r border-j-gray-100 p-1 sm:min-h-28 sm:p-1.5 ${inMonth ? "bg-j-white" : "bg-j-gray-100/55"}`}>
-                                        {dayEvents.length > 0 ? <button type="button" onClick={() => openDayEvents(dayEvents)} aria-label={`${longDateLabel(day)}: ${eventLabel}`} className={`group relative flex h-full min-h-[4rem] w-full flex-col overflow-hidden rounded-xl text-left transition-transform hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 sm:min-h-[6.4rem] ${isToday ? "ring-2 ring-inset ring-j-yellow-400" : ""}`}>
+                                    return <div key={key} className={`relative min-h-[4.6rem] border-b border-r border-j-gray-100 p-1 lg:min-h-32 lg:p-1.5 ${inMonth ? "bg-j-white" : "bg-j-gray-100/55"}`}>
+                                        {dayEvents.length > 0 ? <button type="button" onClick={() => openDayEvents(dayEvents)} aria-label={`${longDateLabel(day)}: ${eventLabel}`} className={`group relative flex h-full min-h-[4rem] w-full cursor-pointer flex-col overflow-hidden rounded-xl text-left transition-[transform,box-shadow] duration-200 hover:scale-[1.02] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 sm:min-h-[6.4rem] ${isToday ? "ring-2 ring-inset ring-j-yellow-400" : ""}`}>
                                             {imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-65 transition-opacity group-hover:opacity-80" /> : <div className="absolute inset-0 bg-gradient-to-br from-j-blue-700 to-j-blue-950" />}
                                             <div className="absolute inset-0 bg-gradient-to-br from-j-blue-950/35 via-j-blue-950/5 to-j-blue-950/55" />
                                             <span className="relative z-[1] flex size-7 items-center justify-center rounded-lg bg-j-yellow-300 text-sm font-black text-j-blue-950 shadow-md sm:size-8 sm:text-base">{day.getDate()}</span>
@@ -184,11 +201,29 @@ export default function AgendaPage() {
                                     </div>;
                                 })}
                             </div>
+                            </div>
                             {query.isFetchingNextPage && <p role="status" className="border-t border-j-gray-200 px-4 py-3 text-center text-xs text-j-gray-500">Carregando mais eventos…</p>}
                             {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
                             {!events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda.</p>}
-                        </section>}
-            <p className="text-center text-xs text-j-gray-400">As fotos aparecem nos dias com evento. Toque em um dia para ver um resumo.</p>
+                        </section>
+                        <section aria-label="Eventos do mês" className="flex flex-col gap-3 md:hidden">
+                            <div key={calendarDateKey(month)} data-direction={monthDirection} className={`${styles.monthTransition} flex flex-col gap-3`}>
+                                {monthEvents.length ? monthEvents.map(({ day, events: dayEvents }) => <article key={calendarDateKey(day)} className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                                    <h3 className={`border-b border-j-gray-100 px-4 py-2.5 text-sm font-extrabold capitalize ${calendarDateKey(day) === today ? "bg-j-yellow-300/20 text-j-blue-900" : "bg-j-gray-100/70 text-j-blue-800"}`}>{longDateLabel(day)}</h3>
+                                    <div className="flex flex-col gap-2 p-3">
+                                        {dayEvents.map((event) => <button key={event.id} type="button" onClick={() => openDayEvents([event])} className="group flex min-h-20 w-full cursor-pointer items-center gap-3 overflow-hidden rounded-xl border border-j-gray-100 p-2 text-left transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-j-yellow-400 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-j-blue-800">
+                                            <span className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-j-blue-800 sm:size-20">{event.primaryImage ? <Image src={getMediaImageUrl(event.primaryImage.storageKey)} alt="" fill unoptimized sizes="80px" className="object-cover transition-transform duration-300 group-hover:scale-105" /> : <CalendarDays className="absolute inset-0 m-auto text-j-yellow-300" size={24} />}</span>
+                                            <span className="min-w-0 flex-1 py-1"><span className="block break-words text-sm font-extrabold text-j-blue-800">{event.title}</span><span className="mt-1 block text-xs text-j-gray-500">{feedDate(event.details.startsAt)}</span><span className="mt-1 block text-[11px] font-semibold text-j-gray-500">{EVENT_STATUS_LABELS[event.details.status]}</span></span>
+                                            <ChevronRight size={18} aria-hidden="true" className="mr-1 shrink-0 text-j-gray-400 transition-transform group-hover:translate-x-0.5" />
+                                        </button>)}
+                                    </div>
+                                </article>) : <div className="rounded-2xl border border-j-gray-200 bg-j-white px-5 py-8 text-center"><CalendarDays className="mx-auto text-j-gray-400" size={28} /><p className="mt-3 text-sm font-semibold text-j-gray-600">Não há eventos publicados neste mês.</p></div>}
+                            </div>
+                            {query.isFetchingNextPage && <p role="status" className="py-2 text-center text-xs text-j-gray-500">Carregando mais eventos…</p>}
+                            {query.isFetchNextPageError && <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
+                        </section>
+                        </>}
+            <p className="text-center text-xs text-j-gray-400">Toque em um evento para conferir os detalhes.</p>
         </div>
     </div>;
 }

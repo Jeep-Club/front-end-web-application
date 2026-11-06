@@ -8,7 +8,6 @@ import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
-  FaGithub,
   FaGift,
   FaUserPlus,
   FaIdCard,
@@ -22,18 +21,6 @@ import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md"
 import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
-
-const contributors = [
-  { username: "Vitorram", name: "Vitorram" },
-  { username: "joaogabrielbeserra", name: "joaogabrielbeserra" },
-  { username: "TulioKenji", name: "TulioKenji" },
-  { username: "joaoapassos", name: "joaoapassos" },
-  { username: "vinikyo", name: "vinikyo" },
-  { username: "KauanLeonel", name: "KauanLeonel" },
-  { username: "gumello244", name: "gumello244" },
-  { username: "DanielPMorais", name: "DanielPMorais" },
-  { username: "Luskahz", name: "Lucas Alves" },
-];
 
 export default function HomeClient() {
   const router = useRouter();
@@ -101,9 +88,6 @@ export default function HomeClient() {
 
         {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
-          <a href="#creditos" className="rounded-full border border-white/20 bg-black/30 px-4 py-2.5 text-xs font-bold text-white/90 backdrop-blur-md transition-colors hover:border-yellow-400/60 hover:text-yellow-300 md:text-sm">
-            Créditos
-          </a>
           <div className="flex items-center gap-3">
             {/* Botão de ajuda / tour da tela inicial */}
             <button
@@ -281,46 +265,6 @@ export default function HomeClient() {
               <p className="text-sm text-white/60 leading-relaxed">{item.text}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* CRÉDITOS */}
-      <section id="creditos" className="scroll-mt-8 border-t border-white/5 bg-[#111] px-6 py-16 md:py-24">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,2fr)] lg:gap-14">
-          <div className="text-center lg:sticky lg:top-10 lg:self-start lg:text-left">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-yellow-400">Feito em equipe</p>
-            <h2 className="text-3xl font-black text-white md:text-4xl">Créditos</h2>
-            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/60 lg:mx-0 md:text-base">
-              Um projeto construído por pessoas que compartilham a paixão por tecnologia, comunidade e aventura.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {contributors.map(({ username, name }) => (
-              <article key={username} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center transition-colors hover:border-yellow-400/40 hover:bg-white/[0.07]">
-                <div className="relative mx-auto mb-5 h-28 w-28 overflow-hidden rounded-full border-2 border-yellow-400/70 bg-[#202020] shadow-lg shadow-black/30">
-                  <Image
-                    src={`https://github.com/${username}.png?size=256`}
-                    alt={`Foto de perfil de ${username}`}
-                    fill
-                    sizes="112px"
-                    className="object-cover"
-                  />
-                </div>
-                <h3 className="break-all text-base font-extrabold text-white">{name}</h3>
-                <a
-                  href={`https://github.com/${username}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label={`Abrir perfil GitHub de ${username} em nova aba`}
-                  className="mx-auto mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/15 px-4 text-sm font-semibold text-yellow-300 transition-colors hover:border-yellow-400/60 hover:bg-yellow-400/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
-                >
-                  <FaGithub size={16} aria-hidden="true" />
-                  GitHub
-                </a>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 

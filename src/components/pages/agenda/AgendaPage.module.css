@@ -1,0 +1,21 @@
+.monthTransition {
+    animation: monthEnter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.monthTransition[data-direction="back"] {
+    animation-name: monthEnterBack;
+}
+
+@keyframes monthEnter {
+    from { opacity: 0; transform: translateX(12px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes monthEnterBack {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .monthTransition { animation: none; }
+}
