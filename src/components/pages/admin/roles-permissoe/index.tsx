@@ -270,7 +270,7 @@ export default function RolesPermissions() {
 
                 {activeTab === "roles" && isTabVisible("roles") && (
                     <div className="flex w-full flex-col gap-4">
-                        <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-5">
+                        <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <ManagementBackButton />
                                 <div>
@@ -278,21 +278,23 @@ export default function RolesPermissions() {
                                     <p className="text-sm text-j-gray-600">Crie e organize os cargos e seus acessos.</p>
                                 </div>
                             </div>
-                            {canCreateRole && (
-                                <Button id="tour-create-role-btn" onClick={handleOpenCreateRole} className="w-full justify-center sm:w-auto">
-                                    <Plus size={18} />
-                                    Criar cargo
-                                </Button>
-                            )}
                         </div>
                         <section id="tour-roles-table" className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                            <div className="flex flex-wrap gap-2 border-b border-j-gray-200 px-4 py-3 md:px-6" role="tablist" aria-label="Filtrar cargos por situação">
-                                {ROLE_FILTERS.map(({ key, label }) => (
-                                    <button key={key} type="button" role="tab" aria-selected={roleStatusFilter === key} onClick={() => setRoleStatusFilter(key)}
-                                        className={twMerge("inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors", roleStatusFilter === key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800")}>
-                                        {label}<span className={twMerge("rounded-full px-2 py-0.5 text-xs", roleStatusFilter === key ? "bg-j-white/15" : "bg-j-gray-100")}>{roleCounts[key]}</span>
-                                    </button>
-                                ))}
+                            <div className="flex flex-col gap-3 border-b border-j-gray-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-6">
+                                <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filtrar cargos por situação">
+                                    {ROLE_FILTERS.map(({ key, label }) => (
+                                        <button key={key} type="button" role="tab" aria-selected={roleStatusFilter === key} onClick={() => setRoleStatusFilter(key)}
+                                            className={twMerge("inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-colors", roleStatusFilter === key ? "border-j-blue-800 bg-j-blue-800 text-j-white" : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800")}>
+                                            {label}<span className={twMerge("rounded-full px-2 py-0.5 text-xs", roleStatusFilter === key ? "bg-j-white/15" : "bg-j-gray-100")}>{roleCounts[key]}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                {canCreateRole && (
+                                    <Button id="tour-create-role-btn" onClick={handleOpenCreateRole} className="w-full justify-center sm:w-auto">
+                                        <Plus size={18} />
+                                        Criar cargo
+                                    </Button>
+                                )}
                             </div>
 
                             {isError && (

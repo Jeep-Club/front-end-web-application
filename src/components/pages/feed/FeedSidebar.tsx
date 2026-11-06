@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Cake, CalendarDays, ChevronRight, Megaphone, Plus } from "lucide-react";
 
@@ -16,8 +15,6 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
 import { useUserStore } from "@/stores/userStore";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
-import { useBirthdayUsers } from "@/hooks/useBirthdayUsers";
-import { getUpcomingBirthdaysForMonth } from "@/utils/birthdays";
 
 function dateLabel(value: string) {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -54,13 +51,6 @@ export function FeedSidebar() {
         hasPermission(permissions, "PUBLICATIONS", entry.action)
     );
     const { setContent, setOpen } = useModal();
-    const birthdayQuery = useBirthdayUsers();
-    const [referenceDate] = useState(() => new Date());
-    const upcomingBirthdays = useMemo(
-        () => getUpcomingBirthdaysForMonth(birthdayQuery.users, referenceDate),
-        [birthdayQuery.users, referenceDate],
-    );
-
     const eventsQuery = useQuery({
         queryKey: ["publications", "feed-sidebar", "EVENT"],
         queryFn: () => listPublicationFeedAction({ type: "EVENT", page: 0, size: 48 }),
@@ -99,23 +89,9 @@ export function FeedSidebar() {
             </SideCard>
 
             <SideCard title="Aniversariantes do mês" icon={Cake}>
-                {!birthdayQuery.canReadUsers ? <p className="text-sm text-j-gray-500">A lista de aniversariantes está disponível para a administração.</p>
-                    : birthdayQuery.isPending || (birthdayQuery.hasNextPage && !birthdayQuery.isError) ? <p role="status" className="text-sm text-j-gray-500">Carregando aniversariantes...</p>
-                    : birthdayQuery.isError && !birthdayQuery.users.length ? <div role="alert" className="text-sm text-j-gray-600"><p>Não foi possível carregar os aniversariantes.</p><button type="button" onClick={() => void birthdayQuery.refetch()} className="mt-2 cursor-pointer font-bold text-j-blue-800 hover:underline">Tentar novamente</button></div>
-                        : upcomingBirthdays.length ? <ul className="space-y-3">
-                            {upcomingBirthdays.map(({ id, name, date }) => (
-                                <li key={id} className="flex items-center gap-3">
-                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-j-blue-800 text-xs font-bold text-j-white" aria-hidden="true">
-                                        {name.split(" ").map((part) => part[0]).slice(0, 2).join("")}
-                                    </span>
-                                    <span className="min-w-0 flex-1 truncate text-sm font-bold text-j-blue-900">{name}</span>
-                                    <time dateTime={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`} className="shrink-0 text-xs font-medium text-j-gray-500">
-                                        {new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" }).format(date)}
-                                    </time>
-                                </li>
-                            ))}
-                        </ul> : <p className="text-sm text-j-gray-500">Nenhum aniversário próximo neste mês.</p>}
-                {birthdayQuery.isFetchNextPageError && <p role="alert" className="mt-2 text-xs text-red-600">Não foi possível carregar todos os aniversários. <button type="button" onClick={() => void birthdayQuery.fetchNextPage()} className="cursor-pointer font-bold underline">Tentar novamente</button></p>}
+                <p className="text-sm text-j-gray-500">
+                    A listagem de aniversariantes está disponível apenas na área administrativa.
+                </p>
             </SideCard>
 
             <SideCard title="Avisos recentes" icon={Megaphone} href="/avisos">
