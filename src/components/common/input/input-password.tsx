@@ -4,13 +4,15 @@ import { Input } from "./input";
 import type { InputProps } from "./input";
 import { ButtonIcon } from "../button";
 import { twMerge } from "tailwind-merge";
-import { Eye, EyeClosed, KeyRound } from "lucide-react";
+import { Check, Eye, EyeClosed, KeyRound, X } from "lucide-react";
+import { validPassword } from "@/utils/validate/validatePassword";
 import { useFormContext, useController } from "react-hook-form";
 
 export type InputPasswordProps = Omit<InputProps, "label" | "name"> & {
     label?: string,
     notSeePassword?: boolean,
     name?: string,
+    stepErrors?: boolean,
 }
 
 export function InputPassword({label="Senha", name='senha', placeholder, className, value, notSeePassword=false, onChange, stepErrors=false, autoComplete='new-password', variant = "white", disabled, ...props}: InputPasswordProps){
@@ -21,6 +23,7 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
         fieldState: {error},
         field: {value: fieldValue, onChange: fieldOnChange, onBlur, ref}
     } = useController({name, control, defaultValue: value ?? ''})
+    const passwordSteps = validPassword(String(fieldValue ?? ""));
 
     return(
         <div className="w-full flex flex-col gap-3">
@@ -58,28 +61,28 @@ export function InputPassword({label="Senha", name='senha', placeholder, classNa
                     {isVisible ? <EyeClosed /> : <Eye />}
                 </ButtonIcon>
             </Input>
-            {stepErrors && stepsErrors &&
+            {stepErrors && passwordSteps &&
                 <ul className="text-xs text-j-red-300 flex flex-col gap-1 text-left">
                     <li className={twMerge(
-                            stepsErrors.hasMinLength ? "text-j-green-700" : "text-j-red-500",
+                            passwordSteps.hasMinLength ? "text-j-green-700" : "text-j-red-500",
                             "flex items-center gap-1"
-                        )}>{stepsErrors.hasMinLength ? <Check size={18}/> : <X size={18}/>} Minimo de 8 caracteres</li>
+                        )}>{passwordSteps.hasMinLength ? <Check size={18}/> : <X size={18}/>} Minimo de 8 caracteres</li>
                     <li className={twMerge(
-                        stepsErrors.hasNumber ? "text-j-green-700" : "text-j-red-500",
+                        passwordSteps.hasNumber ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
-                    )}>{stepsErrors.hasNumber ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos um número</li>
+                    )}>{passwordSteps.hasNumber ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos um número</li>
                     <li className={twMerge(
-                        stepsErrors.hasUppercase ? "text-j-green-700" : "text-j-red-500",
+                        passwordSteps.hasUppercase ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
-                    )}>{stepsErrors.hasUppercase ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos uma letra maiúscula</li>
+                    )}>{passwordSteps.hasUppercase ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos uma letra maiúscula</li>
                     <li className={twMerge(
-                        stepsErrors.hasLowercase ? "text-j-green-700" : "text-j-red-500",
+                        passwordSteps.hasLowercase ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
-                    )}>{stepsErrors.hasLowercase ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos uma letra minúscula</li>
+                    )}>{passwordSteps.hasLowercase ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos uma letra minúscula</li>
                     <li className={twMerge(
-                        stepsErrors.hasSpecialChar ? "text-j-green-700" : "text-j-red-500",
+                        passwordSteps.hasSpecialChar ? "text-j-green-700" : "text-j-red-500",
                         "flex items-center gap-1"
-                    )}>{stepsErrors.hasSpecialChar ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos um caractere especial</li>
+                    )}>{passwordSteps.hasSpecialChar ? <Check size={18}/> : <X size={18}/>} Deve conter pelo menos um caractere especial</li>
                 </ul>
             }
         </div>

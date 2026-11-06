@@ -25,6 +25,11 @@ const common = z.object({
     likeCount: z.number().nonnegative(), commentCount: z.number().nonnegative(), likedByMe: z.boolean(),
 });
 const notice = common.extend({ type: z.literal("NOTICE"), details: z.object({}) });
+const eventParticipant = z.object({
+    id: z.number().optional(), userId: z.number().optional(), name: z.string(),
+    profilePhotoStorageKey: z.string().nullish(), profilePhotoUrl: z.string().nullish(),
+    photoStorageKey: z.string().nullish(), photoUrl: z.string().nullish(),
+});
 const event = common.extend({ type: z.literal("EVENT"), details: z.object({
     startsAt: publicationInstantSchema, endsAt: publicationInstantSchema.nullable(), status: z.enum(["OPEN", "IN_PROGRESS", "FINISHED", "CANCELLED"]),
     // Legacy optional extensions; the unified reading contract does not supply these.

@@ -3,11 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { Cake, CalendarDays, ChevronRight, Megaphone, Plus } from "lucide-react";
+import { Cake, CalendarDays, ChevronRight, Megaphone, Plus, Wrench } from "lucide-react";
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/button';
+import { useModal } from "@/providers/ModalProvider";
+import { CreatePublicationModal } from "@/components/pages/admin/publications/CreatePublicationModal";
+import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useUserStore } from '@/stores/userStore';
 import { hasPermission } from '@/utils/permission/hasPermission';
 import { feedDate, publicationReadError, publicationReadRetry } from './feedDisplay';
@@ -15,9 +18,7 @@ import { Avatar } from "@/components/common/avatar";
 
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
-import { useUserStore } from "@/stores/userStore";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 
 function SideCard({ title, icon: Icon, href, children }: {
@@ -43,6 +44,8 @@ export function FeedSidebar() {
     const permissions = useUserStore(state => state.permissions);
     const canRead = hasPermission(permissions, 'PUBLICATIONS', 'FEED_READ');
     const canDetail = hasPermission(permissions, 'PUBLICATIONS', 'PUBLICATION_READ');
+    const canCreate = publicationCreationTypes.some((entry) => hasPermission(permissions, 'PUBLICATIONS', entry.action));
+    const { setContent, setOpen } = useModal();
     const params = useSearchParams();
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
     function detailHref(id: number) {
@@ -89,6 +92,8 @@ export function FeedSidebar() {
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
+                            const participants = event.details.participants ?? [];
+                            const participantCount = event.details.registrationCount ?? participants.length;
 
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image && !failedImages.has(image) ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} onError={() => setFailedImages(previous => new Set(previous).add(image))} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}

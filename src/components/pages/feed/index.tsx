@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
-import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
-import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useModal } from "@/providers/ModalProvider";
 import type { PublicationFeedFilters } from "@/schemas/publications/feed";
 import { parsePublicationFeedFilters, updatePublicationFeedFilters } from "@/utils/publications/feedFilters";
@@ -25,6 +23,7 @@ import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
+import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { FeedSidebar } from "./FeedSidebar";
 import { usePageTour } from "@/hooks/useTour";
@@ -53,15 +52,22 @@ export default function Feed() {
     const permissions = useUserStore((state) => state.permissions);
     const canRead = hasPermission(permissions, "PUBLICATIONS", "FEED_READ");
     const canDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
-    const canCreate = publicationCreationTypes.some((entry) =>
-        hasPermission(permissions, "PUBLICATIONS", entry.action)
-    );
-
+    const canCreate = {
+        EVENT: hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE"),
+        NOTICE: hasPermission(permissions, "PUBLICATIONS", "NOTICE_CREATE"),
+        SERVICE: hasPermission(permissions, "PUBLICATIONS", "SERVICE_REQUEST_CREATE"),
+    };
     const { setContent, setOpen, content: activeModal } = useModal();
     const params = useSearchParams();
     const filtersResult = parsePublicationFeedFilters(params);
     const filters = filtersResult.success ? filtersResult.data : {};
     const { type, publishedFrom, publishedTo } = filters;
+    const canCreateCurrentType = type ? canCreate[type] : Object.values(canCreate).some(Boolean);
+    const creationType = type && canCreate[type] ? type : undefined;
+    const creationLabel = creationType
+        ? feedTypes[creationType].label.toLocaleLowerCase("pt-BR")
+        : "publicação";
+
     const detailValue = params.get('publication');
     const detailId = detailValue && /^\d+$/.test(detailValue) && Number.isSafeInteger(Number(detailValue)) && Number(detailValue) > 0 ? Number(detailValue) : null;
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
@@ -192,6 +198,11 @@ export default function Feed() {
         window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
     }
 
+    function openCreatePublication() {
+        setContent(<CreatePublicationModal initialType={creationType} publishEventImmediately />);
+        setOpen();
+    }
+
     return (
         <div tabIndex={-1} data-publication-return className="min-h-full w-full px-3 py-4 focus:outline-none md:px-6 md:py-6">
             <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
@@ -234,7 +245,7 @@ export default function Feed() {
 
                                         {(["SERVICE", "NOTICE", "EVENT"] as const).map(
                                             (key) => {
-                                                const Icon = icons[key];
+                                                const Icon = publicationFilterIcons[key];
 
                                                 return (
                                                     <button
@@ -366,7 +377,7 @@ export default function Feed() {
                             ) : (
                                 <div className="grid grid-cols-1 gap-5">
                                     {publications.map((publication) => {
-                                        const Icon = icons[publication.type];
+                                        const Icon = publicationFilterIcons[publication.type];
                                         const isEvent = publication.type === "EVENT";
 
                                         return (
