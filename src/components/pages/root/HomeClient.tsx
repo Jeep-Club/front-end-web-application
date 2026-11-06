@@ -101,9 +101,7 @@ export default function HomeClient() {
 
         {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
-          <a href="#creditos" className="rounded-full border border-white/20 bg-black/30 px-4 py-2.5 text-xs font-bold text-white/90 backdrop-blur-md transition-colors hover:border-yellow-400/60 hover:text-yellow-300 md:text-sm">
-            Créditos
-          </a>
+
           <div className="flex items-center gap-3">
             {/* Botão de ajuda / tour da tela inicial */}
             <button
