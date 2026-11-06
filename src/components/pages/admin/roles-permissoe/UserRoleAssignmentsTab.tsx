@@ -4,11 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
 import { KeyRound,ShieldX } from "lucide-react";
 import { useMemo,useState } from "react";
+import { twMerge } from "tailwind-merge";
 
 import { Button } from "@/components/common/button";
+import { Avatar } from "@/components/common/avatar";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
+import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "@/components/pages/admin/users/user-display";
 import { useModal } from "@/providers/ModalProvider";
 import { listAdminUsersAction } from "@/server/actions/admin/users/list";
 import { useUserStore } from "@/stores/userStore";
@@ -57,16 +60,34 @@ export function UserRoleAssignmentsTab() {
 
     const columns = useMemo<ColumnDef<AdminUser, unknown>[]>(() => [
         {
+            id: "photo",
+            header: "Foto",
+            meta: { label: "Foto" },
+            cell: ({ row }) => row.original.profilePhotoUrl ? (
+                <Avatar src={row.original.profilePhotoUrl} alt={`Foto de ${row.original.name}`} />
+            ) : (
+                <span
+                    aria-hidden="true"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-j-blue-100 text-xs font-bold text-j-blue-800"
+                >
+                    {row.original.name
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((part) => part[0])
+                        .join("")
+                        .toLocaleUpperCase("pt-BR")}
+                </span>
+            ),
+        },
+        {
             accessorKey: "membershipNumber",
             header: "Matrícula",
             meta: { label: "Matrícula" },
             cell: ({ row }) => (
-                <div className="flex flex-col">
-                    <span className="font-bold text-j-gray-700">
-                        {row.original.membershipNumber ?? "—"}
-                    </span>
-                    <span className="text-[11px] text-j-gray-400">ID #{row.original.id}</span>
-                </div>
+                <span className="font-bold text-j-gray-700">
+                    {row.original.membershipNumber ?? "—"}
+                </span>
             ),
         },
         {
@@ -76,12 +97,6 @@ export function UserRoleAssignmentsTab() {
             cell: ({ row }) => (
                 <span className="font-bold text-j-gray-700">{row.original.name}</span>
             ),
-        },
-        {
-            accessorKey: "email",
-            header: "E-mail",
-            meta: { label: "E-mail" },
-            cell: ({ row }) => row.original.email ?? "—",
         },
         {
             accessorKey: "cpf",
@@ -98,8 +113,23 @@ export function UserRoleAssignmentsTab() {
                 : "—",
         },
         {
+            accessorKey: "status",
+            header: "Status",
+            meta: { label: "Status" },
+            cell: ({ row }) => (
+                <span
+                    className={twMerge(
+                        "inline-flex rounded-full px-2.5 py-1 text-xs font-bold",
+                        USER_STATUS_STYLE[row.original.status],
+                    )}
+                >
+                    {USER_STATUS_LABEL[row.original.status]}
+                </span>
+            ),
+        },
+        {
             id: "actions",
-            header: "Ações",
+            header: () => <div className="text-right">Ações</div>,
             meta: { label: "Ações" },
             cell: ({ row }) => (
                 <div className="flex items-center justify-end">
@@ -136,33 +166,46 @@ export function UserRoleAssignmentsTab() {
     }
 
     return (
-        <Table.Root
-            data={data?.content ?? []}
-            columns={columns}
-            getRowId={(user) => String(user.id)}
-            pagination={{
-                pageIndex: page,
-                pageSize,
-                pageCount: data?.totalPages ?? 0,
-                rowCount: data?.totalElements,
-                pageSizeOptions: [5, 10, 20, 50],
-                onChange: (next) => {
-                    setPage(next.pageIndex);
-                    setPageSize(next.pageSize);
-                },
-            }}
-            footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
-            isLoading={isLoading}
-            isFetching={isFetching}
-            error={error ? error.message : undefined}
-            emptyState={
-                hasActiveFilters
-                    ? "Nenhum usuário corresponde à busca ou aos filtros atuais."
-                    : "Nenhum usuário cadastrado."
-            }
-        >
-            <Table.Header className="items-stretch border-b-0">
-                <div className="flex w-full sm:min-w-64">
+        <div className="flex w-full flex-col gap-4">
+            <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <ManagementBackButton />
+                    <div>
+                        <h2 className="font-black text-j-blue-800">Atribuições de cargos</h2>
+                        <p className="text-sm text-j-gray-600">
+                            Consulte os cargos atribuídos aos usuários e gerencie seus acessos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <Table.Root
+                data={data?.content ?? []}
+                columns={columns}
+                getRowId={(user) => String(user.id)}
+                pagination={{
+                    pageIndex: page,
+                    pageSize,
+                    pageCount: data?.totalPages ?? 0,
+                    rowCount: data?.totalElements,
+                    pageSizeOptions: [5, 10, 20, 50],
+                    onChange: (next) => {
+                        setPage(next.pageIndex);
+                        setPageSize(next.pageSize);
+                    },
+                }}
+                footer={<Table.Pagination itemLabel="usuário" showCount={false} />}
+                isLoading={isLoading}
+                isFetching={isFetching}
+                error={error ? error.message : undefined}
+                emptyState={
+                    hasActiveFilters
+                        ? "Nenhum usuário corresponde à busca ou aos filtros atuais."
+                        : "Nenhum usuário cadastrado."
+                }
+            >
+                <Table.Header className="items-stretch border-b-0">
+                <div className="flex w-full items-end sm:min-w-64">
                     <Table.Search
                         value={searchType === "cpf"
                             ? maskCPF(searchValue)
@@ -219,6 +262,7 @@ export function UserRoleAssignmentsTab() {
 
                 <Table.Content loadingRows={pageSize} />
             </Table.Root>
+        </div>
     );
 }
 
