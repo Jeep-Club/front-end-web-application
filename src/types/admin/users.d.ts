@@ -104,6 +104,7 @@ interface UserManagementPermissions {
     canReadUserRoles: boolean;
     canAssignRoles: boolean;
     canRevokeRoles: boolean;
+    canManageMembershipRegistration: boolean;
 }
 
 interface AdminUsersDataSource {

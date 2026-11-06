@@ -14,12 +14,17 @@ import { ManagementBackButton } from "@/components/pages/admin/ManagementBackBut
 import { useModal } from "@/providers/ModalProvider";
 import { exportAdminUsersAction } from "@/server/actions/admin/users/export";
 import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
+import {
+    getAdminMemberRegistrationAction,
+    updateAdminMemberRegistrationAction,
+} from "@/server/actions/admin/membership/memberRegistry";
 import { useUserStore } from "@/stores/userStore";
 import { unMaskCPF, unMaskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { isValidCPF } from "@/utils/validate";
 import { MembershipApplicationsTab } from "./MembershipApplicationsTab";
 import { NewAdminUserPage } from "./new";
+import { UserMembershipNumberModal } from "./UserMembershipNumberModal";
 import { UserManagementView, type UserSearchType } from "./UserManagementView";
 import { UserStatusConfirmationModal } from "./UserStatusConfirmationModal";
 
@@ -127,6 +132,9 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         canReadUserRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_READ"),
         canAssignRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_ASSIGN"),
         canRevokeRoles: hasPermission(permissionsFromStore, "AUTHORIZATION", "USER_ROLE_REVOKE"),
+        canManageMembershipRegistration:
+            hasPermission(permissionsFromStore, "MEMBERSHIP", "MEMBER_READ")
+            && hasPermission(permissionsFromStore, "MEMBERSHIP", "MEMBER_REGISTRATION_MANAGE"),
     }), [permissionsFromStore]);
 
     const updateUserInCache = useCallback(() => {
@@ -156,6 +164,25 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         },
         [updateUserStatusMutation],
     );
+
+    const updateMembershipNumberMutation = useMutation({
+        mutationFn: updateAdminMemberRegistrationAction,
+    });
+
+    const handleManageMembershipNumber = useCallback((user: AdminUser) => {
+        setContent(
+            <UserMembershipNumberModal
+                user={user}
+                onLoad={getAdminMemberRegistrationAction}
+                onSave={updateMembershipNumberMutation.mutateAsync}
+                onSuccess={() => {
+                    router.refresh();
+                    toast.success("Matrícula atualizada com sucesso.");
+                }}
+            />,
+        );
+        setOpen();
+    }, [router, setContent, setOpen, updateMembershipNumberMutation.mutateAsync]);
 
     const handleChangeUserStatus = useCallback(
         (user: AdminUser, action: AdminUserLifecycleAction) => {
@@ -372,6 +399,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         onSortChange={handleSortChange}
                         onViewUser={handleViewUser}
                         onChangeUserStatus={handleChangeUserStatus}
+                        onManageMembershipNumber={handleManageMembershipNumber}
                         onExportUsers={handleExportUsers}
                         setSearchType={updateSearchType}
                     />

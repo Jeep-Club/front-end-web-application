@@ -14,6 +14,8 @@ export interface TableContentProps {
     className?: string;
     /** Shows the first two mobile column labels once above the accordion rows. */
     mobileColumnHeaders?: boolean;
+    /** Overrides the width of the leading mobile column in accordion rows and labels. */
+    mobileFirstColumnClassName?: string;
 }
 
 function getColumnLabel<TData extends RowData>(cell: Cell<TData, unknown>): string {
@@ -47,7 +49,15 @@ function StateMessage({
     );
 }
 
-function MobileAccordionRow<TData extends RowData>({ row, mobileColumnHeaders = false }: { row: Row<TData>; mobileColumnHeaders?: boolean }) {
+function MobileAccordionRow<TData extends RowData>({
+    row,
+    mobileColumnHeaders = false,
+    mobileFirstColumnClassName,
+}: {
+    row: Row<TData>;
+    mobileColumnHeaders?: boolean;
+    mobileFirstColumnClassName?: string;
+}) {
     const [isOpen, setIsOpen] = useState(false);
     const [headerCellA, headerCellB, ...restCells] = row.getVisibleCells();
 
@@ -61,7 +71,7 @@ function MobileAccordionRow<TData extends RowData>({ row, mobileColumnHeaders = 
             >
                 <div className="flex min-w-0 flex-1 items-start gap-4">
                     {headerCellA && (
-                        <div className="flex w-14 shrink-0 flex-col justify-center gap-1 self-stretch">
+                        <div className={twMerge("flex w-14 shrink-0 flex-col justify-center gap-1 self-stretch", mobileFirstColumnClassName)}>
                             {!mobileColumnHeaders && <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
                                 {getColumnLabel(headerCellA)}
                             </span>}
@@ -117,6 +127,7 @@ export function TableContent<TData extends RowData>({
     loadingRows = 5,
     className,
     mobileColumnHeaders = false,
+    mobileFirstColumnClassName,
 }: TableContentProps) {
     const { table, columnCount, isLoading, isFetching, error, emptyState } =
         useTableContext<TData>();
@@ -210,7 +221,9 @@ export function TableContent<TData extends RowData>({
                         {rows[0].getVisibleCells().slice(0, 2).map((cell, index) => (
                             <span
                                 key={cell.id}
-                                className={index === 0 ? "w-14 shrink-0" : "min-w-0 flex-1 border-l border-j-gray-200 pl-4"}
+                                className={index === 0
+                                    ? twMerge("w-14 shrink-0", mobileFirstColumnClassName)
+                                    : "min-w-0 flex-1 border-l border-j-gray-200 pl-4"}
                             >
                                 {getColumnLabel(cell)}
                             </span>
@@ -218,7 +231,12 @@ export function TableContent<TData extends RowData>({
                     </div>
                 )}
                 {rows.map((row) => (
-                    <MobileAccordionRow key={row.id} row={row} mobileColumnHeaders={mobileColumnHeaders} />
+                    <MobileAccordionRow
+                        key={row.id}
+                        row={row}
+                        mobileColumnHeaders={mobileColumnHeaders}
+                        mobileFirstColumnClassName={mobileFirstColumnClassName}
+                    />
                 ))}
             </div>
         </div>

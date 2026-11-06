@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Archive, ArchiveRestore, Download, Eye, LoaderCircle, Plus, Power, PowerOff } from "lucide-react";
+import { Archive, ArchiveRestore, Download, Eye, KeyRound, LoaderCircle, Plus, Power, PowerOff } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { ButtonIcon } from "@/components/common/button";
@@ -35,6 +35,7 @@ interface UserManagementViewProps {
     onViewUser: (userId: number) => void;
     onCreateUser: () => void;
     onChangeUserStatus: (user: AdminUser, action: AdminUserLifecycleAction) => void;
+    onManageMembershipNumber: (user: AdminUser) => void;
     onExportUsers?: (format: "CSV" | "PDF") => void;
     searchType: UserSearchType;
     setSearchType: (type: UserSearchType) => void;
@@ -60,6 +61,7 @@ export function UserManagementView({
     onViewUser,
     onCreateUser,
     onChangeUserStatus,
+    onManageMembershipNumber,
     onExportUsers,
     searchType,
     setSearchType,
@@ -84,22 +86,12 @@ export function UserManagementView({
         const baseColumns: ColumnDef<AdminUser, unknown>[] = [
             {
                 accessorKey: "membershipNumber",
-                header: "Matrícula",
-                meta: { label: "Matrícula" },
+                header: "MAT",
+                meta: { label: "MAT" },
                 cell: ({ row }) => (
                     <span className="font-bold text-j-gray-700">
                         {row.original.membershipNumber ?? "—"}
                     </span>
-                ),
-            },
-            {
-                accessorKey: "id",
-                header: () => (
-                    <Table.Sortable field="id" label="ID" sort={query.sort} onSortChange={onSortChange} />
-                ),
-                meta: { label: "ID" },
-                cell: ({ row }) => (
-                    <span className="text-xs font-semibold text-j-gray-500">#{row.original.id}</span>
                 ),
             },
             {
@@ -185,6 +177,7 @@ export function UserManagementView({
                     const canArchive =
                         (user.status === "ACTIVE" || user.status === "INACTIVE") && permissions.canArchiveUsers;
                     const canUnarchive = user.status === "ARCHIVED" && permissions.canUnarchiveUsers;
+                    const canManageMembershipNumber = permissions.canManageMembershipRegistration && user.status === "ACTIVE";
 
                     return (
                         <div className="flex items-center justify-end gap-1.5">
@@ -236,6 +229,18 @@ export function UserManagementView({
                                 </ButtonIcon>
                             )}
 
+                            {canManageMembershipNumber && (
+                                <ButtonIcon
+                                    type="button"
+                                    title="Gerenciar matrícula"
+                                    aria-label={`Gerenciar matrícula de ${user.name}`}
+                                    onClick={() => onManageMembershipNumber(user)}
+                                    className="rounded-lg bg-j-blue-700 p-2 text-white hover:bg-j-blue-600 hover:text-white"
+                                >
+                                    <KeyRound size={18} />
+                                </ButtonIcon>
+                            )}
+
                             <ButtonIcon
                                 type="button"
                                 title="Ver detalhes"
@@ -252,7 +257,7 @@ export function UserManagementView({
         ];
 
         return baseColumns;
-    }, [onChangeUserStatus, onSortChange, onViewUser, permissions, query.sort]);
+    }, [onChangeUserStatus, onManageMembershipNumber, onSortChange, onViewUser, permissions, query.sort]);
 
     return (
         <Table.Root
@@ -279,7 +284,7 @@ export function UserManagementView({
         >
             <Table.Header className="items-stretch border-b-0">
                 <div className="flex w-full flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-                    <div id="tour-users-search" className="flex w-full lg:min-w-64 lg:flex-1">
+                    <div id="tour-users-search" className="flex w-full items-end lg:min-w-64 lg:flex-1">
                         <Table.Search
                             value={
                                 searchType === "cpf"
@@ -397,7 +402,11 @@ export function UserManagementView({
             />
 
             <div id="tour-users-table">
-                <Table.Content loadingRows={pageSize} mobileColumnHeaders />
+                <Table.Content
+                    loadingRows={pageSize}
+                    mobileColumnHeaders
+                    mobileFirstColumnClassName="w-10"
+                />
             </div>
         </Table.Root>
     );

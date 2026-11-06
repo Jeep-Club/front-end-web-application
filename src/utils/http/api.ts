@@ -13,6 +13,7 @@ export enum HttpAPIRoutes {
     PUBLIC_ACTIVATION_INVITATION_VALIDATION = "authentication/activation-invitations/validation",
     PUBLIC_ACCOUNT_ACTIVATION = "authentication/account-activations",
     MEMBERSHIP_APPLICATIONS = "membership-applications",
+    ADMIN_MEMBERS = "admin/members",
     ADMIN_MEMBERSHIP_APPLICATIONS = "admin/membership-applications",
     ADMIN_MEMBERSHIP_APPLICATION_APPROVE_TEMPORARY_PASSWORD = "admin/membership-applications/{id}/approve/temporary-password",
     ADMIN_MEMBERSHIP_APPLICATION_APPROVE_ACCESS_LINK = "admin/membership-applications/{id}/approve/access-link",
