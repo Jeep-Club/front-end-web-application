@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, HelpCircle } from "lucide-react";
 import FormLogin from "./form";
+import { useModal } from "@/providers/ModalProvider";
+import { JoinClubModal } from "./JoinClubModal";
 import LegalLinks from "@/components/common/legal-links";
 import ClubFormHeader from "@/components/common/ClubFormHeader";
 import { usePageTour } from "@/hooks/useTour";
@@ -11,6 +13,12 @@ import { getLoginTourSteps } from "@/config/tourSteps";
 
 export default function Login() {
     const router = useRouter();
+    const { setContent, setOpen } = useModal();
+
+    const handleOpenJoinClub = () => {
+        setContent(<JoinClubModal />);
+        setOpen();
+    };
 
     // Tour sob demanda para a tela de login (não auto-inicia, adaptado para mobile e desktop)
     const { startTour } = usePageTour({
@@ -58,16 +66,20 @@ export default function Login() {
                 <div className="w-full flex flex-col items-center justify-between">
                     <div className="w-full flex flex-col items-center">
                         <FormLogin />
+                        <p className="text-[10px] md:text-xs text-j-transparent-white text-center">
+                            Quer conhecer o processo para se associar?{" "}
+                            <button type="button" onClick={handleOpenJoinClub} className="cursor-pointer pt-2 pb-4 text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300">
+                                Conhe&ccedil;a o caminho
+                            </button>
+                        </p>
                         <p id="tour-login-join" className="px-5 pt-3 pb-2 text-center text-[10px] text-j-transparent-white md:text-xs">
-                            Não é sócio?{" "}
-                            <Link
-                                href="/membership/apply"
-                                className="text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400"
-                            >
-                                Quero ser sócio
+                            J&aacute; &eacute; s&oacute;cio? Precisa se associar?{" "}
+                            <Link href="/membership/apply" className="text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400">
+                                Quero ser s&oacute;cio
                             </Link>
                         </p>
                         <LegalLinks className="px-5 pt-2 text-j-gray-200" />
+                        <p className="pt-3 pb-4 text-center text-[8px] text-j-white md:text-xs">&copy; 2026 JEEP CLUBE TAMOIOS &bull; OFF-ROAD</p>
                     </div>
                 </div>
             </div>

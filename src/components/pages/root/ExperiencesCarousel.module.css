@@ -1,0 +1,123 @@
+.viewport {
+  --card-width: 74vw;
+  --card-gap: 12px;
+  margin-inline: -24px;
+  overflow: hidden;
+  padding: 20px 0;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  outline-offset: -3px;
+}
+
+.viewport:focus-visible {
+  outline: 2px solid #facc15;
+  border-radius: 24px;
+}
+
+.viewport[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+.track {
+  display: flex;
+  gap: var(--card-gap);
+  transform: translateX(calc(50% - var(--card-width) / 2 - var(--position) * (var(--card-width) + var(--card-gap)) + var(--drag-offset, 0px)));
+}
+
+.track[data-animate="true"] {
+  transition: transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.card {
+  position: relative;
+  flex: 0 0 var(--card-width);
+  height: 450px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 24px;
+  background: #1a1a1a;
+  opacity: 0.55;
+  transform: scale(0.94);
+}
+
+.track[data-animate="true"] .card {
+  transition: transform 700ms ease, opacity 700ms ease;
+}
+
+.card[data-active="true"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 15%), rgb(0 0 0 / 25%) 25%, rgb(0 0 0 / 60%) 60%, rgb(0 0 0 / 92%));
+}
+
+.number {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  font-size: 40px;
+  font-weight: 900;
+  color: rgb(255 255 255 / 45%);
+}
+
+.content {
+  position: absolute;
+  bottom: 28px;
+  inset-inline: 24px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 85%);
+}
+
+.impact .card {
+  height: auto;
+  min-height: 280px;
+  padding: 28px;
+  background: rgb(255 255 255 / 5%);
+  border-color: rgb(255 255 255 / 10%);
+}
+
+@media (min-width: 768px) {
+  .viewport {
+    --card-width: min(80vw, 640px);
+    --card-gap: 40px;
+    margin-inline: 0;
+  }
+
+  .card {
+    height: 540px;
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+
+  .content {
+    inset-inline: 32px;
+    bottom: 32px;
+  }
+
+  .description {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track[data-animate="true"],
+  .track[data-animate="true"] .card {
+    transition: none;
+  }
+}

@@ -11,6 +11,7 @@ const localOrigins = ["APP_URL", "PLAYWRIGHT_APP_URL"]
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
+    ...localOrigins,
     "*.app.github.dev",
   ],
 
