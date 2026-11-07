@@ -1,24 +1,24 @@
 "use client";
 
+import ExperiencesCarousel from "./ExperiencesCarousel";
+import ImpactCards from "./ImpactCards";
 import { useCallback, useEffect, useRef } from "react";
 import { Logo } from "@/components/common/logo";
-import LegalLinks from "@/components/common/legal-links";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
+  FaEnvelope,
   FaGithub,
-  FaGift,
   FaUserPlus,
   FaIdCard,
-  FaUsers,
   FaChevronRight,
   FaChevronDown,
   FaQuestionCircle,
 } from "react-icons/fa";
 import { GiJeep } from "react-icons/gi";
-import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
 import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
@@ -35,8 +35,12 @@ const contributors = [
   { username: "KauanLeonel", name: "Kauan", role: "Desenvolvedor Full Stack" },
 ];
 
-export default function HomeClient() {
+export default function HomeClient({ footer }: { footer: ReactNode }) {
   const router = useRouter();
+
+  const handleContact = () => {
+    router.push("/contato");
+  };
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
   const handleLogin = () => {
@@ -140,16 +144,27 @@ export default function HomeClient() {
             <p className="text-xs md:text-sm text-white/90">09/09/1999</p>
           </div>
 
-          <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
-          <button
-            id="tour-home-join-btn"
-            onClick={handleRegister}
-            className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
-          >
-            <FaUserPlus size={20} />
-            Quero ser sócio
-            <FaChevronRight size={12} />
-          </button>
+          <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser s&oacute;cio do Jeep Clube Tamoios?</p>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              id="tour-home-contact-btn"
+              onClick={handleContact}
+              className="flex items-center gap-2 rounded-full bg-yellow-500 px-8 py-4 text-sm font-bold text-black shadow-xl transition-all hover:bg-yellow-400 active:scale-95 md:text-base"
+            >
+              <FaEnvelope size={20} />
+              Entre em contato
+              <FaChevronRight size={12} />
+            </button>
+            <button
+              id="tour-home-join-btn"
+              onClick={handleRegister}
+              className="flex items-center gap-2 rounded-full border border-white/35 bg-black/25 px-8 py-4 text-sm font-bold text-white backdrop-blur-sm transition-all hover:border-yellow-400 hover:text-yellow-300 active:scale-95 md:text-base"
+            >
+              <FaUserPlus size={18} />
+              Quero me associar
+              <FaChevronRight size={12} />
+            </button>
+          </div>
         </div>
 
         {/* Scroll down trigger */}
@@ -166,44 +181,12 @@ export default function HomeClient() {
       </section>
 
       {/* ── EXPERIÊNCIAS ── */}
-      <section id="experiencias" className="px-6 py-16 md:py-24 bg-[#111]">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
-          <p className="text-xl md:text-2xl text-white/70 italic mb-10">Onde o asfalto termina, a vida começa.</p>
+      <section id="experiencias" className="px-6 py-12 md:px-0 md:py-16 bg-[#111]">
+        <div className="max-w-6xl mx-auto md:max-w-none">
+          <p className="text-center text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
+          <p className="text-center text-xl md:text-2xl text-white/70 italic mb-6">Onde o asfalto termina, a vida começa.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
-              <div className="relative h-64 md:h-80">
-                <Image 
-                src="/images/jeep_vermelho.jpeg" 
-                alt="Expedições" fill className="object-cover" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <MdOutlineExplore size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Expedições &amp; Trilhas</h3>
-                </div>
-                <p className="text-sm md:text-base text-white/50 leading-relaxed">
-                  Trilhas icônicas do Litoral Norte. De passeios leves a desafios técnicos extremos em meio à Mata Atlântica.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
-              <div className="relative h-64 md:h-80">
-                <Image src="/images/mato.jpeg" alt="Eventos" fill className="object-cover" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <FaUsers size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Eventos &amp; Encontros</h3>
-                </div>
-                <p className="text-sm md:text-base text-white/50 leading-relaxed">
-                  Muito mais que carros — celebramos a amizade com encontros gastronômicos e workshops técnicos.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ExperiencesCarousel />
         </div>
       </section>
 
@@ -265,21 +248,7 @@ export default function HomeClient() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {[
-            { icon: <MdGroups size={26} />, title: "Apoio em Calamidades", text: "Logística e transporte de mantimentos em áreas isoladas por chuvas no Litoral Norte." },
-            { icon: <FaGift size={24} />, title: "Dia das Crianças", text: "Tradicional caravana de entrega de brinquedos e cestas básicas para comunidades." },
-            { icon: <MdVolunteerActivism size={26} />, title: "Doações Regulares", text: "Apoio contínuo a instituições locais de assistência social e proteção ambiental." }
-          ].map((item, i) => (
-            <div key={i} className="bg-white/5 rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-400/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <span className="text-yellow-400">{item.icon}</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
+        <ImpactCards />
       </section>
 
       {/* CRÉDITOS */}
@@ -324,18 +293,18 @@ export default function HomeClient() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="px-6 py-20 bg-[#f5f7fb]">
-        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
-          <div className="relative z-10 text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-black text-[#00236F] leading-tight mb-4">
-              Pronto para a sua<br className="hidden md:block" />próxima aventura?
+      <section className="px-6 py-12 md:py-20 bg-[#f5f7fb]">
+        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden relative px-6 py-9 md:p-16 flex items-center shadow-xl shadow-[#00236F]/10">
+          <div className="relative z-10 mx-auto max-w-md text-center md:mx-0 md:max-w-[60%] md:text-left">
+            <h2 className="text-2xl md:text-5xl font-black text-[#00236F] leading-tight mb-3 md:mb-4">
+              Pronto para a sua<span className="md:hidden"> </span><br className="hidden md:block" />próxima aventura?
             </h2>
-            <p className="text-base text-[#00236F]/80 mb-8 font-medium">
+            <p className="text-sm md:text-base leading-relaxed text-[#00236F]/80 mb-6 md:mb-8 font-medium">
               Junte-se à maior família off-road do Litoral Norte.
             </p>
             <button
               onClick={handleRegister}
-              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-all active:scale-95 shadow-lg"
+              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#00236F] transition-all active:scale-95 shadow-lg"
             >
               <FaIdCard size={18} />
               Quero ser Sócio
@@ -343,23 +312,14 @@ export default function HomeClient() {
             </button>
           </div>
 
-          <div className="mt-10 md:mt-0 md:absolute md:right-[-20px] md:bottom-[-20px] opacity-10 md:opacity-20 pointer-events-none">
-            <GiJeep size={280} className="text-[#00236F]" />
+          <div className="pointer-events-none absolute bottom-4 right-20 hidden text-[#00236F]/20 md:block" aria-hidden="true">
+            <GiJeep size={280} />
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="px-6 py-12 bg-[#0a0a0a] border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-4">
-            <GiJeep size={24} className="text-yellow-400" />
-            <p className="text-lg text-white font-bold tracking-tight">Jeep Club Tamoios</p>
-          </div>
-          <p className="text-xs text-white/30 mb-8">© 2026 Todos os direitos reservados.</p>
-          <LegalLinks className="text-white/60 font-medium" />
-        </div>
-      </footer>
+      {footer}
     </main>
   );
 }

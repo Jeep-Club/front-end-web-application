@@ -1,25 +1,24 @@
 'use client';
 
-import { Button } from "@/components/common/button";
+import { useRouter } from "next/navigation";
+import { useMutation } from '@tanstack/react-query';
+import {registerAction} from "@/server/actions/auth/registerAction";
+import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
-import { InputCPF,InputDate,InputEmail,InputFile,InputPassword,InputPhoneNumber,InputRegister } from "@/components/common/input/import";
+import { registerSubmissionSchema, type RegisterSubmission } from "@/schemas/auth/register/registerRequest";
+import {InputRegister, InputDate, InputEmail, InputCPF, InputPassword, InputPhoneNumber, InputFile } from "@/components/common/input/import";
+import { User } from "lucide-react";
+import { Textarea } from "@/components/common/textarea/";
 import { Select } from "@/components/common/select/";
 import Link from "next/link";
-import { Textarea } from "@/components/common/textarea/";
-import { registerRequestSchema } from "@/schemas/auth/register/registerRequest";
-import { registerAction } from '@/server/actions/auth/registerAction';
-import { useMutation } from '@tanstack/react-query';
-import { ArrowRight,LoaderCircle,User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import RegistrationConsent from "./RegistrationConsent";
 
 export default function FormRegister() {
     const router = useRouter();
 
-    const mutation = useMutation({
-        mutationFn: registerAction,
-        onSuccess: (data) => {
-            console.log(data);
+    const mutation = useMutation({ 
+        mutationFn: registerAction, 
+        onSuccess: () => {
             router.push("/feed");
             toast.success('Registro realizado com sucesso!');
         },
@@ -27,16 +26,17 @@ export default function FormRegister() {
 
     const isLoading = mutation.isPending;
 
-    const handleSubmit = async (registerRequest: RegisterRequest) => {
-        mutation.mutateAsync(registerRequest);
+    const handleSubmit = async (registerRequest: RegisterSubmission) => {
+        await mutation.mutateAsync(registerRequest);
     }
 
     return (
         <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
-            <Form<RegisterRequest>
-                schema={registerRequestSchema}
+            <Form<RegisterSubmission>
+                schema={registerSubmissionSchema}
+                formOptions={{ defaultValues: { termsAccepted: false } }}
                 onSubmit={handleSubmit}
-                onError={(errors) => console.log(errors)}
+                onError={() => toast.error("Revise os campos do formulário para continuar.")}
             >
                 <InputRegister name="name" label="Nome Completo" placeholder="Nome e sobrenome" type="text" required className="pl-10 pr-10"><User className="absolute left-2.5 text-j-transparent-white"/></InputRegister>
                 <InputEmail required/>
@@ -54,17 +54,13 @@ export default function FormRegister() {
                     <option value="abacate">Abacate</option>
                     <option value="morango">Morango</option>
                 </Select>
-                <p className="text-left text-xs leading-6 text-j-gray-600">
+                <p className="text-left text-xs leading-6 text-j-gray-200">
                     Os dados de identificação e contato são utilizados para criar e administrar sua conta.
-                    Consulte os <Link href="/termos-de-uso" target="_blank" rel="noopener noreferrer" className="text-j-blue-700 underline underline-offset-4">Termos de Uso (abre em nova aba)</Link> e a <Link href="/politica-de-privacidade" target="_blank" rel="noopener noreferrer" className="text-j-blue-700 underline underline-offset-4">Política de Privacidade</Link>.
+                    Consulte os <Link href="/termos-de-uso" target="_blank" rel="noopener noreferrer" className="text-j-yellow-300 underline underline-offset-4">Termos de Uso (abre em nova aba)</Link> e
+                    a <Link href="/politica-de-privacidade" target="_blank" rel="noopener noreferrer" className="text-j-yellow-300 underline underline-offset-4">Política de Privacidade (abre em nova aba)</Link> antes de enviar.
+                    O cadastro não autoriza publicidade nem o uso de dados de saúde.
                 </p>
-                <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full mt-4"
-                >
-                    {isLoading ? <>Registrando<LoaderCircle size={15} strokeWidth={3} className="animate-spin"/></> : <>Registrar<ArrowRight size={15} strokeWidth={3}/></>}
-                </Button>
+                <RegistrationConsent isLoading={isLoading} />
             </Form>
         </div>
     );
