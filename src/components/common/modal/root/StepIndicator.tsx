@@ -19,7 +19,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                         {/* Bolinha */}
                         <div className={`
                             w-9 h-9 rounded-full flex items-center justify-center
-                            text-sm font-bold border-2 transition-all duration-300
+                            text-sm font-bold border-2 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-300
                             ${isCompleted ? 'bg-blue-600 border-blue-600 text-white' : ''}
                             ${isActive ? 'bg-white border-blue-600 text-blue-600' : ''}
                             ${!isCompleted && !isActive ? 'bg-white border-gray-300 text-gray-400' : ''}
@@ -30,7 +30,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
                         {/* Linha conectora (não aparece depois do último step) */}
                         {step < totalSteps && (
                             <div className={`
-                                w-16 h-0.5 transition-all duration-300
+                                w-16 h-0.5 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-300
                                 ${isCompleted ? 'bg-blue-600' : 'bg-gray-300'}
                             `} />
                         )}

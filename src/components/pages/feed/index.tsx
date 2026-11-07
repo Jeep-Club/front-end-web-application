@@ -222,7 +222,7 @@ export default function Feed() {
                                         onClick={() => filterType()}
                                         aria-label="Tudo"
                                         aria-pressed={!type}
-                                        className={`flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 px-2 text-xs font-bold transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 sm:px-3 sm:text-sm ${
+                                        className={`flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 px-2 text-xs font-bold transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 sm:px-3 sm:text-sm ${
                                             !type
                                                 ? "rounded-xl bg-j-blue-800 text-j-white shadow-sm"
                                                 : "rounded-lg text-j-blue-900 hover:bg-j-gray-100"
@@ -243,7 +243,7 @@ export default function Feed() {
                                                     onClick={() => filterType(key)}
                                                     aria-label={feedTypes[key].plural}
                                                     aria-pressed={type === key}
-                                                    className={`flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 px-2 text-xs font-bold transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 sm:px-3 sm:text-sm ${
+                                                    className={`flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 px-2 text-xs font-bold transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 sm:px-3 sm:text-sm ${
                                                         type === key
                                                             ? "rounded-xl bg-j-blue-800 text-j-white shadow-sm"
                                                             : "rounded-lg text-j-blue-900 hover:bg-j-gray-100"
@@ -591,7 +591,7 @@ export default function Feed() {
                         setContent(<CreatePublicationModal publishEventImmediately />);
                         setOpen();
                     }}
-                    className="fixed bottom-20 right-4 z-20 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-xl active:translate-y-0 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 md:hidden"
+                    className="fixed bottom-20 right-4 z-20 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-lg transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-xl active:translate-y-0 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 md:hidden"
                 >
                     <Plus size={26} strokeWidth={2.5} aria-hidden="true" />
                 </button>

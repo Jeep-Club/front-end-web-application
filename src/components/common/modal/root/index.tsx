@@ -31,14 +31,14 @@ export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true, 
 
     return (
         <div
-            className={`fixed inset-0 flex items-center justify-center p-4 overflow-y-auto z-30 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 z-30 flex items-center justify-center overflow-y-auto p-4 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
             onClick={ref ? undefined : onClose}
             style={{ backgroundColor: '#000000CC' }}
         >
             <div
                 ref={ref}
                 data-modal-content
-                className={twMerge("flex w-full max-w-4xl justify-center", contentClassName)}
+                className={twMerge("flex w-full max-w-4xl justify-center", isOpen && "modal-content-enter", contentClassName)}
                 onClick={ref ? undefined : (event) => event.stopPropagation()}
             >
                 {children}

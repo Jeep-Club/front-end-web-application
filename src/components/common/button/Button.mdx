@@ -26,6 +26,8 @@ import { Plus, Trash2 } from 'lucide-react';
 
 Os handlers e `isPending` no exemplo pertencem à tela. `type` é `button` por padrão: use `submit` explicitamente para enviar formulários e `reset` somente quando o fluxo realmente deve restaurar campos. `children` aceita texto e JSX; `className` ajusta a apresentação por composição, sem uma API de variantes.
 
+O botão compartilhado dá um leve realce ao passar o ponteiro e reduz a escala ao pressionar. Esses movimentos são desativados para usuários que preferem movimento reduzido.
+
 <Canvas of={Stories.Padrao} />
 
 <div role="region" aria-label="Propriedades do Button" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>

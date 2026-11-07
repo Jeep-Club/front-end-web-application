@@ -4,6 +4,10 @@ A identidade combina o emblema do clube, azul profundo, amarelo e fotografias de
 
 Este guia define intenção visual. [globals.css](../src/app/globals.css) contém valores e aliases; componentes definem APIs e comportamentos. Consulte [components-and-pages.md](components-and-pages.md) para implementar interfaces e [testing.md](testing.md) para validá-las.
 
+## Movimento e resposta a ações
+
+Use transições curtas e específicas para feedback de foco, hover e pressão; evite `transition-all`, que anima propriedades sem intenção definida. Entradas de rota, popovers e controles compartilham animações CSS leves em [globals.css](../src/app/globals.css), sem dependência de biblioteca. A preferência `prefers-reduced-motion` reduz animações e transições globalmente; movimentos locais mais fortes também devem oferecer um estado sem deslocamento. Mantenha animações decorativas breves e não dependa delas para comunicar estado ou concluir uma ação.
+
 ## Marca e imagens
 
 Preserve o emblema, o lettering e as proporções. Escolha o arquivo por resolução, fundo e tamanho de aplicação; nenhum asset é obrigatório em todos os contextos. Não invente área de proteção ou tamanho mínimo sem referência de marca.

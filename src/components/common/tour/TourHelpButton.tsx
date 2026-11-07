@@ -30,7 +30,7 @@ export function TourHelpButton({
                     rounded-full p-2
                     text-j-blue-800/80 hover:text-j-blue-800
                     hover:bg-j-yellow-300/20 active:scale-95
-                    transition-all duration-200 cursor-pointer
+                    transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer
                     ${className}
                 `}
             >
@@ -51,7 +51,7 @@ export function TourHelpButton({
                     bg-j-white/90 px-2.5 py-1 sm:px-3 text-[11px] sm:text-xs font-semibold
                     text-j-blue-800 shadow-sm
                     hover:border-j-yellow-300 hover:bg-j-yellow-50/50
-                    active:scale-95 transition-all duration-200 cursor-pointer
+                    active:scale-95 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer
                     ${className}
                 `}
             >
@@ -71,7 +71,7 @@ export function TourHelpButton({
                 rounded-lg border border-j-gray-300
                 bg-j-white px-2.5 py-1.5 sm:px-3 text-[11px] sm:text-xs font-bold text-j-blue-800
                 shadow-sm hover:border-j-yellow-400 hover:bg-j-yellow-50/40
-                active:scale-95 transition-all duration-200 cursor-pointer
+                active:scale-95 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer
                 ${className}
             `}
         >
