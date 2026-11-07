@@ -38,7 +38,6 @@ export default function FormPutMedicalProfile({ id, medicalProfile}: { id: numbe
         emergencyContactPhone: medicalProfile.emergencyContactPhone,
         emergencyContactRelationship: medicalProfile.emergencyContactRelationship,
     } : undefined;
-    console.log("Default Values:", defaultValues);
     return (
         <div className="w-full flex flex-col items-center justify-center gap-5 p-5">
             <p className="w-full rounded-xl border border-j-blue-100 bg-j-blue-100/10 p-4 text-sm leading-6 text-j-gray-600">
