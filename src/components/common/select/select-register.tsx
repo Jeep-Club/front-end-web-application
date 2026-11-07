@@ -17,7 +17,7 @@ export function SelectRegister({
     const {
         fieldState: { error },
         field: { value: fieldValue, onChange: fieldOnChange, onBlur, ref }
-    } = useController({ name, control, defaultValue: value ?? '' });
+    } = useController({ name, control, defaultValue: value ?? (props.multiple ? [] : '') });
 
     return (
         <Select 
@@ -32,7 +32,7 @@ export function SelectRegister({
                 // Permite ao developer injetar a sua própria lógica extra no onChange, se necessário.
                 onChange?.(e);
             }}
-            error={String(error?.message)}
+            error={error?.message}
         />
     );
 }

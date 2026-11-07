@@ -1,12 +1,13 @@
 type BloodType = 'A_POSITIVE' | 'A_NEGATIVE' | 'B_POSITIVE' | 'B_NEGATIVE' | 'AB_POSITIVE' | 'AB_NEGATIVE' | 'O_POSITIVE' | 'O_NEGATIVE' | string;
 
-type GetListMedicalProfilesResponse = {
+type MedicalProfileSummary = {
   id: number;
   ownerType: string;
   ownerId: number;
-  bloodType: BloodType;
   updatedAt: string;
-}[]
+};
+
+type GetListMedicalProfilesResponse = PageResponse<MedicalProfileSummary>;
 
 interface GetMedicalProfileResponse {
   id: number;
@@ -44,7 +45,12 @@ type PutMedicalProfileUserRequest = PutMedicalProfile;
 
 type PutMedicalProfileDependentRequest = PutMedicalProfile;
 
-type PutMedicalProfileResponse = GetMedicalProfileResponse;
+interface PutMedicalProfileResponse {
+  id: number;
+  ownerType: string;
+  ownerId: number;
+  updatedAt: string;
+}
 
 type PutMedicalProfileUserResponse = PutMedicalProfileResponse;
 

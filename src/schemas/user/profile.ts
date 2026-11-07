@@ -1,18 +1,20 @@
 import z from "zod";
+import { identityMeResponseSchema } from '../auth/me/me';
+import { getMediaImageUrl } from '@/utils/media/imageUrl';
 
 export const userStatusSchema = z.enum([
     'ACTIVE',
+    'INACTIVE',
+    'ARCHIVED',
     'DISABLED',
-    'LOCKED',
-    'CHANGE_PASSWORD_REQUIRED',
-    'PENDING_FIRST_ACCESS',
-]);
+]).transform((status): UserStatus => (status === 'DISABLED' ? 'INACTIVE' : status));
 
 export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z.object({
     id: z.number(),
     name: z.string(),
     birthDate: z.string().nullable(),
     email: z.string(),
+    membershipNumber: z.string().nullish(),
     cpf: z.string(),
     rg: z.string().nullable(),
     phoneNumber: z.string().nullable(),
@@ -22,14 +24,9 @@ export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z
     lastLoginAt: z.string().nullable(),
 });
 
-export const backendUserProfileResponseSchema = z.object({
-    id: z.number(),
-    name: z.string(),
-    cpf: z.string(),
-    email: z.string().nullable().optional(),
-    phone: z.string().nullable().optional(),
-    status: userStatusSchema,
-    passwordChangeRequired: z.boolean(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable().optional(),
-});
+
+export const meProfileResponseSchema: z.ZodType<MeProfileResponse> = identityMeResponseSchema.transform(user => ({
+    ...user,
+    profilePhotoUrl: getMediaImageUrl(user.profilePhotoStorageKey) || null,
+}));
+

@@ -2,6 +2,7 @@
 export default {
     preset: 'ts-jest',
     testEnvironment: 'node',
+    testPathIgnorePatterns: ['/node_modules/', '<rootDir>/tests/browser/'],
     // Onde o Jest deve procurar os testes
     testMatch: [
         '<rootDir>/tests/**/*.spec.ts', 
@@ -20,5 +21,6 @@ export default {
     coverageReporters: ['text', 'lcov', 'html'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
+        '\\.css$': '<rootDir>/tests/__mocks__/styleMock.cjs',
     },
 };

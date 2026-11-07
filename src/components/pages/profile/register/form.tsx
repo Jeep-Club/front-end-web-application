@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
-import {registerAction} from '@/actions/auth/registerAction';
+import {registerAction} from "@/server/actions/auth/registerAction";
 import toast from "react-hot-toast";
 import { Form } from "@/components/common/form";
 import { registerSubmissionSchema, type RegisterSubmission } from "@/schemas/auth/register/registerRequest";
@@ -21,7 +21,7 @@ export default function FormRegister() {
         onSuccess: () => {
             router.push("/feed");
             toast.success('Registro realizado com sucesso!');
-        }, 
+        },
     });
 
     const isLoading = mutation.isPending;
@@ -39,11 +39,11 @@ export default function FormRegister() {
                 onError={() => toast.error("Revise os campos do formulário para continuar.")}
             >
                 <InputRegister name="name" label="Nome Completo" placeholder="Nome e sobrenome" type="text" required className="pl-10 pr-10"><User className="absolute left-2.5 text-j-transparent-white"/></InputRegister>
-                <InputEmail name="email" required/>
-                <InputDate required/>
+                <InputEmail required/>
+                <InputDate name="birthDate" required/>
                 <InputCPF required/>
                 <InputPhoneNumber required/>
-                <InputPassword required name="password" stepErrors/>
+                <InputPassword required name="password"/>
                 <InputFile name="test1" multiple maxFiles={2} isFallback label="Arquivos"/>
                 <InputFile.Image name="test2" label="Foto de perfil"/>
                 <InputFile.Image2 name="test3" label="Foto de perfil"/>

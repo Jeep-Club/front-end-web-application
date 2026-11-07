@@ -4,7 +4,7 @@ import { isValidBirthDate } from '@/utils/validate/validateBirthDate';
 describe('validateBirthDate', () => {
   beforeAll(() => {
     // Congela o tempo em 01/01/2024 para garantir testes determinísticos
-    jest.useFakeTimers().setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    jest.useFakeTimers().setSystemTime(new Date(2024, 0, 1, 12));
   });
 
   afterAll(() => {
@@ -29,9 +29,9 @@ describe('validateBirthDate', () => {
     expect(isValidBirthDate("2024-01-01")).toBe(true);
   });
 
-  it('Funcional (Limite Máximo de Idade): Rejeita > 130 anos', () => {
+  it('Funcional (Limite Máximo de Idade): Rejeita anos anteriores a 1900', () => {
     expect(isValidBirthDate("1893-12-31")).toBe(false); // 131 anos
-    expect(isValidBirthDate("1894-01-01")).toBe(true);  // Exatamente 130 anos
+    expect(isValidBirthDate("1894-01-01")).toBe(false);  // Antes de 1900
   });
 
   // Testes Estruturais: Fluxo de Dados de Cálculo de Idade
@@ -49,5 +49,22 @@ describe('validateBirthDate', () => {
   it('Funcional (Valor Limite com MinAge): Exatamente 18 anos e menor de 18', () => {
     expect(isValidBirthDate("2006-01-01", 18)).toBe(true); // Exatamente 18
     expect(isValidBirthDate("2006-01-02", 18)).toBe(false); // Falta 1 dia
+  });
+});
+
+describe('birth date calendar boundaries', () => {
+  beforeEach(() => jest.useFakeTimers().setSystemTime(new Date(2026, 9, 21, 12)));
+  afterEach(() => jest.useRealTimers());
+
+  it.each(['1899-12-31', '2027-01-01', '2026-10-22', '2026-02-30', '1900-02-29', '02026-01-01', '2026-1-01'])('rejects %s', (value) => {
+    expect(isValidBirthDate(value)).toBe(false);
+  });
+  it.each(['1900-01-01', '2026-10-21', '2000-02-29'])('accepts %s', (value) => {
+    expect(isValidBirthDate(value)).toBe(true);
+  });
+  it('uses the current calendar year dynamically', () => {
+    expect(isValidBirthDate('2027-01-01')).toBe(false);
+    jest.setSystemTime(new Date(2027, 0, 1, 12));
+    expect(isValidBirthDate('2027-01-01')).toBe(true);
   });
 });

@@ -25,7 +25,7 @@ export function InputPhoneNumber({label="Telefone", name='phoneNumber', placehol
                 )}
                 mask={maskPhoneNumber}
             >
-                <Phone size={23} className="absolute left-2.5 text-j-transparent-white"/>
+                <Phone size={20} aria-hidden="true" className="absolute left-2.5 text-j-blue-800"/>
             </InputRegister>
 
     );

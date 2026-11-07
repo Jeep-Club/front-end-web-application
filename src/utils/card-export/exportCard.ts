@@ -1,18 +1,6 @@
 import { toPng } from "html-to-image";
-import { jsPDF } from "jspdf";
 
-import type {
-    CardExportFormat,
-    CardExportScope,
-} from "@/components/common/card-export/CardExportActions";
-
-interface ExportCardImagesParams {
-    format: CardExportFormat;
-    scope: CardExportScope;
-    frontImage: string;
-    backImage?: string;
-    fileName: string;
-}
+import type { CardExportScope } from "@/components/common/card-export/CardExportActions";
 
 interface ExportImageParams {
     scope: CardExportScope;
@@ -38,8 +26,6 @@ const CARD_EXPORT_HEIGHT_PX = Math.round(
         MILLIMETERS_PER_INCH) *
         CARD_EXPORT_DPI,
 );
-const PDF_BLEED_MM = 0.15;
-
 export async function captureCardElement(
     element: HTMLElement,
 ) {
@@ -81,6 +67,16 @@ export async function captureCardElement(
     });
 
     exportElement.removeAttribute("id");
+    exportElement.querySelectorAll("img").forEach((image) => {
+        const source = image.currentSrc || image.src;
+        image.loading = "eager";
+        image.decoding = "sync";
+        image.removeAttribute("srcset");
+        image.removeAttribute("sizes");
+        if (source) {
+            image.src = source;
+        }
+    });
     Object.assign(exportElement.style, {
         width: `${CARD_RENDER_WIDTH_PX}px`,
         height: `${CARD_RENDER_HEIGHT_PX}px`,
@@ -159,19 +155,38 @@ async function waitForImages(
     await Promise.all(
         images.map((image) => {
             if (image.complete) {
-                return Promise.resolve();
+                return image.naturalWidth > 0
+                    ? Promise.resolve()
+                    : Promise.reject(new Error("Uma imagem da carteirinha não carregou. Tente novamente."));
             }
 
             return new Promise<void>(
-                (resolve) => {
+                (resolve, reject) => {
+                    const timeout = window.setTimeout(() => {
+                        cleanup();
+                        reject(new Error("Uma imagem da carteirinha demorou para carregar. Tente novamente."));
+                    }, 12_000);
+                    const cleanup = () => {
+                        window.clearTimeout(timeout);
+                        image.removeEventListener("load", handleLoad);
+                        image.removeEventListener("error", handleError);
+                    };
+                    const handleLoad = () => {
+                        cleanup();
+                        resolve();
+                    };
+                    const handleError = () => {
+                        cleanup();
+                        reject(new Error("Uma imagem da carteirinha não carregou. Tente novamente."));
+                    };
                     image.addEventListener(
                         "load",
-                        () => resolve(),
+                        handleLoad,
                         { once: true },
                     );
                     image.addEventListener(
                         "error",
-                        () => resolve(),
+                        handleError,
                         { once: true },
                     );
                 },
@@ -180,123 +195,23 @@ async function waitForImages(
     );
 }
 
-export async function exportCardImages({
-    format,
+export async function exportCardAsPng({
     scope,
     frontImage,
     backImage,
     fileName,
-}: ExportCardImagesParams) {
+}: ExportImageParams) {
     const safeFileName =
         sanitizeFileName(fileName) ||
         "carteirinha";
 
-    if (format === "pdf") {
-        exportAsPdf({
-            scope,
-            frontImage,
-            backImage,
-            fileName: safeFileName,
-        });
-
-        return;
-    }
-
-    await exportAsPng({
-        scope,
-        frontImage,
-        backImage,
-        fileName: safeFileName,
-    });
-}
-
-function exportAsPdf({
-    scope,
-    frontImage,
-    backImage,
-    fileName,
-}: ExportImageParams) {
-    const pdf = createCardPdf();
-
-    addImageToCurrentPage(
-        pdf,
-        frontImage,
-    );
-
-    if (
-        scope === "front-and-back" &&
-        backImage
-    ) {
-        pdf.addPage(
-            [
-                CARD_WIDTH_MM,
-                CARD_HEIGHT_MM,
-            ],
-            "landscape",
-        );
-
-        addImageToCurrentPage(
-            pdf,
-            backImage,
-        );
-    }
-
-    pdf.save(`${fileName}.pdf`);
-}
-
-function createCardPdf() {
-    return new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: [
-            CARD_WIDTH_MM,
-            CARD_HEIGHT_MM,
-        ],
-        compress: true,
-    });
-}
-
-function addImageToCurrentPage(
-    pdf: jsPDF,
-    image: string,
-) {
-    const pageWidth =
-        pdf.internal.pageSize.getWidth();
-
-    const pageHeight =
-        pdf.internal.pageSize.getHeight();
-
-    /*
-     * A pequena sangria remove possíveis
-     * linhas brancas nas bordas do PDF.
-     */
-    pdf.addImage(
-        image,
-        "PNG",
-        -PDF_BLEED_MM,
-        -PDF_BLEED_MM,
-        pageWidth +
-            PDF_BLEED_MM * 2,
-        pageHeight +
-            PDF_BLEED_MM * 2,
-        undefined,
-        "FAST",
-    );
-}
-
-async function exportAsPng({
-    scope,
-    frontImage,
-    backImage,
-    fileName,
-}: ExportImageParams) {
     if (
         scope === "front" ||
         !backImage
     ) {
-        triggerDownload(
+        await triggerDownload(
             frontImage,
-            `${fileName}-frente.png`,
+            `${safeFileName}-frente.png`,
         );
 
         return;
@@ -308,9 +223,10 @@ async function exportAsPng({
             backImage,
         );
 
-    triggerDownload(
+    await triggerDownload(
         combinedImage,
-        `${fileName}-frente-verso.png`,
+        `${safeFileName}-frente-verso.png`,
+        true,
     );
 }
 
@@ -384,10 +300,15 @@ async function combineCardImages(
         frontImage.height + gap,
     );
 
-    return canvas.toDataURL(
-        "image/png",
-        1,
-    );
+    return new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+            if (blob) {
+                resolve(blob);
+            } else {
+                reject(new Error("Não foi possível preparar o PNG da frente e do verso."));
+            }
+        }, "image/png");
+    });
 }
 
 function loadImage(
@@ -414,20 +335,49 @@ function loadImage(
     );
 }
 
-function triggerDownload(
-    source: string,
+async function triggerDownload(
+    source: string | Blob,
     fileName: string,
+    preferNativeShare = false,
 ) {
+    const file = source instanceof Blob
+        ? source
+        : await fetch(source).then(async (response) => {
+            if (!response.ok) {
+                throw new Error("Não foi possível preparar o arquivo PNG.");
+            }
+            return response.blob();
+        });
+
+    if (preferNativeShare && navigator.share && navigator.canShare) {
+        const imageFile = new File([file], fileName, { type: "image/png" });
+        if (navigator.canShare({ files: [imageFile] })) {
+            try {
+                await navigator.share({ files: [imageFile], title: fileName });
+                return;
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    return;
+                }
+                // If native sharing is unavailable or rejected, fall back to download.
+            }
+        }
+    }
+
+    const objectUrl = URL.createObjectURL(file);
     const link =
         document.createElement("a");
 
-    link.href = source;
+    link.href = objectUrl;
     link.download = fileName;
 
     document.body.appendChild(link);
 
     link.click();
     link.remove();
+    // Keep the object URL alive long enough for mobile browsers to start
+    // the download before releasing its memory.
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }
 
 function sanitizeFileName(

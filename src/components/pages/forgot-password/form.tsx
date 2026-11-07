@@ -1,16 +1,15 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
-import toast from "react-hot-toast";
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { Form } from "@/components/common/form";
 import InputCPF from "@/components/common/input/input-cpf";
 import { useModal } from "@/providers/ModalProvider";
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight,LoaderCircle } from "lucide-react";
 import { PasswordRecoveryModal } from "./PasswordRecoveryModal";
 
-import forgotPasswordAction from '@/actions/auth/forgot-password';
-import { forgotPasswordRequestSchema, ForgotPasswordRequestType } from "@/schemas/auth/forgot-password/forgotPasswordRequest";
+import { forgotPasswordRequestSchema,ForgotPasswordRequestType } from "@/schemas/auth/forgot-password/forgotPasswordRequest";
+import forgotPasswordAction from '@/server/actions/auth/forgot-password';
 
 export default function FormForgotPassword() {
     const { setContent, setOpen } = useModal();
@@ -20,8 +19,7 @@ export default function FormForgotPassword() {
         onSuccess: (_data, variables) => {
             setContent(<PasswordRecoveryModal cpf={variables.cpf} />);
             setOpen();
-        },
-        onError: (error) => toast.error(error.message || 'Erro ao solicitar nova senha. Verifique o CPF e tente novamente.')
+        }
     });
 
     const isLoading = mutation.isPending;
@@ -37,7 +35,7 @@ export default function FormForgotPassword() {
                 onSubmit={handleSubmit}
                 onError={(errors) => console.log(errors)}
             >
-                <InputCPF required />
+                <InputCPF required labelClassName="text-j-white" errorClassName="text-j-red-100" />
 
                 <Button
                     type="submit"

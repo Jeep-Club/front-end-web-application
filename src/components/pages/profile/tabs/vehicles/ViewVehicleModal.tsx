@@ -1,13 +1,17 @@
 'use client';
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { X, Car, ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
-import { twMerge } from "tailwind-merge";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button,ButtonIcon } from "@/components/common/button";
+import { ReadOnlyField as CommonReadOnlyField } from "@/components/common/ReadOnlyField";
+import { useVehicleDetailsSteps } from "@/hooks/useVehicleDetailsSteps";
 import { useModal } from "@/providers/ModalProvider";
-import { getVehicleDetailAction } from "@/actions/vehicles/detail-member";
+import { getVehicleDetailAction } from "@/server/actions/vehicles/detail-member";
+import { maskDate } from "@/utils/masks";
 import { maskPlate } from "@/utils/masks/maskPlate";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft,ArrowRight,Car,LoaderCircle,X } from "lucide-react";
+import { useState } from "react";
+import { twMerge } from "tailwind-merge";
+import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 
 const FUEL_TYPE_LABELS: Record<FuelType, string> = {
     GASOLINE: "Gasolina",
@@ -18,52 +22,72 @@ const FUEL_TYPE_LABELS: Record<FuelType, string> = {
     HYBRID: "Híbrido",
 };
 
-const STATUS_LABELS: Record<VehicleStatus, string> = {
+const STATUS_LABELS: Record<string, string> = {
     ACTIVE: "Ativo",
     INACTIVE: "Inativo",
     PENDING: "Pendente",
 };
 
-const STEPS = [1, 2, 3];
-
-function formatDate(value: string | null): string {
-    if (!value) return "—";
-    return new Date(value).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
+const STEPS = [
+    { step: 1, label: "Identificação" },
+    { step: 2, label: "Características" },
+    { step: 3, label: "Foto" },
+];
 
 function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-        <div className="w-full flex flex-col gap-1.5">
-            <span className="text-xs md:text-sm font-bold text-j-white">{label}</span>
-            <div className="w-full border-2 border-transparent py-2 px-2.5 rounded-lg font-light text-sm md:text-base bg-input-bg text-input-text">
-                {value || "—"}
-            </div>
-        </div>
+        <CommonReadOnlyField
+            label={label}
+            value={value}
+            labelClassName="text-j-gray-700"
+            valueClassName="border-j-gray-200 bg-j-gray-100 text-j-gray-700"
+        />
     );
 }
-
 interface ViewVehicleStepsProps {
     currentStep: number;
     onNext: () => void;
     onBack: () => void;
+    onStepChange: (step: number) => void;
     onClose: () => void;
     vehicle: VehicleDetail;
 }
 
-function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: ViewVehicleStepsProps) {
+function ViewVehicleSteps({ currentStep, onNext, onBack, onStepChange, onClose, vehicle }: ViewVehicleStepsProps) {
+    const rootRef = useVehicleDetailsSteps(currentStep, STEPS.length, onNext, onClose);
     return (
-        <div className="w-full flex flex-col items-center gap-4">
-            <div className="flex items-center justify-center gap-2">
-                {STEPS.map((step) => (
-                    <div
-                        key={step}
-                        title={`Etapa ${step}`}
-                        className={twMerge(
-                            "w-2.5 h-2.5 rounded-full transition-colors",
-                            step === currentStep ? "bg-j-yellow-300" : "bg-j-blue-700"
-                        )}
-                    />
-                ))}
+        <div ref={rootRef} tabIndex={-1} className="w-full flex flex-col items-center gap-5 outline-none">
+            <div className="grid w-full grid-cols-3 gap-2 rounded-2xl bg-j-gray-100 p-1.5">
+                {STEPS.map(({ step, label }) => {
+                    const isActive = step === currentStep;
+                    const isCompleted = step < currentStep;
+                    return (
+                        <button
+                            type="button"
+                            key={step}
+                            onClick={() => onStepChange(step)}
+                            aria-label={`Etapa ${step}: ${label}`}
+                            aria-current={isActive ? "step" : undefined}
+                            title={`Etapa ${step}`}
+                            className={twMerge(
+                                "flex min-w-0 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700 md:text-sm",
+                                isActive
+                                    ? "bg-j-blue-700 text-j-white shadow-sm"
+                                    : isCompleted
+                                        ? "bg-j-blue-100/30 text-j-blue-700"
+                                        : "text-j-gray-400"
+                            )}
+                        >
+                            <span className={twMerge(
+                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px]",
+                                isActive ? "bg-j-yellow-300 text-j-blue-800" : "bg-j-white",
+                            )}>
+                                {step}
+                            </span>
+                            <span className="hidden truncate sm:inline">{label}</span>
+                        </button>
+                    );
+                })}
             </div>
 
             <div className="w-full min-h-[420px]">
@@ -95,34 +119,23 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                 </div>
 
                 <div className={currentStep === 3 ? "w-full flex flex-col gap-4" : "hidden"}>
-                    {vehicle.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={vehicle.photo}
-                            alt={vehicle.nickname || vehicle.model}
-                            className="w-full h-40 object-cover rounded-lg"
-                        />
-                    ) : (
-                        <div className="w-full h-40 flex items-center justify-center rounded-lg bg-j-blue-900">
-                            <Car size={40} className="text-j-transparent-white" />
-                        </div>
-                    )}
+                    <VehiclePhotoCarousel cover={vehicle.photo} photos={vehicle.photos} alt={vehicle.nickname || vehicle.model} className="h-40 w-full rounded-lg" />
 
                     <ReadOnlyField label="Status" value={STATUS_LABELS[vehicle.status]} />
 
                     <div className="w-full grid grid-cols-2 gap-4">
-                        <ReadOnlyField label="Cadastrado em" value={formatDate(vehicle.createdAt)} />
-                        <ReadOnlyField label="Atualizado em" value={formatDate(vehicle.updatedAt)} />
+                        <ReadOnlyField label="Cadastrado em" value={maskDate(vehicle.createdAt)} />
+                        <ReadOnlyField label="Atualizado em" value={maskDate(vehicle.updatedAt)} />
                     </div>
                 </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
                 {currentStep > 1 && (
                     <Button
                         type="button"
                         onClick={onBack}
-                        className="flex-1 bg-transparent border-2 border-j-transparent-white text-j-white hover:bg-j-transparent-white/10 hover:text-j-white"
+                        className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
                     >
                         <ArrowLeft size={16} />
                         Voltar
@@ -130,12 +143,20 @@ function ViewVehicleSteps({ currentStep, onNext, onBack, onClose, vehicle }: Vie
                 )}
 
                 {currentStep < STEPS.length ? (
-                    <Button type="button" onClick={onNext} className="flex-1">
+                    <Button
+                        type="button"
+                        onClick={onNext}
+                        className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
+                    >
                         Próximo
                         <ArrowRight size={16} />
                     </Button>
                 ) : (
-                    <Button type="button" onClick={onClose} className="flex-1">
+                    <Button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"
+                    >
                         Fechar
                     </Button>
                 )}
@@ -160,44 +181,50 @@ export function ViewVehicleModal({ vehicleId }: ViewVehicleModalProps) {
     return (
         <div
             className={`
-                relative w-full max-w-125
-                flex flex-col gap-4 md:gap-6
-                p-4 md:p-8 max-h-[90dvh] overflow-y-auto overflow-x-hidden
-                bg-j-blue-800 rounded-2xl
-                shadow-[-1px_16px_23px_1px_rgba(0,0,0,0.35)]
-                text-j-white
+                relative flex max-h-[92dvh] w-full max-w-3xl
+                flex-col overflow-y-auto overflow-x-hidden
+                rounded-3xl bg-j-white shadow-2xl
             `}
         >
             <ButtonIcon
                 onClick={setClose}
-                className="absolute top-3 right-3 md:top-4 md:right-4 text-j-transparent-white hover:text-j-yellow-300"
+                className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"
             >
                 <X className="w-5 h-5 md:w-[22px] md:h-[22px]" />
             </ButtonIcon>
 
-            <div className="flex flex-col gap-2 pr-6 md:pr-8">
-                <span className="flex w-10 h-10 items-center justify-center rounded-full bg-j-blue-700 text-j-yellow-300">
-                    <Car size={20} />
-                </span>
-                <h2 className="text-lg md:text-2xl font-extrabold text-j-white">Detalhes do veículo</h2>
-                <p className="text-xs md:text-sm text-j-transparent-white">
-                    Informações completas do seu jipe. Campos somente leitura.
-                </p>
-            </div>
+            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+                <div className="flex items-start gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                        <Car size={20} />
+                    </span>
+                    <div>
+                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                            Detalhes do veículo
+                        </h2>
+                        <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                            Informações completas do seu jipe. Campos somente leitura.
+                        </p>
+                    </div>
+                </div>
+            </header>
 
             {isLoading || !vehicle ? (
-                <div className="flex items-center justify-center gap-2 py-10 text-j-transparent-white">
+                <div className="flex items-center justify-center gap-2 px-5 py-16 text-j-gray-500 md:px-8">
                     <LoaderCircle size={20} className="animate-spin" />
                     Carregando dados do veículo...
                 </div>
             ) : (
-                <ViewVehicleSteps
-                    currentStep={currentStep}
-                    onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
-                    onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
-                    onClose={setClose}
-                    vehicle={vehicle}
-                />
+                <div className="px-5 py-5 md:px-8 md:py-6">
+                    <ViewVehicleSteps
+                        currentStep={currentStep}
+                        onStepChange={setCurrentStep}
+                        onNext={() => setCurrentStep((prev) => Math.min(prev + 1, STEPS.length))}
+                        onBack={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
+                        onClose={setClose}
+                        vehicle={vehicle}
+                    />
+                </div>
             )}
         </div>
     );

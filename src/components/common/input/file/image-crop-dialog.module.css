@@ -1,0 +1,17 @@
+.dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(540px, calc(100vw - 24px));
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    overflow-y: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 24px 64px rgb(0 0 0 / 30%);
+}
+
+.dialog::backdrop { background: rgb(0 0 0 / 60%); }
+.dialog, .dialog * { pointer-events: auto !important; }

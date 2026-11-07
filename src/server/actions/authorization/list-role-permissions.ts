@@ -1,0 +1,15 @@
+'use server';
+
+import { permissionListResponseSchema } from "@/schemas/authorization/permission";
+import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
+import { HttpAPIRoutes } from "@/utils/http/api";
+
+export async function listRolePermissionsAction(roleId: number): Promise<PermissionResponse[]> {
+    const response = await actionFetchWrapper<PermissionResponse[]>({
+        url: `${HttpAPIRoutes.AUTHORIZATION_ROLES}/${roleId}/permissions`,
+        method: 'GET',
+        schema: permissionListResponseSchema,
+    });
+
+    return response.data;
+}

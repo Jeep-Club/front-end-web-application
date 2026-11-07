@@ -2,6 +2,7 @@
 
 import ExperiencesCarousel from "./ExperiencesCarousel";
 import ImpactCards from "./ImpactCards";
+import { useCallback, useEffect, useRef } from "react";
 import { Logo } from "@/components/common/logo";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -10,11 +11,29 @@ import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
   FaEnvelope,
+  FaGithub,
+  FaUserPlus,
   FaIdCard,
   FaChevronRight,
   FaChevronDown,
+  FaQuestionCircle,
 } from "react-icons/fa";
 import { GiJeep } from "react-icons/gi";
+import { driver } from "driver.js";
+import { getHomeTourSteps } from "@/config/tourSteps";
+import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
+
+const contributors = [
+  { username: "Luskahz", name: "Lucas", role: "Desenvolvedor Back-end / Tech Lead" },
+  { username: "Vitorram", name: "Vitor", role: "Desenvolvedor Front-end / Tech Lead" },
+  { username: "joaogabrielbeserra", name: "João Gabriel", role: "Desenvolvedor Full Stack" },
+  { username: "joaoapassos", name: "João Alves", role: "Desenvolvedor Front-end" },
+  { username: "TulioKenji", name: "Túlio Kenji", role: "Desenvolvedor Front-end" },
+  { username: "vinikyo", name: "Vini", role: "Desenvolvedor Full Stack" },
+  { username: "DanielPMorais", name: "Dani", role: "Desenvolvedor Full Stack" },
+  { username: "gumello244", name: "Gumello", role: "Desenvolvedor Full Stack" },
+  { username: "KauanLeonel", name: "Kauan", role: "Desenvolvedor Full Stack" },
+];
 
 export default function HomeClient({ footer }: { footer: ReactNode }) {
   const router = useRouter();
@@ -22,14 +41,52 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
   const handleContact = () => {
     router.push("/contato");
   };
+  const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
   const handleLogin = () => {
     router.push("/login");
   };
 
   const handleRegister = () => {
-    router.push("/register");
+    router.push("/membership/apply");
   };
+
+  const handleHomeTour = useCallback(() => {
+    if (driverRef.current) {
+      driverRef.current.destroy();
+      driverRef.current = null;
+    }
+
+    const driverObj = driver({
+      animate: true,
+      duration: 400,
+      smoothScroll: true,
+      showProgress: true,
+      progressText: "Passo {{current}} de {{total}}",
+      nextBtnText: "Próximo →",
+      prevBtnText: "← Anterior",
+      doneBtnText: "Entendido ✓",
+      skipMissingElement: true,
+      steps: getHomeTourSteps(),
+    });
+
+    driverRef.current = driverObj;
+    driverObj.drive();
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
+    if (forcedTarget === "/" || forcedTarget === "tour_completed_home") {
+      sessionStorage.removeItem(FORCE_START_TOUR_KEY);
+      const timer = setTimeout(() => {
+        handleHomeTour();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [handleHomeTour]);
 
   return (
     <main className="min-h-screen bg-[#0e0e0e] text-white font-sans overflow-x-hidden">
@@ -48,14 +105,26 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
 
         {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
-          <div />
+
           <div className="flex items-center gap-3">
+            {/* Botão de ajuda / tour da tela inicial */}
             <button
+              id="tour-home-help-btn"
+              onClick={handleHomeTour}
+              title="Como navegar nesta página?"
+              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 shadow-md shadow-yellow-500/10"
+            >
+              <FaQuestionCircle size={15} />
+              <span>Como funciona?</span>
+            </button>
+
+            <button
+              id="tour-home-member-btn"
               onClick={handleLogin}
               className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-all active:scale-95 hover:bg-[#001a52] shadow-lg"
             >
               <FaIdCard size={14} />
-              Sou membro
+              Entrar
             </button>
 
             <Logo />
@@ -75,18 +144,32 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
             <p className="text-xs md:text-sm text-white/90">09/09/1999</p>
           </div>
 
-          <button
-            onClick={handleContact}
-            className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
-          >
-            <FaEnvelope size={20} />
-            Entre em Contato
-            <FaChevronRight size={12} />
-          </button>
+          <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser s&oacute;cio do Jeep Clube Tamoios?</p>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              id="tour-home-contact-btn"
+              onClick={handleContact}
+              className="flex items-center gap-2 rounded-full bg-yellow-500 px-8 py-4 text-sm font-bold text-black shadow-xl transition-all hover:bg-yellow-400 active:scale-95 md:text-base"
+            >
+              <FaEnvelope size={20} />
+              Entre em contato
+              <FaChevronRight size={12} />
+            </button>
+            <button
+              id="tour-home-join-btn"
+              onClick={handleRegister}
+              className="flex items-center gap-2 rounded-full border border-white/35 bg-black/25 px-8 py-4 text-sm font-bold text-white backdrop-blur-sm transition-all hover:border-yellow-400 hover:text-yellow-300 active:scale-95 md:text-base"
+            >
+              <FaUserPlus size={18} />
+              Quero me associar
+              <FaChevronRight size={12} />
+            </button>
+          </div>
         </div>
 
         {/* Scroll down trigger */}
         <ScrollLink
+          id="tour-home-scroll-down"
           to="experiencias"
           smooth
           duration={600}
@@ -112,7 +195,7 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="order-2 lg:order-1">
             <p className="text-[11px] tracking-[0.2em] text-blue-900 uppercase mb-3 font-black">
-              Legado & Tradição
+              Legado &amp; Tradição
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-blue-950 leading-tight mb-6">
               Jeep Club Tamoios:<br />
@@ -168,9 +251,50 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
         <ImpactCards />
       </section>
 
+      {/* CRÉDITOS */}
+      <section id="creditos" className="scroll-mt-8 border-t border-white/5 bg-[#111] px-6 py-16 md:py-24">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,2fr)] lg:gap-14">
+          <div className="text-center lg:sticky lg:top-10 lg:self-start lg:text-left">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-yellow-400">Feito em equipe</p>
+            <h2 className="text-3xl font-black text-white md:text-4xl">Créditos</h2>
+            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/60 lg:mx-0 md:text-base">
+              Um projeto construído por pessoas que compartilham a paixão por tecnologia, comunidade e aventura.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {contributors.map(({ username, name, role }) => (
+              <article key={username} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center transition-colors hover:border-yellow-400/40 hover:bg-white/[0.07]">
+                <div className="relative mx-auto mb-5 h-28 w-28 overflow-hidden rounded-full border-2 border-yellow-400/70 bg-[#202020] shadow-lg shadow-black/30">
+                  <Image
+                    src={`https://github.com/${username}.png?size=256`}
+                    alt={`Foto de perfil de ${name}`}
+                    fill
+                    sizes="112px"
+                    className="object-cover"
+                  />
+                </div>
+                <h3 className="break-all text-base font-extrabold text-white">{name}</h3>
+                <p className="mt-2 text-sm text-white/60">{role}</p>
+                <a
+                  href={`https://github.com/${username}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={`Abrir perfil GitHub de ${username} em nova aba`}
+                  className="mx-auto mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/15 px-4 text-sm font-semibold text-yellow-300 transition-colors hover:border-yellow-400/60 hover:bg-yellow-400/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
+                >
+                  <FaGithub size={16} aria-hidden="true" />
+                  GitHub
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="px-6 py-12 md:py-20 bg-[#f5f7fb]">
-        <div className="max-w-5xl mx-auto bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden relative px-6 py-9 md:p-16 flex items-center shadow-xl shadow-[#00236F]/10">
+        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden relative px-6 py-9 md:p-16 flex items-center shadow-xl shadow-[#00236F]/10">
           <div className="relative z-10 mx-auto max-w-md text-center md:mx-0 md:max-w-[60%] md:text-left">
             <h2 className="text-2xl md:text-5xl font-black text-[#00236F] leading-tight mb-3 md:mb-4">
               Pronto para a sua<span className="md:hidden"> </span><br className="hidden md:block" />próxima aventura?

@@ -1,25 +1,26 @@
 'use client';
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Car, Plus, ChevronLeft, ChevronRight, IdCard, Eye, Trash2 } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/common/button";
+import { Button } from "@/components/common/button";
+import { ListPagination } from "@/components/common/table/ListPagination";
 import { useModal } from "@/providers/ModalProvider";
-import { listVehiclesMemberAction } from "@/actions/vehicles/list-member";
+import { listVehiclesMemberAction } from "@/server/actions/vehicles/list-member";
 import { maskPlate } from "@/utils/masks/maskPlate";
-import { IncludeVehicleModal } from "./IncludeVehicleModal";
+import { useQuery } from "@tanstack/react-query";
+import { CalendarDays,Eye,Palette,Pencil,Plus,Trash2 } from "lucide-react";
+import { useState } from "react";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
+import { IncludeVehicleModal } from "./IncludeVehicleModal";
+import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 import { ViewVehicleModal } from "./ViewVehicleModal";
-
-const PAGE_SIZE = 10;
 
 export function VehiclesTabContent() {
     const { setContent, setOpen } = useModal();
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ["vehicles", "list-member", page],
-        queryFn: () => listVehiclesMemberAction({ page, size: PAGE_SIZE }),
+    const { data, isLoading, isError, isFetching } = useQuery({
+        queryKey: ["vehicles", "list-member", page, pageSize],
+        queryFn: () => listVehiclesMemberAction({ page, size: pageSize }),
     });
 
     const handleOpenIncludeVehicle = () => {
@@ -51,7 +52,7 @@ export function VehiclesTabContent() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-j-gray-700">Meus veículos</h3>
-                <Button onClick={handleOpenIncludeVehicle}>
+                <Button onClick={handleOpenIncludeVehicle} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52">
                     <Plus size={16} />
                     <span className="hidden sm:inline">Incluir Veículo</span>
                     <span className="sm:hidden">Incluir</span>
@@ -72,105 +73,94 @@ export function VehiclesTabContent() {
 
             {!isLoading && !isError && data && data.content.length > 0 && (
                 <>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {data.content.map((vehicle) => (
                             <div
                                 key={vehicle.id}
-                                className="flex flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm"
+                                className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md"
                             >
-                                <div className="relative h-40 w-full bg-j-gray-100">
-                                    {vehicle.photo ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={vehicle.photo}
-                                            alt={vehicle.nickname || vehicle.model}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex h-full w-full items-center justify-center">
-                                            <Car size={40} className="text-j-gray-300" />
-                                        </div>
-                                    )}
-                                    {vehicle.nickname && (
-                                        <span className="absolute right-3 top-3 rounded-full bg-j-black/70 px-3 py-1 text-xs font-bold uppercase tracking-wide text-j-white">
-                                            #{vehicle.nickname}
-                                        </span>
-                                    )}
+                                <div className="relative aspect-video w-full overflow-hidden bg-[#111827]">
+                                    <VehiclePhotoCarousel vehicleId={vehicle.id} cover={vehicle.photo} photos={vehicle.photos} alt={`Foto de ${vehicle.nickname || vehicle.model}`} className="absolute inset-0 h-full w-full" />
                                 </div>
 
-                                <div className="flex flex-1 flex-col gap-3 p-4">
-                                    <h4 className="text-lg font-extrabold leading-tight text-j-gray-700">
-                                        {vehicle.model}
-                                    </h4>
-
-                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-j-gray-500">
-                                        <IdCard size={16} />
-                                        {maskPlate(vehicle.plate)}
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 border-t border-j-gray-100 pt-3">
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                                                Ano/Modelo
-                                            </span>
-                                            <span className="text-sm font-bold text-j-gray-700">{vehicle.modelYear}</span>
+                                <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
+                                    <div className="flex min-w-0 items-center justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="mt-0.5 truncate text-xl font-black leading-tight text-j-blue-800" title={vehicle.nickname?.trim() ? `${vehicle.nickname.trim()} - ${vehicle.model}` : vehicle.model}>
+                                                {vehicle.nickname?.trim()
+                                                    ? <>{vehicle.nickname.trim()}<span className="text-sm font-medium"> - {vehicle.model}</span></>
+                                                    : vehicle.model}
+                                            </h4>
                                         </div>
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
-                                                Cor
+
+                                        <div className="inline-flex shrink-0 flex-col overflow-hidden rounded-lg border border-j-gray-300 bg-white shadow-sm">
+                                            <span className="bg-j-blue-800 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white">
+                                                Placa do veículo
                                             </span>
-                                            <span className="text-sm font-bold text-j-gray-700">{vehicle.color}</span>
+                                            <span className="px-3 py-1 font-mono text-base font-extrabold leading-none tracking-[0.14em] text-j-gray-800 sm:text-lg" aria-label={`Placa ${maskPlate(vehicle.plate)}`}>
+                                                {maskPlate(vehicle.plate)}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <div className="mt-auto flex items-center gap-2 pt-1">
-                                        <Button
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-j-gray-200 bg-j-gray-50 px-3 py-2.5 text-j-gray-600">
+                                            <CalendarDays size={16} className="shrink-0 text-j-blue-700" aria-hidden="true" />
+                                            <span className="shrink-0 text-xs font-bold">Ano:</span>
+                                            <span className="truncate">{vehicle.modelYear}</span>
+                                        </div>
+                                        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-j-gray-200 bg-j-gray-50 px-3 py-2.5 text-j-gray-600">
+                                            <Palette size={16} className="shrink-0 text-j-blue-700" aria-hidden="true" />
+                                            <span className="shrink-0 text-xs font-bold">Cor:</span>
+                                            <span className="truncate" title={vehicle.color}>{vehicle.color}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-auto grid grid-cols-3 gap-2 border-t border-j-gray-100 pt-3">
+                                        <button
+                                            type="button"
                                             onClick={() => handleOpenEditVehicle(vehicle.id)}
-                                            className="flex-1 bg-yellow-400 text-yellow-950 hover:bg-yellow-500 hover:text-yellow-950"
+                                            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-yellow-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-yellow-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-500"
                                         >
+                                            <Pencil size={17} className="text-yellow-600" aria-hidden="true" />
                                             Editar
-                                        </Button>
-                                        <ButtonIcon
+                                        </button>
+                                        <button
+                                            type="button"
                                             onClick={() => handleOpenViewVehicle(vehicle.id)}
-                                            title="Visualizar"
-                                            className="rounded-lg border-none bg-j-blue-800 p-3 text-white hover:bg-j-blue-500 hover:text-white disabled:flex"
+                                            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2 text-xs font-bold text-j-gray-700 transition-colors hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-700"
                                         >
-                                            <Eye size={20} />
-                                        </ButtonIcon>
-                                        <ButtonIcon
+                                            <Eye size={17} className="text-j-blue-800" aria-hidden="true" />
+                                            Visualizar
+                                        </button>
+                                        <button
+                                            type="button"
                                             onClick={() => handleOpenDeleteVehicle(vehicle)}
-                                            title="Excluir"
-                                            className="rounded-lg border-none bg-red-500 p-3 text-white hover:bg-red-600 hover:text-white disabled:flex"
+                                            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-red-50 px-2 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                                         >
-                                            <Trash2 size={20} />
-                                        </ButtonIcon>
+                                            <Trash2 size={17} aria-hidden="true" />
+                                            Excluir
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {data.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 pt-2">
-                            <ButtonIcon
-                                disabled={data.first}
-                                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                                className="text-j-gray-600 disabled:flex disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                                <ChevronLeft size={18} />
-                            </ButtonIcon>
-                            <span className="text-xs text-j-gray-400">
-                                Página {data.number + 1} de {data.totalPages}
-                            </span>
-                            <ButtonIcon
-                                disabled={data.last}
-                                onClick={() => setPage((prev) => prev + 1)}
-                                className="text-j-gray-600 disabled:flex disabled:opacity-30 disabled:cursor-not-allowed"
-                            >
-                                <ChevronRight size={18} />
-                            </ButtonIcon>
-                        </div>
-                    )}
+                    <ListPagination
+                        itemLabel="veículo"
+                        isFetching={isFetching}
+                        pagination={{
+                            pageIndex: data.number,
+                            pageSize,
+                            pageCount: data.totalPages,
+                            rowCount: data.totalElements,
+                            onChange: (next) => {
+                                setPage(next.pageSize !== pageSize ? 0 : next.pageIndex);
+                                setPageSize(next.pageSize);
+                            },
+                        }}
+                    />
                 </>
             )}
         </div>

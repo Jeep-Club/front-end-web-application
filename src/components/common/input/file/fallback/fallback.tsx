@@ -6,7 +6,7 @@ export function FallBackFile({className, children}:{className?: string, children
         <div
             className={twMerge(
                 `
-                flex items-center justify-center p-3 mt-2 rounded-lg bg-input-bg text-sm text-j-gray-400 min-h-16
+                flex items-center justify-center p-3 mt-2 rounded-lg bg-input-bg text-sm text-input-text min-h-16
                 `,
                 className
             )}

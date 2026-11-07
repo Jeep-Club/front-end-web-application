@@ -1,4 +1,4 @@
-# Termos de Uso e Política de Privacidade
+﻿# Termos de Uso e Política de Privacidade
 
 Termos de Uso e Política de Privacidade: versão 1.2, de 30/10/2026. As cláusulas de imagem e voz e ciência de riscos estão consolidadas nos Termos de Uso, conforme pedido do usuário. Não há fichas de preenchimento, formulários de assinatura ou documentos separados para o visitante.
 
@@ -6,21 +6,21 @@ Rotas públicas: `/termos-de-uso`, `/politica-de-privacidade` e `/contato`. As a
 
 ## Identificação e atendimento
 
-Inicialmente não havia dados institucionais e canais confirmados. Em 30/10/2026, o usuário forneceu orientação do presidente com o canal `dpo@jeeptamoios.com.br` e o domínio `www.jeeptamoios.com.br`. O e-mail passou a ser o padrão em `src/config/legal.ts`, sem modificar arquivos de ambiente; uma configuração explícita do servidor continua prevalecendo. A administração deve confirmar que a caixa funciona e é monitorada. Não foi inventada a identidade de um encarregado.
+Inicialmente não havia dados institucionais e canais confirmados. Em 30/10/2026, o usuário informou a orientação do presidente com o canal `dpo@jeeptamoios.com.br` e o domínio `www.jeeptamoios.com.br`. Por decisão na resolução deste merge, o e-mail não é definido como padrão no código; a configuração explícita do servidor prevalece. A administração deve confirmar que a caixa funciona e é monitorada. Não foi inventada a identidade de um encarregado.
 
 O CNPJ informado no modelo estava mascarado e não foi publicado como identificação válida. Razão social completa, documento e endereço seguem pendentes. As páginas mostram essas lacunas. Isso não substitui a identificação do controlador.
 
-Definir uma pessoa física ou jurídica efetivamente responsável pelas decisões sobre os dados. A ausência de CNPJ não impede a identificação de pessoa física como controlador. Publicar somente os dados de identificação necessários; não divulgar CPF pessoal indiscriminadamente. Configurar no servidor, usando `.sampleenv` como referência:
+Definir uma pessoa física ou jurídica efetivamente responsável pelas decisões sobre os dados. A ausência de CNPJ não impede a identificação de pessoa física como controlador. Publicar somente os dados de identificação necessários; não divulgar CPF pessoal indiscriminadamente. Configurar no servidor, usando `.env.example` ou `.sampleenv` como referência:
 
 - `LEGAL_CONTROLLER_NAME`: nome da pessoa física ou razão social responsável.
 - `LEGAL_CONTROLLER_DOCUMENT`: identificação institucional pertinente, se houver; opcional.
 - `LEGAL_CONTROLLER_ADDRESS`: endereço de atendimento apropriado.
-- `LEGAL_PRIVACY_EMAIL`: endereço monitorado para direitos LGPD; se ausente, utiliza o e-mail informado pelo presidente.
+- `LEGAL_PRIVACY_EMAIL`: endereço monitorado para direitos LGPD; não há um valor padrão.
 - `LEGAL_SUPPORT_EMAIL`: atendimento geral, opcional.
 
 Essas variáveis são públicas por finalidade. Nunca colocar nelas senhas ou chaves. As páginas legais são renderizadas no servidor a cada solicitação e não exigem variáveis `NEXT_PUBLIC_`. Não há formulário de envio de pedidos de privacidade.
 
-O componente `src/components/common/site-footer/index.tsx` compartilha o rodapé entre a página inicial, a equipe e as páginas legais. Preencha `src/config/footer.ts` com o nome/razão social, CNPJ, endereço com CEP e os links HTTPS dos perfis oficiais. Campos vazios são omitidos; o título “Redes sociais” permanece visível e os ícones aparecem ao preencher os links. Se houver identificação institucional configurada nas variáveis `LEGAL_CONTROLLER_NAME`, `LEGAL_CONTROLLER_DOCUMENT` e `LEGAL_CONTROLLER_ADDRESS`, esses valores prevalecem no rodapé. Em produção, recompile/republique após alterar o arquivo.
+O componente `src/components/common/site-footer/index.tsx` compartilha o rodapé entre a página inicial, a equipe e as páginas legais. Preencha `src/config/footer.ts` com o nome/razão social, CNPJ, e-mail, endereço com CEP e os links HTTPS dos perfis oficiais. CNPJ, e-mail e endereço sem configuração mostram "XXXXX". Os ícones sociais permanecem visíveis; sem URL HTTPS, seus botões não navegam. Em produção, recompile/republique após alterar o arquivo.
 
 ## Imagem e trilhas nos Termos de Uso
 
@@ -30,11 +30,11 @@ Incluir as regras no mesmo texto não converte navegação ou aceite genérico e
 
 O modelo do presidente foi adaptado para preservar revogação, reparação e acesso à Justiça. Não foram incluídas isenção total civil/criminal, promessa de não processar, irrevogabilidade geral do que já foi publicado, consentimento promocional obrigatório para participar, transferência de toda responsabilidade de menores ou ambiental, nem exigência genérica de documentos dos dois pais com firma reconhecida para qualquer menor de 12 anos. Essas regras não devem ser reintroduzidas como condição de um checkbox. O prazo de retirada de até 15 dias é compromisso operacional proposto pelo clube e precisa ser atendido na operação; não foi apresentado como prazo legal geral.
 
-### Integração futura de inscrições e aceites
+### Integração do aceite no cadastro
 
-Em 01/11/2026, o cadastro do site passou a exigir uma caixa de aceite dos Termos de Uso, inicialmente desmarcada, com link em nova aba. O botão de registrar fica desabilitado até a seleção. O schema do formulário e a Server Action rejeitam aceite ausente, falso ou de tipo incorreto antes de chamar a API. A rota `/register` foi movida para o grupo sem autenticação, pois antes exigia sessão de uma conta já existente. O campo de e-mail do cadastro também passou a usar explicitamente o nome esperado pelo schema.
+Em 01/11/2026, o cadastro passou a exigir aceite dos Termos de Uso, inicialmente desmarcado, com link em nova aba. O botão de registro fica desabilitado até a seleção. O schema e a Server Action rejeitam aceite ausente, falso ou de tipo incorreto antes de chamar a API. Na resolução do merge, `/register` permanece no grupo autenticado e requer `USER_CREATE`; a tela manteve o aceite obrigatório conforme decisão do usuário.
 
-A regra de permissão administrativa de `/register` foi removida do proxy; as demais rotas protegidas permanecem com suas regras. Validação: quatro testes da ação do servidor passaram; no Chrome, pelo endereço local de rede e sem sessão, foram verificados acesso ao cadastro, checkbox desmarcado, bloqueio inicial, habilitação após seleção, novo bloqueio ao desmarcar, seleção pelo teclado e link em nova aba. Nenhuma conta foi criada durante essa verificação. O ESLint dos arquivos alterados passou; o TypeScript mantém os erros anteriores de `InputProps` e `SidebarProps`, sem novos erros desta alteração.
+A regra de permissão `USER_CREATE` para `/register` foi preservada. A Action valida o aceite antes de chamar a API, e o payload continua usando o contrato atual. Esta resolução não foi verificada no navegador.
 
 O campo `termsAccepted` é exclusivo da submissão do site e validado no servidor Next.js. O payload da API de cadastro continua com seus seis campos originais, pois não há contrato documentado para gravar consentimentos no backend. Essa alteração torna o aceite obrigatório no fluxo do site, mas não cria evidência durável de versão/data/IP nem impede chamadas externas diretamente à API. O aceite dos termos gerais não substitui autorização específica de imagem ou de dados sensíveis. Nenhum arquivo de ambiente foi alterado.
 
@@ -56,7 +56,7 @@ Os documentos e os procedimentos devem ser revisados por assessoria jurídica do
 
 | Operação | Dados e destino | Referências |
 | --- | --- | --- |
-| Registro | Nome, CPF, nascimento (`birthData` no contrato atual), e-mail, telefone, senha; enviados à API | `src/schemas/auth/register/registerRequest.ts`, `src/actions/auth/registerAction.ts` |
+| Registro | Nome, CPF, nascimento (`birthDate` no contrato atual), e-mail, telefone, senha; enviados à API | `src/schemas/auth/register/registerRequest.ts`, `src/server/actions/auth/registerAction.ts` |
 | Login e recuperação | CPF/senha, tokens de recuperação e sessão; API e cookies | `src/actions/auth/`, `src/utils/auth/`, `src/proxy.ts` |
 | Perfil | Nome, CPF, RG, nascimento, foto, e-mail, telefone, status e datas; consulta à API | `src/schemas/user/profile.ts` |
 | Edição pessoal | Alterações e foto convertida em base64 ficam na memória/cache de consulta; atualmente não há ação de gravação permanente | `src/components/pages/profile/tabs/personal/PersonalDataTab.tsx`, `EditPersonalDataModal.tsx` |
@@ -107,3 +107,4 @@ Verificação inicial de 28/10/2026:
 - [ANPD: direitos dos titulares, inclusive revogação](https://www.gov.br/anpd/pt-br/assuntos/titular-de-dados/direito-dos-titulares).
 - [Governo Digital: tipos e requisitos de assinatura eletrônica](https://www.gov.br/governodigital/pt-br/identidade/assinatura-eletronica/saiba-mais-sobre-a-assinatura-eletronica).
 - [TJPE: regras e exceções de autorização para viagens nacionais de menores](https://portal.tjpe.jus.br/web/infancia-e-juventude/viagens-nacionais).
+

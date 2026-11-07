@@ -1,29 +1,28 @@
 'use client';
 
-import { useRouter } from "next/navigation";
-import { useMutation } from '@tanstack/react-query';
-import toast from "react-hot-toast";
-import { Form } from "@/components/common/form";
 import { Button } from "@/components/common/button";
-import { LoaderCircle, Save } from "lucide-react";
-import { putMedicalProfileRequestSchema } from "@/schemas/admin/medical-profile";
-import { putMedicalProfileAction } from "@/actions/admin/medical-profile/put";
+import { Form } from "@/components/common/form";
 import { Input } from "@/components/common/input";
 import { InputPhoneNumber } from "@/components/common/input/input-phonenumber";
 import Link from "next/link";
+import { putMedicalProfileRequestSchema } from "@/schemas/admin/medical-profile";
+import { putMedicalProfileAction } from "@/server/actions/admin/medical-profile/put";
+import { useMutation } from '@tanstack/react-query';
+import { LoaderCircle,Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 export default function FormPutMedicalProfile({ id, medicalProfile}: { id: number, medicalProfile: GetMedicalProfileResponse | null }) {
     const router = useRouter();
 
     const mutation = useMutation({
         mutationFn: putMedicalProfileAction,
-        onSuccess: () => { router.push(`/admin/medical-profile/${id}`); toast.success('Perfil médico atualizado com sucesso!'); },
-        onError: (error) => toast.error(error.message || 'Erro ao atualizar perfil médico. Tente novamente.')
+        onSuccess: () => { router.push(`/admin/medical-profile/${id}`); toast.success('Perfil médico atualizado com sucesso!'); }
     });
 
     const isLoading = mutation.isPending;
 
     const handleSubmit = async (data: PutMedicalProfileDependentRequest) => {
-        mutation.mutateAsync({ id, data });
+        mutation.mutateAsync({ id: medicalProfile?.ownerId ?? id, ownerType: medicalProfile?.ownerType ?? 'USER', data });
     }
 
     const defaultValues: PutMedicalProfile | undefined = medicalProfile ? {
@@ -51,7 +50,7 @@ export default function FormPutMedicalProfile({ id, medicalProfile}: { id: numbe
                 onSubmit={handleSubmit}
                 onError={(errors) => console.error(errors)}
                 formOptions={{defaultValues: defaultValues}}
-                className="w-full flex flex-col gap-4" 
+                className="w-full flex flex-col gap-4"
             >
                 {/* Informações Básicas e Médicas */}
                 <Input name="bloodType" label="Tipo Sanguíneo" placeholder="Ex: O_POSITIVE" required />

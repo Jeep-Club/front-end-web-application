@@ -1,0 +1,42 @@
+import AdminUsersPage from "@/components/pages/admin/users";
+import serverFetchWrapper from "@/services/fetchWrapper/serverFetchWrapper";
+import { HttpAPIRoutes } from "@/utils/http/api";
+import { adminUserListResponseSchema } from "@/schemas/admin/users";
+import { parseAdminUserSearchParams } from "@/utils/searchParam/admin/user";
+
+interface Props {
+    searchParams: Promise<AdminUserSearchParams>
+}
+
+export default async function Page({ searchParams }: Props) {
+    const rawSearchParams = await searchParams;
+
+    const validSearchParams =
+        parseAdminUserSearchParams(rawSearchParams);
+
+    const query = new URLSearchParams(
+        Object.entries(validSearchParams).filter(
+            (entry): entry is [string, string] => typeof entry[1] === "string",
+        ).filter(([key, value]) => key !== "status" || value !== "ALL"),
+    );
+
+
+    const users = rawSearchParams.tab === "applications"
+        ? {
+            content: [], number: 0, size: 20, totalElements: 0, totalPages: 0,
+            numberOfElements: 0, first: true, last: true, empty: true,
+        } satisfies PageResponse<AdminUser>
+        : (await serverFetchWrapper<PageResponse<AdminUser>>({
+            url: HttpAPIRoutes.ADMIN_USERS + `?${query.toString()}`,
+            method: "GET",
+            schema: adminUserListResponseSchema,
+        })).data;
+
+
+    return (
+        <AdminUsersPage
+            users={users}
+            searchParams={validSearchParams}
+        />
+    );
+}

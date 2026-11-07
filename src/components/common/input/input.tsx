@@ -3,27 +3,38 @@
 import { twMerge } from "tailwind-merge";
 import { useId } from "react";
 
+export type InputVariant = "white" | "gray";
+
 export interface InputProps extends Omit<React.ComponentProps<'input'>, 'name' | 'defaultValue'> {
     label: string;
     name: string;
     error?: string;
     children?: React.ReactNode;
     labelClassName?: string;
+    errorClassName?: string;
+    labelAction?: React.ReactNode;
+    /** @deprecated Compatibilidade visual; novos usos seguem os tokens de data-theme. */
+    variant?: InputVariant;
 }
 
 
-export function Input({label, error, name, value, className, labelClassName, type="text", children, required, ...props}: InputProps) {
-    const id = useId();
-    const isError = error !== 'undefined' && error !== undefined && error !== null;
+export function Input({label, error, name, value, className, labelClassName, errorClassName, labelAction, variant, type="text", children, required, id: idProp, ...props}: InputProps) {
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const isError = Boolean(error && error !== 'undefined');
+    const errorId = id + '-error';
     
     return (
         <div className="w-full flex flex-col gap-1.5">
-            <label
-                htmlFor={id}
-                className={twMerge("text-xs md:text-sm font-bold text-j-white", labelClassName)}
-            >
-                {label} {required ? <span className="text-j-red-200">*</span> : null}
-            </label>
+            <div className="flex items-center justify-between gap-3">
+                <label
+                    htmlFor={id}
+                    className={twMerge("text-xs md:text-sm font-bold text-j-gray-700", labelClassName)}
+                >
+                    {label} {required ? <span aria-hidden="true" className="text-input-error-text">*</span> : null}
+                </label>
+                {labelAction}
+            </div>
             <div className="w-full relative flex items-center">
                 <input
                     {...props}
@@ -32,30 +43,25 @@ export function Input({label, error, name, value, className, labelClassName, typ
                     name={name}
                     value={value}
                     required={required}
-                    aria-invalid={!!error}
-                    aria-describedby={isError ? error : undefined}
+                    aria-invalid={isError}
+                    aria-describedby={[props['aria-describedby'], isError ? errorId : undefined].filter(Boolean).join(' ') || undefined}
                     className={twMerge(
                         `
-                        w-full border-2 border-transparent py-2 px-2.5 rounded-lg font-light text-sm md:text-base
-                        placeholder:text-j-transparent-white
-                        transition-colors
-                        duration-300
+                        w-full border-2 border-input-border px-3 py-2.5 rounded-lg font-normal text-sm
+                        placeholder:text-input-placeholder transition-colors duration-300
                         bg-input-bg text-input-text
-                        focus:outline-2 focus:border-j-yellow-400
-                        focus:outline-j-yellow-400
-                        disabled:bg-j-gray-200 disabled:hover:bg-j-gray-200
+                        focus:outline-2 focus:border-input-border-focus focus:outline-input-border-focus
+                        disabled:bg-input-bg-disabled disabled:text-input-text-disabled disabled:cursor-not-allowed
                         `,
-                        `
-                            ${isError ? "border-input-border-error text-input-border-error" : "border-transparent text-input-text"} 
-                            ${isError ? "focus:outline-input-border-error focus:border-input-border-error" : "focus:outline-j-yellow-400 focus:border-j-yellow-400"}
-                        `,
+                        variant === "gray" && "border-transparent bg-input-legacy-bg text-input-legacy-text placeholder:text-input-legacy-text/70 px-2.5 py-2 font-light text-base",
+                        isError && "border-input-border-error focus:outline-input-border-error focus:border-input-border-error",
                         className
                     )}
                 />
                 {children}
             </div>
 
-            {isError ? <p className="text-j-red-300 text-sm">{error}</p> : null}
+            {isError ? <p id={errorId} className={twMerge("text-input-error-text text-sm", errorClassName)}>{error}</p> : null}
         </div>
     );
 }

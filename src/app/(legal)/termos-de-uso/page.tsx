@@ -89,5 +89,5 @@ export default function TermsPage() {
 
 function PrivacyEmailLink() {
     const { privacyEmail } = getLegalContact();
-    return <a href={`mailto:${privacyEmail}`}>{privacyEmail}</a>;
+    return privacyEmail ? <a href={`mailto:${privacyEmail}`}>{privacyEmail}</a> : <Link href="/contato">canal de contato e privacidade</Link>;
 }

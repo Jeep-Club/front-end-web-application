@@ -1,13 +1,15 @@
 'use client';
 
-import React, { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { ModalRoot } from '@/components/common/modal/root';
+import { useModalScrollCorners } from '@/hooks/useModalScrollCorners';
 
 interface ModalContextProps  {
     content: React.ReactNode;
     setContent: (content: React.ReactNode) => void;
     setOpen: () => void;
     setClose: () => void;
+    ref: React.RefObject<HTMLDivElement | null>;
 }
 
 const ModalContext = createContext<ModalContextProps>({
@@ -15,11 +17,15 @@ const ModalContext = createContext<ModalContextProps>({
     setContent: () => { },
     setOpen: () => { },
     setClose: () => { },
+    ref: { current: null },
 });
 
 export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    useModalScrollCorners();
     const [content, setContent] = useState<React.ReactNode>(null);
     const [isOpen, setIsOpen] = useState(false);
+
+    const ref = useRef<HTMLDivElement>(null);
 
     const openModal = () => {
         setIsOpen(true);
@@ -30,10 +36,12 @@ export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsOpen(false);
     };
 
+    
+
     return (
-        <ModalContext.Provider value={{ content, setContent, setClose: closeModal, setOpen: openModal }}>
+        <ModalContext.Provider value={{ content, setContent, setClose: closeModal, setOpen: openModal, ref }}>
             {children}
-            <ModalRoot onClose={closeModal} isOpen={isOpen}>
+            <ModalRoot onClose={closeModal} isOpen={isOpen} ref={ref}>
                 {content}
             </ModalRoot>
         </ModalContext.Provider>

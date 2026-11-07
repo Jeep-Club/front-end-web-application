@@ -1,59 +1,43 @@
-import { getAuthCookies } from "@/utils/auth/get";
-import { fetchWrapper, FetchWrapperProps, FetchWrapperResponse } from "./fetchWrapper";
-import { HttpStatus } from "@/utils/http/status";
-import logoutAction from "@/actions/auth/logout";
-import fetchRefreshToken from "@/utils/auth/refresh";
-import { login } from "@/utils/auth/login";
+import { getAuthCookies } from '@/utils/auth/get';
+import { login } from '@/utils/auth/login';
+import fetchRefreshToken from '@/utils/auth/refresh';
+import { getApiProblem,isSessionInvalidError,SESSION_EXPIRED_MESSAGE,toActionError } from '@/utils/http/apiError';
+import { fetchWrapper,FetchWrapperProps,FetchWrapperResponse } from './fetchWrapper';
+import { frontendHeaders } from './frontendHeaders';
 
-interface ActionFetchWapperProps<T> extends FetchWrapperProps<T> {
-
-}
-
-interface ActionFetchWrapperResponse<T> extends FetchWrapperResponse<T> {
-
-}
-
-export default async function actionFetchWrapper<T>({ ...props }: ActionFetchWapperProps<T>): Promise<ActionFetchWrapperResponse<T>> {
-
-    const { url, ...fetchProps } = props;
-
-    const apiURL = process.env.API_URL;
-
-    if (!apiURL) {
-        throw new Error("API_URL is not defined");
-    }
-
+export default async function actionFetchWrapper<T>(props: FetchWrapperProps<T>): Promise<FetchWrapperResponse<T>> {
     try {
-        const authCookies = await getAuthCookies.SERVER();
-        fetchProps.headers = {
-            ...fetchProps.headers,
-            ...(authCookies?.AuthAccessToken ? {'Authorization': `Bearer ${authCookies.AuthAccessToken}`} : {})
-        }
-
-        const response = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
-        
-        
-        
-        if (response.status === HttpStatus.TOKEN_EXPIRED) {
-            if (!authCookies) {
-                logoutAction();
-                throw new Error('No auth cookies found');
-            }
+        const { url, ...fetchProps } = props;
+        const apiURL = process.env.API_URL;
+        if (!apiURL) throw new Error('API_URL is not defined');
+        const auth = await getAuthCookies.SERVER();
+        const headers = new Headers(fetchProps.headers);
+        if (auth?.AuthAccessToken) headers.set('Authorization', `Bearer ${auth.AuthAccessToken}`);
+        const request = () => fetchWrapper<T>({ ...fetchProps, url: `${apiURL.replace(/\/$/, '')}/${url}`, headers: frontendHeaders(headers) });
+        try {
+            return await request();
+        } catch (error) {
+            if (!isSessionInvalidError(error)) throw error;
+            if (!auth?.AuthRefreshToken) throw new Error(SESSION_EXPIRED_MESSAGE);
+            let tokens: RefreshTokenResponse;
             try {
-                const refreshResponse = await fetchRefreshToken({
-                    ApiURL: apiURL,
-                    refreshToken: authCookies.AuthRefreshToken,
-                });
-                await login(refreshResponse.accessToken, refreshResponse.refreshToken, new Date(Date.now() + refreshResponse.expiresInSeconds * 1000).toISOString());
-                const retryResponse = await fetchWrapper<T>({ url: `${apiURL}/${url}`, ...fetchProps });
-                return retryResponse;
+                tokens = await fetchRefreshToken({ ApiURL: apiURL, refreshToken: auth.AuthRefreshToken });
             } catch (refreshError) {
-                logoutAction();
+                // An outage during refresh is recoverable and must keep the session.
+                const problem = getApiProblem(refreshError);
+                if (problem?.status === 401 || problem?.code === 'REFRESH_TOKEN_NOT_FOUND') throw new Error(SESSION_EXPIRED_MESSAGE);
                 throw refreshError;
             }
+            await login(tokens.accessToken, tokens.refreshToken, new Date(Date.now() + tokens.expiresInSeconds * 1000).toISOString());
+            headers.set('Authorization', `Bearer ${tokens.accessToken}`);
+            try {
+                return await request();
+            } catch (retryError) {
+                if (isSessionInvalidError(retryError)) throw new Error(SESSION_EXPIRED_MESSAGE);
+                throw retryError;
+            }
         }
-        return response;
     } catch (error) {
-        throw error
+        throw toActionError(error);
     }
 }

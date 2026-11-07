@@ -9,13 +9,14 @@ export type InputCPFProps = Omit<InputRegisterProps, "label" | "name"> & {
     name?: string,
 }
 
-export function InputCPF({label="CPF", name='cpf', placeholder, className, type='text', autoComplete='off', ...props}: InputCPFProps){
+export function InputCPF({label="CPF", name='cpf', placeholder, className, type='text', autoComplete='username', ...props}: InputCPFProps){
 
 
     return(
             <InputRegister
                 {...props}
                 type={type}
+                inputMode="numeric"
                 autoComplete={autoComplete}
                 label={label}
                 name={name}

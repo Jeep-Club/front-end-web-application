@@ -1,0 +1,51 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './PageHeader.stories';
+
+<Meta of={Stories} />
+
+# PageHeader
+
+Cabeçalho de página com título, trilha de navegação e ações opcionais. Use nas telas que precisam explicitar a localização do usuário e reunir ações da página. Ele não fornece o shell administrativo, permissões, busca ou carregamento de dados.
+
+## Composição
+
+```tsx
+import { PageHeader } from '@/components/common/page-header';
+import { Button } from '@/components/common/button';
+
+<PageHeader
+  id="users-header"
+  title="Gestão de usuários"
+  breadcrumbs={[
+    { label: 'Início', href: '/feed' },
+    { label: 'Usuários' },
+  ]}
+  actions={<Button onClick={onCreate}>Criar usuário</Button>}
+/>
+```
+
+`title` e `breadcrumbs` são obrigatórios. `title` aceita ReactNode e é renderizado dentro de um `h1`; passe o conteúdo, não outro heading. `id` identifica o container externo. O componente não expõe `className`: componha dimensões e espaçamento no layout da página.
+
+<Canvas of={Stories.Padrao} />
+
+<div role="region" aria-label="Propriedades do PageHeader" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.Padrao} />
+</div>
+
+## Breadcrumbs e navegação
+
+Cada item contém `label` e um `href` opcional. Itens anteriores ao último viram Next Link apenas quando têm `href`. O último item é sempre texto, mesmo que receba uma URL; use-o para identificar a página atual. As URLs vêm do consumidor, não são deduzidas do título.
+
+O nav recebe o nome acessível `breadcrumb`. A implementação atual destaca visualmente o último item, mas não aplica `aria-current`; não trate essa apresentação como uma garantia completa de semântica de breadcrumb.
+
+## Ações e responsividade
+
+<Canvas of={Stories.ComAcao} />
+
+`actions` recebe JSX, como [Button](?path=/docs/componentes-button--docs), links ou uma composição de ações. Seu controle está desativado porque um objeto serializado não representa elementos React. O consumidor fornece os handlers e só inclui as ações permitidas; o cabeçalho não verifica autorização.
+
+<Canvas of={Stories.ConteudoLongo} />
+
+Em telas pequenas, ações ficam abaixo do título e ocupam a faixa disponível; a partir de `sm`, o layout organiza título e ações na horizontal. Os breadcrumbs permitem quebra de linha. Com muitas ações ou títulos longos, confira o espaço da página e componha botões que caibam nessa região.
+
+As stories usam um container claro para evidenciar a região e o adaptador Next do Storybook. Não há sessão, API ou provider de domínio; o botão do exemplo demonstra composição, sem criar um usuário.

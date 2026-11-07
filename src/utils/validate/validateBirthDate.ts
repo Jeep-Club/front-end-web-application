@@ -1,39 +1,22 @@
-/**
- * Verifica se uma string de data (YYYY-MM-DD) é uma data de nascimento válida.
- * @param dateString - Data vinda do input tipo "date"
- * @param minAge - Idade mínima opcional (ex: 18)
- * @returns true se a data for válida, false caso contrário
- */
-export const isValidBirthDate = (dateString: string, minAge?: number): boolean => {
-  if (!dateString) return false;
-
-  const birthDate = new Date(dateString);
-  
-  // 1. Verifica se a estrutura da data é válida (ex: evita 2026-02-31)
-  if (isNaN(birthDate.getTime())) return false;
-
+/** Calendar-date bounds shared by birth-date inputs and validation. */
+export function getBirthDateInputBounds() {
   const today = new Date();
-  
-  // Zera as horas para comparar apenas os dias
-  today.setHours(0, 0, 0, 0);
-  birthDate.setHours(0, 0, 0, 0);
+  const max = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  return { min: '1900-01-01', max };
+}
 
-  // 2. Não pode ser uma data no futuro
-  if (birthDate > today) return false;
-
-  // 3. Cálculo exato da idade considerando mês e dia
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDifference = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
+export const isValidBirthDate = (value: string, minAge?: number): boolean => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const { min, max } = getBirthDateInputBounds();
+  if (value < min || value > max) return false;
+  const birthDate = new Date(year, month - 1, day);
+  if (birthDate.getFullYear() !== year || birthDate.getMonth() !== month - 1 || birthDate.getDate() !== day) return false;
+  if (minAge !== undefined) {
+    const today = new Date();
+    let age = today.getFullYear() - year;
+    if (today.getMonth() < month - 1 || (today.getMonth() === month - 1 && today.getDate() < day)) age--;
+    if (age < minAge) return false;
   }
-
-  // 4. Limite máximo de idade (evita anos errados como 1890)
-  if (age > 130) return false;
-
-  // 5. Verificação de idade mínima (se passada por parâmetro)
-  if (minAge !== undefined && age < minAge) return false;
-
   return true;
 };

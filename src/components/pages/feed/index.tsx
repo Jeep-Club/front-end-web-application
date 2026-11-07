@@ -1,19 +1,604 @@
-import { PageHeader } from "@/components/common/page-header";
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { CalendarDays, Megaphone, Newspaper, Plus, Share2, UserRound, Wrench } from "lucide-react";
+import { Avatar } from "@/components/common/avatar";
+import { Button } from "@/components/common/button";
+import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
+import { publicationCreationTypes } from "@/config/publicationCreation";
+import { useModal } from "@/providers/ModalProvider";
+import { feedTypeSchema } from "@/schemas/publications/feed";
+import { listPublicationFeedAction } from "@/server/actions/publications/feed";
+import { useUserStore } from "@/stores/userStore";
+import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { hasPermission } from "@/utils/permission/hasPermission";
+import { publicationPlainText } from "@/utils/publications/content";
+import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
+import { feedTypes } from "./feedDisplay";
+import { PublicationDetailModal } from "./PublicationDetailModal";
+import { FeedInteractions } from "./FeedInteractions";
+import { FeedMetadata } from "./FeedMetadata";
+import { PublicationCommentPreview } from "./PublicationCommentPreview";
+import { RelativeTime } from "./RelativeTime";
+import { EventParticipation } from "./EventParticipation";
+import { FeedSidebar } from "./FeedSidebar";
+import { usePageTour } from "@/hooks/useTour";
+import { getFeedTourSteps } from "@/config/tourSteps";
+
+import Image from "next/image";
+
+const publicationFilterIcons = {
+    SERVICE: Wrench,
+    NOTICE: Megaphone,
+    EVENT: CalendarDays,
+} as const;
+
+function preview(value: string, max: number) {
+    const text = Array.from(value);
+    return text.length > max ? `${text.slice(0, max - 1).join("")}…` : value;
+}
+
+function getEventShareLink(publicationId: number) {
+    const url = new URL("/feed", window.location.origin);
+    url.searchParams.set("publication", String(publicationId));
+    return url.toString();
+}
 
 export default function Feed() {
-    return (
-        <div className="h-full w-full p-3 md:p-4">
-            <div className="flex w-full flex-col gap-4">
-                <PageHeader
-                    title="Feed"
-                    breadcrumbs={[
-                        { label: "Início", href: "/feed" },
-                        { label: "Feed" },
-                    ]}
-                />
+    const permissions = useUserStore((state) => state.permissions);
+    const canRead = hasPermission(permissions, "PUBLICATIONS", "FEED_READ");
+    const canDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
+    const canCreate = publicationCreationTypes.some((entry) =>
+        hasPermission(permissions, "PUBLICATIONS", entry.action)
+    );
 
-                <p>vem ai</p>
+    const { setContent, setOpen, setClose } = useModal();
+    const params = useSearchParams();
+    const typeResult = feedTypeSchema.safeParse(params.get("type"));
+    const type = typeResult.success ? typeResult.data : undefined;
+
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+    const openedDeepLinkRef = useRef<number | null>(null);
+    usePageTour({
+        storageKey: "tour_completed_feed",
+        steps: getFeedTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: canRead,
+    });
+
+    const query = useInfiniteQuery({
+        queryKey: ["publications", "feed", "infinite", type, permissions],
+        queryFn: ({ pageParam }) =>
+            listPublicationFeedAction({
+                type,
+                page: pageParam,
+                size: 12,
+            }),
+        initialPageParam: 0,
+        getNextPageParam: nextFeedPage,
+        enabled: canRead,
+    });
+
+    const publications = mergeFeedPages(query.data?.pages ?? []);
+
+    const {
+        fetchNextPage,
+        hasNextPage,
+        isFetching,
+        isFetchNextPageError,
+    } = query;
+
+    const pageCount = query.data?.pages.length ?? 0;
+
+    useEffect(() => {
+        const sentinel = loadMoreRef.current;
+
+        if (
+            !sentinel ||
+            !canRead ||
+            !hasNextPage ||
+            isFetching ||
+            isFetchNextPageError
+        ) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    observer.disconnect();
+                    void fetchNextPage({ cancelRefetch: false });
+                }
+            },
+            {
+                root: sentinel.closest("[data-dashboard-scroll]"),
+                rootMargin: "300px 0px",
+            }
+        );
+
+        observer.observe(sentinel);
+
+        return () => observer.disconnect();
+    }, [
+        canRead,
+        hasNextPage,
+        isFetching,
+        isFetchNextPageError,
+        fetchNextPage,
+        pageCount,
+    ]);
+
+    function closePublication() {
+        const search = new URLSearchParams(window.location.search);
+        search.delete("publication");
+
+        window.history.replaceState(
+            null,
+            "",
+            `${window.location.pathname}${search.size ? `?${search}` : ""}`
+        );
+
+        openedDeepLinkRef.current = null;
+        setClose();
+    }
+
+    function openPublication(id: number) {
+        setContent(
+            <PublicationDetailModal
+                publicationId={id}
+                onClose={closePublication}
+            />
+        );
+
+        setOpen();
+    }
+
+    useEffect(() => {
+        const id = Number(params.get("publication"));
+
+        if (
+            !canDetail ||
+            !Number.isInteger(id) ||
+            id <= 0 ||
+            openedDeepLinkRef.current === id
+        ) {
+            return;
+        }
+
+        openedDeepLinkRef.current = id;
+        openPublication(id);
+
+        // openPublication reads stable modal actions from the provider;
+        // the ref prevents re-opening on rerenders.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params, canDetail]);
+
+    function filterType(next?: "NOTICE" | "EVENT" | "SERVICE") {
+        const search = new URLSearchParams(params.toString());
+
+        if (next) {
+            search.set("type", next);
+        } else {
+            search.delete("type");
+        }
+
+        search.delete("page");
+        search.delete("size");
+        search.delete("publication");
+
+        window.history.replaceState(
+            null,
+            "",
+            `/feed${search.size ? `?${search}` : ""}`
+        );
+    }
+
+    return (
+        <div className="min-h-full w-full px-3 py-4 pb-4 md:px-6 md:py-6">
+            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+              <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
+                {!canRead ? (
+                    <div
+                        role="status"
+                        className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600"
+                    >
+                        Seu usuário não possui permissão para acessar o feed.
+                    </div>
+                ) : (
+                    <>
+                        <h1 className="sr-only">Mural do clube</h1>
+
+                        <div className="flex min-w-0 items-center gap-3">
+                            <div className="relative min-w-0 flex-1">
+                                <nav
+                                    id="tour-feed-filters"
+                                    aria-label="Tipos de publicação"
+                                    className="flex w-full min-w-0 gap-1.5 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm"
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => filterType()}
+                                        aria-label="Tudo"
+                                        aria-pressed={!type}
+                                        className={`flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 px-2 text-xs font-bold transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 sm:px-3 sm:text-sm ${
+                                            !type
+                                                ? "rounded-xl bg-j-blue-800 text-j-white shadow-sm"
+                                                : "rounded-lg text-j-blue-900 hover:bg-j-gray-100"
+                                        }`}
+                                    >
+                                        <Newspaper size={17} className="hidden md:block" aria-hidden="true" />
+                                        Tudo
+                                    </button>
+
+                                    {(["SERVICE", "NOTICE", "EVENT"] as const).map(
+                                        (key) => {
+                                            const Icon = publicationFilterIcons[key];
+
+                                            return (
+                                                <button
+                                                    key={key}
+                                                    type="button"
+                                                    onClick={() => filterType(key)}
+                                                    aria-label={feedTypes[key].plural}
+                                                    aria-pressed={type === key}
+                                                    className={`flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 px-2 text-xs font-bold transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 sm:px-3 sm:text-sm ${
+                                                        type === key
+                                                            ? "rounded-xl bg-j-blue-800 text-j-white shadow-sm"
+                                                            : "rounded-lg text-j-blue-900 hover:bg-j-gray-100"
+                                                    }`}
+                                                >
+                                                    <Icon size={17} className="hidden md:block" aria-hidden="true" />
+                                                    {feedTypes[key].plural}
+                                                </button>
+                                            );
+                                        }
+                                    )}
+                                </nav>
+
+                            </div>
+
+                        </div>
+
+                        <div id="tour-feed-list">
+                        {query.isLoading ? (
+                            <div
+                                role="status"
+                                aria-label="Carregando feed"
+                                className="grid grid-cols-1 gap-5"
+                            >
+                                {Array.from({ length: 5 }, (_, index) => (
+                                    <div
+                                        key={index}
+                                        className="h-80 animate-pulse rounded-3xl bg-j-gray-200"
+                                    />
+                                ))}
+                            </div>
+                        ) : query.isError && !publications.length ? (
+                            <div
+                                role="alert"
+                                className="rounded-2xl border border-red-200 bg-j-white p-6"
+                            >
+                                <p className="text-sm text-red-500">
+                                    {query.error.message}
+                                </p>
+
+                                <Button
+                                    className="mt-4"
+                                    onClick={() => void query.refetch()}
+                                >
+                                    Tentar novamente
+                                </Button>
+                            </div>
+                        ) : !publications.length ? (
+                            <div
+                                role="status"
+                                className="flex min-h-72 flex-col items-center justify-center rounded-3xl border border-dashed border-j-gray-300 bg-j-white p-8 text-center shadow-sm"
+                            >
+                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-j-yellow-300/30 text-j-blue-800">
+                                    <Newspaper
+                                        size={27}
+                                        aria-hidden="true"
+                                    />
+                                </span>
+
+                                <h2 className="mt-4 text-lg font-extrabold text-j-blue-800">
+                                    {type
+                                        ? `Nenhum ${
+                                              feedTypes[
+                                                  type
+                                              ].label.toLocaleLowerCase(
+                                                  "pt-BR"
+                                              )
+                                          } publicado ainda`
+                                        : "Nenhuma publicação por aqui"}
+                                </h2>
+
+                                <p className="mt-2 max-w-sm text-sm leading-relaxed text-j-gray-500">
+                                    {type
+                                        ? `As publicações de ${
+                                              feedTypes[
+                                                  type
+                                              ].plural.toLocaleLowerCase(
+                                                  "pt-BR"
+                                              )
+                                          } aparecem aqui quando forem publicadas.`
+                                        : "Avisos, eventos e serviços do clube aparecem aqui quando forem publicados."}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-5">
+                                {publications.map((publication) => {
+                                    const isEvent = publication.type === "EVENT";
+                                    const authorName = publication.authorName?.trim() || "Jeep Clube Tamoios";
+                                    const authorPhoto = getMediaImageUrl(
+                                        publication.authorProfilePhotoStorageKey ??
+                                        publication.authorPhotoStorageKey ??
+                                        publication.authorProfilePhotoUrl ??
+                                        publication.authorPhotoUrl
+                                    );
+
+                                    return (
+                                        <article
+                                            key={publication.id}
+                                            role={canDetail ? "link" : undefined}
+                                            tabIndex={canDetail ? 0 : undefined}
+                                            aria-label={
+                                                canDetail
+                                                    ? `Abrir publicação: ${publication.title}`
+                                                    : undefined
+                                            }
+                                            onClick={(event) => {
+                                                if (
+                                                    !canDetail ||
+                                                    (
+                                                        event.target as Element
+                                                    ).closest(
+                                                        "button, a, input, textarea, select"
+                                                    )
+                                                ) {
+                                                    return;
+                                                }
+
+                                                openPublication(publication.id);
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (
+                                                    canDetail &&
+                                                    event.target ===
+                                                        event.currentTarget &&
+                                                    (
+                                                        event.key === "Enter" ||
+                                                        event.key === " "
+                                                    )
+                                                ) {
+                                                    event.preventDefault();
+                                                    openPublication(
+                                                        publication.id
+                                                    );
+                                                }
+                                            }}
+                                            className={`flex w-full min-w-0 flex-col overflow-hidden rounded-xl border border-j-gray-200 bg-j-white shadow-sm transition-shadow hover:shadow-md ${
+                                                canDetail
+                                                    ? "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <header className="flex min-w-0 items-start gap-3 p-4 md:p-5">
+                                                {authorPhoto ? (
+                                                    <Avatar
+                                                        src={authorPhoto}
+                                                        alt={`Foto de ${authorName}`}
+                                                        className="h-10 w-10 shrink-0 bg-j-gray-100"
+                                                    />
+                                                ) : (
+                                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-j-blue-50 text-j-blue-800" aria-hidden="true">
+                                                        <UserRound size={20} />
+                                                    </span>
+                                                )}
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5">
+                                                        <span className="truncate text-sm font-bold text-j-gray-900">
+                                                            {authorName}
+                                                        </span>
+                                                        <span className="text-xs text-j-gray-500" aria-hidden="true">·</span>
+                                                        <RelativeTime
+                                                            value={publication.publishedAt}
+                                                            className="text-xs text-j-gray-500"
+                                                        />
+                                                    </div>
+                                                    <h2 className="mt-1 line-clamp-2 break-words text-sm font-semibold leading-snug text-j-gray-900">
+                                                        {preview(publication.title, 100)}
+                                                    </h2>
+                                                </div>
+                                            </header>
+
+                                            <div className="flex flex-1 min-w-0 flex-col gap-4 px-4 pb-4 md:px-5 md:pb-5">
+                                                <p className="line-clamp-3 break-words text-sm leading-relaxed text-j-gray-600">
+                                                    {preview(
+                                                        publicationPlainText(publication.content),
+                                                        220
+                                                    )}
+                                                </p>
+
+                                                {publication.primaryImage && (
+                                                    <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-j-gray-100">
+                                                        <Image
+                                                            src={getMediaImageUrl(publication.primaryImage.storageKey)}
+                                                            alt={publication.title}
+                                                            fill
+                                                            unoptimized
+                                                            sizes="(min-width: 800px) 768px, 100vw"
+                                                            className="object-cover"
+                                                        />
+                                                        {isEvent && (
+                                                            <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-j-yellow-300 px-3 py-1.5 text-xs font-extrabold text-j-blue-900 shadow-md">
+                                                                <CalendarDays size={14} aria-hidden="true" />
+                                                                Próximo evento
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <FeedMetadata
+                                                    publication={publication}
+                                                />
+
+                                                {publication.type === "EVENT" && (
+                                                    <EventParticipation
+                                                        eventId={publication.id}
+                                                        eventStatus={
+                                                            publication.details
+                                                                .status
+                                                        }
+                                                        charges={publication.details.charges}
+                                                        eventTitle={publication.title}
+                                                        compact
+                                                    />
+                                                )}
+
+                                                {canDetail && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openPublication(
+                                                                publication.id
+                                                            )
+                                                        }
+                                                        className="self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800"
+                                                    >
+                                                        Ver publicação completa
+                                                    </button>
+                                                )}
+
+                                                <div className="mt-auto border-t border-j-gray-200 pt-3">
+                                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                                        <FeedInteractions
+                                                            publication={
+                                                                publication
+                                                            }
+                                                            onComments={
+                                                                canDetail
+                                                                    ? () =>
+                                                                          openPublication(
+                                                                              publication.id
+                                                                          )
+                                                                    : undefined
+                                                            }
+                                                        />
+
+                                                        {isEvent &&
+                                                            canDetail && (
+                                                                <a
+                                                                    href={`https://wa.me/?text=${encodeURIComponent(
+                                                                        `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${getEventShareLink(
+                                                                            publication.id
+                                                                        )}`
+                                                                    )}`}
+                                                                    target="_blank"
+                                                                    rel="noreferrer noopener"
+                                                                    aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
+                                                                    onClick={(
+                                                                        event
+                                                                    ) =>
+                                                                        event.stopPropagation()
+                                                                    }
+                                                                    className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-4 text-sm font-bold text-[#168A43] transition-colors hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
+                                                                >
+                                                                    <Share2
+                                                                        size={
+                                                                            16
+                                                                        }
+                                                                        aria-hidden="true"
+                                                                    />
+                                                                    Compartilhar
+                                                                </a>
+                                                            )}
+                                                    </div>
+                                                </div>
+
+                                                <PublicationCommentPreview
+                                                    publicationId={
+                                                        publication.id
+                                                    }
+                                                    count={
+                                                        publication.commentCount
+                                                    }
+                                                    onOpen={
+                                                        canDetail
+                                                            ? () =>
+                                                                  openPublication(
+                                                                      publication.id
+                                                                  )
+                                                            : undefined
+                                                    }
+                                                />
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        </div>
+
+                        <div
+                            ref={loadMoreRef}
+                            className="h-px"
+                            aria-hidden="true"
+                        />
+
+                        {query.isFetchingNextPage && (
+                            <p
+                                role="status"
+                                className="py-4 text-center text-sm text-j-gray-500"
+                            >
+                                Carregando mais publicações...
+                            </p>
+                        )}
+
+                        {query.isFetchNextPageError && (
+                            <div
+                                role="alert"
+                                className="py-4 text-center"
+                            >
+                                <p className="text-sm text-red-500">
+                                    Não foi possível carregar mais publicações.
+                                </p>
+
+                                <Button
+                                    className="mt-3"
+                                    onClick={() =>
+                                        void query.fetchNextPage()
+                                    }
+                                >
+                                    Tentar novamente
+                                </Button>
+                            </div>
+                        )}
+                    </>
+                )}
+              </div>
+              {canRead && <FeedSidebar />}
             </div>
+            {canRead && canCreate && (
+                <button
+                    id="tour-feed-create-mobile-btn"
+                    type="button"
+                    aria-label="Postar"
+                    title="Postar"
+                    onClick={() => {
+                        setContent(<CreatePublicationModal publishEventImmediately />);
+                        setOpen();
+                    }}
+                    className="fixed bottom-20 right-4 z-20 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-xl active:translate-y-0 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 md:hidden"
+                >
+                    <Plus size={26} strokeWidth={2.5} aria-hidden="true" />
+                </button>
+            )}
+            <footer className="mx-auto mt-6 w-full max-w-7xl border-t border-j-gray-200 pt-3 text-center text-xs text-j-gray-500 md:hidden">
+                © 2026 Desenvolvido pelo Instituto Federal de São Paulo - Câmpus Caraguatatuba
+            </footer>
         </div>
     );
 }

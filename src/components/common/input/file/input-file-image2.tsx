@@ -1,6 +1,6 @@
 "use client"
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import { useFormContext, useController } from "react-hook-form";
 import { DropZone } from "./dropzone";
 import { ImageThumbnail } from "./list/list-image/image-thumbnail";
@@ -8,6 +8,9 @@ import { twMerge } from "tailwind-merge";
 import { InputFileProps } from "./input-file";
 import { Image as ImageIcon } from "lucide-react";
 import { RemoveFile } from "./actions/remove";
+import { ImageCropDialog } from "./image-crop-dialog";
+import type { FileRejection } from "react-dropzone";
+import { imageAccept } from "@/utils/media/imageAccept";
 
 export type InputFileImageProps = Omit<InputFileProps, 'accept' | 'isFallback'>
 
@@ -19,8 +22,10 @@ export function InputFileImage2({
     maxSizeMB = 5,
     multiple = false || maxFiles > 1,
     className,
+    cropShape = "square",
+    variant = "white",
 }: InputFileImageProps) {
-    const accept = { 'image/*': [] }
+    const accept = imageAccept;
     const id = useId();
     const { control, setError, clearErrors } = useFormContext();
     const {
@@ -29,8 +34,9 @@ export function InputFileImage2({
     } = useController({ name, control, defaultValue: [] });
 
     const currentFiles: File[] = Array.isArray(value) ? value : (value ? [value] : []);
+    const [filesToCrop, setFilesToCrop] = useState<File[] | null>(null);
 
-    const handleDrop = (acceptedFiles: File[], fileRejections: any[]) => {
+    const handleDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
         clearErrors(name);
 
         if (fileRejections.length > 0) {
@@ -49,29 +55,25 @@ export function InputFileImage2({
 
         if (!acceptedFiles.length) return;
 
-        if (multiple) {
-            const newFiles = [...currentFiles, ...acceptedFiles];
-            if (maxFiles > 0 && newFiles.length > maxFiles) {
-                setError(name, { type: "manual", message: `Máximo de ${maxFiles} imagem(ns) permitida(s).` });
-                onChange(newFiles.slice(0, maxFiles));
-            } else {
-                onChange(newFiles);
-            }
-        } else {
-            onChange([acceptedFiles[0]]);
+        const availableFiles = maxFiles > 0 ? Math.max(maxFiles - (multiple ? currentFiles.length : 0), 0) : acceptedFiles.length;
+        const filesToProcess = acceptedFiles.slice(0, multiple ? availableFiles : 1);
+        if (!filesToProcess.length) {
+            setError(name, { type: "manual", message: `Máximo de ${maxFiles} imagem(ns) permitida(s).` });
+            return;
         }
+        setFilesToCrop(filesToProcess);
     };
 
     const handleRemove = (indexToRemove: number) => {
         const newFiles = currentFiles.filter((_, idx) => idx !== indexToRemove);
-        onChange(newFiles.length > 0 ? newFiles : undefined);
+        onChange(newFiles);
         if (error) clearErrors(name);
     };
 
     return (
         <div className={twMerge("w-full flex flex-col gap-2", className)}>
             {label && (
-                <label htmlFor={id} className="text-sm font-medium text-j-gray-300">
+                <label htmlFor={id} className="text-sm font-medium text-j-gray-700">
                     {label} {required && <span className="text-j-red-200">*</span>}
                 </label>
             )}
@@ -81,12 +83,15 @@ export function InputFileImage2({
 
                 {currentFiles.length < 1 || multiple ? 
                     <DropZone.Image
+                        inputId={id}
+                        inputLabel={label ?? "Selecionar imagens"}
+                        variant={variant}
                         onDrop={handleDrop}
                         multiple={multiple}
                         maxFiles={maxFiles > 0 ? maxFiles : undefined}
                         maxSize={maxSizeMB * 1024 * 1024}
                         accept={accept}
-                        className={error ? "border-j-red-300 bg-j-red-300/10 " : ""}
+                        className={twMerge(variant === "gray" && "bg-input-legacy-bg", error && "border-j-red-500 bg-j-red-100/10")}
                     >
                         {({ isDragReject }) => (
                             <>
@@ -100,18 +105,21 @@ export function InputFileImage2({
                     <ImageThumbnail 
                         key={`${file.name}-${idx}`} 
                         file={file} 
+                        variant={variant}
                     >
                         {/* Fundo escuro sutil ao passar o mouse para dar contraste no botão */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
                         <RemoveFile 
                             onClick={()=>{handleRemove(idx)}} 
-                            // iconSize={14}
-                            className="absolute top-1.5 right-1.5 text-j-gray-300"
+                            aria-label={`Remover imagem ${file.name}`}
+                            title="Remover imagem"
+                            className="absolute top-1.5 right-1.5 z-10 flex size-8 items-center justify-center rounded-full bg-white text-red-600 shadow-md hover:bg-red-50 hover:text-red-700"
                         />
                     </ImageThumbnail>
                 ))}
             </div>
             { error && <span className="text-j-red-300 text-xs">{String(error.message)}</span> }
+            {filesToCrop && <ImageCropDialog files={filesToCrop} shape={cropShape} onCancel={() => setFilesToCrop(null)} onComplete={(croppedFiles) => { onChange(multiple ? [...currentFiles, ...croppedFiles].slice(0, maxFiles || undefined) : [croppedFiles[0]]); setFilesToCrop(null); }} />}
         </div>
     );
 }

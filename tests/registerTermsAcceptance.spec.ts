@@ -1,4 +1,4 @@
-import { registerAction } from "@/actions/auth/registerAction";
+import { registerAction } from "@/server/actions/auth/registerAction";
 import type { RegisterSubmission } from "@/schemas/auth/register/registerRequest";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { login } from "@/utils/auth/login";
@@ -14,7 +14,7 @@ const loginMock = jest.mocked(login);
 
 const registration: RegisterRequest = {
     name: "Pessoa de Teste",
-    birthData: "1990-05-15",
+    birthDate: "1990-05-15",
     email: "cadastro@example.com",
     cpf: "52998224725",
     password: "Cadastro123!",

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { User, Users, Car, FileText, ClipboardCheck, X } from "lucide-react";
+import { User, FileText, ClipboardCheck, X } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { ButtonIcon } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
@@ -10,22 +10,17 @@ const steps = [
     {
         icon: User,
         title: "Seus dados",
-        description: "Conte quem você é: nome completo, contato e demais informações básicas de cadastro.",
-    },
-    {
-        icon: Users,
-        title: "Família (se for o caso)",
-        description: "Se pretende incluir dependentes no clube, informe também os dados de cada membro da família.",
-    },
-    {
-        icon: Car,
-        title: "Seu veículo",
-        description: "Compartilhe os dados do seu jipe, que vai te acompanhar nas trilhas e encontros do clube.",
+        description: "Informe seu nome, CPF e telefone para a diretoria entrar em contato.",
     },
     {
         icon: FileText,
         title: "Carta de apresentação",
-        description: "Escreva um pouco sobre você e sua paixão pelo off-road para a diretoria te conhecer melhor.",
+        description: "Conte sua história e por que deseja fazer parte do Jeep Clube Tamoios.",
+    },
+    {
+        icon: ClipboardCheck,
+        title: "Análise da diretoria",
+        description: "A diretoria avalia o pedido e entra em contato com você.",
     },
 ];
 
@@ -35,7 +30,7 @@ export function JoinClubModal() {
 
     const handleStart = () => {
         setClose();
-        router.push("/register");
+        router.push("/membership/apply");
     };
 
     return (
