@@ -101,7 +101,9 @@ export default function AgendaPage() {
         return new Date(now.getFullYear(), now.getMonth(), 1);
     });
     const [monthDirection, setMonthDirection] = useState<"forward" | "back">("forward");
+
     const [mobileView, setMobileView] = useState<"calendar" | "agenda">("agenda");
+
     const today = useMemo(() => calendarDateKey(new Date()), []);
     const query = useInfiniteQuery({
         queryKey: ["publications", "agenda", permissions],
@@ -188,13 +190,17 @@ export default function AgendaPage() {
             </div>}
 
             {!canRead ? <div role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600">Seu usuário não possui permissão para ver os eventos.</div>
+
                 : query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-56 animate-pulse rounded-3xl bg-j-gray-200 md:h-[32rem]" />
+
                     : query.isError && !events.length ? <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-6"><p className="text-sm text-red-600">{query.error.message}</p><Button className="mt-3" onClick={() => void query.refetch()}>Tentar novamente</Button></div>
                         : <>
                         <section aria-label="Calendário mensal" className="hidden overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm md:block">
                             <div key={calendarDateKey(month)} data-direction={monthDirection} className={styles.monthTransition}>
+
                             <div className="grid grid-cols-7 gap-px border-b border-j-gray-200 bg-j-gray-200">
                                 {WEEKDAYS.map((day) => <div key={day} className="bg-j-gray-100/80 py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
+
                             </div>
                             <div className="grid grid-cols-7 gap-px bg-j-gray-200">
                                 {days.map((day) => {
@@ -205,6 +211,7 @@ export default function AgendaPage() {
                                     const inMonth = day.getMonth() === month.getMonth();
                                     const isToday = key === today;
                                     const eventLabel = dayEvents.length === 1 ? event.title : `${dayEvents.length} eventos`;
+
                                     return <div key={key} className={`relative min-h-28 p-1.5 lg:min-h-32 lg:p-2 ${inMonth ? "bg-j-white" : "bg-j-gray-100/70"}`}>
                                         {dayEvents.length > 0 ? <button type="button" onClick={() => openDayEvents(dayEvents, day)} aria-label={`${longDateLabel(day)}: ${eventLabel}`} className={`group relative flex h-full min-h-24 w-full cursor-pointer flex-col overflow-hidden rounded-xl p-2 text-left transition-[transform,box-shadow,ring-color] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 lg:min-h-28 ${isToday ? "ring-2 ring-j-yellow-400" : ""}`}>
                                             {imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-70 transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 bg-gradient-to-br from-j-yellow-100 to-j-yellow-300" />}
@@ -213,6 +220,7 @@ export default function AgendaPage() {
                                             <span className={`relative z-[1] mt-auto line-clamp-2 w-full text-xs font-extrabold leading-tight ${imageUrl ? "text-white drop-shadow" : "text-j-blue-900"}`}>{event.title}</span>
                                             {dayEvents.length > 1 && <span className="absolute right-2 top-2 z-[1] rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-extrabold text-j-blue-900 shadow">+{dayEvents.length - 1}</span>}
                                         </button> : <div className={`flex h-full min-h-24 items-start rounded-xl p-2 lg:min-h-28 ${isToday ? "bg-j-yellow-100/70" : ""}`}><span className={`flex size-8 items-center justify-center rounded-lg text-sm font-bold ${inMonth ? "text-j-gray-700" : "text-j-gray-400"} ${isToday ? "bg-j-yellow-300 text-j-blue-950" : ""}`}>{day.getDate()}</span></div>}
+
                                     </div>;
                                 })}
                             </div>
@@ -221,6 +229,7 @@ export default function AgendaPage() {
                             {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
                             {!events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda.</p>}
                         </section>
+
                         <section aria-label="Calendário mensal" className={`overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm md:hidden ${mobileView === "calendar" ? "block" : "hidden"}`}>
                             <div key={`${calendarDateKey(month)}-${mobileView}`} data-direction={monthDirection} className={styles.monthTransition}>
                                 <div className="grid grid-cols-7 gap-px border-b border-j-gray-200 bg-j-gray-200">
@@ -246,6 +255,7 @@ export default function AgendaPage() {
                         </section>
                         <section aria-label="Eventos do mês" className={`flex flex-col gap-3 md:hidden ${mobileView === "agenda" ? "" : "hidden"}`}>
                             <div key={`${calendarDateKey(month)}-${mobileView}`} data-direction={monthDirection} className={`${styles.monthTransition} flex flex-col gap-3`}>
+
                                 {monthEvents.length ? monthEvents.map(({ day, events: dayEvents }) => <article key={calendarDateKey(day)} className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                                     <h3 className={`border-b border-j-gray-100 px-4 py-2.5 text-sm font-extrabold capitalize ${calendarDateKey(day) === today ? "bg-j-yellow-300/20 text-j-blue-900" : "bg-j-gray-100/70 text-j-blue-800"}`}>{longDateLabel(day)}</h3>
                                     <div className="flex flex-col gap-2 p-3">
@@ -261,7 +271,9 @@ export default function AgendaPage() {
                             {query.isFetchNextPageError && <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
                         </section>
                         </>}
+
             <p className="text-center text-xs text-j-gray-400">Selecione um dia com evento para conferir os detalhes.</p>
+
         </div>
     </div>;
 }
