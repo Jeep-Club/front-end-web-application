@@ -10,9 +10,6 @@ import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
-
-  FaGift,
-
   FaUserPlus,
   FaIdCard,
   FaChevronRight,
@@ -24,13 +21,12 @@ import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
 
-export default function HomeClient() {
+
+export default function HomeClient({ footer }: { footer: ReactNode }) {
+
 
   const router = useRouter();
 
-  const handleContact = () => {
-    router.push("/contato");
-  };
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
   const handleLogin = () => {
@@ -228,21 +224,8 @@ export default function HomeClient() {
         </div>
 
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {[
-            { icon: <MdGroups size={26} />, title: "Apoio em Calamidades", text: "Logística e transporte de mantimentos em áreas isoladas por chuvas no Litoral Norte." },
-            { icon: <FaGift size={24} />, title: "Dia das Crianças", text: "Tradicional caravana de entrega de brinquedos e cestas básicas para comunidades." },
-            { icon: <MdVolunteerActivism size={26} />, title: "Doações Regulares", text: "Apoio contínuo a instituições locais de assistência social e proteção ambiental." }
-          ].map((item, i) => (
-            <div key={i} className="bg-white/5 rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-[background-color,border-color,color,box-shadow,opacity,transform] group">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-400/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <span className="text-yellow-400">{item.icon}</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
+
+        <ImpactCards />
 
       </section>
 
