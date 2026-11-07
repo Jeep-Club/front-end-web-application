@@ -46,7 +46,7 @@ export function PasswordForm() {
                     autoComplete="new-password"
                     required
                 />
-                <p className="text-xs leading-5 text-j-gray-500">Use pelo menos 8 caracteres, com letras maiúsculas e minúsculas, um número e um caractere especial.</p>
+                <p className="text-xs leading-5 text-j-gray-500">Use uma senha com pelo menos 8 caracteres.</p>
                 <Button type="submit" disabled={mutation.isPending} className="mt-2 min-h-12 w-full gap-2">
                     {mutation.isPending ? <><LoaderCircle size={18} className="animate-spin" /> Salvando senha...</> : <>Criar senha e continuar <ArrowRight size={18} /></>}
                 </Button>

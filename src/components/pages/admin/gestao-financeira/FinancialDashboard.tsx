@@ -1,6 +1,5 @@
 "use client";
 
-import type { BillingResource } from "@/schemas/billing/management";
 import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
 import { listBillingAction } from "@/server/actions/billing/management";
 import { useUserStore } from "@/stores/userStore";
@@ -8,18 +7,18 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { useQueries } from "@tanstack/react-query";
 import { ArrowRight,ClipboardCheck,Coins,FileText,Undo2 } from "lucide-react";
 
-export type FinancialTab = "dashboard" | "definitions" | BillingResource;
+export type FinancialTab = "dashboard" | "definitions" | "cycles" | "movements";
 
 export function FinancialDashboard({ onNavigate }: { onNavigate: (tab: FinancialTab) => void }) {
     const permissions = useUserStore((state) => state.permissions);
     const can = (action: string) => hasPermission(permissions, "BILLING", action);
     const cards = [
         { title: "Definições cadastradas", description: "Regras de cobrança do clube", permission: "CHARGE_DEFINITION_READ", tab: "definitions" as const, icon: FileText, load: async () => (await listChargeDefinitionsAction({ page: "0", size: "1" })).totalElements },
-        { title: "Cobranças em aberto", description: "Inclui cobranças em atraso e expiradas", permission: "MEMBER_CHARGE_READ", tab: "member-charges" as const, icon: Coins, load: async () => (await listBillingAction("member-charges", { page: 0, size: 1, status: "PENDING" })).totalElements },
-        { title: "Cobranças pagas", description: "Quitadas por pagamentos confirmados", permission: "MEMBER_CHARGE_READ", tab: "member-charges" as const, icon: ClipboardCheck, load: async () => (await listBillingAction("member-charges", { page: 0, size: 1, status: "PAID" })).totalElements },
-        { title: "Pagamentos para validar", description: "Comprovantes aguardando análise", permission: "PAYMENT_READ", tab: "payments" as const, icon: ClipboardCheck, load: async () => (await listBillingAction("payments", { page: 0, size: 1, status: "PENDING_VALIDATION" })).totalElements },
-        { title: "Reembolsos solicitados", description: "Solicitações aguardando decisão", permission: "REFUND_READ", tab: "refunds" as const, icon: Undo2, load: async () => (await listBillingAction("refunds", { page: 0, size: 1, status: "REQUESTED" })).totalElements },
-        { title: "Devoluções a realizar", description: "Reembolsos aprovados ainda não devolvidos", permission: "REFUND_READ", tab: "refunds" as const, icon: Undo2, load: async () => (await listBillingAction("refunds", { page: 0, size: 1, status: "APPROVED" })).totalElements },
+        { title: "Cobranças em aberto", description: "Inclui cobranças em atraso e expiradas", permission: "MEMBER_CHARGE_READ", tab: "movements" as const, icon: Coins, load: async () => (await listBillingAction("member-charges", { page: 0, size: 1, status: "PENDING" })).totalElements },
+        { title: "Cobranças pagas", description: "Quitadas por pagamentos confirmados", permission: "MEMBER_CHARGE_READ", tab: "movements" as const, icon: ClipboardCheck, load: async () => (await listBillingAction("member-charges", { page: 0, size: 1, status: "PAID" })).totalElements },
+        { title: "Pagamentos para validar", description: "Comprovantes aguardando análise", permission: "PAYMENT_READ", tab: "movements" as const, icon: ClipboardCheck, load: async () => (await listBillingAction("payments", { page: 0, size: 1, status: "PENDING_VALIDATION" })).totalElements },
+        { title: "Reembolsos solicitados", description: "Solicitações aguardando decisão", permission: "REFUND_READ", tab: "movements" as const, icon: Undo2, load: async () => (await listBillingAction("refunds", { page: 0, size: 1, status: "REQUESTED" })).totalElements },
+        { title: "Devoluções a realizar", description: "Reembolsos aprovados ainda não devolvidos", permission: "REFUND_READ", tab: "movements" as const, icon: Undo2, load: async () => (await listBillingAction("refunds", { page: 0, size: 1, status: "APPROVED" })).totalElements },
     ].filter((card) => can(card.permission));
     const counts = useQueries({ queries: cards.map((card) => ({ queryKey: ["billing", "dashboard", card.title], queryFn: card.load, staleTime: 30_000 })) });
 

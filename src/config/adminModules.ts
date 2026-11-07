@@ -10,7 +10,6 @@ import {
     HeartPulse,
     type LucideIcon,
 } from "lucide-react";
-import { paymentPermissions } from "@/config/paymentPermissions";
 
 /**
  * Permissão de leitura que decide se o módulo existe para o usuário.
@@ -43,14 +42,6 @@ export const adminModules: AdminModuleConfig[] = [
         href: "/admin/dados-medicos",
         icon: HeartPulse,
         visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
-    },
-    {
-        key: "payments",
-        title: "Análise de pagamentos",
-        description: "Consulte comprovantes e confirme ou rejeite pagamentos.",
-        href: "/admin/pagamentos",
-        icon: WalletCards,
-        visibilityPermission: { module: paymentPermissions.module, action: paymentPermissions.read },
     },
     {
         key: "publication-management",
@@ -89,7 +80,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "roles-permissions",
-        title: "Gestão de roles e permissões",
+        title: "Gestão de cargos e permissões",
         description:
             "Defina o que cada administrador pode acessar e fazer.",
         href: "/admin/roles-permissoes",

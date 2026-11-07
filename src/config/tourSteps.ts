@@ -164,13 +164,13 @@ export const feedStep: DriveStep = {
     },
 };
 
-export const avatarMenuStep: DriveStep = {
-    element: "#tour-avatar-container",
+export const accountNavigationStep: DriveStep = {
+    element: "#tour-manage-account-btn",
     popover: {
         title: createStepHeader("Gerenciar Conta", ICONS.user),
-        description: "Abra o menu do perfil e clique em 'Gerenciar conta' para acessar e atualizar seus dados pessoais, veículos e ficha médica.",
-        side: "bottom",
-        align: "end",
+        description: "Acesse Conta pela navegação lateral para atualizar seus dados pessoais, veículos e ficha médica.",
+        side: "right",
+        align: "center",
     },
 };
 
@@ -187,7 +187,7 @@ export const adminStep: DriveStep = {
 export const completionStep: DriveStep = {
     popover: {
         title: createStepHeader("Tour Concluído", ICONS.checkCircle),
-        description: "Configuração concluída. Você pode reiniciar este guia quando desejar pelo menu do seu perfil.",
+        description: "Configuração concluída. Você pode rever este guia em Configurações, na opção Tutorial.",
         side: "bottom",
         align: "center",
     },
@@ -228,23 +228,9 @@ export function getTourSteps(
     }
 
     steps.push({
-        element: "#tour-avatar-container",
-        popover: {
-            title: createStepHeader("Gerenciar Conta", ICONS.user),
-            description: "Abra o menu e clique em 'Gerenciar conta' para acessar suas informações de perfil, veículos 4x4 e ficha médica.",
-            side: "bottom",
-            align: isMobile ? "center" : "end",
-        },
+        ...accountNavigationStep,
         onHighlightStarted: () => {
-            if (isMobile) setMobileMenuOpen?.(false);
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:open-avatar-menu'));
-            }
-        },
-        onDeselected: () => {
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-            }
+            if (isMobile) setMobileMenuOpen?.(true);
         },
     });
 
@@ -252,9 +238,6 @@ export function getTourSteps(
         ...completionStep,
         onHighlightStarted: () => {
             if (isMobile) setMobileMenuOpen?.(false);
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-            }
         },
     });
 
@@ -524,8 +507,8 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
         {
             element: "#tour-roles-header",
             popover: {
-                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield, "RBAC"),
-                description: "Administração central de papéis e níveis de autorização do sistema.",
+                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield),
+                description: "Administração central dos cargos e níveis de acesso ao sistema.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",
             },
@@ -534,7 +517,7 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-roles-tabs",
             popover: {
                 title: createStepHeader("Áreas de Governança", ICONS.layers),
-                description: "Alterne entre <strong>Cargos do sistema</strong>, o catálogo de <strong>Permissões</strong> por módulo e as <strong>Atribuições de usuários</strong>.",
+                description: "Alterne entre <strong>Cargos do sistema</strong>, a lista de <strong>Permissões</strong> por módulo e as <strong>Atribuições de pessoas</strong>.",
                 side: "bottom",
                 align: "center",
             },
@@ -1053,10 +1036,10 @@ export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
             },
         },
         {
-            element: "#tour-feed-create-btn",
+            element: isMobile ? "#tour-feed-create-mobile-btn" : "#tour-feed-create-btn",
             popover: {
                 title: createStepHeader("Nova Publicação ou Serviço", ICONS.plus),
-                description: "Utilize o botão <strong>'+'</strong> para criar uma nova publicação ou solicitar a divulgação de um serviço para a comunidade, conforme suas permissões.",
+                description: "Utilize o botão <strong>'Postar'</strong> para criar uma nova publicação ou solicitar a divulgação de um serviço para a comunidade, conforme suas permissões.",
                 side: "bottom",
                 align: "end",
             },
@@ -1074,18 +1057,9 @@ export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-feed-sidebar",
             popover: {
                 title: createStepHeader("Destaques da Comunidade", ICONS.compass),
-                description: "No painel lateral você acompanha em destaque os <strong>Próximos eventos</strong> com a lista de inscritos e os <strong>Avisos recentes</strong>.",
+                description: "No painel lateral você acompanha os <strong>Próximos eventos</strong>, os <strong>Aniversariantes do mês</strong> e os <strong>Avisos recentes</strong>.",
                 side: isMobile ? "top" : "left",
                 align: "start",
-            },
-        },
-        {
-            element: "#tour-feed-quick-access",
-            popover: {
-                title: createStepHeader("Acesso Rápido", ICONS.wrench),
-                description: "Atalhos diretos para abrir sua <strong>Agenda</strong> de compromissos ou consultar os <strong>Serviços do clube</strong>.",
-                side: isMobile ? "top" : "left",
-                align: "center",
             },
         },
         {
@@ -1101,7 +1075,7 @@ export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-avatar-container",
             popover: {
                 title: createStepHeader("Perfil e Conta", ICONS.user),
-                description: "Abra o menu do seu avatar para gerenciar seus dados pessoais, ficha médica, veículos 4x4, ferramentas e histórico financeiro.",
+                description: "Clique no seu avatar para abrir a conta e gerenciar seus dados pessoais, ficha médica, veículos 4x4, ferramentas e histórico financeiro.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },

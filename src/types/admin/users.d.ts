@@ -1,9 +1,6 @@
-type UserStatus =
-    | "ACTIVE"
-    | "LOCKED"
-    | "DISABLED"
-    | "PENDING_FIRST_ACCESS"
-    | "CHANGE_PASSWORD_REQUIRED";
+type UserStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
+
+type AdminUserLifecycleAction = "enable" | "disable" | "archive" | "unarchive";
 
 interface AdminUser {
     id: number;
@@ -14,12 +11,57 @@ interface AdminUser {
     membershipNumber?: string | null;
     rg: string | null;
     phoneNumber: string | null;
+    profilePhotoStorageKey?: string | null;
     profilePhotoUrl?: string | null;
-    status: "ACTIVE" | "DISABLED";
+    status: UserStatus;
     createdAt: string;
     disabledAt?: string | null;
     updatedAt?: string | null;
+}
 
+interface AdminUpdateUserRequest {
+    name?: string;
+    birthDate?: string | null;
+    email?: string | null;
+    cpf?: string;
+    rg?: string | null;
+    phoneNumber?: string | null;
+    profilePhotoStorageKey?: string | null;
+}
+
+interface AdminUserWorkProfile {
+    occupation: string | null;
+    workplace: string | null;
+}
+
+interface AdminUserResidentialAddress {
+    postalCode: string | null;
+    street: string | null;
+    number: string | null;
+    complement: string | null;
+    neighborhood: string | null;
+    city: string | null;
+    state: string | null;
+}
+
+interface AdminUserComplementaryProfile {
+    workProfile: AdminUserWorkProfile | null;
+    address: AdminUserResidentialAddress | null;
+    profileCompletionPending: boolean;
+    membershipNumber?: string | null;
+}
+
+interface AdminUserDeletionHistory {
+    originalId: number;
+    previousStatus: UserStatus;
+    createdAt: string;
+    disabledAt: string | null;
+    archivedAt: string | null;
+    updatedAt: string | null;
+    deletedByUserId: number | null;
+    deletedAt: string;
+    reason: string | null;
+    schemaVersion: number;
 }
 
 type RoleStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
@@ -46,15 +88,23 @@ interface UserListQuery {
     pageSize: number;
     sort?: string;
 }
+
 interface UserManagementPermissions {
     canReadUsers: boolean;
     canCreateUsers: boolean;
+    canUpdateUsers: boolean;
     canDisableUsers: boolean;
     canEnableUsers: boolean;
+    canArchiveUsers: boolean;
+    canUnarchiveUsers: boolean;
+    canDeleteUsers: boolean;
+    canExportUsers: boolean;
+    canReadUserHistory: boolean;
     canReadRoleCatalog: boolean;
     canReadUserRoles: boolean;
     canAssignRoles: boolean;
     canRevokeRoles: boolean;
+    canManageMembershipRegistration: boolean;
 }
 
 interface AdminUsersDataSource {
@@ -75,8 +125,9 @@ interface AdminUserSearchParams {
     rg?: string;
     email?: string;
     phoneNumber?: string;
+    membershipNumber?: string;
 
-    status?: "ACTIVE" | "DISABLED" | "ALL";
+    status?: UserStatus | "ALL";
 
     createdFrom?: string;
     createdTo?: string;

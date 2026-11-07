@@ -179,12 +179,14 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
                     <p className="font-bold">Não foi possível concluir o cadastro.</p>
                     <p className="mt-1 break-words">{mutation.error.message || "Tente novamente após conferir os campos."}</p>
                 </div>}
+
                 {publishFailure && <div role="alert" className="w-full rounded-xl border border-j-red-300 bg-j-red-100 p-4 text-sm text-j-red-700">
                     <p className="font-bold">O evento foi salvo como rascunho, mas não foi publicado.</p>
                     <p className="mt-1 break-words">{publishFailure}</p>
                     <p className="mt-2">O rascunho está em Gestão de publicações. Feche esta janela para evitar criar outro evento igual.</p>
                 </div>}
                 <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} savedDraft={!!publishFailure} />
+
             </Form>
         </div>
     );

@@ -317,7 +317,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
     },
     {
         id: "admin-roles-permissions",
-        title: "Roles e Permissões",
+        title: "Cargos e permissões",
         description:
             "Configure cargos personalizados, níveis de acesso e permissões granulares por módulo para os administradores.",
         category: "admin",
@@ -343,16 +343,16 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
     },
     {
         id: "admin-payments",
-        title: "Análise de Pagamentos",
+        title: "Pagamentos e comprovantes",
         description:
             "Consulte comprovantes enviados pelos associados e aprove ou rejeite pagamentos de mensalidades e eventos.",
         category: "admin",
         categoryLabel: "Administração",
-        href: "/admin/pagamentos",
+        href: "/admin/gestao-financeira?tab=movements",
         storageKey: "tour_completed_admin_payments",
         stepCount: getPaymentsTourSteps(false).length,
         icon: WalletCards,
-        adminModuleKey: "payments",
+        adminModuleKey: "financial-management",
         topics: [
             "Pagamentos pendentes",
             "Conferir comprovante",

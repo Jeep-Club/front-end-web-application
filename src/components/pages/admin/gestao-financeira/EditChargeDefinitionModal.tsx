@@ -33,11 +33,14 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
             queryClient.invalidateQueries({ queryKey: ["billing", "dashboard", "Definições cadastradas"], exact: true });
             setClose();
         },
+        onError: (error) => {
+            toast.error(error instanceof Error ? error.message : "Não foi possível salvar as alterações.");
+        },
 
     });
 
-    const handleSubmit = async (data: ChargeDefinitionFormData) => {
-        mutation.mutateAsync(data);
+    const handleSubmit = (data: ChargeDefinitionFormData) => {
+        mutation.mutate(data);
     };
 
     return (
@@ -95,11 +98,15 @@ export function EditChargeDefinitionModal({ chargeDefinitionId }: EditChargeDefi
                         },
                     }}
                     onSubmit={handleSubmit}
-                    onError={(errors) => console.log(errors)}
+                    onError={(errors) => {
+                        const firstError = Object.values(errors).find((error) => error?.message);
+                        if (firstError?.message) toast.error(String(firstError.message));
+                    }}
                     className="gap-4 px-5 py-5 md:px-8 md:py-6"
                 >
                     <ChargeDefinitionFormFields />
 
+                    {mutation.error && <p role="alert" className="w-full rounded-lg bg-j-red-100 px-3 py-2 text-sm text-j-red-600">{mutation.error.message}</p>}
                     <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">
                         <Button
                             type="submit"

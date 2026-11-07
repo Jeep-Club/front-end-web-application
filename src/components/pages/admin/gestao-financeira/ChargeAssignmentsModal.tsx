@@ -27,7 +27,7 @@ function describeAssignment(assignment: ChargeAssignment): string {
     }
 
     if (assignment.audienceType === "ROLE") {
-        return `Cargo #${assignment.roleId}`;
+        return assignment.roleName?.trim() || "Nome do cargo indisponível";
     }
 
     if (assignment.audienceType === "EVENT_PARTICIPANTS") {
@@ -148,7 +148,7 @@ export function ChargeAssignmentsModal({ chargeDefinitionId, chargeDefinitionNam
                                         <span className="text-[10px] font-bold uppercase tracking-wide text-j-gray-400">
                                             {CHARGE_AUDIENCE_TYPE_LABEL[assignment.audienceType]}
                                         </span>
-                                        <p className="truncate text-sm font-bold text-j-blue-800 md:text-base">
+                                        <p className="break-words text-sm font-bold text-j-blue-800 md:text-base">
                                             {describeAssignment(assignment)}
                                         </p>
                                     </div>

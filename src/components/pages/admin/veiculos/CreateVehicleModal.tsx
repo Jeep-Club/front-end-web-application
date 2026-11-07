@@ -48,18 +48,18 @@ export const createVehicleAdminFormSchema = z.object({
     model: z.string().trim().min(1, { message: "O modelo é obrigatório" }).max(50, { message: "O modelo deve ter no máximo 50 caracteres" }),
     manufacturingYear: vehicleYearSchema,
     modelYear: vehicleYearSchema,
-    color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }),
+    color: z.string().trim().min(1, { message: "A cor é obrigatória" }).max(30, { message: "A cor deve ter no máximo 30 caracteres" }).refine((value) => !/\d/.test(value), { message: "A cor não pode conter números" }),
     seatingCapacity: z.string()
         .min(1, { message: "O nº assentos é obrigatório" })
         .transform((value) => Number(value))
-        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" })),
+        .pipe(z.number().int().min(1, { message: "O nº de assentos deve ser maior que zero" }).max(50, { message: "A capacidade máxima é 50 assentos" })),
     fuelType: z.string()
         .min(1, { message: "O combustível é obrigatório" })
         .transform((value) => value as FuelType),
     engineDisplacement: z.string()
         .min(1, { message: "A cilindrada é obrigatória" })
         .transform((value) => Number(value))
-        .pipe(z.number().gt(0, { message: "A cilindrada deve ser maior que zero" })),
+        .pipe(z.number().gt(0, { message: "A cilindrada deve ser maior que zero" }).max(3, { message: "A cilindrada máxima é 3000 cc (3,0 L)" })),
     towing: z.boolean(),
 });
 
@@ -204,6 +204,7 @@ function CreateVehicleSteps({ currentStep, onNext, onBack, onStepChange }: Creat
                             label="Cor"
                             name="color"
                             placeholder="Preto"
+                            mask={(value) => value.replace(/\d/g, "")}
                             required
                         />
                     </div>
@@ -234,6 +235,8 @@ function CreateVehicleSteps({ currentStep, onNext, onBack, onStepChange }: Creat
                     <div className="grid w-full gap-4 sm:grid-cols-2">
                         <InputRegister
                             type="number"
+                            min={1}
+                            max={50}
                             label="Assentos"
                             name="seatingCapacity"
                             placeholder="5"
@@ -245,7 +248,10 @@ function CreateVehicleSteps({ currentStep, onNext, onBack, onStepChange }: Creat
                             label="Cilindrada"
                             name="engineDisplacement"
                             placeholder="2.0"
-                            mask={maskDecimal}
+                            mask={(value) => {
+                                const displacement = maskDecimal(value);
+                                return Number(displacement) > 3 ? "3.0" : displacement;
+                            }}
                             required
                         />
                     </div>
