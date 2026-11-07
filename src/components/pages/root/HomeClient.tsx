@@ -21,7 +21,9 @@ import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
 
+
 export default function HomeClient({ footer }: { footer: ReactNode }) {
+
 
   const router = useRouter();
 
@@ -220,6 +222,7 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
             Nossa tração 4x4 serve para chegar onde ninguém mais chega. A solidariedade é o nosso combustível principal.
           </p>
         </div>
+
 
 
         <ImpactCards />
