@@ -38,6 +38,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
             <CurrentUserContext.Provider value={{ userId, name: fullName, photoUrl: initialProfilePhotoUrl }}>
             <AdminUserIdContext.Provider value={userId}>
             <div className="flex h-dvh min-h-0 w-full overflow-hidden bg-j-white">
+                <a href="#dashboard-main" className="sr-only z-50 rounded-lg bg-j-white p-3 font-bold text-j-blue-800 focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus-visible:outline-2 focus-visible:outline-j-blue-800">Ir para o conteúdo principal</a>
                 <Sidebar
                     isCollapsed={isSidebarCollapsed}
                     isMobileOpen={isMobileMenuOpen}
@@ -52,7 +53,7 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                         fullName={fullName}
                         initialProfilePhotoUrl={initialProfilePhotoUrl}
                     />
-                    <div data-dashboard-scroll className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch]">
+                    <div id="dashboard-main" data-dashboard-scroll tabIndex={-1} className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch] focus-visible:outline-none">
                         {children}
                     </div>
                     <footer className="hidden shrink-0 border-t border-j-gray-200 bg-j-white px-6 py-3 text-center text-[11px] font-normal leading-relaxed text-j-gray-600 md:block">

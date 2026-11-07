@@ -8,7 +8,6 @@ import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
-  FaGithub,
   FaGift,
   FaUserPlus,
   FaIdCard,
@@ -22,18 +21,6 @@ import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md"
 import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
-
-const contributors = [
-  { username: "Luskahz", name: "Lucas", role: "Desenvolvedor Back-end / Tech Lead" },
-  { username: "Vitorram", name: "Vitor", role: "Desenvolvedor Front-end / Tech Lead" },
-  { username: "joaogabrielbeserra", name: "João Gabriel", role: "Desenvolvedor Full Stack" },
-  { username: "joaoapassos", name: "João Alves", role: "Desenvolvedor Front-end" },
-  { username: "TulioKenji", name: "Túlio Kenji", role: "Desenvolvedor Front-end" },
-  { username: "vinikyo", name: "Vini", role: "Desenvolvedor Full Stack" },
-  { username: "DanielPMorais", name: "Dani", role: "Desenvolvedor Full Stack" },
-  { username: "gumello244", name: "Gumello", role: "Desenvolvedor Full Stack" },
-  { username: "KauanLeonel", name: "Kauan", role: "Desenvolvedor Full Stack" },
-];
 
 export default function HomeClient() {
   const router = useRouter();
@@ -101,14 +88,14 @@ export default function HomeClient() {
 
         {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
-
-          <div className="flex items-center gap-3">
+          <Logo />
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Botão de ajuda / tour da tela inicial */}
             <button
               id="tour-home-help-btn"
               onClick={handleHomeTour}
               title="Como navegar nesta página?"
-              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 shadow-md shadow-yellow-500/10"
+              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-md shadow-yellow-500/10"
             >
               <FaQuestionCircle size={15} />
               <span>Como funciona?</span>
@@ -117,14 +104,12 @@ export default function HomeClient() {
             <button
               id="tour-home-member-btn"
               onClick={handleLogin}
-              className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-all active:scale-95 hover:bg-[#001a52] shadow-lg"
+              className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 hover:bg-[#001a52] shadow-lg"
             >
               <FaIdCard size={14} />
               Entrar
             </button>
 
-            <Logo />
-            
           </div>
         </div>
 
@@ -144,7 +129,7 @@ export default function HomeClient() {
           <button
             id="tour-home-join-btn"
             onClick={handleRegister}
-            className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
+            className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-xl"
           >
             <FaUserPlus size={20} />
             Quero ser sócio
@@ -271,7 +256,7 @@ export default function HomeClient() {
             { icon: <FaGift size={24} />, title: "Dia das Crianças", text: "Tradicional caravana de entrega de brinquedos e cestas básicas para comunidades." },
             { icon: <MdVolunteerActivism size={26} />, title: "Doações Regulares", text: "Apoio contínuo a instituições locais de assistência social e proteção ambiental." }
           ].map((item, i) => (
-            <div key={i} className="bg-white/5 rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all group">
+            <div key={i} className="bg-white/5 rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-[background-color,border-color,color,box-shadow,opacity,transform] group">
               <div className="w-14 h-14 rounded-2xl bg-yellow-400/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <span className="text-yellow-400">{item.icon}</span>
               </div>
@@ -279,47 +264,6 @@ export default function HomeClient() {
               <p className="text-sm text-white/60 leading-relaxed">{item.text}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* CRÉDITOS */}
-      <section id="creditos" className="scroll-mt-8 border-t border-white/5 bg-[#111] px-6 py-16 md:py-24">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,2fr)] lg:gap-14">
-          <div className="text-center lg:sticky lg:top-10 lg:self-start lg:text-left">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-yellow-400">Feito em equipe</p>
-            <h2 className="text-3xl font-black text-white md:text-4xl">Créditos</h2>
-            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/60 lg:mx-0 md:text-base">
-              Um projeto construído por pessoas que compartilham a paixão por tecnologia, comunidade e aventura.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {contributors.map(({ username, name, role }) => (
-              <article key={username} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center transition-colors hover:border-yellow-400/40 hover:bg-white/[0.07]">
-                <div className="relative mx-auto mb-5 h-28 w-28 overflow-hidden rounded-full border-2 border-yellow-400/70 bg-[#202020] shadow-lg shadow-black/30">
-                  <Image
-                    src={`https://github.com/${username}.png?size=256`}
-                    alt={`Foto de perfil de ${name}`}
-                    fill
-                    sizes="112px"
-                    className="object-cover"
-                  />
-                </div>
-                <h3 className="break-all text-base font-extrabold text-white">{name}</h3>
-                <p className="mt-2 text-sm text-white/60">{role}</p>
-                <a
-                  href={`https://github.com/${username}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label={`Abrir perfil GitHub de ${username} em nova aba`}
-                  className="mx-auto mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/15 px-4 text-sm font-semibold text-yellow-300 transition-colors hover:border-yellow-400/60 hover:bg-yellow-400/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
-                >
-                  <FaGithub size={16} aria-hidden="true" />
-                  GitHub
-                </a>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -335,7 +279,7 @@ export default function HomeClient() {
             </p>
             <button
               onClick={handleRegister}
-              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-all active:scale-95 shadow-lg"
+              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-lg"
             >
               <FaIdCard size={18} />
               Quero ser Sócio
