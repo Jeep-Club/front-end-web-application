@@ -56,9 +56,9 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                     />
                     <div id="dashboard-main" data-dashboard-scroll tabIndex={-1} className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch] focus-visible:outline-none">
                         {children}
-                        <div className="border-t border-j-gray-200 px-4 py-5 text-j-gray-600">
+                        {pathname === "/feed" && <div className="border-t border-j-gray-200 px-4 py-5 text-j-gray-600">
                             <LegalLinks />
-                        </div>
+                        </div>}
                     </div>
                     <footer className="hidden shrink-0 border-t border-j-gray-200 bg-j-white px-6 py-3 text-center text-[11px] font-normal leading-relaxed text-j-gray-600 md:block">
                         © {new Date().getFullYear()} Desenvolvido pelo Instituto Federal de São Paulo - Câmpus Caraguatatuba
