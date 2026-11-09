@@ -64,7 +64,7 @@ export function PublicationOverview() {
     });
     const canAdmin = (type: PublicationFeedItem['type']) => hasPermission(permissions, 'PUBLICATIONS', categories.find(category => category.type === type)!.permission);
 
-    return <div className="mt-5 space-y-8">
+    return <div className="relative mt-5 space-y-8">
         <p className="text-sm text-j-gray-600">A visão geral mostra publicações publicadas no feed. Rascunhos e outros estados de eventos estão na administração de eventos.</p>
         <>
             <section aria-label="Indicadores de publicações" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

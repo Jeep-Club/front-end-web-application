@@ -53,3 +53,16 @@ test('paginação consulta outras publicações e preserva o total do feed', asy
     await expect(page.getByRole('link', { name: 'Administrar Aviso 13' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Indicadores de publicações' }).getByText('13').first()).toBeVisible();
 });
+
+test('rolagem permanece na área do painel', async ({ page, api }) => {
+    api.feedItems = Array.from({ length: 12 }, (_, index) => ({ id: index + 1, type: 'NOTICE' as const, title: `Aviso ${index + 1}`, content: 'Conteúdo', authorUserId: 7, primaryImage: null, publishedAt: '2026-10-30T12:00:00Z', likeCount: 0, commentCount: 0, likedByMe: false, details: {} }));
+    await page.goto('/admin/publications');
+    await expect(page.getByText('Aviso 1', { exact: true }).first()).toBeVisible();
+    const scroll = page.locator('[data-dashboard-scroll]');
+    await expect.poll(() => scroll.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(await page.evaluate(() => document.documentElement.clientHeight));
+    await scroll.hover();
+    await page.mouse.wheel(0, 800);
+    await expect.poll(() => scroll.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
