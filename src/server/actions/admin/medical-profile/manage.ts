@@ -6,6 +6,7 @@ import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { medicalPermissions } from "@/config/medicalPermissions";
 import { getAllMedicalProfilesResponseSchema, getMedicalProfileResponseSchema } from "@/schemas/admin/medical-profile";
+import { getDownloadFilename } from "@/utils/http/contentDisposition";
 
 const base = "admin/medical-profiles";
 async function allowed(action: string) {
@@ -46,6 +47,7 @@ export async function exportMedicalProfilesAction(format: "CSV" | "PDF", profile
     z.enum(["CSV", "PDF"]).parse(format);
     const params = new URLSearchParams({ format });
     if (profileId !== undefined) params.set("profileId", String(z.number().int().positive().parse(profileId)));
-    const blob = (await actionFetchWrapper({ url: `${base}/${history ? "history/" : ""}export?${params}`, schema: z.instanceof(Blob), responseType: "blob", allowedContentTypes: [format === "CSV" ? "text/csv" : "application/pdf"], cache: "no-store", headers: { Accept: format === "CSV" ? "text/csv" : "application/pdf" } })).data;
-    return { base64: Buffer.from(await blob.arrayBuffer()).toString("base64"), contentType: blob.type, filename: `dados-medicos${history ? "-historico" : ""}${profileId ? `-${profileId}` : ""}.${format.toLowerCase()}` };
+    const response = await actionFetchWrapper({ url: `${base}/${history ? "history/" : ""}export?${params}`, schema: z.instanceof(Blob), responseType: "blob", allowedContentTypes: [format === "CSV" ? "text/csv" : "application/pdf"], cache: "no-store", headers: { Accept: format === "CSV" ? "text/csv" : "application/pdf" } });
+    const blob = response.data;
+    return { base64: Buffer.from(await blob.arrayBuffer()).toString("base64"), contentType: blob.type, filename: getDownloadFilename(response.contentDisposition, `dados-medicos${history ? "-historico" : ""}${profileId ? `-${profileId}` : ""}.${format.toLowerCase()}`) };
 }
