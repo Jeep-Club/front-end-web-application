@@ -11,6 +11,7 @@ export interface FetchWrapperProps<T> extends RequestInit {
 export interface FetchWrapperResponse<T> {
     status: number;
     data: T;
+    contentDisposition?: string;
 }
 
 export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<FetchWrapperResponse<T>> {
@@ -38,7 +39,7 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
         status, statusText: response.statusText, contentType: response.headers.get('content-type'), rawData,
     });
     // A 204 has no representation, regardless of the JSON schema used by callers.
-    if (status === 204 && responseType === 'json') return { status, data: undefined as T };
+    if (status === 204 && responseType === 'json') return { status, data: undefined as T, contentDisposition: response.headers.get('Content-Disposition') ?? undefined };
 
     const contentType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase();
     const isJson = contentType === 'application/json' || contentType?.endsWith('+json');
@@ -58,7 +59,7 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
             } });
             throw { status, code: 'INVALID_RESPONSE', rawData: null };
         }
-        return { status, data: parsed.data };
+        return { status, data: parsed.data, contentDisposition: response.headers.get('Content-Disposition') ?? undefined };
     }
     let responseText: string;
     try {
@@ -101,5 +102,5 @@ export async function fetchWrapper<T>(props: FetchWrapperProps<T>): Promise<Fetc
         throw { zodError: data.error, rawData, status };
     }
 
-    return { status, data: data.data };
+    return { status, data: data.data, contentDisposition: response.headers.get('Content-Disposition') ?? undefined };
 }
