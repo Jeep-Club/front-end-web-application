@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getDownloadFilename } from '@/utils/http/contentDisposition';
 import { haveActionPermission } from '@/utils/permission/actionPermissions';
 import { ActionError } from '@/utils/http/ActionError';
+import { getAdminExportOperatorName } from '@/server/utils/adminExportPdf';
 
 export async function downloadBillingAction(kind: 'definitions' | 'cycles' | 'member-charges' | 'payments' | 'refunds' | 'receipt', format: 'CSV' | 'PDF', filters: Record<string, string> = {}, paymentId?: number) {
     const requiredPermission = kind === 'receipt' ? 'PAYMENT_READ' : 'EXPORT';
@@ -30,5 +31,6 @@ export async function downloadBillingAction(kind: 'definitions' | 'cycles' | 'me
     const contentType = blob.type;
     const extension = kind !== 'receipt' ? format.toLowerCase() : contentType.includes('pdf') ? 'pdf' : contentType.includes('jpeg') ? 'jpg' : contentType.includes('webp') ? 'webp' : 'png';
     const fallback = kind === 'receipt' ? `comprovante-${paymentId}.${extension}` : `financeiro-${kind}.${extension}`;
-    return { base64: Buffer.from(await blob.arrayBuffer()).toString('base64'), contentType, filename: getDownloadFilename(response.contentDisposition, fallback) };
+    const exportedBy = kind !== 'receipt' && format === 'CSV' ? await getAdminExportOperatorName() : undefined;
+    return { base64: Buffer.from(await blob.arrayBuffer()).toString('base64'), contentType, filename: getDownloadFilename(response.contentDisposition, fallback), exportedBy };
 }

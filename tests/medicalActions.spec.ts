@@ -1,13 +1,16 @@
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
+jest.mock("@/server/utils/adminExportPdf", () => ({ getAdminPdfIdentity: jest.fn() }));
 
 import fetchAction from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
+import { getAdminPdfIdentity } from "@/server/utils/adminExportPdf";
 import { listMedicalProfilesAction, getMedicalProfileAdminAction, deleteMedicalProfileAction, exportMedicalProfilesAction } from "@/server/actions/admin/medical-profile/manage";
 import { putMedicalProfileAction } from "@/server/actions/admin/medical-profile/put";
+import { readFileSync } from "node:fs";
 
 const data: PutMedicalProfile = { bloodType: "UNKNOWN", allergies: "", chronicConditions: "", continuousMedications: "", observations: "", healthInsuranceProvider: "", healthInsurancePlan: "", healthInsuranceNumber: "", emergencyContactName: "", emergencyContactPhone: "", emergencyContactRelationship: "" };
-beforeEach(() => { jest.clearAllMocks(); jest.mocked(haveActionPermission).mockResolvedValue(true); jest.mocked(fetchAction).mockResolvedValue({ status: 200, data: { id: 1 } }); });
+beforeEach(() => { jest.clearAllMocks(); jest.mocked(haveActionPermission).mockResolvedValue(true); jest.mocked(getAdminPdfIdentity).mockResolvedValue({ exportedBy: "Admin Jeep", seal: `data:image/png;base64,${readFileSync("public/images/jeepclube-emblema.png").toString("base64")}` }); jest.mocked(fetchAction).mockResolvedValue({ status: 200, data: { id: 1 } }); });
 
 describe("medical server authorization and API routes", () => {
     it.each([
@@ -40,10 +43,11 @@ describe("medical server authorization and API routes", () => {
         expect(fetchAction).toHaveBeenCalledWith(expect.objectContaining({ url: "admin/medical-profiles/5", method: "DELETE" }));
     });
     it("downloads selected profiles and deletion history from separate endpoints", async () => {
-        jest.mocked(fetchAction).mockResolvedValue({ status: 200, data: new Blob(["report"], { type: "application/pdf" }) });
+        jest.mocked(fetchAction).mockResolvedValue({ status: 200, data: new Blob(["ID;Nome\n5;Marina"], { type: "text/csv" }) });
         const result = await exportMedicalProfilesAction("PDF", 5);
         expect(result.contentType).toBe("application/pdf");
-        expect(fetchAction).toHaveBeenLastCalledWith(expect.objectContaining({ url: "admin/medical-profiles/export?format=PDF&profileId=5", responseType: "blob", cache: "no-store" }));
+        expect(Buffer.from(result.base64, "base64").toString("latin1")).toMatch(/^%PDF-/);
+        expect(fetchAction).toHaveBeenLastCalledWith(expect.objectContaining({ url: "admin/medical-profiles/export?format=CSV&profileId=5", responseType: "blob", cache: "no-store" }));
         await exportMedicalProfilesAction("CSV", undefined, true);
         expect(fetchAction).toHaveBeenLastCalledWith(expect.objectContaining({ url: "admin/medical-profiles/history/export?format=CSV" }));
     });

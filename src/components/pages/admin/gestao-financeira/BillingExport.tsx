@@ -15,7 +15,7 @@ export function BillingExport({ kind, filters = {}, variant = "primary", classNa
         if (combined.month && !combined.year) throw new Error("Informe o ano ao filtrar por mês.");
         if (combined.dueFrom && combined.dueTo && combined.dueFrom > combined.dueTo) throw new Error("O vencimento inicial deve preceder o final.");
         const source = await downloadBillingAction(kind, "CSV", combined);
-        await downloadFinancialReport(kind, format, decodeFinancialCsv(source.base64), combined, source.filename);
+        await downloadFinancialReport(kind, format, decodeFinancialCsv(source.base64), combined, source.filename, source.exportedBy);
     }
     const statuses = { definitions: ["ACTIVE", "INACTIVE", "ARCHIVED"], cycles: ["GENERATED", "FINISHED", "CANCELED", "ARCHIVED"], "member-charges": ["PENDING", "PAID", "CANCELED"], payments: ["PENDING_VALIDATION", "CONFIRMED", "REJECTED", "CANCELED"], refunds: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"] };
     const fields = [
