@@ -19,7 +19,6 @@ import { twMerge } from "tailwind-merge";
 import { useMutation } from "@tanstack/react-query";
 
 import { Logo } from "@/components/common/logo";
-import { legalLinks } from "@/components/common/legal-links";
 import { useModal } from "@/providers/ModalProvider";
 import logoutAction from "@/server/actions/auth/logout";
 import { useUserStore } from "@/stores/userStore";
@@ -265,25 +264,6 @@ export default function Sidebar({
                         {logoutMutation.isPending ? <LoaderCircle size={17} className="animate-spin" aria-hidden="true" /> : <LogOut size={17} aria-hidden="true" />}
                         <span className={isCollapsed ? "md:hidden" : ""}>Sair</span>
                     </button>
-                </nav>
-                <nav
-                    aria-label="Informações legais e contato"
-                    className={twMerge(
-                        "flex shrink-0 flex-col gap-0.5 border-t border-j-blue-700 px-3 py-2",
-                        isCollapsed && "md:hidden",
-                    )}
-                >
-                    {legalLinks.map(({ href, label }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            onClick={onCloseMobile}
-                            aria-current={pathname === href ? "page" : undefined}
-                            className="cursor-pointer rounded-sm py-0.5 pl-3 text-[11px] font-bold text-j-white/60 transition-colors hover:text-j-yellow-300 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"
-                        >
-                            {label}
-                        </Link>
-                    ))}
                 </nav>
             </aside>
         </>
