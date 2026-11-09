@@ -12,7 +12,7 @@ import { getMembershipApplicationsTourSteps, getUsersTourSteps } from "@/config/
 import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
-import { exportAdminUsersAction } from "@/server/actions/admin/users/export";
+import { exportAdminUsersAction, exportAdminUsersReportPdfAction } from "@/server/actions/admin/users/export";
 import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
 import {
     getAdminMemberRegistrationAction,
@@ -183,7 +183,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
     const handleExportUsers = useCallback(
         async (format: "CSV" | "PDF") => {
-            return exportAdminUsersAction(query, format, "MEMBER");
+            if (format === "CSV") return exportAdminUsersAction(query, "CSV", "MEMBER");
+            return exportAdminUsersReportPdfAction(query);
         },
         [query],
     );
