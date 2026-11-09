@@ -111,3 +111,131 @@
   width: 2rem;
   height: 2rem;
 }
+
+/* Keep the full range calendar visible and wrap the date fields only when needed. */
+.jeep-range-popover {
+  max-height: none !important;
+  overflow: visible;
+}
+
+.jeep-range-popover .jeep-calendar-fields {
+  grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr));
+}
+
+.jeep-calendar-content { display: grid; grid-template-columns: minmax(0, 17.5rem) 7rem; align-items: stretch; gap: 0.75rem; }
+.jeep-calendar-content:has(> :only-child) { grid-template-columns: minmax(0, 17.5rem); }
+.jeep-time-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+.jeep-time-columns { display: flex; min-height: 0; gap: 0.25rem; }
+.jeep-time-wheel { height: 0; min-height: 100%; width: 3.25rem; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.jeep-time-option { display: block; width: 100%; height: 36px; color: var(--text-primary); border-radius: 0.375rem; cursor: pointer; }
+.jeep-time-option:hover { background: var(--background-tertiary); }
+.jeep-time-option[aria-pressed="true"] { background: var(--button-primary-bg); color: var(--button-primary-text); font-weight: 700; }
+.jeep-time-option:focus-visible, .jeep-time-parts button:focus-visible { outline: 2px solid var(--input-border-focus); }
+.jeep-time-parts { display: flex; gap: 0.25rem; margin-bottom: 0.5rem; }
+.jeep-time-parts button { cursor: pointer; padding: 0.25rem; color: var(--text-secondary); }
+.jeep-time-parts button[aria-pressed="true"] { color: var(--text-primary); font-weight: 700; text-decoration: underline; }
+@media (max-width: 420px) { .jeep-calendar-content { grid-template-columns: minmax(0, 1fr); } .jeep-time-columns { height: 12rem; } }
+
+/* On phones the calendar and clock are separate steps; desktop retains the wheels. */
+.jeep-mobile-clock, .jeep-mobile-select-time { display: none; }
+
+@media (max-width: 640px) {
+  .jeep-calendar-content { display: block; }
+  .jeep-calendar-content[data-mobile-clock="true"] .jeep-calendar-date { display: none; }
+  .jeep-desktop-time { display: none; }
+  .jeep-mobile-select-time { display: block; margin-top: 0.5rem; }
+  .jeep-mobile-clock { display: grid; justify-items: center; gap: 0.5rem; width: min(17.5rem, calc(100vw - 3rem)); }
+  .jeep-mobile-clock-header { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 0.5rem; color: var(--text-primary); }
+  .jeep-mobile-clock-header button, .jeep-mobile-select-time, .jeep-mobile-clock-phases button {
+    cursor: pointer; border-radius: 0.375rem; padding: 0.375rem 0.5rem; color: var(--text-primary);
+  }
+  .jeep-mobile-clock-header button:hover, .jeep-mobile-select-time:hover, .jeep-mobile-clock-phases button:hover { background: var(--background-tertiary); }
+  .jeep-mobile-clock-phases { display: flex; gap: 0.5rem; }
+  .jeep-mobile-clock-phases button[aria-pressed="true"] { background: var(--button-primary-bg); color: var(--button-primary-text); font-weight: 700; }
+  .jeep-clock-manual { display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); font-size: 0.875rem; }
+  .jeep-clock-manual input { width: 4rem; border: 1px solid var(--input-border); border-radius: 0.375rem; padding: 0.375rem; background: var(--input-bg); color: var(--input-text); }
+  .jeep-clock-next { cursor: pointer; border-radius: 0.5rem; padding: 0.5rem 1rem; background: var(--button-primary-bg); color: var(--button-primary-text); font-weight: 700; }
+  .jeep-clock-next:hover { background: var(--button-primary-bg-hover); color: var(--button-primary-text-hover); }
+  .jeep-mobile-clock button:focus-visible, .jeep-mobile-select-time:focus-visible, .jeep-clock-manual input:focus-visible { outline: 2px solid var(--input-border-focus); outline-offset: 2px; }
+}
+@media (min-width: 641px) {
+  .jeep-desktop-time:not(.jeep-time-panel) { display: flex; min-height: 0; }
+  .jeep-desktop-time:not(.jeep-time-panel) > .jeep-time-columns { flex: 1; }
+}
+/* Mobile date selection is a single modal sheet with fixed controls. */
+.jeep-sheet-header, .jeep-sheet-body { display: contents; }
+.jeep-sheet-handle-area, .jeep-sheet-title, .jeep-sheet-steps, .jeep-sheet-footer, .jeep-sheet-backdrop, .jeep-sheet-range-parts { display: none; }
+
+@media (max-width: 640px) {
+  .jeep-calendar-popover {
+    position: fixed !important;
+    inset: auto 0 var(--jeep-keyboard-offset, 0px) !important;
+    transform: none !important;
+    width: 100%;
+    max-width: none;
+    height: calc(var(--jeep-visible-height, 100dvh) * 0.75);
+    max-height: calc(var(--jeep-visible-height, 100dvh) * 0.85) !important;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    padding: 0;
+    border-radius: 1rem 1rem 0 0;
+    background: var(--surface);
+    z-index: 10000;
+  }
+  .jeep-sheet-backdrop { display: block; position: fixed; inset: 0; z-index: -1; background: rgb(0 0 0 / 50%); }
+  .jeep-sheet-header { display: block; flex: none; padding: 0 1rem 0.5rem; border-bottom: 1px solid var(--input-border); background: var(--surface); border-radius: 1rem 1rem 0 0; }
+  .jeep-sheet-handle-area { display: grid; place-items: center; height: 1.5rem; cursor: grab; touch-action: none; }
+  .jeep-sheet-handle { width: 2.5rem; height: 0.25rem; border-radius: 1rem; background: var(--input-border); }
+  .jeep-sheet-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--text-primary); }
+  .jeep-sheet-title button { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; cursor: pointer; color: var(--text-primary); border-radius: 0.5rem; }
+  .jeep-sheet-title button:hover { background: var(--background-tertiary); }
+  .jeep-sheet-steps { display: flex; gap: 0.5rem; }
+  .jeep-sheet-range-parts { display: flex; }
+  .jeep-sheet-steps button { flex: 1; cursor: pointer; padding: 0.5rem; color: var(--text-secondary); border-bottom: 2px solid transparent; }
+  .jeep-sheet-steps button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--button-primary-bg); font-weight: 700; }
+  .jeep-sheet-body { display: block; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.75rem 1rem; background: var(--surface); }
+  .jeep-calendar-content { width: 100%; }
+  .jeep-calendar-content[data-mobile-clock="true"] { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; }
+  .jeep-calendar-content[data-mobile-clock="true"] .jeep-mobile-clock { width: 100%; }
+  .jeep-mobile-clock .MuiClock-root { zoom: 1.2; }
+  .jeep-calendar-popover :is(.calendar, .range-calendar) { width: 100%; }
+  .jeep-calendar-content .jeep-calendar-date, .jeep-mobile-clock { margin-inline: auto; }
+  .jeep-mobile-select-time, .jeep-desktop-clear { display: none; }
+  .jeep-sheet-footer { display: flex; flex: none; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom)); border-top: 1px solid var(--input-border); background: var(--surface); }
+  .jeep-sheet-footer button { cursor: pointer; border-radius: 0.5rem; padding: 0.625rem 1rem; font-weight: 700; color: var(--text-primary); }
+  .jeep-sheet-footer button:last-child { background: var(--button-primary-bg); color: var(--button-primary-text); }
+  .jeep-sheet-footer button:last-child:hover { background: var(--button-primary-bg-hover); color: var(--button-primary-text-hover); }
+  .jeep-sheet-footer button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .jeep-sheet-header button:focus-visible, .jeep-sheet-footer button:focus-visible { outline: 2px solid var(--input-border-focus); outline-offset: 2px; }
+}
+/* Give short mobile screens more room while keeping the actions fixed. */
+@media (max-width: 640px) and (max-height: 700px) {
+  .jeep-calendar-popover {
+    height: calc(var(--jeep-visible-height, 100dvh) * 0.92);
+    max-height: calc(var(--jeep-visible-height, 100dvh) * 0.92) !important;
+  }
+  .jeep-sheet-header { padding-bottom: 0.25rem; }
+  .jeep-sheet-handle-area { height: 1rem; }
+  .jeep-sheet-title button { width: 2.25rem; height: 2.25rem; }
+  .jeep-calendar-fields { gap: 0.25rem; padding-bottom: 0.25rem; }
+  .jeep-sheet-steps button { padding: 0.375rem; }
+  .jeep-sheet-range-parts { margin-bottom: 0.125rem; }
+  .jeep-sheet-body { padding-block: 0.5rem; }
+  .jeep-calendar-popover :is(.calendar, .range-calendar) {
+    width: min(100%, max(13rem, calc(var(--jeep-visible-height, 100dvh) - 13rem)));
+    margin-inline: auto;
+  }
+  .jeep-mobile-clock { gap: 0.25rem; }
+  .jeep-mobile-clock .MuiClock-root { zoom: 1; margin-block: 0.5rem; }
+  .jeep-sheet-footer { padding-top: 0.5rem; padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 640px) and (max-height: 500px) {
+  .jeep-calendar-popover {
+    height: calc(var(--jeep-visible-height, 100dvh) * 0.96);
+    max-height: calc(var(--jeep-visible-height, 100dvh) * 0.96) !important;
+  }
+  .jeep-mobile-clock .MuiClock-root { zoom: 0.85; }
+}

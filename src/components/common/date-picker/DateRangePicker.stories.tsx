@@ -55,5 +55,5 @@ export const Desabilitado: Story = { args: { isDisabled: true } };
 export const Limites: Story = { args: { minValue: parseDate('2026-11-10'), maxValue: parseDate('2026-11-20'), description: 'O intervalo deve ficar entre 10 e 20 de novembro de 2026.' } };
 export const ComHorario: Story = {
     args: { defaultValue: { start: parseDateTime('2026-11-15T14:30:00'), end: parseDateTime('2026-11-16T18:45:30') }, granularity: 'second', hourCycle: 24 },
-    parameters: { docs: { description: { story: 'Abra o calendário para editar data e horário nos campos superiores.' } } },
+    parameters: { docs: { description: { story: 'Abra o calendário para selecionar data, horas e minutos.' } } },
 };

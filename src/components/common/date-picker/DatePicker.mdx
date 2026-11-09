@@ -49,3 +49,10 @@ As stories usam estado local e valores determinísticos, sem backend. Conversão
 Referência: [DatePicker do HeroUI](https://heroui.com/en/docs/react/components/date-picker). Testes automatizados não certificam acessibilidade completa.
 
 Os campos segmentados no topo do calendário permitem editar a data e, quando disponível, o horário em 24 horas. Os segundos não são exibidos; alterar hora ou minuto define segundos e fração como zero.
+
+
+## Horário
+
+Quando a granularidade inclui horário, o calendário mostra rodas de horas e minutos. Role para percorrer os valores disponíveis e selecione uma opção. Com foco na roda, use as setas para alterar o valor. Limpar remove o valor.
+
+No celular, o seletor abre como Bottom Sheet com as etapas Data, Hora e Minuto. As edições manuais e as escolhas ficam temporárias até Concluir. Fechar pelo X, pelo fundo ou arrastar o indicador descarta as alterações. Limpar altera o valor temporário. O relógio usa formato de 24 horas.

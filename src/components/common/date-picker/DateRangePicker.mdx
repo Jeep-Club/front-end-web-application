@@ -38,7 +38,7 @@ Campo, seleção e calendário em portal usam os tokens do site conforme `data-t
   <Controls of={Stories.IntervaloVazio} />
 </div>
 
-Os Controls expõem estados. Datas complexas ficam nas stories e na edição do campo. A story Com horário permite configurar `granularity` e `hourCycle` no painel com valores que suportam esses formatos. O resultado abaixo do campo e os eventos em Actions mostram a seleção aplicada.
+Os Controls expõem estados. Datas complexas ficam nas stories e na edição do campo. A story Com horário demonstra valores com granularidade de minutos. O resultado abaixo do campo e os eventos em Actions mostram a seleção aplicada.
 
 <Canvas of={Stories.IntervaloPreenchido} />
 <Canvas of={Stories.Desabilitado} />
@@ -54,3 +54,10 @@ No filtro de publicações, novos limites civis representam dias locais completo
 As stories usam estado local sem backend. Não comprovam conversões da API ou fluxos autenticados. Referência: [DateRangePicker do HeroUI](https://heroui.com/en/docs/react/components/date-range-picker). Testes automatizados não certificam acessibilidade completa.
 
 Os campos segmentados no topo do calendário permitem editar a data e, quando disponível, o horário em 24 horas. Os segundos não são exibidos; alterar hora ou minuto define segundos e fração como zero.
+
+
+## Horário
+
+Para valores com horário, uma única dupla de rodas controla o início e o fim. Escolha a hora e depois o minuto inicial. A seleção passa automaticamente ao fim, que também pode ser escolhido pelos botões Início e Fim. Role as rodas para percorrer os valores e use as setas do teclado para ajustá-los. Limpar remove o intervalo completo.
+
+No celular, o seletor abre como Bottom Sheet com as etapas Data, Hora e Minuto. As edições manuais e as escolhas ficam temporárias até Concluir. Fechar pelo X, pelo fundo ou arrastar o indicador descarta as alterações. Limpar altera o valor temporário. Os controles Início e Fim permitem editar os dois horários.
