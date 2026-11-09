@@ -104,7 +104,7 @@ export default function PublicationManagement() {
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <h2 id="publication-management-title" className="text-center text-lg font-bold text-j-blue-800 sm:text-left">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
                                 <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-                                {canExport && selectedSections.map((section) => <AdminExport key={section.type} formats={["CSV"]} label={`Exportar ${section.title}`} className="w-full sm:w-auto" onExport={(format) => format === "CSV" ? exportAdminPublicationsAction({ type: section.type, status }) : Promise.reject(new Error("Formato não suportado."))} />)}
+                                {canExport && selectedSections.map((section) => <AdminExport key={section.type} formats={["CSV", "PDF"]} label={`Exportar ${section.title}`} className="w-full sm:w-auto" onExport={(format) => exportAdminPublicationsAction({ type: section.type, status, format })} />)}
                                 {canCreate && (
                                     <Button id="tour-publications-create-btn" onClick={() => { setContent(<CreatePublicationModal />); setOpen(); }} className="w-full sm:w-auto">
                                         <Plus size={18} />
