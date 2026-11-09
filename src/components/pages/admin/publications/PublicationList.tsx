@@ -10,6 +10,7 @@ import { ArrowDown, ArrowUp, CalendarDays, Megaphone, Newspaper, Wrench, List, L
 import { ListPagination } from "@/components/common/table/ListPagination";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { PUBLICATION_PAGE_SIZES } from "@/utils/publications/pagination";
+import { publicationAdministrationHref } from "@/utils/publications/administration";
 
 export interface PublicationListItem {
     id: number;
@@ -39,6 +40,7 @@ interface PublicationListProps {
     onViewChange?: (view: "list" | "grid") => void;
     ordering?: { direction: 'asc' | 'desc'; title: string; onChange?: (direction: 'asc' | 'desc') => void };
     emptyDescription?: string;
+    listParams?: Pick<URLSearchParams, "get">;
 }
 
 const types = {
@@ -73,7 +75,7 @@ function PublicationImage({ item, view }: { item: PublicationListItem; view: 'li
 }
 
 /** Uma página real da API, em lista compacta ou grade, sem filtrar resultados incompletos. */
-export function PublicationList({ page, pageIndex, pageSize, onPaginationChange, isLoading = false, isFetching = false, error, onRetry, canManage = true, canViewFeed = false, view = 'list', onViewChange, ordering, emptyDescription }: PublicationListProps) {
+export function PublicationList({ page, pageIndex, pageSize, onPaginationChange, isLoading = false, isFetching = false, error, onRetry, canManage = true, canViewFeed = false, view = 'list', onViewChange, ordering, emptyDescription, listParams }: PublicationListProps) {
     return (
         <section aria-label="Resultados de publicações" className="mt-5 border-t border-j-gray-200 pt-4" aria-busy={isLoading || isFetching}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -102,7 +104,7 @@ export function PublicationList({ page, pageIndex, pageSize, onPaginationChange,
                                 {(item.startsAt || item.publishedAt) && <p className="text-xs text-j-gray-600">{item.startsAt ? 'Início: ' : 'Publicado em: '}{feedDate((item.startsAt ?? item.publishedAt)!)}</p>}
                                 {view === 'grid' && <p className="line-clamp-2 break-words text-sm text-j-gray-600">{previewText(publicationPlainText(item.content), CARD_CONTENT_LIMIT)}</p>}
                             </div>
-                            {(canManage || canViewFeed) && <Link className={`${view === 'grid' ? 'm-3 mt-auto' : 'w-full text-right sm:w-auto'} cursor-pointer text-sm font-bold text-j-blue-800 underline focus-visible:outline-2 focus-visible:outline-offset-2`} href={canManage ? `/admin/publications/${item.type === 'EVENT' ? 'event' : item.type === 'NOTICE' ? 'notice' : 'service'}/${item.id}?${new URLSearchParams({ page: String(pageIndex), size: String(pageSize) })}` : `/feed?publication=${item.id}`}>{canManage ? `Administrar ${label.toLocaleLowerCase('pt-BR')}` : 'Ver no feed'}</Link>}
+                            {(canManage || canViewFeed) && <Link className={`${view === 'grid' ? 'm-3 mt-auto' : 'w-full text-right sm:w-auto'} cursor-pointer text-sm font-bold text-j-blue-800 underline focus-visible:outline-2 focus-visible:outline-offset-2`} href={canManage ? publicationAdministrationHref(item.type, listParams, item.id) : `/feed?publication=${item.id}`}>{canManage ? `Administrar ${label.toLocaleLowerCase('pt-BR')}` : 'Ver no feed'}</Link>}
                         </article>;
                     })}
                 </div>

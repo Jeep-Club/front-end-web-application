@@ -17,14 +17,16 @@ test('lista é padrão e alternância preserva página sem nova consulta', async
 });
 
 test('busca por ID abre aviso em rascunho ausente do feed e valida entrada', async ({ page, api }) => {
-    await page.goto('/admin/publications/notice');
+    await page.goto('/admin/publications/notice?page=1&size=24&view=grid');
     const field = page.getByRole('textbox', { name: 'Pesquisar por título ou ID' });
     await page.getByRole('button', { name: 'Buscar', exact: true }).click();
     await expect(field).toHaveAttribute('aria-invalid', 'true');
     await field.fill('8'); await field.press('Enter');
-    await expect(page).toHaveURL(/notice\/8$/);
+    await expect(page).toHaveURL(/notice\/8\?page=1&size=24&view=grid$/);
     await expect(page.getByText('Estado editorial: DRAFT')).toBeVisible();
     expect(api.calls.some(call => call.url.pathname === '/admin/notices/8')).toBe(true);
+    await page.getByRole('link', { name: 'Voltar aos avisos' }).click();
+    await expect(page).toHaveURL(/notice\?page=1&size=24&view=grid$/);
 });
 
 test('busca global por título e filtros sem contrato ficam indisponíveis', async ({ page, api }) => {
@@ -58,12 +60,14 @@ test('ordenar eventos usa API, reinicia página e mantém visualização', async
 test('período publicado aplica limite real e limpar remove filtros e rascunhos', async ({ page, api }) => {
     await page.clock.setFixedTime(new Date('2026-11-04T12:00:00Z'));
     api.feedItems = [{ id: 8, type: 'NOTICE', title: 'Aviso publicado', content: 'Conteúdo', authorUserId: 7, primaryImage: null, publishedAt: '2026-10-30T12:00:00Z', likeCount: 0, commentCount: 0, likedByMe: false, details: {} }];
-    await page.goto('/admin/publications/notice?view=grid');
+    await page.goto('/admin/publications/notice?page=1&view=grid');
     await page.getByRole('button', { name: 'Abrir calendário: Período de publicação' }).click();
     await page.getByRole('button', { name: /domingo, 1 de novembro de 2026/ }).click();
     await page.getByRole('button', { name: /segunda-feira, 2 de novembro de 2026/ }).click();
     await expect.poll(() => api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('publishedFrom')).toBe('2026-11-01T03:00:00.000000000Z');
     await expect.poll(() => api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('publishedTo')).toBe('2026-11-03T02:59:59.999999999Z');
+    await expect(page).toHaveURL(/page=0/);
+    expect(api.calls.filter(call => call.url.pathname === '/publications/feed').at(-1)?.url.searchParams.get('page')).toBe('0');
     await expect(page.getByText('Nenhuma publicação encontrada', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Limpar filtros', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Aviso publicado', exact: true })).toBeVisible();

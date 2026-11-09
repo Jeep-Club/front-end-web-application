@@ -44,8 +44,6 @@ function PublicationLink({ item, canAdmin }: { item: PublicationFeedItem; canAdm
 /** O feed é uma visão paginada de publicações publicadas, não um inventário administrativo. */
 export function PublicationOverview() {
     const permissions = useUserStore(state => state.permissions);
-    const canFeed = hasPermission(permissions, 'PUBLICATIONS', 'FEED_READ');
-    const canDetail = hasPermission(permissions, 'PUBLICATIONS', 'PUBLICATION_READ');
     const canEvents = hasPermission(permissions, 'PUBLICATIONS', 'EVENT_READ_ADMIN');
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -53,12 +51,12 @@ export function PublicationOverview() {
     const feed = useQuery({
         queryKey: ['publications', 'feed', 'overview', pagination, permissions],
         queryFn: () => listPublicationFeedAction({ page: pagination.pageIndex, size: pagination.pageSize }),
-        enabled: canFeed, retry: publicationReadRetry,
+        retry: publicationReadRetry,
     });
     const categoryQueries = useQueries({ queries: categories.map(category => ({
         queryKey: ['publications', 'feed', 'overview-category', category.type, permissions],
         queryFn: () => listPublicationFeedAction({ type: category.type, page: 0, size: category.size }),
-        enabled: canFeed, retry: publicationReadRetry,
+        retry: publicationReadRetry,
     })) });
     const adminEvents = useQuery({
         queryKey: ['publications', 'admin', 'events', 'overview', permissions],
@@ -68,8 +66,7 @@ export function PublicationOverview() {
 
     return <div className="mt-5 space-y-8">
         <p className="text-sm text-j-gray-600">A visão geral mostra publicações publicadas no feed. Rascunhos e outros estados de eventos estão na administração de eventos.</p>
-        {!canFeed && <p role="status" className="rounded-xl bg-j-gray-100 p-4">Você não possui permissão para consultar o feed de publicações.</p>}
-        {canFeed && <>
+        <>
             <section aria-label="Indicadores de publicações" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {[{ label: 'Publicações publicadas', query: feed, href: '/feed' }, ...categories.map((category, i) => ({ label: `${category.label} publicados`, query: categoryQueries[i], href: hasPermission(permissions, 'PUBLICATIONS', category.permission) ? `/admin/publications/${category.route}` : undefined }))].map(({ label, query, href }) => <div key={label} className="rounded-xl border border-j-gray-200 bg-j-gray-100/40 p-4">
                     <p className="text-sm text-j-gray-600">{label}</p>
@@ -84,12 +81,12 @@ export function PublicationOverview() {
                         <div className="flex items-center justify-between gap-3"><h3 className="font-bold text-j-blue-800">{category.type === 'EVENT' ? 'Evento publicado mais recente' : `${category.label} publicados recentes`}</h3>{hasPermission(permissions, 'PUBLICATIONS', category.permission) && <Link className="cursor-pointer text-sm font-bold text-j-blue-800 underline" href={`/admin/publications/${category.route}`}>Ver todos</Link>}</div>
                         {query.isLoading ? <div role="status" aria-label={`Carregando ${category.label}`} className="mt-3 h-32 animate-pulse rounded-lg bg-j-gray-100" /> : query.isError ? <div role="alert" className="mt-3 text-sm">{publicationReadError(query.error).message} <button type="button" className="cursor-pointer underline" onClick={() => void query.refetch()}>Tentar novamente</button></div> : !query.data?.content.length ? <p className="mt-3 text-sm text-j-gray-600">Nenhuma publicação nesta categoria.</p> : <div className="mt-3 space-y-3">{query.data.content.map(item => <article key={item.id} className={category.type === 'EVENT' ? 'space-y-3' : 'flex min-w-0 gap-3'}>
                             <ImagePreview item={item} className={category.type === 'EVENT' ? 'aspect-video w-full' : 'h-20 w-24 shrink-0'} />
-                            <div className="min-w-0 space-y-1"><p className="text-xs font-semibold text-j-gray-600">{category.singular} · Publicado</p><h4 className="line-clamp-2 font-bold text-j-blue-800">{item.title}</h4><p className="line-clamp-2 text-sm text-j-gray-600">{publicationPlainText(item.content)}</p><p className="text-xs text-j-gray-600">{item.type === 'EVENT' ? `${feedDate(item.details.startsAt)} · ${states[item.details.status]}` : feedDate(item.publishedAt)}</p>{(canAdmin(item.type) || canDetail) && <PublicationLink item={item} canAdmin={canAdmin(item.type)} />}</div>
+                            <div className="min-w-0 space-y-1"><p className="text-xs font-semibold text-j-gray-600">{category.singular} · Publicado</p><h4 className="line-clamp-2 font-bold text-j-blue-800">{item.title}</h4><p className="line-clamp-2 text-sm text-j-gray-600">{publicationPlainText(item.content)}</p><p className="text-xs text-j-gray-600">{item.type === 'EVENT' ? `${feedDate(item.details.startsAt)} · ${states[item.details.status]}` : feedDate(item.publishedAt)}</p><PublicationLink item={item} canAdmin={canAdmin(item.type)} /></div>
                         </article>)}</div>}
                     </section>;
                 })}
             </section>
-        </>}
+        </>
         {canEvents && <section className="rounded-xl border border-j-gray-200 p-4"><div className="flex items-center justify-between gap-3"><h3 className="font-bold text-j-blue-800">Eventos administrativos</h3><Link href="/admin/publications/event" className="cursor-pointer text-sm font-bold text-j-blue-800 underline">Ver todos</Link></div><p className="mt-1 text-sm text-j-gray-600">Todos os estados editoriais, incluindo rascunhos.{adminEvents.data && !adminEvents.isError && ` Total cadastrado: ${adminEvents.data.totalElements}.`}</p>
             {adminEvents.isLoading ? <div role="status" aria-label="Carregando eventos administrativos" className="mt-3 h-16 animate-pulse rounded bg-j-gray-100" /> : adminEvents.isError ? <p role="alert" className="mt-3 text-sm">Não foi possível carregar eventos. <button type="button" className="cursor-pointer underline" onClick={() => void adminEvents.refetch()}>Tentar novamente</button></p> : !adminEvents.data?.content.length ? <p className="mt-3 text-sm">Nenhum evento cadastrado.</p> : <ul className="mt-3 divide-y divide-j-gray-200">{adminEvents.data.content.map(event => <li key={event.id} className="flex flex-wrap justify-between gap-2 py-2 text-sm"><Link className="cursor-pointer font-bold text-j-blue-800 underline" href={`/admin/publications/event/${event.id}`}>{event.title}</Link><span>{editorialStates[event.publicationStatus]} · {states[event.eventStatus]}</span></li>)}</ul>}
         </section>}
@@ -97,8 +94,8 @@ export function PublicationOverview() {
             <fieldset className="mt-4" aria-describedby="publication-filters-help"><legend className="text-sm font-bold text-j-gray-700">Estado da publicação</legend><p id="publication-filters-help" className="mt-1 text-xs text-j-gray-600">Filtros administrativos ainda não implementados.</p><div className="mt-2 flex flex-wrap gap-2">{publicationStatusOptions.map(option =>
                 <button key={option.value} type="button" title="Filtros ainda não implementados." onClick={() => toast('Filtros ainda não implementados.', { id: 'publication-filters-unavailable' })} className="cursor-pointer rounded-lg border border-j-gray-300 bg-j-white px-3 py-2 text-sm font-semibold text-j-gray-700 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800">{option.label}</button>
             )}</div></fieldset>
-            {canFeed && (feed.isLoading ? <div role="status" aria-label="Carregando publicações recentes" className="mt-4 h-32 animate-pulse rounded bg-j-gray-100" /> : feed.isError ? <p role="alert" className="mt-4 text-sm">{publicationReadError(feed.error).message} <button type="button" className="cursor-pointer underline" onClick={() => void feed.refetch()}>Tentar novamente</button></p> : !feed.data?.content.length ? <p className="mt-4 text-sm">Nenhuma publicação publicada encontrada.</p> : <ul className="mt-4 divide-y divide-j-gray-200">{feed.data.content.map(item => <li key={item.id} className="flex min-w-0 items-center gap-3 py-3"><ImagePreview item={item} className="h-14 w-16 shrink-0" /><div className="min-w-0 flex-1"><p className="truncate font-bold text-j-blue-800">{item.title}</p><p className="text-xs text-j-gray-600">{categories.find(entry => entry.type === item.type)!.singular} · Publicado · {feedDate(item.publishedAt)}</p></div>{(canAdmin(item.type) || canDetail) && <PublicationLink item={item} canAdmin={canAdmin(item.type)} />}</li>)}</ul>)}
-            {canFeed && feed.data && <ListPagination itemLabel="publicações" isFetching={feed.isFetching} pagination={{ pageIndex: feed.data.number, pageSize: pagination.pageSize, pageCount: feed.data.totalPages, rowCount: feed.data.totalElements, pageSizeOptions: PUBLICATION_PAGE_SIZES, onChange: next => { const params = updatePublicationPagination(new URLSearchParams(searchParams.toString()), next); window.history.pushState(null, '', `${pathname}?${params}`); } }} />}
+            {feed.isLoading ? <div role="status" aria-label="Carregando publicações recentes" className="mt-4 h-32 animate-pulse rounded bg-j-gray-100" /> : feed.isError ? <p role="alert" className="mt-4 text-sm">{publicationReadError(feed.error).message} <button type="button" className="cursor-pointer underline" onClick={() => void feed.refetch()}>Tentar novamente</button></p> : !feed.data?.content.length ? <p className="mt-4 text-sm">Nenhuma publicação publicada encontrada.</p> : <ul className="mt-4 divide-y divide-j-gray-200">{feed.data.content.map(item => <li key={item.id} className="flex min-w-0 items-center gap-3 py-3"><ImagePreview item={item} className="h-14 w-16 shrink-0" /><div className="min-w-0 flex-1"><p className="truncate font-bold text-j-blue-800">{item.title}</p><p className="text-xs text-j-gray-600">{categories.find(entry => entry.type === item.type)!.singular} · Publicado · {feedDate(item.publishedAt)}</p></div><PublicationLink item={item} canAdmin={canAdmin(item.type)} /></li>)}</ul>}
+            {!feed.isError && feed.data && <ListPagination itemLabel="publicações" isFetching={feed.isFetching} pagination={{ pageIndex: feed.data.number, pageSize: pagination.pageSize, pageCount: feed.data.totalPages, rowCount: feed.data.totalElements, pageSizeOptions: PUBLICATION_PAGE_SIZES, onChange: next => { const params = updatePublicationPagination(new URLSearchParams(searchParams.toString()), next); window.history.pushState(null, '', `${pathname}?${params}`); } }} />}
         </section>
     </div>;
 }

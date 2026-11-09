@@ -50,8 +50,6 @@ function getEventShareLink(publicationId: number) {
 
 export default function Feed() {
     const permissions = useUserStore((state) => state.permissions);
-    const canRead = hasPermission(permissions, "PUBLICATIONS", "FEED_READ");
-    const canDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
     const canCreate = {
         EVENT: hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE"),
         NOTICE: hasPermission(permissions, "PUBLICATIONS", "NOTICE_CREATE"),
@@ -95,7 +93,7 @@ export default function Feed() {
             nav.removeEventListener("scroll", updateHint);
             resizeObserver.disconnect();
         };
-    }, [canRead]);
+    }, []);
 
     const queryClient = useQueryClient();
     const feedKey = ["publications", "feed", "infinite", { type, publishedFrom, publishedTo, size: 12 }, permissions];
@@ -110,7 +108,7 @@ export default function Feed() {
             }),
         initialPageParam: 0,
         getNextPageParam: nextFeedPage,
-        enabled: canRead && filtersResult.success,
+        enabled: filtersResult.success,
         staleTime: 0,
         retry: publicationReadRetry,
     });
@@ -132,7 +130,6 @@ export default function Feed() {
 
         if (
             !sentinel ||
-            !canRead ||
             !filtersResult.success ||
             failure.restricted ||
             !hasNextPage ||
@@ -159,7 +156,6 @@ export default function Feed() {
 
         return () => observer.disconnect();
     }, [
-        canRead,
         filtersResult.success,
         failure.restricted,
         hasNextPage,
@@ -207,14 +203,6 @@ export default function Feed() {
         <div tabIndex={-1} data-publication-return className="min-h-full w-full px-3 py-4 focus:outline-none md:px-6 md:py-6">
             <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
                 <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
-                    {!canRead ? (
-                        <div
-                            role="status"
-                            className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600"
-                        >
-                            Seu usuário não possui permissão para acessar o feed.
-                        </div>
-                    ) : (
                         <>
                             <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
 
@@ -487,12 +475,10 @@ export default function Feed() {
                                                         />
                                                     )}
 
-                                                    {canDetail && (
                                                         <a aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} onClick={event => {
                                                             if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
                                                             event.preventDefault(); openPublication(publication.id);
                                                         }} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
-                                                    )}
 
                                                     <div className="mt-auto border-t border-j-gray-200 pt-3">
                                                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -500,18 +486,10 @@ export default function Feed() {
                                                                 publication={
                                                                     publication
                                                                 }
-                                                                onComments={
-                                                                    canDetail
-                                                                        ? () =>
-                                                                            openPublication(
-                                                                                publication.id
-                                                                            )
-                                                                        : undefined
-                                                                }
+                                                                onComments={() => openPublication(publication.id)}
                                                             />
 
-                                                            {isEvent &&
-                                                                canDetail && (
+                                                            {isEvent && (
                                                                     <a
                                                                         href={`https://wa.me/?text=${encodeURIComponent(
                                                                             `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${getEventShareLink(
@@ -547,14 +525,7 @@ export default function Feed() {
                                                         count={
                                                             publication.commentCount
                                                         }
-                                                        onOpen={
-                                                            canDetail
-                                                                ? () =>
-                                                                    openPublication(
-                                                                        publication.id
-                                                                    )
-                                                                : undefined
-                                                        }
+                                                        onOpen={() => openPublication(publication.id)}
                                                     />
                                                 </div>
                                             </article>
@@ -600,9 +571,8 @@ export default function Feed() {
                                 </div>
                             )}
                         </>
-                    )}
                 </div>
-                {canRead && <FeedSidebar />}
+                <FeedSidebar />
             </div>
             {detailValue && !detailId && <p role="alert">Identificação de publicação inválida.</p>}
             {detailId && <ModalRoot isOpen isEscapable={!activeModal} onClose={closePublication}><PublicationDetailModal key={detailId} publicationId={detailId} onClose={closePublication} /></ModalRoot>}

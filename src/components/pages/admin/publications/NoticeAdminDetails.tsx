@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { publicationAdministrationHref } from '@/utils/publications/administration';
 import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/common/button';
@@ -13,13 +15,14 @@ import { useModal } from '@/providers/ModalProvider';
 import { DraftPublicationActionModal } from './DraftPublicationActionModal';
 
 export function NoticeAdminDetails({ id }: { id: number }) {
+    const back = publicationAdministrationHref('NOTICE', useSearchParams());
     const permissions = useUserStore(state => state.permissions);
     const { setContent, setOpen } = useModal();
     const can = (action: string) => hasPermission(permissions, 'PUBLICATIONS', action);
     const query = useQuery({ queryKey: ['publications', 'admin', 'notices', 'detail', id, permissions], queryFn: () => getAdminNoticeAction(id), enabled: can('NOTICE_READ'), retry: false });
     const data = !query.isError && can('NOTICE_READ') ? query.data : undefined;
-    return <div className="flex min-w-0 flex-col gap-5 p-3 md:p-4"><PageHeader title="Administrar aviso" breadcrumbs={[{ label: 'Aviso', href: '/admin/publications/notice' }, { label: data?.title ?? (query.isLoading ? 'Carregando...' : 'Aviso indisponível') }]} />
-        <Link className="cursor-pointer text-j-blue-800 underline" href="/admin/publications/notice">Voltar aos avisos</Link>
+    return <div className="flex min-w-0 flex-col gap-5 p-3 md:p-4"><PageHeader title="Administrar aviso" breadcrumbs={[{ label: 'Aviso', href: back }, { label: data?.title ?? (query.isLoading ? 'Carregando...' : 'Aviso indisponível') }]} />
+        <Link className="cursor-pointer text-j-blue-800 underline" href={back}>Voltar aos avisos</Link>
         {!can('NOTICE_READ') && <p role="alert">Sem permissão para consultar avisos.</p>}
         {query.isLoading && <p role="status">Carregando aviso...</p>}
         {query.isError && <div role="alert"><p>{getActionFailure(query.error)?.status === 404 ? 'Aviso não encontrado.' : query.error.message}</p><Button onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
@@ -33,7 +36,7 @@ export function NoticeAdminDetails({ id }: { id: number }) {
                 { action: 'publish', permission: 'NOTICE_PUBLISH', eligible: data.status === 'DRAFT', label: 'Publicar aviso' },
                 { action: 'archive', permission: 'NOTICE_ARCHIVE', eligible: data.status === 'PUBLISHED', label: 'Arquivar aviso' },
                 { action: 'delete', permission: 'NOTICE_DELETE', eligible: true, label: 'Excluir aviso' },
-            ] as const).filter(entry => entry.eligible && can(entry.permission)).map(entry => <Button key={entry.action} onClick={() => { setContent(<DraftPublicationActionModal publication={{ ...data, type: 'NOTICE' }} action={entry.action} returnHref="/admin/publications/notice" />); setOpen(); }}>{entry.label}</Button>)}<Button disabled={query.isFetching} onClick={() => void query.refetch()}>Atualizar aviso</Button></div>
+            ] as const).filter(entry => entry.eligible && can(entry.permission)).map(entry => <Button key={entry.action} onClick={() => { setContent(<DraftPublicationActionModal publication={{ ...data, type: 'NOTICE' }} action={entry.action} returnHref={back} />); setOpen(); }}>{entry.label}</Button>)}<Button disabled={query.isFetching} onClick={() => void query.refetch()}>Atualizar aviso</Button></div>
         </article>}
     </div>;
 }

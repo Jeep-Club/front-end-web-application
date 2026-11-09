@@ -1,5 +1,17 @@
 import type { QueryClient } from '@tanstack/react-query';
 
+export function publicationAdministrationHref(type: 'EVENT' | 'NOTICE' | 'SERVICE', params?: Pick<URLSearchParams, 'get'>, id?: number) {
+    const area = { EVENT: 'event', NOTICE: 'notice', SERVICE: 'service' }[type];
+    const keys = ['page', 'size', 'view', ...(type === 'EVENT' ? ['sort'] : ['publishedFrom', 'publishedTo'])];
+    const context = new URLSearchParams();
+    for (const key of keys) {
+        const value = params?.get(key);
+        if (value) context.set(key, value);
+    }
+    const query = context.toString();
+    return `/admin/publications/${area}${id === undefined ? '' : `/${id}`}${query ? `?${query}` : ''}`;
+}
+
 /** Different DTOs share identity, not cache shape. Keep admin, published, feed and billing consumers coherent. */
 export async function invalidatePublicationAdministration(client: QueryClient, type: 'EVENT' | 'NOTICE' | 'SERVICE', id: number, options: { deleted?: boolean; billing?: boolean; inline?: boolean } = {}) {
     const resource = { EVENT: 'events', NOTICE: 'notices', SERVICE: 'services' }[type];

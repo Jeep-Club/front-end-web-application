@@ -8,7 +8,6 @@ import { useUserStore } from "@/stores/userStore";
 import { useQuery } from "@tanstack/react-query";
 import { X, Share2 } from "lucide-react";
 import { isValidElement, useEffect, useRef } from "react";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { feedTypes, publicationReadError, publicationReadRetry } from "./feedDisplay";
 import { PublicationPhotoCarousel } from "./PublicationPhotoCarousel";
 import { FeedInteractions } from "./FeedInteractions";
@@ -22,7 +21,6 @@ import { EventParticipation } from "./EventParticipation";
 export function PublicationDetailModal({ publicationId, onClose }: { publicationId: number; onClose?: () => void }) {
     const { setClose, content: overlayContent } = useModal();
     const permissions = useUserStore((state) => state.permissions);
-    const canRead = hasPermission(permissions, 'PUBLICATIONS', 'PUBLICATION_READ');
     const dialogRef = useRef<HTMLDialogElement>(null);
     useEffect(() => {
         const dialog = dialogRef.current;
@@ -50,9 +48,9 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
         else if (dialog && !dialog.open) dialog.showModal();
         return () => document.removeEventListener('keydown', preventReopenedDialogCancel, true);
     }, [overlayContent]);
-    const query = useQuery({ enabled: canRead && Number.isSafeInteger(publicationId) && publicationId > 0, staleTime: 0, retry: publicationReadRetry, queryKey: ["publications", "detail", publicationId, permissions], queryFn: () => getPublicationFeedDetailAction(publicationId) });
+    const query = useQuery({ enabled: Number.isSafeInteger(publicationId) && publicationId > 0, staleTime: 0, retry: publicationReadRetry, queryKey: ["publications", "detail", publicationId, permissions], queryFn: () => getPublicationFeedDetailAction(publicationId) });
     const failure = publicationReadError(query.error);
-    const publication = canRead && !failure.restricted ? query.data : undefined;
+    const publication = !failure.restricted ? query.data : undefined;
     return <dialog ref={dialogRef} onKeyDown={event => {
         if (event.key !== 'Tab') return;
         const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(element => element.getClientRects().length > 0);
@@ -75,7 +73,6 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
             {publication && <p className="mt-2 text-xs text-j-gray-500">{feedTypes[publication.type].label} · <RelativeTime value={publication.publishedAt} /></p>}
             {publication && <Button className="mt-3" disabled={query.isFetching} aria-busy={query.isFetching} onClick={() => void query.refetch()}>Atualizar publicação</Button>}
         </header>
-        {!canRead && <p role="alert" className="p-6">Seu usuário não possui permissão para consultar esta publicação.</p>}
         {query.isLoading && <p role="status" className="p-6 text-sm text-j-gray-500">Carregando publicação...</p>}
         {query.isError && <div role="alert" className="p-6"><p className="text-sm text-input-error-text">{failure.message}</p><Button className="mt-4" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
         {publication && <>

@@ -9,14 +9,13 @@ import { Button, ButtonIcon } from "@/components/common/button";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/providers/ModalProvider";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
 import { nextFeedPage, mergeFeedPages } from "@/utils/publications/infiniteFeed";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { EventParticipation } from "@/components/pages/feed/EventParticipation";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
-import { feedDate } from "@/components/pages/feed/feedDisplay";
+import { feedDate, publicationReadError, publicationReadRetry } from "@/components/pages/feed/feedDisplay";
 
 type EventItem = Extract<PublicationFeedItem, { type: "EVENT" }>;
 
@@ -61,8 +60,6 @@ function makeCalendarDays(month: Date) {
 
 function EventSummary({ event }: { event: EventItem }) {
     const { setContent, setOpen, setClose } = useModal();
-    const permissions = useUserStore((state) => state.permissions);
-    const canReadDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
     const imageUrl = getMediaImageUrl(event.primaryImage?.storageKey);
     const excerpt = publicationPlainText(event.content).trim();
 
@@ -86,14 +83,13 @@ function EventSummary({ event }: { event: EventItem }) {
             </div>
             <div className="flex items-center gap-2 text-sm text-j-gray-500"><MessageCircle size={16} aria-hidden="true" />{event.commentCount} {event.commentCount === 1 ? "comentário" : "comentários"}</div>
             <EventParticipation eventId={event.id} eventStatus={event.details.status} compact />
-            {canReadDetail && <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>}
+            <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>
         </div>
     </section>;
 }
 
 export default function AgendaPage() {
     const permissions = useUserStore((state) => state.permissions);
-    const canRead = permissions.some((module) => module.module === "PUBLICATIONS" && module.actions.includes("FEED_READ"));
     const { setContent, setOpen } = useModal();
     const [month, setMonth] = useState(() => {
         const now = new Date();
@@ -105,11 +101,12 @@ export default function AgendaPage() {
         queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "EVENT", page: pageParam, size: 48 }),
         initialPageParam: 0,
         getNextPageParam: nextFeedPage,
-        enabled: canRead,
+        retry: publicationReadRetry,
     });
     const { hasNextPage, isFetchingNextPage, isError, fetchNextPage } = query;
     const pageCount = query.data?.pages.length ?? 0;
-    const events = useMemo(() => mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [query.data]);
+    const failure = publicationReadError(query.error);
+    const events = useMemo(() => failure.restricted ? [] : mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [failure.restricted, query.data]);
     const days = useMemo(() => makeCalendarDays(month), [month]);
     const eventsByDate = useMemo(() => {
         const grouped = new Map<string, EventItem[]>();
@@ -162,8 +159,7 @@ export default function AgendaPage() {
                 </div>
             </header>
 
-            {!canRead ? <div role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600">Seu usuário não possui permissão para ver os eventos.</div>
-                : query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
+            {query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
                         : <section aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="grid grid-cols-7 border-b border-j-gray-200 bg-j-gray-100/70">
                                 {WEEKDAYS.map((day) => <div key={day} className="py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
@@ -193,9 +189,9 @@ export default function AgendaPage() {
                                 })}
                             </div>
                             {query.isFetchingNextPage && <p role="status" className="border-t border-j-gray-200 px-4 py-3 text-center text-xs text-j-gray-500">Carregando mais eventos…</p>}
-                            {query.isError && !events.length && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar os eventos.</p><Button className="mt-2" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
-                            {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
-                            {!events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda.</p>}
+                            {query.isError && !query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
+                            {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
+                            {!query.isError && !events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda.</p>}
                         </section>}
             <p className="text-center text-xs text-j-gray-400">
                 Toque em um dia com evento para ver os detalhes. A listagem de aniversariantes está disponível apenas na área administrativa.

@@ -107,20 +107,11 @@ test('intervalo inválido não consulta e pode ser corrigido', async ({ page, ap
     await expect(page.getByText('O fim deve ser igual ou posterior ao início.')).toBeVisible();
 });
 
-test('permission de detalhe é independente de feed e não consulta lista', async ({ page, api }) => {
-    await api.grant(['PUBLICATION_READ']);
+test('sessão autenticada consulta feed e detalhe sem permissões granulares de leitura', async ({ page, api }) => {
+    await api.grant([]);
     await page.goto('/feed?publication=1');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
-    expect(api.calls.filter(url => url.pathname === '/publications/feed')).toHaveLength(0);
-    await page.getByRole('button', { name: 'Fechar publicação' }).click();
-    await expect(page.getByText('Seu usuário não possui permissão para acessar o feed.')).toBeVisible();
-});
-
-test('permission de feed não autoriza detalhe direto', async ({ page, api }) => {
-    await api.grant(['FEED_READ']);
-    await page.goto('/feed?publication=1');
-    await expect(page.getByRole('dialog').getByRole('alert')).toContainText('não possui permissão');
-    expect(api.calls.filter(url => url.pathname === '/publications/1')).toHaveLength(0);
+    await expect.poll(() => api.calls.some(url => url.pathname === '/publications/feed')).toBe(true);
 });
 
 test('foco fica contido no diálogo e retorna ao link acionador', async ({ page }) => {

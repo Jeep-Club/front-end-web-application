@@ -5,6 +5,7 @@ import { pageResponseSchema } from "@/schemas/page";
 import { publicationFeedParamsSchema, type PublicationFeedParams,publicationCommentSchema,publicationFeedDetailSchema,publicationFeedItemSchema } from "@/schemas/publications/feed";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
+import { getAuthCookies } from "@/utils/auth/get";
 import { z } from "zod";
 
 async function requirePermission(action: string) {
@@ -12,8 +13,15 @@ async function requirePermission(action: string) {
 }
 const idSchema = z.number().int().positive();
 
+async function requireReadingSession() {
+    // The backend checks Membership for these reads, independently of granular permissions.
+    if (!await getAuthCookies.SERVER()) {
+        throw new ActionError("Não foi possível confirmar sua sessão.", { status: 401, code: "AUTHENTICATION_REQUIRED" });
+    }
+}
+
 export async function listPublicationFeedAction(input: PublicationFeedParams) {
-    await requirePermission("FEED_READ");
+    await requireReadingSession();
     const parsed = publicationFeedParamsSchema.safeParse(input);
     if (!parsed.success) throw new ActionError('Revise os filtros da publicação.', { status: 400, code: 'PUBLICATION_FEED_INVALID', errors: parsed.error.issues.map(issue => ({ field: issue.path.join('.'), code: issue.code, message: issue.message })) });
     const data = parsed.data;
@@ -25,7 +33,7 @@ export async function listPublicationFeedAction(input: PublicationFeedParams) {
 
 export async function getPublicationFeedDetailAction(id: number) {
     idSchema.parse(id);
-    await requirePermission("PUBLICATION_READ");
+    await requireReadingSession();
     const result = await actionFetchWrapper({ url: `publications/${id}`, method: "GET", cache: "no-store", schema: publicationFeedDetailSchema });
     return result.data;
 }

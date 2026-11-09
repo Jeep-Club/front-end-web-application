@@ -34,12 +34,13 @@ test('erro de uma categoria preserva as demais e oferece nova tentativa', async 
     await expect(page.getByText('Nenhuma publicação nesta categoria.')).toHaveCount(3);
 });
 
-test('sem permissão de feed mantém eventos e não consulta publicações', async ({ page, api }) => {
+test('restrição de Membership no feed mantém os eventos administrativos', async ({ page, api }) => {
     await api.grant(['EVENT_READ_ADMIN']);
+    api.feedFailure = 'MEMBERSHIP';
     await page.goto('/admin/publications');
-    await expect(page.getByText('Você não possui permissão para consultar o feed de publicações.')).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'Acesso restrito pela Membership' }).first()).toBeVisible();
     await expect(page.getByText('Rascunho · Aberto')).toBeVisible();
-    expect(api.calls.some(call => call.url.pathname === '/publications/feed')).toBe(false);
+    expect(api.calls.some(call => call.url.pathname === '/publications/feed')).toBe(true);
 });
 
 test('paginação consulta outras publicações e preserva o total do feed', async ({ page, api }) => {

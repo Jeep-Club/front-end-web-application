@@ -17,6 +17,7 @@ import { PublicationList } from './PublicationList';
 import { PublicationOverview } from './PublicationOverview';
 import { PublicationSearchFilters } from './PublicationSearchFilters';
 import { publicationFeedFiltersSchema } from '@/schemas/publications/feed';
+import { publicationAdministrationHref } from '@/utils/publications/administration';
 
 export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 'NOTICE' | 'SERVICE' | '' }) {
     const permissions = useUserStore(state => state.permissions);
@@ -45,11 +46,10 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
     });
     const isLookup = type === 'NOTICE' || type === 'SERVICE';
     const canLookup = can(type === 'EVENT' ? 'EVENT_READ_ADMIN' : type === 'NOTICE' ? 'NOTICE_READ' : 'SERVICE_ADMIN_READ');
-    const canFeed = can('FEED_READ');
     const published = useQuery({
         queryKey: ['publications', 'feed', 'admin-category', type, pagination, publishedFrom, publishedTo, permissions],
         queryFn: () => listPublicationFeedAction({ type: type as 'NOTICE' | 'SERVICE', publishedFrom, publishedTo, page: pagination.pageIndex, size: pagination.pageSize }),
-        enabled: isLookup && canFeed && period.success, retry: publicationReadRetry,
+        enabled: isLookup && period.success, retry: publicationReadRetry,
     });
     function selectType(next: string) {
         const section = publicationManagementSections.find(section => section.type === next);
@@ -65,7 +65,7 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
                 {canCreate && <Button onClick={() => { setContent(<CreatePublicationModal initialType={publicationCreationTypes.some(entry => entry.type === type && can(entry.action)) ? type as 'EVENT' | 'NOTICE' | 'SERVICE' : undefined} />); setOpen(); }}>Criar publicação</Button>}
             </div>
             {!type && <PublicationOverview />}
-            {type && <PublicationSearchFilters key={type} type={type} canReadId={canLookup} canReadList={type === 'EVENT' ? canLookup : canFeed} publishedFrom={publishedFrom} publishedTo={publishedTo} onOpenId={id => router.push(`${pathname}/${id}`)} onPeriod={next => {
+            {type && <PublicationSearchFilters key={type} type={type} canReadId={canLookup} canReadList={type === 'EVENT' ? canLookup : !publicationReadError(published.error).restricted} publishedFrom={publishedFrom} publishedTo={publishedTo} onOpenId={id => router.push(publicationAdministrationHref(type, searchParams, id))} onPeriod={next => {
                 const params = new URLSearchParams(searchParams.toString());
                 let changed = false;
                 for (const key of ['publishedFrom', 'publishedTo'] as const) {
@@ -73,11 +73,14 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
                     changed = true;
                     if (next[key]) params.set(key, next[key]!); else params.delete(key);
                 }
-                if (changed) navigateParams(params);
+                if (changed) {
+                    params.set('page', '0');
+                    navigateParams(params);
+                }
             }} onClear={() => { const params = new URLSearchParams(searchParams.toString()); for (const key of ['publishedFrom', 'publishedTo', 'status', 'q']) params.delete(key); params.set('page', '0'); navigateParams(params); }} />}
-            {type === 'EVENT' && (canLookup ? <PublicationList page={events.data ? { ...events.data, content: events.data.content.map(event => ({ ...event, type: 'EVENT' as const, status: event.publicationStatus })) } : undefined} pageIndex={pagination.pageIndex} pageSize={pagination.pageSize} view={view} onViewChange={changeView} ordering={{ direction: sort === 'createdAt,asc' ? 'asc' : 'desc', title: `Ordenado pela data de criação, ${sort === 'createdAt,asc' ? 'mais antigas' : 'mais recentes'} primeiro. Clique para inverter.`, onChange: changeOrder }} isLoading={events.isLoading} isFetching={events.isFetching} error={events.error?.message} onRetry={() => void events.refetch()} onPaginationChange={changePage} /> : <p className="mt-4">Você pode criar eventos, mas não possui permissão para consultar a lista.</p>)}
+            {type === 'EVENT' && (canLookup ? <PublicationList listParams={searchParams} page={events.data ? { ...events.data, content: events.data.content.map(event => ({ ...event, type: 'EVENT' as const, status: event.publicationStatus })) } : undefined} pageIndex={pagination.pageIndex} pageSize={pagination.pageSize} view={view} onViewChange={changeView} ordering={{ direction: sort === 'createdAt,asc' ? 'asc' : 'desc', title: `Ordenado pela data de criação, ${sort === 'createdAt,asc' ? 'mais antigas' : 'mais recentes'} primeiro. Clique para inverter.`, onChange: changeOrder }} isLoading={events.isLoading} isFetching={events.isFetching} error={events.error?.message} onRetry={() => void events.refetch()} onPaginationChange={changePage} /> : <p className="mt-4">Você pode criar eventos, mas não possui permissão para consultar a lista.</p>)}
             {isLookup && <div className="mt-4 space-y-4"><p className="text-sm text-j-gray-600">Exibindo publicações disponíveis no feed. Outros registros podem ser consultados pelo ID.</p>
-                {canFeed ? <PublicationList page={published.isError || !period.success ? undefined : published.data ? { ...published.data, content: published.data.content.map(item => ({ ...item, status: 'PUBLISHED' as const, images: item.primaryImage ? [item.primaryImage] : [] })) } : undefined} pageIndex={pagination.pageIndex} pageSize={pagination.pageSize} view={view} onViewChange={changeView} ordering={{ direction: 'desc', title: 'Ordenado pela data de publicação, mais recentes primeiro. A API ainda não permite inverter a ordem.' }} emptyDescription={publishedFrom || publishedTo ? 'Nenhuma publicação no período selecionado. Ajuste o período ou limpe os filtros.' : undefined} isLoading={published.isLoading} isFetching={published.isFetching} error={!period.success ? 'Período inválido. Revise os filtros de publicação.' : published.isError ? publicationReadError(published.error).message : undefined} onRetry={() => void published.refetch()} canManage={canLookup} canViewFeed={can('PUBLICATION_READ')} onPaginationChange={changePage} /> : <p role="status">Você não possui permissão para consultar as publicações do feed.</p>}
+                <PublicationList listParams={searchParams} page={published.isError || !period.success ? undefined : published.data ? { ...published.data, content: published.data.content.map(item => ({ ...item, status: 'PUBLISHED' as const, images: item.primaryImage ? [item.primaryImage] : [] })) } : undefined} pageIndex={pagination.pageIndex} pageSize={pagination.pageSize} view={view} onViewChange={changeView} ordering={{ direction: 'desc', title: 'Ordenado pela data de publicação, mais recentes primeiro. A API ainda não permite inverter a ordem.' }} emptyDescription={publishedFrom || publishedTo ? 'Nenhuma publicação no período selecionado. Ajuste o período ou limpe os filtros.' : undefined} isLoading={published.isLoading} isFetching={published.isFetching} error={!period.success ? 'Período inválido. Revise os filtros de publicação.' : published.isError ? publicationReadError(published.error).message : undefined} onRetry={() => void published.refetch()} canManage={canLookup} canViewFeed onPaginationChange={changePage} />
             </div>}
         </section>
     </div>;

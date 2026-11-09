@@ -157,7 +157,6 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             void queryClient.invalidateQueries({ queryKey: ["publications"] });
             setCreatedResult(result);
         },
-        onError: (error) => toast.error(error.message || "Não foi possível criar a publicação."),
     });
     useEffect(() => { pending.current = mutation.isPending; }, [mutation.isPending]);
     if (!types.length) return null;

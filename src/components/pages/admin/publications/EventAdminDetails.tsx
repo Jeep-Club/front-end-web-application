@@ -14,13 +14,12 @@ import { getAdminEventAction, getEventChargesAction, getAdminEventDashboardActio
 import { useUserStore } from '@/stores/userStore';
 import { hasPermission } from '@/utils/permission/hasPermission';
 import { getActionFailure } from '@/utils/http/ActionError';
+import { publicationAdministrationHref } from '@/utils/publications/administration';
 
 export function EventAdminDetails({ id }: { id: number }) {
     const { setContent, setOpen } = useModal();
     const permissions = useUserStore(state => state.permissions);
-    const params = useSearchParams();
-    const back = new URLSearchParams();
-    for (const name of ['page', 'size']) if (params.get(name)) back.set(name, params.get(name)!);
+    const back = publicationAdministrationHref('EVENT', useSearchParams());
     const canRead = hasPermission(permissions, 'PUBLICATIONS', 'EVENT_READ_ADMIN');
     const event = useQuery({ queryKey: ['publications', 'admin', 'events', 'detail', id, permissions], queryFn: () => getAdminEventAction(id), enabled: canRead, retry: false });
     const charges = useQuery({ queryKey: ['publications', 'admin', 'events', 'charges', id, permissions], queryFn: () => getEventChargesAction(id), enabled: canRead, retry: false });
@@ -29,8 +28,8 @@ export function EventAdminDetails({ id }: { id: number }) {
     const knownLocked = !!(canDashboard && !dashboard.isError && dashboard.data && (dashboard.data.registrations.length || dashboard.data.financial.length));
     const data = !event.isError && canRead ? event.data : undefined;
     return <div className="flex min-w-0 flex-col gap-5 p-3 md:p-4">
-        <PageHeader title="Administrar evento" breadcrumbs={[{ label: 'Evento', href: `/admin/publications/event?${back}` }, { label: data?.title ?? (event.isLoading ? 'Carregando...' : 'Evento indisponível') }]} />
-        <Link className="cursor-pointer text-j-blue-800 underline" href={`/admin/publications/event?${back}`}>Voltar aos eventos</Link>
+        <PageHeader title="Administrar evento" breadcrumbs={[{ label: 'Evento', href: back }, { label: data?.title ?? (event.isLoading ? 'Carregando...' : 'Evento indisponível') }]} />
+        <Link className="cursor-pointer text-j-blue-800 underline" href={back}>Voltar aos eventos</Link>
         {!canRead && <p role="alert">Você não possui permissão para consultar eventos.</p>}
         {event.isLoading && <p role="status">Carregando evento...</p>}
         {event.isError && <div role="alert"><p>{getActionFailure(event.error)?.status === 404 ? 'Evento não encontrado.' : event.error.message}</p><Button onClick={() => void event.refetch()}>Tentar novamente</Button></div>}
@@ -57,7 +56,7 @@ export function EventAdminDetails({ id }: { id: number }) {
             </section>
             <div className="flex flex-wrap gap-3">
                 {data.publicationStatus === 'DRAFT' && hasPermission(permissions, 'PUBLICATIONS', 'EVENT_PUBLISH') && <Button onClick={() => { setContent(<DraftPublicationActionModal publication={{ ...data, type: 'EVENT', status: data.publicationStatus }} action="publish" />); setOpen(); }}>Publicar evento</Button>}
-                {availablePublishedActions({ type: 'EVENT', status: data.publicationStatus, eventStatus: data.eventStatus }, permissions).filter(action => action !== 'edit').map(action => <Button key={action} onClick={() => { setContent(<DraftPublicationActionModal publication={{ ...data, type: 'EVENT', status: data.publicationStatus }} action={action} returnHref={`/admin/publications/event?${back}`} />); setOpen(); }}>{({ cancel: 'Cancelar evento', finish: 'Encerrar evento', delete: 'Excluir evento', archive: 'Arquivar', edit: 'Editar' })[action]}</Button>)}
+                {availablePublishedActions({ type: 'EVENT', status: data.publicationStatus, eventStatus: data.eventStatus }, permissions).filter(action => action !== 'edit').map(action => <Button key={action} onClick={() => { setContent(<DraftPublicationActionModal publication={{ ...data, type: 'EVENT', status: data.publicationStatus }} action={action} returnHref={back} />); setOpen(); }}>{({ cancel: 'Cancelar evento', finish: 'Encerrar evento', delete: 'Excluir evento', archive: 'Arquivar', edit: 'Editar' })[action]}</Button>)}
             </div>
             <Button disabled={event.isFetching} onClick={() => void event.refetch()}>Atualizar evento</Button>
         </article>}

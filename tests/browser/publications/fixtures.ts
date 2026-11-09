@@ -77,6 +77,7 @@ export const test = base.extend<{ api: Api }>({
             if (url.pathname === '/identity/me') return json({ id: 7, name: 'Administrador sintético', cpf: '12345678909', birthDate: '1995-05-12', email: null, rg: null, phoneNumber: null, profilePhotoStorageKey: null, status: 'ACTIVE', createdAt: instant, updatedAt: null, disabledAt: null });
             if (url.pathname === '/publications/feed') {
                 const type = url.searchParams.get('type');
+                if (state.feedFailure === 'MEMBERSHIP') return fail(402, 'MEMBERSHIP_PAYMENT_REQUIRED');
                 if (type && type === state.feedFailure) return fail(503);
                 const from = url.searchParams.get('publishedFrom'); const to = url.searchParams.get('publishedTo');
                 const items = state.feedItems.filter(item => (!type || item.type === type) && (!from || new Date(item.publishedAt).getTime() >= new Date(from).getTime()) && (!to || new Date(item.publishedAt).getTime() <= new Date(to).getTime()));

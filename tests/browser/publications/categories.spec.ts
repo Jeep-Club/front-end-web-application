@@ -17,12 +17,12 @@ for (const [type, route, title] of [['NOTICE', 'notice', 'Aviso publicado'], ['S
     });
 }
 
-test('sem permissão de feed não consulta a lista e mantém pesquisa por ID', async ({ page, api }) => {
+test('consulta publicações sem a antiga permissão de feed e mantém pesquisa por ID', async ({ page, api }) => {
     await api.grant(['NOTICE_READ']);
     await page.goto('/admin/publications/notice');
-    await expect(page.getByText('Você não possui permissão para consultar as publicações do feed.')).toBeVisible();
+    await expect(page.getByText('Nenhuma publicação encontrada')).toBeVisible();
     await expect(page.getByLabel('Pesquisar por título ou ID')).toBeVisible();
-    expect(api.calls.some(call => call.url.pathname === '/publications/feed')).toBe(false);
+    expect(api.calls.some(call => call.url.pathname === '/publications/feed')).toBe(true);
 });
 
 test('abas mantêm contraste ao passar o mouse no tema escuro', async ({ page }) => {

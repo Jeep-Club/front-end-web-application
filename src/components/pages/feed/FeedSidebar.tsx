@@ -42,8 +42,6 @@ function SideCard({ title, icon: Icon, href, children }: {
 
 export function FeedSidebar() {
     const permissions = useUserStore(state => state.permissions);
-    const canRead = hasPermission(permissions, 'PUBLICATIONS', 'FEED_READ');
-    const canDetail = hasPermission(permissions, 'PUBLICATIONS', 'PUBLICATION_READ');
     const canCreate = publicationCreationTypes.some((entry) => hasPermission(permissions, 'PUBLICATIONS', entry.action));
     const { setContent, setOpen } = useModal();
     const params = useSearchParams();
@@ -57,14 +55,12 @@ export function FeedSidebar() {
         queryKey: ["publications", "feed-sidebar", { type: "EVENT", page: 0, size: 48 }, permissions],
         queryFn: () => listPublicationFeedAction({ type: "EVENT", page: 0, size: 48 }),
         staleTime: 60_000,
-        enabled: canRead,
         retry: publicationReadRetry,
     });
     const noticesQuery = useQuery({
         queryKey: ["publications", "feed-sidebar", { type: "NOTICE", page: 0, size: 3 }, permissions],
         queryFn: () => listPublicationFeedAction({ type: "NOTICE", page: 0, size: 3 }),
         staleTime: 60_000,
-        enabled: canRead,
         retry: publicationReadRetry,
     });
     const events = (publicationReadError(eventsQuery.error).restricted ? [] : eventsQuery.data?.content ?? [])
@@ -98,7 +94,7 @@ export function FeedSidebar() {
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image && !failedImages.has(image) ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} onError={() => setFailedImages(previous => new Set(previous).add(image))} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}
                                 <div className="min-w-0 flex-1">
-                                    <p className="line-clamp-2 text-sm font-bold text-j-blue-900">{canDetail ? <Link onClick={event => event.currentTarget.focus({ preventScroll: true })} href={detailHref(event.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{event.title}</Link> : event.title}</p>
+                                    <p className="line-clamp-2 text-sm font-bold text-j-blue-900"><Link onClick={event => event.currentTarget.focus({ preventScroll: true })} href={detailHref(event.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{event.title}</Link></p>
                                     <p className="mt-1 text-xs text-j-gray-500">{feedDate(event.details.startsAt)}</p>
                                     {participantCount > 0 && <div className="mt-2 flex items-center gap-2" aria-label={`${participantCount} ${participantCount === 1 ? "participante inscrito" : "participantes inscritos"}`}>
                                         <div className="flex shrink-0 items-center" aria-hidden="true">
@@ -131,7 +127,7 @@ export function FeedSidebar() {
             <SideCard title="Avisos recentes" icon={Megaphone} href="/avisos">
                 {noticesQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(noticesQuery.error).message}</p><Button onClick={() => void noticesQuery.refetch()}>Tentar avisos novamente</Button></div> : noticesQuery.isPending ? <p className="text-sm text-j-gray-500">Carregando avisos...</p> : notices.length ? (
                     <ul className="space-y-3">
-                        {notices.map((notice) => <li key={notice.id} className="border-b border-j-gray-100 pb-3 last:border-0 last:pb-0"><p className="text-sm font-bold text-j-blue-900">{canDetail ? <Link onClick={event => event.currentTarget.focus({ preventScroll: true })} href={detailHref(notice.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{notice.title}</Link> : notice.title}</p><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-j-gray-600">{publicationPlainText(notice.content)}</p></li>)}
+                        {notices.map((notice) => <li key={notice.id} className="border-b border-j-gray-100 pb-3 last:border-0 last:pb-0"><p className="text-sm font-bold text-j-blue-900"><Link onClick={event => event.currentTarget.focus({ preventScroll: true })} href={detailHref(notice.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{notice.title}</Link></p><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-j-gray-600">{publicationPlainText(notice.content)}</p></li>)}
                     </ul>
                 ) : <p className="text-sm text-j-gray-500">Nenhum aviso recente.</p>}
             </SideCard>
