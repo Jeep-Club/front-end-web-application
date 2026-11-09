@@ -49,7 +49,7 @@ export function serializeFinancialCsv(data: FinancialReportData): string {
 }
 
 /** Full-data financial tables; rows continue across pages with repeated column headers. */
-export function buildFinancialReportPdf(kind: FinancialReportKind, raw: FinancialReportData, filters: Record<string, string> = {}, generated = new Date()): jsPDF {
+export function buildFinancialReportPdf(kind: FinancialReportKind, raw: FinancialReportData, filters: Record<string, string> = {}, generated = new Date(), logoDataUrl?: string): jsPDF {
     const data = normalizeFinancialReport(raw);
     if (data.rows.length > 500) throw new Error("O PDF suporta até 500 registros. Refine os filtros ou exporte em CSV.");
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
@@ -61,6 +61,7 @@ export function buildFinancialReportPdf(kind: FinancialReportKind, raw: Financia
         if (!first) pdf.addPage("a4", "landscape");
         if (pdf.getNumberOfPages() > 1000) throw new Error("O relatório ficou muito extenso. Refine os filtros.");
         pdf.setFillColor(NAVY); pdf.rect(MARGIN, 10, WIDTH, 21, "F");
+        if (logoDataUrl) pdf.addImage(logoDataUrl, "JPEG", MARGIN + WIDTH - 20, 11, 13, 18);
         pdf.setTextColor("#ffffff"); pdf.setFont("helvetica", "bold"); pdf.setFontSize(13);
         pdf.text("JEEP CLUBE TAMOIOS", MARGIN + 5, 18);
         pdf.setFont("helvetica", "normal"); pdf.setFontSize(9); pdf.text(titles[kind], MARGIN + 5, 26);
@@ -156,9 +157,16 @@ export function decodeFinancialCsv(base64: string) {
     return parseFinancialCsv(new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(atob(base64), (character) => character.charCodeAt(0))));
 }
 
-export function downloadFinancialReport(kind: FinancialReportKind, format: "CSV" | "PDF", data: FinancialReportData, filters: Record<string, string>) {
-    const filename = `financeiro-${kind}-${new Date().toLocaleDateString("sv-SE")}`;
-    if (format === "PDF") { buildFinancialReportPdf(kind, data, filters).save(`${filename}.pdf`); return; }
+export async function downloadFinancialReport(kind: FinancialReportKind, format: "CSV" | "PDF", data: FinancialReportData, filters: Record<string, string>, sourceFilename?: string) {
+    const filename = (sourceFilename ?? `financeiro-${kind}-${new Date().toLocaleDateString("sv-SE")}`).replace(/\.(csv|pdf)$/i, "");
+    if (format === "PDF") {
+        const response = await fetch("/images/logo_grande.jpg", { cache: "force-cache" });
+        if (!response.ok || !response.headers.get("content-type")?.includes("image/jpeg")) throw new Error("Não foi possível carregar o selo oficial do Jeep Club para o relatório.");
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        const logo = `data:image/jpeg;base64,${btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""))}`;
+        buildFinancialReportPdf(kind, data, filters, new Date(), logo).save(`${filename}.pdf`);
+        return;
+    }
     const url = URL.createObjectURL(new Blob([serializeFinancialCsv(normalizeFinancialReport(data))], { type: "text/csv;charset=UTF-8" }));
     const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${filename}.csv`;
     document.body.appendChild(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);

@@ -5,6 +5,7 @@ import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { HttpAPIRoutes } from "@/utils/http/api";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import { ActionError } from "@/utils/http/ActionError";
+import { getDownloadFilename } from "@/utils/http/contentDisposition";
 
 const FILTER_KEYS: (keyof AdminUserSearchParams)[] = [
     "id",
@@ -44,8 +45,7 @@ export async function exportAdminUsersAction(
     }
 
     const contentType = format === "CSV" ? "text/csv" : "application/pdf";
-    const blob = (
-        await actionFetchWrapper({
+    const response = await actionFetchWrapper({
             url: `${HttpAPIRoutes.ADMIN_USERS}/export?${params.toString()}`,
             method: "GET",
             schema: z.instanceof(Blob),
@@ -53,12 +53,12 @@ export async function exportAdminUsersAction(
             allowedContentTypes: [contentType],
             cache: "no-store",
             headers: { Accept: contentType },
-        })
-    ).data;
+        });
+    const blob = response.data;
 
     return {
         base64: Buffer.from(await blob.arrayBuffer()).toString("base64"),
         contentType: blob.type || contentType,
-        filename: `usuarios-${layout.toLowerCase()}.${format.toLowerCase()}`,
+        filename: getDownloadFilename(response.contentDisposition, `usuarios-${layout.toLowerCase()}.${format.toLowerCase()}`),
     };
 }

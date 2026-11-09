@@ -10,6 +10,7 @@ import { getMedicalProfilesTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
+import { AdminExport } from "@/components/common/admin-export/AdminExport";
 import { Table } from "@/components/common/table";
 import { useModal } from "@/providers/ModalProvider";
 import { useUserStore } from "@/stores/userStore";
@@ -26,22 +27,10 @@ const owner = (profile: MedicalProfileSummary) => `${profile.ownerType === "DEPE
 function ExportButtons({ profileId }: { profileId?: number }) {
     const permissions = useUserStore(state => state.permissions);
     const [history, setHistory] = useState(false);
-    const download = useMutation({
-        mutationFn: async (format: "CSV" | "PDF") => {
-            const file = await exportMedicalProfilesAction(format, profileId, history);
-            const bytes = Uint8Array.from(atob(file.base64), char => char.charCodeAt(0));
-            const url = URL.createObjectURL(new Blob([bytes], { type: file.contentType }));
-            const link = document.createElement("a");
-            link.href = url; link.download = file.filename;
-            document.body.appendChild(link); link.click(); link.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-        },
-        onError: error => toast.error(error.message),
-    });
     if (!hasPermission(permissions, permissionsConfig.module, permissionsConfig.export)) return null;
     return <div id={!profileId ? "tour-medical-export" : undefined} className="flex flex-wrap items-center gap-2">
-        {!profileId && <label className="flex items-center gap-2 text-sm text-j-gray-600"><input type="checkbox" checked={history} disabled={download.isPending} onChange={event => setHistory(event.target.checked)} />Histórico de exclusões</label>}
-        {(["CSV", "PDF"] as const).map(format => <Button key={format} disabled={download.isPending} onClick={() => download.mutate(format)} className="h-10 px-3 py-0 text-sm">{download.isPending ? "Exportando..." : `Exportar ${format}`}</Button>)}
+        {!profileId && <label className="flex items-center gap-2 text-sm text-j-gray-600"><input type="checkbox" checked={history} onChange={event => setHistory(event.target.checked)} />Histórico de exclusões</label>}
+        <AdminExport onExport={(format) => exportMedicalProfilesAction(format, profileId, history)} />
     </div>;
 }
 

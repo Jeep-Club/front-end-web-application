@@ -2,10 +2,12 @@
 
 import { useMemo } from "react";
 import { type ColumnDef, type PaginationState } from "@tanstack/react-table";
-import { Archive, ArchiveRestore, Download, Eye, KeyRound, LoaderCircle, Plus, Power, PowerOff } from "lucide-react";
+import { Archive, ArchiveRestore, Eye, KeyRound, Plus, Power, PowerOff } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 import { ButtonIcon } from "@/components/common/button";
+import { AdminExport } from "@/components/common/admin-export/AdminExport";
+import type { AdminExportFile } from "@/components/common/admin-export/AdminExport";
 import { Avatar } from "@/components/common/avatar";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
@@ -25,7 +27,6 @@ interface UserManagementViewProps {
     pageSize: number;
     isLoading: boolean;
     isFetching: boolean;
-    isExporting?: "CSV" | "PDF" | null;
     error?: string;
     onSearchChange: (value: string) => void;
     onStatusChange: (status: UserStatus | "ALL") => void;
@@ -36,7 +37,7 @@ interface UserManagementViewProps {
     onCreateUser: () => void;
     onChangeUserStatus: (user: AdminUser, action: AdminUserLifecycleAction) => void;
     onManageMembershipNumber: (user: AdminUser) => void;
-    onExportUsers?: (format: "CSV" | "PDF") => void;
+    onExportUsers?: (format: "CSV" | "PDF") => Promise<AdminExportFile>;
     searchType: UserSearchType;
     setSearchType: (type: UserSearchType) => void;
 }
@@ -51,7 +52,6 @@ export function UserManagementView({
     pageSize,
     isLoading,
     isFetching,
-    isExporting = null,
     error,
     onSearchChange,
     onStatusChange,
@@ -350,34 +350,7 @@ export function UserManagementView({
                         </Select.Unregister>
 
                         {permissions.canExportUsers && onExportUsers && (
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    disabled={Boolean(isExporting)}
-                                    onClick={() => onExportUsers("CSV")}
-                                    className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-j-gray-200 bg-j-white px-3 text-xs font-bold text-j-blue-800 transition-colors hover:bg-j-gray-100 disabled:opacity-50 lg:flex-none"
-                                >
-                                    {isExporting === "CSV" ? (
-                                        <LoaderCircle size={15} className="animate-spin" />
-                                    ) : (
-                                        <Download size={15} />
-                                    )}
-                                    Exportar CSV
-                                </button>
-                                <button
-                                    type="button"
-                                    disabled={Boolean(isExporting)}
-                                    onClick={() => onExportUsers("PDF")}
-                                    className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-j-gray-200 bg-j-white px-3 text-xs font-bold text-j-blue-800 transition-colors hover:bg-j-gray-100 disabled:opacity-50 lg:flex-none"
-                                >
-                                    {isExporting === "PDF" ? (
-                                        <LoaderCircle size={15} className="animate-spin" />
-                                    ) : (
-                                        <Download size={15} />
-                                    )}
-                                    Exportar PDF
-                                </button>
-                            </div>
+                            <AdminExport formats={["CSV", "PDF"]} className="w-full lg:w-auto" onExport={async (format) => { if (!onExportUsers) return; return onExportUsers(format); }} />
                         )}
 
                         {permissions.canCreateUsers && (
