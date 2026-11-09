@@ -2,7 +2,9 @@
 
 import { useId, useState } from "react";
 import { Download, LoaderCircle } from "lucide-react";
+
 import { twMerge } from "tailwind-merge";
+
 
 export type AdminExportFormat = "CSV" | "PDF";
 export type AdminExportFile = { base64: string; contentType: string; filename: string };
@@ -63,5 +65,6 @@ export function AdminExport({
             {pending ? <><LoaderCircle size={16} className="animate-spin" aria-hidden="true" />Gerando...</> : <><Download size={16} aria-hidden="true" />{label} {format}</>}
         </button>
         {message && <p role={failed ? "alert" : "status"} aria-live={failed ? "assertive" : "polite"} className={`min-w-0 basis-full break-words text-xs ${failed ? "text-j-red-600" : "text-j-green-700"}`}>{message}{failed && <span className="ml-1">Selecione o formato e tente novamente.</span>}</p>}
+
     </div>;
 }
