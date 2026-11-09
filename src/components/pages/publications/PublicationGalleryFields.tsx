@@ -39,9 +39,9 @@ export function PublicationGalleryFields({ items, primaryId, onChange, disabled 
         onChange(next, primaryId);
     }
     return <fieldset disabled={disabled} aria-describedby={`${id}-help${error ? ` ${id}-error` : ''}`} className="w-full min-w-0 space-y-3">
-        <legend className="font-bold text-j-blue-800">Galeria de imagens</legend>
+        <legend className="font-bold text-primary">Galeria de imagens</legend>
         <p id={`${id}-help`} className="text-sm">De 1 a 5 imagens JPEG, PNG ou WebP, até 5 MiB cada. Remover uma referência não apaga o arquivo global.</p>
-        <ol className="grid min-w-0 gap-3 sm:grid-cols-2">{items.map((item, index) => <li key={item.id} className="min-w-0 space-y-2 rounded-lg border border-j-gray-200 p-3">
+        <ol className="grid min-w-0 gap-3 sm:grid-cols-2">{items.map((item, index) => <li key={item.id} className="min-w-0 space-y-2 rounded-lg border border-input-border p-3">
             <Preview item={item} /><p className="break-all text-sm">Imagem {index + 1}{item.kind === 'file' ? `: ${item.file.name}` : ' · salva'}</p>
             <label className="flex cursor-pointer items-center gap-2"><input type="radio" name={`${id}-cover`} checked={primaryId === item.id} onChange={() => onChange(items, item.id)} />Capa da imagem {index + 1}</label>
             <div className="flex flex-wrap gap-2"><Button aria-label={`Mover imagem ${index + 1} para cima`} disabled={disabled || index === 0} onClick={() => reorder(index, -1)}>Subir</Button><Button aria-label={`Mover imagem ${index + 1} para baixo`} disabled={disabled || index === items.length - 1} onClick={() => reorder(index, 1)}>Descer</Button><Button aria-label={`Remover imagem ${index + 1}`} onClick={() => { const next = items.filter(entry => entry.id !== item.id); onChange(next, item.id === primaryId ? next[0]?.id ?? '' : primaryId); }}>Remover</Button></div>

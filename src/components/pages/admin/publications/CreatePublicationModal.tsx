@@ -22,16 +22,17 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Newspaper, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
+import { DatePicker } from "@/components/common/date-picker";
+import { parseDateTime } from "@internationalized/date";
 
 import toast from "react-hot-toast";
 import { EventChargeFields } from "./EventChargeFields";
 import { invalidatePublicationAdministration } from "@/utils/publications/administration";
-import styles from "./CreatePublicationModal.module.css";
 
-function Fields({ initialType, publishEventImmediately, serverError }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown }) {
+function Fields({ initialType, publishEventImmediately, serverError, step, setStep }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown; step: "details" | "charges"; setStep: (step: "details" | "charges") => void }) {
     const { setClose } = useModal();
-    const { watch, setValue, setError, formState: { isSubmitting, errors } } = useFormContext<PublicationFormData>();
+    const { watch, setValue, setError, trigger, control, formState: { isSubmitting, errors } } = useFormContext<PublicationFormData>();
     const type = watch("type");
     useEffect(() => {
         for (const issue of getActionFailure(serverError)?.errors ?? []) {
@@ -48,42 +49,41 @@ function Fields({ initialType, publishEventImmediately, serverError }: { initial
     const canPublishEvent = hasPermission(permissions, "PUBLICATIONS", "EVENT_PUBLISH");
     return (
         <>
-            <fieldset disabled={isSubmitting} className={`${styles.fields} [&_select]:!bg-input-bg [&_select]:!text-input-text flex w-full min-w-0 flex-col gap-5`}>
-                <div className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
+            <div className="min-h-0 w-full flex-1 overflow-y-auto overscroll-contain px-4 py-6 md:px-6"><fieldset disabled={isSubmitting} className="w-full min-w-0"><div hidden={type === "EVENT" && step === "charges"} className="space-y-6">
+                <div className="flex flex-col gap-4">
                 {!initialType && <SelectRegister name="type" label="Tipo de publicação" required>
                     {types.map((entry) => <option key={entry.type} value={entry.type}>{entry.label}</option>)}
                 </SelectRegister>}
                 <p className="text-sm text-j-gray-500">{type === "SERVICE" ? "O serviço será enviado para aprovação e aparecerá no feed após ser aprovado. É necessário ter associação ativa." : "A publicação será salva como rascunho. Publicar no feed é uma ação separada."}</p>
                 </div>
-                <div className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
+                <div className="flex flex-col gap-4">
                 <InputRegister name="title" label="Título" maxLength={200} required />
                 <RichTextRegister name="content" label="Conteúdo" required />
                 {type === "EVENT" && <>
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <InputRegister name="startsAt" label="Início" type="datetime-local" required />
-                        <InputRegister name="endsAt" label="Término (opcional)" type="datetime-local" />
+                        {(['startsAt', 'endsAt'] as const).map(name => <Controller key={name} name={name} control={control} render={({ field, fieldState }) => <DatePicker label={name === 'startsAt' ? 'Início' : 'Término (opcional)'} granularity="minute" isRequired={name === 'startsAt'} isDisabled={isSubmitting} value={field.value ? parseDateTime(field.value) : null} onChange={value => field.onChange(value?.toString() ?? '')} onBlur={field.onBlur} isInvalid={!!fieldState.error} errorMessage={fieldState.error?.message} />} />)}
                     </div>
                     <p className="text-xs text-j-gray-500">Use o horário local. O fuso usado é o do navegador.</p>
                 </>}
-                {type === "EVENT" && <EventChargeFields disabled={isSubmitting} />}
+
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">
                     <InputRegister name="amount" label="Valor anunciado (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="100,00" required />
                     <InputRegister name="contactPhone" label="Telefone de contato" type="tel" inputMode="numeric" mask={maskPhoneNumber} placeholder="(00) 00000-0000" maxLength={15} required />
                 </div>}
                 </div>
-                <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-gray-100/60 p-4 md:p-5">
+                <div className="flex min-w-0 flex-col gap-4">
                 <PublicationGalleryFields items={gallery} primaryId={primaryId} disabled={isSubmitting} error={errors.photos?.message || errors.primaryIndex?.message} onChange={(items, primary) => {
                     setGallery(items); setPrimaryId(primary);
                     setValue('photos', items.flatMap(item => item.kind === 'file' ? [item.file] : []), { shouldDirty: true, shouldValidate: true });
                     setValue('primaryIndex', String(items.findIndex(item => item.id === primary)), { shouldDirty: true, shouldValidate: true });
                 }} />
                 </div>
-            </fieldset>
-            <div className="flex w-full flex-col-reverse gap-3 border-t border-j-gray-200 pt-5 sm:flex-row">
-                <Button disabled={isSubmitting} onClick={setClose} className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700">Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting || !types.some((entry) => entry.type === type)} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">
+            </div>{type === "EVENT" && step === "charges" && <EventChargeFields disabled={isSubmitting} />}</fieldset></div>
+            <div className="flex w-full shrink-0 flex-col-reverse gap-3 border-t border-input-border bg-background px-4 py-4 sm:flex-row md:px-6">
+                {type === "EVENT" && step === "charges" ? <Button disabled={isSubmitting} onClick={() => setStep('details')} className="flex-1 border border-input-border bg-button-secondary-bg text-button-secondary-text-hover hover:bg-button-secondary-bg-hover hover:text-button-secondary-text-hover focus-visible:text-button-secondary-text-hover">Voltar</Button> : <Button disabled={isSubmitting} onClick={setClose} className="flex-1 border border-input-border bg-button-secondary-bg text-button-secondary-text-hover hover:bg-button-secondary-bg-hover hover:text-button-secondary-text-hover focus-visible:text-button-secondary-text-hover">Cancelar</Button>}
+            {type === "EVENT" && step === "details" ? <Button key="continue" disabled={isSubmitting} onClick={async () => { if (await trigger(['title', 'content', 'startsAt', 'endsAt', 'photos', 'primaryIndex'])) setStep('charges'); }} className="flex-1">Continuar para cobranças</Button> : <Button key="submit" type="submit" disabled={isSubmitting || !types.some((entry) => entry.type === type)} className="flex-1 bg-button-primary-bg text-button-primary-text hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:text-button-primary-text-hover">
                 {isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Criar e publicar evento" : type === "EVENT" ? "Criar evento" : "Criar rascunho"}
-            </Button>
+            </Button>}
             </div>
         </>
     );
@@ -97,6 +97,8 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
     const queryClient = useQueryClient();
     const dialog = useRef<HTMLDialogElement>(null);
     const pending = useRef(false);
+    const pickerWasOpen = useRef(false);
+    const [step, setStep] = useState<'details' | 'charges'>('details');
     const [createdResult, setCreatedResult] = useState<{ id: number; type: 'EVENT' | 'NOTICE' | 'SERVICE'; published: boolean; publishError?: string }>();
     useEffect(() => {
         const element = dialog.current;
@@ -169,28 +171,32 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
                 ? "Cadastre um serviço para enviar à aprovação."
                 : "Escolha o tipo e preencha os dados da publicação.";
     return (
-        <dialog ref={dialog} onKeyDown={event => {
+        <dialog ref={dialog} onPointerDownCapture={event => { pickerWasOpen.current = !!event.currentTarget.querySelector('.jeep-calendar-popover'); }} onClick={event => {
+            if (event.target !== event.currentTarget || pending.current || pickerWasOpen.current) return;
+            const bounds = event.currentTarget.getBoundingClientRect();
+            if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setClose();
+        }} onKeyDown={event => {
             if (event.key === 'Escape') event.stopPropagation();
             if (event.key !== 'Tab' || event.currentTarget.querySelector('[role="listbox"]')) return;
             const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button, input, textarea, select, [contenteditable="true"], [tabindex]')).filter(element => element.tabIndex >= 0 && !element.matches(':disabled') && !element.closest('[inert]') && element.getClientRects().length > 0);
             const first = controls[0]; const last = controls.at(-1);
             if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
             else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-        }} onCancel={event => { event.preventDefault(); if (!pending.current) setClose(); }} aria-modal="true" aria-labelledby="create-publication-title" className="m-auto border-0 p-0 text-j-gray-700 backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto overflow-x-hidden rounded-3xl bg-j-white shadow-2xl">
-            <ButtonIcon aria-label="Fechar" disabled={mutation.isPending} onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 md:right-6 md:top-6"><X size={20} /></ButtonIcon>
-            <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
+        }} onCancel={event => { event.preventDefault(); if (!pending.current) setClose(); }} aria-modal="true" aria-labelledby="create-publication-title" className="m-auto border-0 p-0 text-primary backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-[800px] flex-col overflow-hidden rounded-3xl bg-background max-sm:m-0 max-sm:mt-auto max-sm:h-[96dvh] max-sm:max-h-[96dvh] max-sm:rounded-b-none shadow-2xl">
+            <ButtonIcon aria-label="Fechar" disabled={mutation.isPending} onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-background-secondary p-2 text-secondary hover:bg-background-tertiary hover:text-primary md:right-6 md:top-6"><X size={20} /></ButtonIcon>
+            <header className="shrink-0 border-b border-input-border px-4 py-4 pr-16 md:px-6 md:py-6 md:pr-20">
 
-                <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm"><Newspaper size={20} /></span><h2 id="create-publication-title" className="text-xl font-extrabold text-j-blue-800 md:text-2xl">{title}</h2></div>
-                <p className="mt-2 text-sm text-j-gray-500">{description}</p>
+                <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm"><Newspaper size={20} /></span><h2 id="create-publication-title" className="text-xl font-extrabold text-primary md:text-2xl">{title}</h2></div>
+                <p className="mt-2 text-sm text-secondary">{description}</p>
 
 
             </header>
             {createdResult ? <div role="status" className="space-y-4 p-6"><p>{createdResult.type === 'SERVICE' ? 'Solicitação' : 'Publicação'} salva com ID <strong>#{createdResult.id}</strong>. Guarde este ID para consultar depois.</p>
                 {createdResult.publishError && <p className="text-input-error-text">O rascunho foi salvo, mas a publicação falhou: {createdResult.publishError}. Não crie novamente; publique pelo detalhe.</p>}
                 {createdResult.type !== 'SERVICE' && hasPermission(permissions, 'PUBLICATIONS', createdResult.type === 'EVENT' ? 'EVENT_READ_ADMIN' : 'NOTICE_READ') && <Link onClick={setClose} className="block cursor-pointer font-bold text-j-blue-800 underline" href={`/admin/publications/${createdResult.type === 'EVENT' ? 'event' : 'notice'}/${createdResult.id}`}>Administrar publicação #{createdResult.id}</Link>}
-                <Button onClick={setClose}>Concluir</Button></div> : <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], charges: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="px-5 py-5 md:px-8 md:py-6">
+                <Button onClick={setClose}>Concluir</Button></div> : <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], charges: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { if (data.type === "EVENT" && step !== "charges") { setStep("charges"); return; } try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="min-h-0 flex-1 gap-0 overflow-hidden">
                 {mutation.isError && <p role="alert" className="text-input-error-text">{getActionFailure(mutation.error)?.message ?? mutation.error.message}</p>}
-                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} serverError={mutation.error} />
+                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} serverError={mutation.error} step={step} setStep={setStep} />
             </Form>}
         </dialog>
     );

@@ -223,9 +223,16 @@ test('falha de publish após criar evento conserva ID e não repete cadastro', a
     const dialog = page.getByRole('dialog', { name: 'Criar evento', exact: true });
     await dialog.getByRole('textbox', { name: 'Título', exact: true }).fill('Evento recuperável');
     await dialog.getByRole('textbox', { name: /^Conteúdo/ }).fill('Conteúdo recuperável.');
-    await dialog.getByLabel('Início').fill('2099-11-15T11:00');
+    const date = dialog.getByRole('group', { name: 'Início', exact: true });
+    const segments = date.getByRole('spinbutton');
+    for (const [index, value] of ['15', '11', '2099', '11', '00'].entries()) {
+        await segments.nth(index).fill(value);
+    }
     await dialog.locator('input[type=file]').setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
     await page.getByRole('button', { name: 'Usar foto', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Continuar para cobranças' }).click();
+    await expect(dialog.getByText('Regras de cobrança', { exact: true })).toBeVisible();
+    expect(api.created).toBe(0);
     await dialog.getByRole('button', { name: 'Criar e publicar evento', exact: true }).click();
     await expect(dialog).toContainText('salva com ID');
     await expect(dialog).toContainText('Não crie novamente');
@@ -271,4 +278,59 @@ test('permissão de criar eventos não oferece criação na área de avisos', as
     await page.goto('/admin/publications/notice');
     await expect(page.getByRole('heading', { name: 'Avisos', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Criar publicação', exact: true })).toHaveCount(0);
+});
+
+test('criação mantém campos e erros roláveis e alterna o tema', async ({ page, api }) => {
+    await api.grant(['EVENT_READ_ADMIN', 'EVENT_CREATE', 'NOTICE_READ', 'NOTICE_CREATE', 'SERVICE_ADMIN_READ', 'SERVICE_REQUEST_CREATE']);
+    await page.setViewportSize({ width: 800, height: 650 });
+    await page.goto('/admin/publications');
+    const theme = page.getByRole('button', { name: 'Alternar tema' });
+    await theme.click();
+    const selectedTheme = await page.locator('html').getAttribute('data-theme');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', selectedTheme!);
+    for (const route of ['event', 'notice', 'service', '']) {
+        await page.goto('/admin/publications' + (route ? '/' + route : ''));
+        await page.getByRole('button', { name: 'Criar publicação', exact: true }).click();
+        const dialog = page.getByRole('dialog');
+        const scroll = dialog.locator('form > div.overflow-y-auto');
+        if (route === 'event') {
+            await dialog.getByRole('button', { name: 'Abrir calendário: Início' }).click();
+            await expect(dialog.locator('.jeep-calendar-popover')).toBeVisible();
+            await page.keyboard.press('Escape');
+        }
+        await expect.poll(() => scroll.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+        const action = route === 'event' || route === '' ? dialog.getByRole('button', { name: 'Continuar para cobranças' }) : dialog.locator('button[type=submit]');
+        await action.click();
+        await expect(dialog.getByText('Campo obrigatório.').first()).toBeVisible();
+        await scroll.evaluate(element => { element.scrollTop = element.scrollHeight; });
+        await expect(dialog.getByText('Galeria de imagens')).toBeVisible();
+        const bounds = await dialog.evaluate(element => {
+            const footer = element.querySelector('form > div:last-child')!.getBoundingClientRect();
+            const area = element.querySelector('form > div.overflow-y-auto')!.getBoundingClientRect();
+            return { areaBottom: area.bottom, footerTop: footer.top };
+        });
+        expect(bounds.areaBottom).toBeLessThanOrEqual(bounds.footerTop);
+        await page.mouse.click(1, 1);
+        await expect(dialog).not.toBeVisible();
+    }
+});
+
+test('cadastro móvel mantém o seletor acima do modal e protege o rascunho', async ({ page, api }) => {
+    await api.grant(['EVENT_CREATE']);
+    await page.setViewportSize({ width: 390, height: 700 });
+    await page.goto('/admin/publications/event');
+    await page.getByRole('button', { name: 'Criar publicação', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Criar evento', exact: true });
+    const bounds = (await dialog.boundingBox())!;
+    expect(bounds.height).toBeGreaterThan(650);
+    expect(bounds.y).toBeGreaterThan(0);
+    await dialog.getByRole('textbox', { name: 'Título', exact: true }).fill('Rascunho preservado');
+    await dialog.getByRole('button', { name: 'Abrir calendário: Início' }).click();
+    const sheet = page.locator('.jeep-calendar-popover');
+    await expect(sheet.getByRole('button', { name: 'Concluir' })).toBeVisible();
+    await page.mouse.click(2, 2);
+    await expect(sheet).toBeHidden();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('textbox', { name: 'Título', exact: true })).toHaveValue('Rascunho preservado');
 });
