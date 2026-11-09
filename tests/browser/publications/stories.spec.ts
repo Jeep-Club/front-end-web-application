@@ -34,7 +34,7 @@ for (const theme of ['light', 'dark']) {
             { id: 'publicações-cobranças-de-evento--inline', text: 'Nome da definição' },
             { id: 'publicações-cobranças-de-evento--bloqueada', text: 'Regras de cobrança' },
             { id: 'publicações-dashboard-de-evento--vazio', text: 'Nenhuma inscrição.' },
-            { id: 'publicações-dashboard-de-evento--cancelada-e-validacao', text: 'CONFIRMED indica participação confirmada' },
+            { id: 'publicações-dashboard-de-evento--cancelada-e-validacao', text: 'Participação confirmada indica inscrição confirmada' },
         ];
         for (const example of cases) {
             await page.goto(new URL(`/iframe.html?id=${example.id}&viewMode=story&embed=true&globals=theme:${theme}`, storybook).href);

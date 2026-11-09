@@ -6,9 +6,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { Button } from '@/components/common/button';
 
-export function PublicationPhotoCarousel({ images, title }: {
+export function PublicationPhotoCarousel({ images, title, imageClassName = "" }: {
     images: { storageKey: string; position: number }[];
     title: string;
+    imageClassName?: string;
 }) {
     const photos = [...images].sort((a, b) => a.position - b.position);
     const [selected, setSelected] = useState(0);
@@ -21,7 +22,7 @@ export function PublicationPhotoCarousel({ images, title }: {
     return <section role="region" aria-roledescription="carrossel" aria-label="Fotos da publicação" className="w-full">
         <div
             tabIndex={photos.length > 1 ? 0 : undefined}
-            className="relative aspect-video w-full touch-pan-y overflow-hidden rounded-xl bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800"
+            className={`relative aspect-video w-full touch-pan-y overflow-hidden rounded-xl bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${imageClassName}`}
             onKeyDown={(event) => {
                 if (event.key === "ArrowLeft") { event.preventDefault(); move(-1); }
                 if (event.key === "ArrowRight") { event.preventDefault(); move(1); }

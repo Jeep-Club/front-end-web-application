@@ -23,7 +23,7 @@ test('busca por ID abre aviso em rascunho ausente do feed e valida entrada', asy
     await expect(field).toHaveAttribute('aria-invalid', 'true');
     await field.fill('8'); await field.press('Enter');
     await expect(page).toHaveURL(/notice\/8\?page=1&size=24&view=grid$/);
-    await expect(page.getByText('Estado editorial: DRAFT')).toBeVisible();
+    await expect(page.getByText('Estado editorial: Rascunho')).toBeVisible();
     expect(api.calls.some(call => call.url.pathname === '/admin/notices/8')).toBe(true);
     await page.getByRole('link', { name: 'Voltar aos avisos' }).click();
     await expect(page).toHaveURL(/notice\?page=1&size=24&view=grid$/);

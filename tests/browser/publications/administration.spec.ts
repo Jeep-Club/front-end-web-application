@@ -1,11 +1,18 @@
 import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
+
+async function openAction(page: Page, label: string) {
+    await page.getByRole('button', { name: /^Ações:/ }).click();
+    await page.getByRole('menuitem', { name: label, exact: true }).click();
+}
+
 
 test('central usa página real, mantém URL e consulta aviso por ID', async ({ page, api }) => {
     await page.goto('/admin/publications/event?page=1&size=12');
-    await expect(page.getByRole('link', { name: 'Administrar evento' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Passeio administrativo' })).toBeVisible();
     expect(api.calls.filter(call => call.url.pathname === '/admin/events')).toHaveLength(1);
     expect(api.calls.some(call => call.url.pathname.includes('export'))).toBe(false);
-    await page.getByRole('link', { name: 'Administrar evento' }).click();
+    await page.getByRole('link', { name: 'Passeio administrativo' }).click();
     await expect(page.getByRole('heading', { name: 'Passeio administrativo' })).toBeVisible();
     await page.getByRole('link', { name: 'Voltar aos eventos' }).click();
     await expect(page).toHaveURL(/page=1/);
@@ -18,29 +25,28 @@ test('central usa página real, mantém URL e consulta aviso por ID', async ({ p
     await page.getByRole('button', { name: 'Buscar', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Aviso administrativo' })).toBeVisible();
     await page.reload();
-    await expect(page.getByText('Estado editorial: DRAFT')).toBeVisible();
+    await expect(page.getByText('Estado editorial: Rascunho')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test('edição editorial omite agenda e preserva galeria; Escape devolve foco', async ({ page, api }) => {
     await page.goto('/admin/publications/event/7');
-    const edit = page.getByRole('button', { name: 'Editar evento', exact: true });
-    await edit.click();
+    await openAction(page, 'Editar');
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('textbox', { name: 'Título', exact: true }).fill('Título editado');
     await dialog.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Título editado' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'breadcrumb' }).getByText('Título editado', { exact: true })).toBeVisible();
     expect(api.calls.find(call => call.method === 'PATCH')?.body).toEqual({ title: 'Título editado' });
-    await edit.click();
+    await openAction(page, 'Editar');
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(edit).toBeFocused();
+    await expect(page.getByRole('button', { name: /^Ações:/ })).toBeFocused();
 });
 
 test('galeria retida reordena e muda capa sem upload', async ({ page, api }) => {
     await page.goto('/admin/publications/notice/8');
-    await page.getByRole('button', { name: 'Editar aviso' }).click();
+    await openAction(page, 'Editar');
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('radio', { name: 'Capa da imagem 2' }).check();
     await dialog.getByRole('button', { name: 'Mover imagem 2 para cima' }).click();
@@ -81,7 +87,7 @@ test('configuração mantém regras fora da página, adiciona inline e remove ex
 
 test('conflito mantém edição e relê recurso sem repetir PATCH', async ({ page, api }) => {
     await page.goto('/admin/publications/event/7');
-    await page.getByRole('button', { name: 'Editar evento' }).click();
+    await openAction(page, 'Editar');
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('textbox', { name: 'Título', exact: true }).fill('Preservado em conflito');
     api.patchStatus = 409;
@@ -98,7 +104,7 @@ test('conflito mantém edição e relê recurso sem repetir PATCH', async ({ pag
 
 test('aviso publica, arquiva e exclui; pending impede fechar ou repetir', async ({ page, api }) => {
     await page.goto('/admin/publications/notice/8');
-    await page.getByRole('button', { name: 'Publicar aviso', exact: true }).click();
+    await openAction(page, 'Publicar');
     api.holdWrites = true;
     await page.getByRole('dialog').getByRole('button', { name: 'Publicar', exact: true }).click();
     await expect(page.getByRole('dialog').getByRole('button', { name: 'Processando...' })).toBeDisabled();
@@ -106,13 +112,14 @@ test('aviso publica, arquiva e exclui; pending impede fechar ou repetir', async 
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect.poll(() => api.calls.some(call => call.method === 'POST' && call.url.pathname.endsWith('/publish'))).toBe(true);
     api.holdWrites = false; api.release();
-    await expect(page.getByText('Estado editorial: PUBLISHED')).toBeVisible();
-    await page.getByRole('button', { name: 'Arquivar aviso' }).click();
+    await expect(page.getByText('Estado editorial: Publicado')).toBeVisible();
+    await openAction(page, 'Arquivar');
     await expect(page.getByRole('dialog')).toContainText('arquivamento é terminal');
     await page.getByRole('dialog').getByRole('button', { name: 'Arquivar', exact: true }).click();
-    await expect(page.getByText('Estado editorial: ARCHIVED')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Editar aviso' })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Excluir aviso' }).click();
+    await expect(page.getByText('Estado editorial: Arquivado')).toBeVisible();
+    await page.getByRole('button', { name: /^Ações:/ }).click();
+    await expect(page.getByRole('menuitem', { name: 'Editar' })).toHaveCount(0);
+    await page.getByRole('menuitem', { name: 'Excluir', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Excluir', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\/publications\/notice$/);
     expect(api.calls.filter(call => call.method === 'POST' && call.url.pathname.endsWith('/publish'))).toHaveLength(1);
@@ -122,14 +129,15 @@ test('aviso publica, arquiva e exclui; pending impede fechar ou repetir', async 
 test('DRAFT operacional encerra sem arquivar e serviço só oferece exclusão', async ({ page, api }) => {
     api.event.eventStatus = 'IN_PROGRESS';
     await page.goto('/admin/publications/event/7');
-    await page.getByRole('button', { name: 'Encerrar evento', exact: true }).click();
+    await openAction(page, 'Encerrar evento');
     await page.getByRole('dialog').getByRole('button', { name: 'Encerrar evento', exact: true }).click();
-    await expect(page.getByText('Estado operacional: FINISHED')).toBeVisible();
-    await expect(page.getByText('Estado editorial: DRAFT')).toBeVisible();
+    await expect(page.getByText('Estado operacional: Finalizado')).toBeVisible();
+    await expect(page.getByText('Estado editorial: Rascunho')).toBeVisible();
     await page.goto('/admin/publications/service/9');
-    await expect(page.getByText(/Solicitação de origem #80/)).toBeVisible();
-    await expect(page.getByRole('button', { name: /Editar serviço|Publicar serviço|Arquivar serviço/ })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Excluir serviço' }).click();
+    await expect(page.getByText('Solicitação de origem', { exact: true }).locator('..')).toContainText('#80');
+    await page.getByRole('button', { name: /^Ações:/ }).click();
+    await expect(page.getByRole('menuitem', { name: /Editar|Publicar|Arquivar/ })).toHaveCount(0);
+    await page.getByRole('menuitem', { name: 'Excluir', exact: true }).click();
     await expect(page.getByRole('dialog')).toContainText('Serviços mantêm pedidos e propostas');
     await page.getByRole('dialog').getByRole('button', { name: 'Excluir', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\/publications\/service$/);
@@ -142,7 +150,7 @@ test('dashboard bloqueia agenda por inscrição cancelada; erro regional preserv
     await page.goto('/admin/publications/event/7');
     await expect(page.getByText(/Agenda e cobranças bloqueadas:/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Configurar cobranças' })).toBeDisabled();
-    await page.getByRole('button', { name: 'Editar evento' }).click();
+    await openAction(page, 'Editar');
     await expect(page.getByRole('dialog').getByLabel('Início', { exact: true })).toBeDisabled();
     await expect(page.getByRole('dialog').getByRole('textbox', { name: 'Título', exact: true })).toBeEnabled();
     await page.keyboard.press('Escape');
@@ -156,7 +164,7 @@ test('leitura e criação isoladas não liberam rotas ou chamadas alheias', asyn
     await api.grant(['NOTICE_READ']);
     await page.goto('/admin/publications/notice/8');
     await expect(page.getByRole('heading', { name: 'Aviso administrativo' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Editar aviso' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Ações:/ })).toHaveCount(0);
     expect(api.calls.some(call => call.url.pathname.startsWith('/admin/events'))).toBe(false);
     await api.grant(['EVENT_CREATE']);
     await page.goto('/admin/publications/event');
@@ -196,7 +204,7 @@ test('404 tem recuperação e 403 de escrita mantém sessão e dados', async ({ 
     api.missing = false;
     await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Aviso administrativo' })).toBeVisible();
-    await page.getByRole('button', { name: 'Editar aviso' }).click();
+    await openAction(page, 'Editar');
     await page.getByRole('dialog').getByRole('textbox', { name: 'Título', exact: true }).fill('Preservar após 403');
     api.patchStatus = 403;
     await page.getByRole('dialog').getByRole('button', { name: 'Salvar alterações' }).click();
@@ -208,7 +216,7 @@ test('404 tem recuperação e 403 de escrita mantém sessão e dados', async ({ 
 test('remoção do término envia null e preserva início intocado', async ({ page, api }) => {
     api.event.endsAt = '2099-11-15T13:00:00Z';
     await page.goto('/admin/publications/event/7');
-    await page.getByRole('button', { name: 'Editar evento' }).click();
+    await openAction(page, 'Editar');
     await page.getByRole('dialog').getByLabel('Término (opcional)', { exact: true }).fill('');
     await page.getByRole('dialog').getByRole('button', { name: 'Salvar alterações' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -246,8 +254,8 @@ test('falha de publish após criar evento conserva ID e não repete cadastro', a
 
 test('modal contém Tab e Shift+Tab e devolve foco ao fechar', async ({ page }) => {
     await page.goto('/admin/publications/event/7');
-    const opener = page.getByRole('button', { name: 'Editar evento', exact: true });
-    await opener.click();
+    const opener = page.getByRole('button', { name: /^Ações:/ });
+    await openAction(page, 'Editar');
     const dialog = page.getByRole('dialog');
     const first = dialog.getByRole('button', { name: 'Fechar', exact: true });
     const last = dialog.getByRole('button', { name: 'Salvar alterações', exact: true });
@@ -333,4 +341,77 @@ test('cadastro móvel mantém o seletor acima do modal e protege o rascunho', as
     await expect(sheet).toBeHidden();
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('textbox', { name: 'Título', exact: true })).toHaveValue('Rascunho preservado');
+});
+
+test('menu de ações da listagem respeita estado e confirma publicação', async ({ page, api }) => {
+    await page.goto('/admin/publications/event');
+    const item = page.getByRole('article').filter({ has: page.getByRole('link', { name: 'Passeio administrativo' }) });
+    await item.getByRole('button', { name: /Ações:/ }).click();
+    await expect(page.getByRole('menuitem', { name: 'Acessar' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Editar' })).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Publicar' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Publicar', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect.poll(() => api.calls.some(call => call.method === 'POST' && call.url.pathname.endsWith('/publish'))).toBe(true);
+});
+
+test('exclusão pela listagem confirma e atualiza os resultados', async ({ page, api }) => {
+    await page.goto('/admin/publications/event');
+    const item = page.getByRole('article').filter({ has: page.getByRole('link', { name: 'Passeio administrativo' }) });
+    await item.getByRole('button', { name: /Ações:/ }).click();
+    await page.getByRole('menuitem', { name: 'Excluir', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('Exclusão irreversível');
+    await dialog.getByRole('button', { name: 'Excluir', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Passeio administrativo' })).toHaveCount(0);
+    expect(api.deletedEvent).toBe(true);
+});
+
+test('menu de ações suporta teclado e telas reduzidas nos dois temas', async ({ page }) => {
+    for (const [width, theme] of [[320, 'light'], [768, 'dark'], [1280, 'light']] as const) {
+        await page.setViewportSize({ width, height: 720 });
+        await page.goto('/admin/publications/event');
+        await page.evaluate(value => { document.documentElement.dataset.theme = value; }, theme);
+        const item = page.getByRole('article').filter({ has: page.getByRole('link', { name: 'Passeio administrativo' }) });
+        const trigger = item.getByRole('button', { name: /Ações:/ });
+        await trigger.focus();
+        await page.keyboard.press('Enter');
+        await expect(page.getByRole('menuitem', { name: 'Acessar' })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(trigger).toBeFocused();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+});
+
+test('edição pela listagem carrega o detalhe antes de abrir o formulário', async ({ page, api }) => {
+    await page.goto('/admin/publications/event');
+    const item = page.getByRole('article').filter({ has: page.getByRole('link', { name: 'Passeio administrativo' }) });
+    await item.getByRole('button', { name: /Ações:/ }).click();
+    await page.getByRole('menuitem', { name: 'Editar', exact: true }).click();
+    await expect(page.getByRole('dialog').getByRole('textbox', { name: 'Título', exact: true })).toHaveValue('Passeio administrativo');
+    expect(api.calls.some(call => call.url.pathname === '/admin/events/7')).toBe(true);
+});
+
+test('detalhes organizam conteúdo e informações em desktop e celular', async ({ page }, testInfo) => {
+    for (const [route, title] of [['event/7', 'Passeio administrativo'], ['notice/8', 'Aviso administrativo'], ['service/9', 'Serviço administrativo']] as const) {
+        for (const [width, theme] of [[390, 'light'], [768, 'dark'], [1024, 'dark']] as const) {
+            await page.setViewportSize({ width, height: 850 });
+            await page.goto(`/admin/publications/${route}`);
+            await page.evaluate(value => { document.documentElement.dataset.theme = value; }, theme);
+            await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+            const information = page.getByRole('complementary', { name: 'Informações gerais' });
+            const gallery = page.getByRole('region', { name: 'Galeria de imagens' });
+            await expect(page.getByRole('region', { name: 'Conteúdo', exact: true })).toBeVisible();
+            const infoBounds = (await information.boundingBox())!;
+            const galleryBounds = (await gallery.boundingBox())!;
+            if (width >= 1024) expect(infoBounds.x).toBeGreaterThan(galleryBounds.x + galleryBounds.width - 1);
+            else expect(infoBounds.y + infoBounds.height).toBeLessThanOrEqual(galleryBounds.y);
+            await expect(page.getByRole('button', { name: /^Ações:/ })).toBeVisible();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+            if (route === 'event/7') await page.screenshot({ path: testInfo.outputPath(`detalhe-${width}.png`), animations: 'disabled' });
+        }
+    }
 });

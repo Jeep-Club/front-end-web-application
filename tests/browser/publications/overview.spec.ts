@@ -14,13 +14,15 @@ test('visão geral reúne publicados, eventos administrativos e filtros indispon
     await expect(page.getByText('Serviço publicado recente').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Eventos administrativos' })).toBeVisible();
     await expect(page.getByText('Rascunho · Aberto')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Administrar Aviso publicado recente' }).first()).toHaveAttribute('href', '/admin/publications/notice/13');
+    await expect(page.getByRole('link', { name: 'Aviso publicado recente' }).first()).toHaveAttribute('href', '/admin/publications/notice/13');
+    const feedCalls = api.calls.filter(call => call.url.pathname === '/publications/feed' && !call.url.searchParams.has('type')).length;
+    expect(feedCalls).toBeGreaterThan(0);
     const status = page.getByRole('button', { name: 'Rascunhos', exact: true });
     await status.focus();
     await expect(status).toHaveAttribute('title', 'Filtros ainda não implementados.');
     await status.click();
     await expect(page.getByText('Filtros ainda não implementados.', { exact: true })).toBeVisible();
-    expect(api.calls.filter(call => call.url.pathname === '/publications/feed' && !call.url.searchParams.has('type'))).toHaveLength(1);
+    expect(api.calls.filter(call => call.url.pathname === '/publications/feed' && !call.url.searchParams.has('type'))).toHaveLength(feedCalls);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
@@ -50,7 +52,7 @@ test('paginação consulta outras publicações e preserva o total do feed', asy
     await page.getByRole('button', { name: 'Próxima página' }).click();
     await expect(page).toHaveURL(/page=1/);
     await expect(page.getByText('1 de 13 itens')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Administrar Aviso 13' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Aviso 13' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Indicadores de publicações' }).getByText('13').first()).toBeVisible();
 });
 

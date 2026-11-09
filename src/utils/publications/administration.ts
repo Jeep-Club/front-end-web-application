@@ -28,5 +28,14 @@ export async function invalidatePublicationAdministration(client: QueryClient, t
     if (type === 'SERVICE') keys.push(['publications', 'member', 'services'], ['publications', 'service-publication-requests'], ['publications', 'service-publication-change-requests']);
     if (options.billing || options.inline) keys.push(['billing', 'dashboard'], ['billing', 'member-charges'], ['billing', 'cycles'], ['billing', 'refunds']);
     if (options.inline) keys.push(['billing', 'charge-definitions'], ['publications', 'admin', 'event-charge-catalog']);
-    await Promise.all(keys.map(queryKey => client.invalidateQueries({ queryKey, refetchType: options.deleted && (queryKey[1] === 'admin' || queryKey[1] === 'detail') ? 'none' : 'active' })));
+    await Promise.all(keys.map(queryKey => client.invalidateQueries({
+        queryKey,
+        refetchType: 'active',
+        // A deleted detail must not be fetched while navigation is pending, but
+        // active lists still need to refresh when deletion starts from a menu.
+        predicate: query => !options.deleted || !(
+            (query.queryKey[1] === 'admin' && query.queryKey[3] === 'detail' && query.queryKey[4] === id) ||
+            (query.queryKey[1] === 'detail' && query.queryKey[2] === id)
+        ),
+    })));
 }

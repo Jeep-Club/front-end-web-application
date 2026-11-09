@@ -11,6 +11,7 @@ import { ListPagination } from "@/components/common/table/ListPagination";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { PUBLICATION_PAGE_SIZES } from "@/utils/publications/pagination";
 import { publicationAdministrationHref } from "@/utils/publications/administration";
+import { PublicationActionMenu } from "./PublicationActionMenu";
 
 export interface PublicationListItem {
     id: number;
@@ -57,10 +58,10 @@ function previewText(text: string, limit: number) {
 }
 const statuses = { DRAFT: "Rascunho", PUBLISHED: "Publicado", ARCHIVED: "Arquivado", PENDING: "Solicitação pendente" };
 const statusColors = {
-    DRAFT: "bg-gray-100 text-gray-700",
-    PUBLISHED: "bg-blue-100 text-blue-800",
-    ARCHIVED: "bg-j-gray-100 text-j-gray-600",
-    PENDING: "bg-gray-100 text-gray-700",
+    DRAFT: "bg-background-secondary text-secondary",
+    PUBLISHED: "bg-j-blue-50 text-primary",
+    ARCHIVED: "bg-background-secondary text-secondary",
+    PENDING: "bg-background-secondary text-secondary",
 };
 
 const eventStates = { OPEN: "Aberto", IN_PROGRESS: "Em andamento", FINISHED: "Finalizado", CANCELLED: "Cancelado" };
@@ -95,16 +96,17 @@ export function PublicationList({ page, pageIndex, pageSize, onPaginationChange,
                 <div className={view === 'grid' ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3' : 'divide-y divide-j-gray-200'}>
                     {page.content.map(item => {
                         const { label, icon: TypeIcon } = types[item.type];
+                        const href = canManage ? publicationAdministrationHref(item.type, listParams, item.id) : canViewFeed ? `/feed?publication=${item.id}` : undefined;
                         return <article key={`${item.type}-${item.serviceRequest ? 'request' : 'publication'}-${item.id}`} className={view === 'grid' ? 'flex min-w-0 flex-col overflow-hidden rounded-xl border border-j-gray-200 bg-j-white' : 'flex min-w-0 flex-wrap items-center gap-3 py-3'}>
                             <PublicationImage key={item.images.find(image => image.primary)?.storageKey ?? 'placeholder'} item={item} view={view} />
                             <div className={view === 'grid' ? 'min-w-0 space-y-2 p-3' : 'min-w-0 flex-1 space-y-1'}>
-                                <h3 title={item.title} className="line-clamp-2 break-words font-bold text-j-blue-800">{previewText(item.title, CARD_TITLE_LIMIT)}</h3>
+                                <h3 title={item.title} className="line-clamp-2 break-words font-bold text-primary">{href ? <Link href={href} className="cursor-pointer hover:underline focus-visible:outline-2 focus-visible:outline-input-border-focus">{previewText(item.title, CARD_TITLE_LIMIT)}</Link> : previewText(item.title, CARD_TITLE_LIMIT)}</h3>
                                 <p className="flex flex-wrap items-center gap-2 text-xs text-j-gray-600"><span>ID #{item.id}</span><span className="inline-flex items-center gap-1"><TypeIcon size={13} aria-hidden="true" />{label}</span></p>
                                 <div className="flex flex-wrap gap-2 text-xs font-semibold"><span className={`rounded px-2 py-1 ${statusColors[item.status]}`}>{statuses[item.status]}</span>{item.eventStatus && <span className="rounded bg-j-gray-100 px-2 py-1 text-j-gray-700">{eventStates[item.eventStatus]}</span>}</div>
                                 {(item.startsAt || item.publishedAt) && <p className="text-xs text-j-gray-600">{item.startsAt ? 'Início: ' : 'Publicado em: '}{feedDate((item.startsAt ?? item.publishedAt)!)}</p>}
                                 {view === 'grid' && <p className="line-clamp-2 break-words text-sm text-j-gray-600">{previewText(publicationPlainText(item.content), CARD_CONTENT_LIMIT)}</p>}
                             </div>
-                            {(canManage || canViewFeed) && <Link className={`${view === 'grid' ? 'm-3 mt-auto' : 'w-full text-right sm:w-auto'} cursor-pointer text-sm font-bold text-j-blue-800 underline focus-visible:outline-2 focus-visible:outline-offset-2`} href={canManage ? publicationAdministrationHref(item.type, listParams, item.id) : `/feed?publication=${item.id}`}>{canManage ? `Administrar ${label.toLocaleLowerCase('pt-BR')}` : 'Ver no feed'}</Link>}
+                            {href && <div className={view === 'grid' ? 'ml-auto px-3 pb-3' : 'ml-auto'}><PublicationActionMenu publication={{ ...item, status: item.status === 'PENDING' ? undefined : item.status }} href={href} allowActions={canManage && item.status !== "PENDING"} /></div>}
                         </article>;
                     })}
                 </div>

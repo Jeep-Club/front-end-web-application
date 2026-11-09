@@ -58,7 +58,7 @@ function EditFields({ publication, gallery, primaryId, onChange, galleryError, o
         {publication.images && <PublicationGalleryFields items={gallery} primaryId={primaryId} onChange={onChange} disabled={isSubmitting} error={galleryError} />}
     </fieldset><div className="flex w-full flex-wrap gap-3"><Button disabled={isSubmitting} onClick={onClose}>Voltar</Button><Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Salvando...' : 'Salvar alterações'}</Button></div></>;
 }
-export function DraftPublicationActionModal({ publication, action, returnHref, agendaLocked = false }: { publication: DraftPublicationTarget; action: keyof typeof labels; returnHref?: string; agendaLocked?: boolean }) {
+export function DraftPublicationActionModal({ publication, action, returnHref, agendaLocked = false, returnFocus }: { publication: DraftPublicationTarget; action: keyof typeof labels; returnHref?: string; agendaLocked?: boolean; returnFocus?: HTMLElement | null }) {
     const { setClose } = useModal();
     const router = useRouter();
     const client = useQueryClient();
@@ -80,8 +80,8 @@ export function DraftPublicationActionModal({ publication, action, returnHref, a
             else if (event.target instanceof Node && !element?.contains(event.target)) event.stopImmediatePropagation();
         };
         document.addEventListener('keydown', escape, true);
-        return () => { document.removeEventListener('keydown', escape, true); element?.close(); if (previous?.isConnected) previous.focus(); };
-    }, []);
+        return () => { document.removeEventListener('keydown', escape, true); element?.close(); if (returnFocus?.isConnected) returnFocus.focus(); else if (previous?.isConnected) previous.focus(); };
+    }, [returnFocus]);
     const mutation = useMutation({
         mutationFn: async (values?: EditData) => {
             if (action === 'charges' && values) {
