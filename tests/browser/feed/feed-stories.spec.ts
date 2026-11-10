@@ -5,13 +5,12 @@ const storyUrl = readLocalUrl('PLAYWRIGHT_STORYBOOK_URL');
 // IDs discovered with `storybook tools stories changed`; embed disables autoplay.
 for (const theme of ['light', 'dark']) {
     test(`formulário temporal isolado em tema ${theme}`, async ({ page }) => {
-        await page.goto(new URL(`/iframe.html?id=publications-feedperiodfilters--exact-interval&viewMode=story&embed=true&globals=theme:${theme}`, storyUrl).href);
-        await expect(page.getByLabel('Publicada a partir de (UTC)')).toHaveValue('2026-10-29T12:00:00.123456Z');
-        await page.getByLabel('Publicada até (UTC)').fill('2026-10-29T12:00:00.123455Z');
+        await page.goto(new URL(`/iframe.html?id=publications-feedperiodfilters--inverted&viewMode=story&embed=true&globals=theme:${theme}`, storyUrl).href);
+        await expect(page.getByRole('group', { name: 'Publicada a partir de' })).toBeVisible();
         await page.getByRole('button', { name: 'Aplicar período' }).click();
         await expect(page.getByText('O fim deve ser igual ou posterior ao início.')).toBeVisible();
         await page.getByRole('button', { name: 'Limpar período' }).click();
-        await expect(page.getByLabel('Publicada a partir de (UTC)')).toBeEmpty();
+        await expect(page.getByRole('group', { name: 'Publicada a partir de' }).getByRole('spinbutton').first()).toHaveAttribute('aria-valuetext', 'Vazio');
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     });
 }

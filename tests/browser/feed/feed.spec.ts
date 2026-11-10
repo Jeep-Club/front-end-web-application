@@ -59,9 +59,9 @@ test('falha de imagem conserva leitura e galeria navegável', async ({ page, api
 });
 
 test('período exato, tipos, deep link e retorno preservam contexto', async ({ page, api }) => {
-    await page.goto('/feed');
+    await page.goto('/feed?publishedFrom=2026-10-29T12%3A00%3A00.123456Z');
     await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
-    await page.getByLabel('Publicada a partir de (UTC)').fill('2026-10-29T12:00:00.123456Z');
+    await page.getByRole('button', { name: 'Filtrar por período' }).click();
     await page.getByRole('button', { name: 'Aplicar período' }).click();
     await expect.poll(() => api.calls.some(url => url.searchParams.get('publishedFrom') === '2026-10-29T12:00:00.123456Z')).toBe(true);
     await page.getByRole('button', { name: 'Serviços', exact: true }).click();
@@ -101,8 +101,11 @@ test('intervalo inválido não consulta e pode ser corrigido', async ({ page, ap
     expect(api.calls.filter(url => url.pathname === '/publications/feed' && url.searchParams.get('size') === '12')).toHaveLength(0);
     await page.getByRole('button', { name: 'Limpar filtros' }).click();
     await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
-    await page.getByLabel('Publicada a partir de (UTC)').fill('2026-10-30T12:00:00Z');
-    await page.getByLabel('Publicada até (UTC)').fill('2026-10-29T12:00:00Z');
+    await page.getByRole('button', { name: 'Filtrar por período' }).click();
+    for (const [label, day] of [['Publicada a partir de', '30'], ['Publicada até', '29']] as const) {
+        const segments = page.getByRole('group', { name: label, exact: true }).getByRole('spinbutton');
+        for (const [index, value] of [day, '10', '2026', '12', '00'].entries()) await segments.nth(index).fill(value);
+    }
     await page.getByRole('button', { name: 'Aplicar período' }).click();
     await expect(page.getByText('O fim deve ser igual ou posterior ao início.')).toBeVisible();
 });
@@ -229,3 +232,33 @@ for (const status of [400, 500]) {
         await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
     });
 }
+
+test('filtro de período abre seletores e mantém precisão dos limites existentes', async ({ page, api }) => {
+    await page.goto('/feed?publishedFrom=2026-10-29T12%3A00%3A00.123456Z');
+    const filter = page.getByRole('button', { name: 'Filtrar por período' });
+    await filter.click();
+    await expect(page.getByRole('group', { name: 'Publicada a partir de' })).toBeVisible();
+    await page.getByRole('button', { name: 'Abrir calendário: Publicada a partir de' }).click();
+    await expect(page.getByRole('dialog').getByRole('grid')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Aplicar período' })).toBeVisible();
+    await page.getByRole('button', { name: 'Aplicar período' }).click();
+    await expect(page.getByRole('button', { name: 'Aplicar período' })).toHaveCount(0);
+    await expect.poll(() => api.calls.some(url => url.searchParams.get('publishedFrom') === '2026-10-29T12:00:00.123456Z')).toBe(true);
+    await filter.click();
+    await page.getByRole('button', { name: 'Limpar período' }).click();
+    await expect(page).not.toHaveURL(/publishedFrom/);
+});
+
+test('calendário do feed destaca eventos de todas as páginas e leva à agenda', async ({ page, api }) => {
+    const now = new Date();
+    api.eventStartsAt = new Date(now.getFullYear(), now.getMonth(), 10, 12).toISOString();
+    api.pages = 2;
+    await page.goto('/feed');
+    const sidebar = page.getByRole('complementary', { name: 'Informações do clube' });
+    await expect.poll(() => api.completed.some(url => url.searchParams.get('type') === 'EVENT' && url.searchParams.get('page') === '1')).toBe(true);
+    await expect(sidebar.getByLabel('10: 2 eventos')).toBeVisible();
+    await expect(sidebar.getByLabel('Eventos do dia 10')).toHaveCount(0);
+    await expect(sidebar.getByRole('link', { name: 'Veja mais' })).toHaveAttribute('href', '/agenda');
+    await expect(sidebar.getByRole('button', { name: 'Postar' })).toHaveCount(0);
+});

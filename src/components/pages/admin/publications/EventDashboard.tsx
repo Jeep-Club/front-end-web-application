@@ -8,7 +8,7 @@ export function EventDashboard({ data }: { data: AdminEventDashboard }) {
     const groups = [
         { title: 'Pessoas e veículos', values: [['Pessoas', data.totalPeople], ['Dependentes', data.dependents], ['Veículos', data.vehicles], ['Capacidade dos veículos', data.totalCapacity], ['Vagas disponíveis', data.availableSeats]] },
         { title: 'Convidados', values: [['Pendentes', data.guestsPending], ['Aprovados', data.guestsApproved], ['Em espera', data.guestsStandby], ['Alocados', data.guestsAllocated], ['Cancelados', data.guestsCancelled]] },
-        { title: 'Pendências', values: [['Cobranças não pagas', data.unpaidCharges], ['Pagamentos em validação', data.pendingValidation], ['Pendências após cutoff', data.postCutoffPending]] },
+        { title: 'Pendências', values: [['Cobranças não pagas', data.unpaidCharges], ['Pagamentos em validação', data.pendingValidation], ['Pendências após o prazo', data.postCutoffPending]] },
     ];
     return <div className="min-w-0 space-y-5">
         <p className="text-sm text-secondary">Participação confirmada indica inscrição confirmada; um pagamento em validação pode satisfazer a participação. Não comprova pagamento homologado. Esta consulta pode atualizar confirmações.</p>

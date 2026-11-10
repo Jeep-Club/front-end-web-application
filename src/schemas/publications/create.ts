@@ -29,8 +29,8 @@ export const eventChargeFormRowSchema = z.object({
 export type EventChargeFormRow = z.infer<typeof eventChargeFormRowSchema>;
 export function parseEventChargeRows(rows: EventChargeFormRow[], startsAt: string): EventCharge[] {
     const charges = rows.map((row, index) => {
-        if (row.mode === 'existing' && row.paymentAcceptancePolicy && row.paymentAcceptancePolicy !== 'AFTER_DUE_DATE' && (row.requiredForParticipation || !row.financialDueDate)) throw new Error(`Cobrança ${index + 1}: esta configuração exige política AFTER_DUE_DATE.`);
-        if (row.participationCutoff && (Date.parse(row.participationCutoff) <= Date.now() || Date.parse(row.participationCutoff) > Date.parse(startsAt))) throw new Error(`Cobrança ${index + 1}: cutoff deve estar no futuro e até o início.`);
+        if (row.mode === 'existing' && row.paymentAcceptancePolicy && row.paymentAcceptancePolicy !== 'AFTER_DUE_DATE' && (row.requiredForParticipation || !row.financialDueDate)) throw new Error(`Cobrança ${index + 1}: a definição escolhida não permite essa combinação de prazo e vencimento.`);
+        if (row.participationCutoff && (Date.parse(row.participationCutoff) <= Date.now() || Date.parse(row.participationCutoff) > Date.parse(startsAt))) throw new Error(`Cobrança ${index + 1}: o prazo para confirmar participação deve estar no futuro e até o início do evento.`);
         const flags = { requiredForParticipation: row.requiredForParticipation, ...(row.participationCutoff ? { participationCutoff: row.participationCutoff } : {}), ...(row.financialDueDate ? { financialDueDate: row.financialDueDate } : {}) };
         return row.mode === 'existing' ? { chargeDefinitionId: Number(row.chargeDefinitionId), ...flags } : { name: row.name, description: row.description, amount: Number(row.amount.replace(',', '.')), billingRequired: row.billingRequired, ...flags };
     });
@@ -43,7 +43,7 @@ export const createPublicationSchema = z.discriminatedUnion("type", [
 ]).superRefine((data, ctx) => {
     if (data.type !== "EVENT") return;
     for (const [index, charge] of (data.charges ?? []).entries()) {
-        if (charge.participationCutoff && (Date.parse(charge.participationCutoff) <= Date.now() || Date.parse(charge.participationCutoff) > Date.parse(data.startsAt))) ctx.addIssue({ code: 'custom', path: ['charges', index, 'participationCutoff'], message: 'Cutoff deve estar no futuro e até o início.' });
+        if (charge.participationCutoff && (Date.parse(charge.participationCutoff) <= Date.now() || Date.parse(charge.participationCutoff) > Date.parse(data.startsAt))) ctx.addIssue({ code: 'custom', path: ['charges', index, 'participationCutoff'], message: 'O prazo para confirmar participação deve estar no futuro e até o início do evento.' });
     }
     if (Date.parse(data.startsAt) <= Date.now()) ctx.addIssue({ code: "custom", path: ["startsAt"], message: "O início deve estar no futuro." });
     if (data.endsAt && Date.parse(data.endsAt) <= Date.parse(data.startsAt)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "O término deve ser posterior ao início." });

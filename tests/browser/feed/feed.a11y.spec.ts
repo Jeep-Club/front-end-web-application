@@ -5,10 +5,15 @@ test('feed, validação e detalhe mantêm semântica acessível', async ({ page 
     await page.goto('/feed');
     await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
     await auditAccessibility(page, testInfo, 'feed');
-    await page.getByLabel('Publicada a partir de (UTC)').fill('inválido');
+    await page.getByRole('button', { name: 'Filtrar por período' }).click();
+    for (const [label, day] of [['Publicada a partir de', '30'], ['Publicada até', '29']] as const) {
+        const segments = page.getByRole('group', { name: label, exact: true }).getByRole('spinbutton');
+        for (const [index, value] of [day, '10', '2026', '12', '00'].entries()) await segments.nth(index).fill(value);
+    }
     await page.getByRole('button', { name: 'Aplicar período' }).click();
-    await expect(page.getByLabel('Publicada a partir de (UTC)')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('O fim deve ser igual ou posterior ao início.')).toBeVisible();
     await auditAccessibility(page, testInfo, 'validation');
+    await page.keyboard.press('Escape');
     await page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true }).click();
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await auditAccessibility(page, testInfo, 'detail');

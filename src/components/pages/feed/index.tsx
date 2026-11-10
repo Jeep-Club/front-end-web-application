@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
@@ -73,6 +74,7 @@ export default function Feed() {
     const loadMoreRef = useRef<HTMLDivElement>(null);
     const filterNavRef = useRef<HTMLElement>(null);
     const [showFilterHint, setShowFilterHint] = useState(false);
+    const [periodOpen, setPeriodOpen] = useState(false);
 
     useEffect(() => {
         const nav = filterNavRef.current;
@@ -278,6 +280,10 @@ export default function Feed() {
 
                                 </div>
 
+                                <DialogTrigger isOpen={periodOpen} onOpenChange={setPeriodOpen}>
+                                    <AriaButton aria-label="Filtrar por período" className={`flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-input-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus ${publishedFrom || publishedTo ? 'bg-button-primary-bg text-button-primary-text' : 'bg-background text-primary hover:bg-background-tertiary'}`}><CalendarDays size={21} aria-hidden="true" /></AriaButton>
+                                    <Popover placement="bottom end" className="z-[100] w-[min(38rem,calc(100vw-2rem))] outline-none"><Dialog aria-label="Filtrar publicações por período" className="outline-none"><FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => { applyFilters({ type, ...period }); setPeriodOpen(false); }} /></Dialog></Popover>
+                                </DialogTrigger>
                                 {canCreateCurrentType && (
                                     <button
                                         type="button"
@@ -295,7 +301,6 @@ export default function Feed() {
                                 )}
                             </div>
 
-                            <FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => applyFilters({ type, ...period })} />
                             <Button disabled={!filtersResult.success || query.isFetching} onClick={refreshFeed}>Atualizar publicações</Button>
                             {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : query.isLoading ? (
                                 <div

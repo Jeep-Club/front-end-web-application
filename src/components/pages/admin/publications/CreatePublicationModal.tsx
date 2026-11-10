@@ -72,7 +72,7 @@ function Fields({ initialType, publishEventImmediately, serverError, step, setSt
                 </div>}
                 </div>
                 <div className="flex min-w-0 flex-col gap-4">
-                <PublicationGalleryFields items={gallery} primaryId={primaryId} disabled={isSubmitting} error={errors.photos?.message || errors.primaryIndex?.message} onChange={(items, primary) => {
+                <PublicationGalleryFields publicationType={type} items={gallery} primaryId={primaryId} disabled={isSubmitting} error={errors.photos?.message || errors.primaryIndex?.message} onChange={(items, primary) => {
                     setGallery(items); setPrimaryId(primary);
                     setValue('photos', items.flatMap(item => item.kind === 'file' ? [item.file] : []), { shouldDirty: true, shouldValidate: true });
                     setValue('primaryIndex', String(items.findIndex(item => item.id === primary)), { shouldDirty: true, shouldValidate: true });

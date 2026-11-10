@@ -11,7 +11,7 @@ export const publications = [
     { id: 3, type: 'SERVICE', title: 'Serviço anunciado', details: { amount: 150, contactPhone: '12999999999' } },
 ].map(item => ({ ...item, authorUserId: 7, content: '<p>Conteúdo completo para os associados.</p>', publishedAt: instant, primaryImage: { storageKey: key, position: 0, primary: true }, likeCount: 0, commentCount: 0, likedByMe: false }));
 
-type ApiState = { calls: URL[]; completed: URL[]; feedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; grant: (actions: string[]) => Promise<void>; };
+type ApiState = { calls: URL[]; completed: URL[]; feedStatus: number; detailStatus: number; mediaFails: boolean; actions: string[]; delay: number; pages: number; failPage: number; empty: boolean; unauthorizedOnce: boolean; refreshFails: boolean; eventOpen: boolean; eventStartsAt: string | null; grant: (actions: string[]) => Promise<void>; };
 
 /** Synthetic API/session only. Runs real Next Server Functions without using production or weakening the GET-only pilot fixture. */
 export const test = base.extend<{ api: ApiState }>({
@@ -21,7 +21,7 @@ export const test = base.extend<{ api: ApiState }>({
         const sign = (data: object) => new SignJWT({ data }).setProtectedHeader({ alg: 'HS256' }).setExpirationTime('1h').sign(new TextEncoder().encode('playwright-local-session-not-for-production'));
         const appUrl = readLocalUrl('PLAYWRIGHT_APP_URL');
         const grant = async (actions: string[]) => { await context.addCookies([{ name: 'Permissions', value: await sign([{ module: 'PUBLICATIONS', actions }]), url: appUrl.origin, httpOnly: true }]); };
-        const state: ApiState = { calls: [], completed: [], feedStatus: 200, detailStatus: 200, mediaFails: false, actions: ['FEED_READ', 'PUBLICATION_READ'], delay: 0, pages: 1, failPage: -1, empty: false, unauthorizedOnce: false, refreshFails: false, eventOpen: false, grant };
+        const state: ApiState = { calls: [], completed: [], feedStatus: 200, detailStatus: 200, mediaFails: false, actions: ['FEED_READ', 'PUBLICATION_READ'], delay: 0, pages: 1, failPage: -1, empty: false, unauthorizedOnce: false, refreshFails: false, eventOpen: false, eventStartsAt: null, grant };
         const errors: string[] = [];
         const forbidden: string[] = [];
         const allowed = [appUrl.origin, readLocalUrl('PLAYWRIGHT_STORYBOOK_URL').origin];
@@ -43,7 +43,7 @@ export const test = base.extend<{ api: ApiState }>({
                 if (number === state.failPage) return failure(500);
                 const size = Number(url.searchParams.get('size') ?? 20);
                 const items = state.empty ? [] : publications.filter(item => !url.searchParams.has('type') || item.type === url.searchParams.get('type'));
-                const content = number < state.pages ? items.map(item => ({ ...item, id: item.id + number * 3 })) : [];
+                const content = number < state.pages ? items.map(item => ({ ...item, id: item.id + number * 3, ...(item.type === 'EVENT' && state.eventStartsAt ? { details: { ...item.details, startsAt: state.eventStartsAt } } : {}) })) : [];
                 return json({ content, number, size, totalElements: items.length * state.pages, totalPages: state.pages, numberOfElements: content.length, empty: !content.length, first: number === 0, last: number >= state.pages - 1 });
             }
             if (/^\/publications\/\d+$/.test(url.pathname)) {

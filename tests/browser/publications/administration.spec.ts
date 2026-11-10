@@ -48,8 +48,13 @@ test('galeria retida reordena e muda capa sem upload', async ({ page, api }) => 
     await page.goto('/admin/publications/notice/8');
     await openAction(page, 'Editar');
     const dialog = page.getByRole('dialog');
-    await dialog.getByRole('radio', { name: 'Capa da imagem 2' }).check();
-    await dialog.getByRole('button', { name: 'Mover imagem 2 para cima' }).click();
+    const gallery = dialog.getByRole('grid', { name: 'Imagens da publicação' });
+    await gallery.getByRole('row').nth(1).getByRole('button', { name: 'Definir como capa' }).click();
+    const handle = gallery.getByRole('row').nth(1).getByRole('button', { name: /Reordenar/ });
+    await handle.focus();
+    await expect(handle).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(gallery.getByRole('row').first()).toContainText('Capa do aviso');
     await dialog.getByRole('button', { name: 'Salvar alterações' }).click();
     await expect(dialog).toHaveCount(0);
     const body = api.calls.find(call => call.method === 'PATCH')!.body;
@@ -70,7 +75,7 @@ test('configuração mantém regras fora da página, adiciona inline e remove ex
     await page.getByRole('option', { name: 'Criar definição inline' }).click();
     await row.getByRole('textbox', { name: 'Nome da definição' }).fill('Transporte especial');
     await row.getByRole('textbox', { name: 'Valor da definição' }).fill('25,123');
-    const required = row.getByRole('checkbox', { name: 'Obrigação financeira (billingRequired)' });
+    const required = row.getByRole('checkbox', { name: 'Cobrança obrigatória' });
     await required.focus(); await page.keyboard.press('Space');
     await expect(required).toBeChecked();
     await dialog.getByRole('button', { name: 'Salvar regras financeiras', exact: true }).click();
@@ -186,7 +191,7 @@ test('criação de aviso mantém ID para criador sem READ e upload real isolado'
     await dialog.getByRole('textbox', { name: /^Conteúdo/ }).fill('Conteúdo do cadastro.');
     await dialog.locator('input[type=file]').setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
     await page.getByRole('button', { name: 'Usar foto', exact: true }).click();
-    await expect(dialog.getByRole('radio', { name: 'Capa da imagem 1' })).toBeChecked();
+    await expect(dialog.getByText('Capa do aviso', { exact: true })).toBeVisible();
     await dialog.getByRole('button', { name: 'Criar rascunho', exact: true }).click();
     await expect(dialog).toContainText('salva com ID');
     await expect(dialog.getByRole('link', { name: /Administrar publicação/ })).toHaveCount(0);

@@ -1,7 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { Input } from '@/components/common/input/input';
+import { DatePicker } from '@/components/common/date-picker';
+import { parseAbsoluteToLocal } from '@internationalized/date';
 import { Button } from '@/components/common/button';
 import { publicationFeedFiltersSchema, type PublicationFeedFilters } from '@/schemas/publications/feed';
 
@@ -22,6 +23,7 @@ export function FeedPeriodFilters({ publishedFrom = '', publishedTo = '', onAppl
         setErrors({});
     }
     const helpId = useId();
+    const dateValue = (value: string) => { try { return value ? parseAbsoluteToLocal(new Date(value).toISOString()) : null; } catch { return null; } };
     return <form aria-label="Período de publicação" aria-describedby={helpId} className="rounded-2xl border border-j-gray-200 bg-j-white p-4" onSubmit={event => {
         event.preventDefault();
         const result = publicationFeedFiltersSchema.safeParse({ publishedFrom: from || undefined, publishedTo: to || undefined });
@@ -32,14 +34,14 @@ export function FeedPeriodFilters({ publishedFrom = '', publishedTo = '', onAppl
         setErrors({});
         onApply(result.data);
     }}>
-        <p id={helpId} className="mb-3 text-xs text-j-gray-600">Período de publicação em UTC, com limites inclusivos. Exemplo: 2026-10-29T12:00:00Z. Você pode informar apenas um limite.</p>
+        <p id={helpId} className="mb-3 text-xs text-j-gray-600">Selecione a data e o horário local. Você pode informar apenas um dos limites.</p>
         <div className="grid min-w-0 gap-3 md:grid-cols-2">
-            <Input name="publishedFrom" label="Publicada a partir de (UTC)" value={from} onChange={event => setFrom(event.target.value)} error={errors.publishedFrom} disabled={disabled} aria-describedby={helpId} placeholder="2026-10-01T00:00:00Z" />
-            <Input name="publishedTo" label="Publicada até (UTC)" value={to} onChange={event => setTo(event.target.value)} error={errors.publishedTo} disabled={disabled} aria-describedby={helpId} placeholder="2026-10-31T23:59:59.999999Z" />
+            <DatePicker label="Publicada a partir de" granularity="minute" value={dateValue(from)} onChange={value => setFrom(value ? value.toDate().toISOString() : '')} errorMessage={errors.publishedFrom} isInvalid={!!errors.publishedFrom} isDisabled={disabled} />
+            <DatePicker label="Publicada até" granularity="minute" value={dateValue(to)} onChange={value => setTo(value ? value.toDate().toISOString() : '')} errorMessage={errors.publishedTo} isInvalid={!!errors.publishedTo} isDisabled={disabled} />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <Button type="button" disabled={disabled} className="border border-input-border bg-background-secondary text-primary hover:bg-background-tertiary hover:text-primary" onClick={() => { setFrom(''); setTo(''); setErrors({}); onApply({}); }}>Limpar período</Button>
             <Button type="submit" disabled={disabled}>Aplicar período</Button>
-            <Button type="button" disabled={disabled} onClick={() => { setFrom(''); setTo(''); setErrors({}); onApply({}); }}>Limpar período</Button>
         </div>
     </form>;
 }

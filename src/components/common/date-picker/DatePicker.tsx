@@ -44,7 +44,7 @@ export function DatePicker<T extends DateValue = DateValue>({ label, description
             props.onChange?.(updated);
         }} granularity={props.granularity === 'second' ? 'minute' : props.granularity} hourCycle={24} className={twMerge('jeep-date-control w-full min-w-0', className)}>
             {({ state }) => <>
-            <Label className="text-xs font-bold text-primary md:text-sm">{label}</Label>
+            <Label className="text-xs font-bold text-primary md:text-sm">{label}{props.isRequired && <span aria-hidden="true" className="text-input-error-text"> *</span>}</Label>
             <DateField.Group onClick={event => { if (!(event.target as HTMLElement).closest('button') && !props.isDisabled && !props.isReadOnly) state.setOpen(true); }}>
                 <DateField.Input>{segment => <DateField.Segment segment={segment} />}</DateField.Input>
                 <DateField.Suffix>

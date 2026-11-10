@@ -2,17 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
-import { Cake, CalendarDays, ChevronRight, Megaphone, Plus, Wrench } from "lucide-react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Cake, CalendarDays, ChevronRight, Megaphone } from "lucide-react";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/button';
-import { useModal } from "@/providers/ModalProvider";
-import { CreatePublicationModal } from "@/components/pages/admin/publications/CreatePublicationModal";
-import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useUserStore } from '@/stores/userStore';
-import { hasPermission } from '@/utils/permission/hasPermission';
 import { feedDate, publicationReadError, publicationReadRetry } from './feedDisplay';
 import { Avatar } from "@/components/common/avatar";
 
@@ -20,6 +16,7 @@ import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
+import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
 
 function SideCard({ title, icon: Icon, href, children }: {
     title: string;
@@ -42,18 +39,18 @@ function SideCard({ title, icon: Icon, href, children }: {
 
 export function FeedSidebar() {
     const permissions = useUserStore(state => state.permissions);
-    const canCreate = publicationCreationTypes.some((entry) => hasPermission(permissions, 'PUBLICATIONS', entry.action));
-    const { setContent, setOpen } = useModal();
     const params = useSearchParams();
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+    const [now] = useState(() => new Date());
     function detailHref(id: number) {
         const search = new URLSearchParams(params.toString());
         search.set('publication', String(id));
         return `/feed?${search}`;
     }
-    const eventsQuery = useQuery({
+    const eventsQuery = useInfiniteQuery({
         queryKey: ["publications", "feed-sidebar", { type: "EVENT", page: 0, size: 48 }, permissions],
-        queryFn: () => listPublicationFeedAction({ type: "EVENT", page: 0, size: 48 }),
+        queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "EVENT", page: pageParam, size: 48 }),
+        initialPageParam: 0, getNextPageParam: nextFeedPage,
         staleTime: 60_000,
         retry: publicationReadRetry,
     });
@@ -63,7 +60,13 @@ export function FeedSidebar() {
         staleTime: 60_000,
         retry: publicationReadRetry,
     });
-    const events = (publicationReadError(eventsQuery.error).restricted ? [] : eventsQuery.data?.content ?? [])
+    const { hasNextPage, isFetchingNextPage, isError, fetchNextPage } = eventsQuery;
+    const pageCount = eventsQuery.data?.pages.length ?? 0;
+    useEffect(() => {
+        if (hasNextPage && !isFetchingNextPage && !isError) void fetchNextPage();
+    }, [hasNextPage, isFetchingNextPage, isError, fetchNextPage, pageCount]);
+    const allEvents = publicationReadError(eventsQuery.error).restricted ? [] : mergeFeedPages(eventsQuery.data?.pages ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT");
+    const events = allEvents
         .filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT" && item.details.status === "OPEN")
         .sort((a, b) => Date.parse(a.details.startsAt) - Date.parse(b.details.startsAt))
         .slice(0, 3);
@@ -71,15 +74,27 @@ export function FeedSidebar() {
 
     return (
         <aside aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-            <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                <div className="bg-j-blue-900 p-5 text-j-white">
+            <section className="relative rounded-2xl border border-input-border bg-background shadow-sm">
+                <div className="rounded-t-2xl bg-j-blue-900 p-5 text-j-white">
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-j-yellow-300">Jeep Clube Tamoios</p>
                     <h2 className="mt-2 text-lg font-extrabold">A aventura continua por aqui</h2>
                     <p className="mt-1 text-sm text-white/75">Novidades, encontros e serviços para a nossa comunidade.</p>
                 </div>
-                <div className="grid grid-cols-2 divide-x divide-j-gray-200">
-                    <Link href="/agenda" className="flex items-center justify-center gap-2 p-3 text-sm font-bold text-j-blue-800 hover:bg-j-gray-100"><CalendarDays size={16} />Agenda</Link>
-                    <Link href="/servicos" className="flex items-center justify-center gap-2 p-3 text-sm font-bold text-j-blue-800 hover:bg-j-gray-100"><Wrench size={16} />Serviços</Link>
+                <div className="p-4">
+                    <h3 className="mb-3 text-sm font-bold capitalize text-primary">{new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(now)}</h3>
+                    <div className="grid grid-cols-7 gap-1 text-center" aria-label="Calendário do mês">
+                        {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, index) => <span key={index} aria-hidden="true" className="text-xs font-semibold text-secondary">{day}</span>)}
+                        {Array.from({ length: new Date(now.getFullYear(), now.getMonth(), 1).getDay() }, (_, index) => <span key={`empty-${index}`} />)}
+                        {Array.from({ length: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() }, (_, index) => {
+                            const day = index + 1;
+                            const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            const dayEvents = allEvents.filter(event => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(event.details.startsAt)) === dateKey);
+                            return <span key={day} aria-label={dayEvents.length ? `${day}: ${dayEvents.length} ${dayEvents.length === 1 ? 'evento' : 'eventos'}` : `${day}`} className="relative mx-auto flex size-9 items-center justify-center text-sm text-secondary">{day}{dayEvents.length > 0 && <span aria-hidden="true" className="absolute bottom-0.5 size-1.5 rounded-full bg-button-primary-bg ring-1 ring-input-border" />}</span>;
+                        })}
+                    </div>
+                    {eventsQuery.isPending && <p role="status" className="mt-2 text-xs text-secondary">Carregando eventos...</p>}
+                    {eventsQuery.isError && <p role="alert" className="mt-2 text-xs text-input-error-text">{publicationReadError(eventsQuery.error).message}</p>}
+                    <Link href="/agenda" className="mt-3 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-input-border-focus">Veja mais <ChevronRight size={16} aria-hidden="true" /></Link>
                 </div>
             </section>
 
@@ -132,20 +147,7 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum aviso recente.</p>}
             </SideCard>
 
-            {canCreate && (
-                <button
-                    id="tour-feed-create-btn"
-                    type="button"
-                    onClick={() => {
-                        setContent(<CreatePublicationModal publishEventImmediately />);
-                        setOpen();
-                    }}
-                    className="hidden min-h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"
-                >
-                    <Plus size={21} aria-hidden="true" />
-                    Postar
-                </button>
-            )}
+
         </aside>
     );
 }
