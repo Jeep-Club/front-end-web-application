@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getActionFailure } from "@/utils/http/ActionError";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { Form } from "@/components/common/form";
-import { PublicationGalleryFields } from "@/components/pages/publications/PublicationGalleryFields";
+import { PublicationGalleryFields } from "./PublicationGalleryFields";
 import type { PublicationGalleryItem } from "@/utils/publications/gallery";
 import { InputRegister } from "@/components/common/input/input-register";
 import { RichTextRegister } from "@/components/common/rich-text/RichTextRegister";
