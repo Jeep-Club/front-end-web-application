@@ -13,6 +13,7 @@ import { DeleteToolModal } from "./DeleteToolModal";
 import { IncludeToolModal } from "./IncludeToolModal";
 import { ToggleToolStatusModal } from "./ToggleToolStatusModal";
 import { ViewToolModal } from "./ViewToolModal";
+import { ProfileTabLoading } from "../ProfileTabLoading";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
@@ -79,7 +80,7 @@ export function ToolsTabContent() {
             </div>
 
             {isLoading && (
-                <p className="text-sm text-j-gray-400">Carregando ferramentas...</p>
+                <ProfileTabLoading label="Carregando ferramentas..." layout="rows" />
             )}
 
             {isError && (
