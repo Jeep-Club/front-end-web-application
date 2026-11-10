@@ -12,6 +12,7 @@ import { CreateDependentModal } from './CreateDependentModal';
 import { DeleteDependentModal } from './DeleteDependentModal';
 import { DependentPhoto } from './DependentPhoto';
 import { ViewDependentModal } from './ViewDependentModal';
+import { ProfileTabLoading } from '../ProfileTabLoading';
 
 const RELATIONSHIP_LABELS:Record<MemberDependentRelationshipType,string>={
     CHILD:'Filho(a)',GUEST:'Convidado(a)',OTHER:'Outro',PARENT:'Pai/Mãe',SIBLING:'Irmão/Irmã',SPOUSE:'Cônjuge',
@@ -31,7 +32,7 @@ export function DependentsTabContent(){
             <h3 className="text-base font-bold text-j-gray-700">Meus dependentes</h3>
             <Button onClick={()=>open(<CreateDependentModal/>)} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52"><Plus size={16}/><span className="hidden sm:inline">Incluir dependente</span><span className="sm:hidden">Incluir</span></Button>
         </div>
-        {isLoading&&<p className="text-sm text-j-gray-400">Carregando dependentes...</p>}
+        {isLoading&&<ProfileTabLoading label="Carregando dependentes..." layout="rows" />}
         {isError&&<div className="flex flex-col items-start gap-3"><p className="text-sm text-j-red-400">Não foi possível carregar seus dependentes.</p><Button onClick={()=>refetch()} disabled={isFetching}><RefreshCw size={16} className={isFetching?'animate-spin':''}/>Tentar novamente</Button></div>}
         {!isLoading&&!isError&&!data.length&&<p className="text-sm text-j-gray-400">Você ainda não tem dependentes cadastrados.</p>}
         {!isLoading&&!isError&&data.length>0&&<div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
