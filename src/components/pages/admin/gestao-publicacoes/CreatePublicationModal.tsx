@@ -17,7 +17,7 @@ import { useUserStore } from "@/stores/userStore";
 
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationCreationTypes } from "@/config/publicationCreation";
-import { publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
+import { eventLocalDateTime, publicationFormSchema, type PublicationFormData, type CreatePublicationRequest } from "@/schemas/publications/create";
 import { createPublicationAction } from "@/server/actions/publications/create";
 import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
 import { uploadImageAction } from "@/server/actions/media/upload-image";
@@ -49,8 +49,10 @@ function Fields({ initialType, publishEventImmediately, savedDraft }: { initialT
                 <RichTextRegister name="content" label="Conteúdo" required />
                 {type === "EVENT" && <>
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <InputRegister name="startsAt" label="Início" type="datetime-local" required />
-                        <InputRegister name="endsAt" label="Término (opcional)" type="datetime-local" />
+                        <InputRegister name="startDate" label="Data de início" type="date" required />
+                        <InputRegister name="startTime" label="Horário de início" type="time" required />
+                        <InputRegister name="endDate" label="Data de término (opcional)" type="date" />
+                        <InputRegister name="endTime" label="Horário de término (opcional)" type="time" />
                     </div>
                     {canConfigureEventPrice ? <div className="rounded-xl border border-j-yellow-300/60 bg-j-yellow-100/20 p-4">
                         <InputRegister name="amount" label="Valor da inscrição (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="Deixe vazio para gratuito" />
@@ -108,7 +110,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             }
             const common = { title: data.title, content: data.content, images };
             const payload: CreatePublicationRequest = data.type === "EVENT"
-                ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null,
+                ? { ...common, type: "EVENT", startsAt: eventLocalDateTime(data.startDate, data.startTime)!.toISOString(), endsAt: data.endDate ? eventLocalDateTime(data.endDate, data.endTime)!.toISOString() : null,
                     charges: data.amount.trim() ? [{ name: (data.chargeName.trim() || "Entrada").slice(0, 120), description: (data.chargeDescription.trim() || `Cobrança de participação no evento: ${data.title}`).slice(0, 255), amount: parseServiceAmount(data.amount), billingRequired: true, requiredForParticipation: true }] : [] }
                 : data.type === "SERVICE"
                     ? { ...common, type: "SERVICE", amount: parseServiceAmount(data.amount), contactPhone: unMaskPhoneNumber(data.contactPhone) }
@@ -171,7 +173,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
 
 
             </header>
-            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A falha fica visível no próprio formulário. */ } }} onError={(errors) => {
+            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startDate: "", startTime: "", endDate: "", endTime: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A falha fica visível no próprio formulário. */ } }} onError={(errors) => {
                 const firstError = Object.values(errors).map((error) => error?.message).find((message) => typeof message === "string");
                 toast.error(typeof firstError === "string" ? firstError : "Confira os campos destacados.");
             }} className="px-5 py-5 md:px-8 md:py-6">

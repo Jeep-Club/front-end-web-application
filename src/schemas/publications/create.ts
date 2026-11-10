@@ -22,6 +22,16 @@ export const createPublicationSchema = z.discriminatedUnion("type", [
 });
 export type CreatePublicationRequest = z.infer<typeof createPublicationSchema>;
 
+/** Interprets the browser's date and time as one local instant, rejecting incomplete values. */
+export function eventLocalDateTime(date: string, time: string): Date | undefined {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return;
+    const value = new Date(`${date}T${time}`);
+    if (!Number.isFinite(value.getTime()) ||
+        `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}` !== date ||
+        `${String(value.getHours()).padStart(2, "0")}:${String(value.getMinutes()).padStart(2, "0")}` !== time) return;
+    return value;
+}
+
 const fileSchema = z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, "Selecione uma imagem.").refine((file) => !!file && file.size > 0 && file.size <= 5 * 1024 * 1024, "A imagem deve ter até 5 MiB.").refine((file) => !!file && ["image/jpeg", "image/png", "image/webp"].includes(file.type), "Use JPEG, PNG ou WebP.");
 export const publicationFormSchema = z.object({
     type: z.enum(["NOTICE", "EVENT", "SERVICE"]),
@@ -29,15 +39,26 @@ export const publicationFormSchema = z.object({
     content: publicationContent,
     photos: z.array(fileSchema).min(1, "Envie pelo menos uma imagem.").max(5),
     primaryIndex: z.string(),
-    startsAt: z.string(), endsAt: z.string(), amount: z.string(), chargeName: z.string(), chargeDescription: z.string(), contactPhone: z.string(),
+    startDate: z.string(), startTime: z.string(), endDate: z.string(), endTime: z.string(), amount: z.string(), chargeName: z.string(), chargeDescription: z.string(), contactPhone: z.string(),
 }).superRefine((data, ctx) => {
     const primary = Number(data.primaryIndex);
     if (!Number.isInteger(primary) || primary < 0 || primary >= data.photos.length) ctx.addIssue({ code: "custom", path: ["primaryIndex"], message: "Selecione a imagem de capa." });
     if (data.type === "EVENT") {
         if (data.amount && (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || !Number.isFinite(parseServiceAmount(data.amount)) || parseServiceAmount(data.amount) < 0.01)) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe valor positivo com ate duas casas decimais ou deixe em branco para gratuito." });
-        const start = Date.parse(data.startsAt);
-        if (!Number.isFinite(start) || start <= Date.now()) ctx.addIssue({ code: "custom", path: ["startsAt"], message: "Informe um início no futuro." });
-        if (data.endsAt && (!Number.isFinite(Date.parse(data.endsAt)) || Date.parse(data.endsAt) <= start)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "O término deve ser posterior ao início." });
+        const start = eventLocalDateTime(data.startDate, data.startTime);
+        if (!data.startDate) ctx.addIssue({ code: "custom", path: ["startDate"], message: "Informe a data de início." });
+        if (!data.startTime) ctx.addIssue({ code: "custom", path: ["startTime"], message: "Informe o horário de início." });
+        if (data.startDate && data.startTime && !start) ctx.addIssue({ code: "custom", path: ["startDate"], message: "Informe uma data e horário de início válidos." });
+        if (start && start.getTime() <= Date.now()) ctx.addIssue({ code: "custom", path: ["startDate"], message: "Informe um início no futuro." });
+        if (data.endDate || data.endTime) {
+            if (!data.endDate) ctx.addIssue({ code: "custom", path: ["endDate"], message: "Informe a data de término." });
+            if (!data.endTime) ctx.addIssue({ code: "custom", path: ["endTime"], message: "Informe o horário de término." });
+            if (data.endDate && data.endTime) {
+                const end = eventLocalDateTime(data.endDate, data.endTime);
+                if (!end) ctx.addIssue({ code: "custom", path: ["endDate"], message: "Informe um término válido." });
+                else if (start && end <= start) ctx.addIssue({ code: "custom", path: ["endDate"], message: "O término deve ser posterior ao início." });
+            }
+        }
     }
     if (data.type === "SERVICE") {
         if (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || !Number.isFinite(parseServiceAmount(data.amount)) || parseServiceAmount(data.amount) < 0.01) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe um valor positivo com até duas casas decimais." });

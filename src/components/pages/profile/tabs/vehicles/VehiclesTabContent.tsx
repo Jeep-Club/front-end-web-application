@@ -12,6 +12,7 @@ import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { IncludeVehicleModal } from "./IncludeVehicleModal";
 import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 import { ViewVehicleModal } from "./ViewVehicleModal";
+import { ProfileTabLoading } from "../ProfileTabLoading";
 
 export function VehiclesTabContent() {
     const { setContent, setOpen } = useModal();
@@ -60,7 +61,7 @@ export function VehiclesTabContent() {
             </div>
 
             {isLoading && (
-                <p className="text-sm text-j-gray-400">Carregando veículos...</p>
+                <ProfileTabLoading label="Carregando veículos..." layout="cards" />
             )}
 
             {isError && (

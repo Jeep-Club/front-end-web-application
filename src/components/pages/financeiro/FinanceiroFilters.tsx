@@ -45,7 +45,7 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
                     name="status"
                     value={status}
                     onChange={(event) => handleStatusChange(event.target.value)}
-                    className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-j-gray-700 focus:border-j-blue-500 focus:outline-none"
+                    className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-input-bg px-3 py-2.5 text-sm font-normal text-input-text focus:border-j-blue-500 focus:outline-none"
                 >
                     <option value="">Todos os status</option>
                     <option value="PENDING">Em aberto (pendente, em atraso ou expirada)</option>
@@ -59,7 +59,7 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
                     name="sort"
                     value={sort}
                     onChange={(event) => handleSortChange(event.target.value)}
-                    className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-j-gray-700 focus:border-j-blue-500 focus:outline-none"
+                    className="block box-border h-11 w-full min-w-0 max-w-full overflow-hidden text-ellipsis rounded-lg border border-j-gray-200 bg-input-bg px-3 py-2.5 text-sm font-normal text-input-text focus:border-j-blue-500 focus:outline-none"
                 >
                     <option value="dueDate,desc">Mais recentes primeiro</option>
                     <option value="dueDate,asc">Mais antigas primeiro</option>
