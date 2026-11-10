@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { PublicationGalleryFields } from './PublicationGalleryFields';
 import type { PublicationGalleryItem } from '@/utils/publications/gallery';
 const saved: PublicationGalleryItem[] = [0, 1].map(index => ({ id: String(index), kind: 'saved', storageKey: index ? '/images/logo_grande.jpg' : '/images/hero-jeep.jpg' }));
-const meta = { title: 'Páginas/Gestão Administrativa/Publicações/Galeria', component: PublicationGalleryFields, args: { items: saved, primaryId: '1', onChange: () => {} }, argTypes: { items: { control: false }, onChange: { control: false }, primaryId: { control: false } }, render: function Gallery(args) { const [items, setItems] = useState(args.items); const [primary, setPrimary] = useState(args.primaryId); return <PublicationGalleryFields {...args} items={items} primaryId={primary} onChange={(next, cover) => { setItems(next); setPrimary(cover); }} />; } } satisfies Meta<typeof PublicationGalleryFields>;
+const meta = { title: 'Páginas/Gestão Administrativa/Publicações/Criar/Galeria de Imagens', component: PublicationGalleryFields, args: { items: saved, primaryId: '1', onChange: () => {} }, argTypes: { items: { control: false }, onChange: { control: false }, primaryId: { control: false } }, render: function Gallery(args) { const [items, setItems] = useState(args.items); const [primary, setPrimary] = useState(args.primaryId); return <PublicationGalleryFields {...args} items={items} primaryId={primary} onChange={(next, cover) => { setItems(next); setPrimary(cover); }} />; } } satisfies Meta<typeof PublicationGalleryFields>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Retidas: Story = {};
