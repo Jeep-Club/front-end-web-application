@@ -26,8 +26,8 @@
 }
 
 @keyframes button-loading-sweep {
-  from { transform: translateX(-110%); }
-  to { transform: translateX(410%); }
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
 }
 
 .button-loading-progress {
@@ -41,6 +41,15 @@
 
 .sidebar-link-pending {
   animation: sidebar-link-pending 220ms ease-out both;
+}
+
+@keyframes sidebar-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sidebar-backdrop-enter {
+  animation: sidebar-backdrop-enter 180ms ease-out both;
 }
 
 [data-radix-popper-content-wrapper] [data-state="open"] {
@@ -62,7 +71,8 @@
   }
 
   .button-loading-progress,
-  .sidebar-link-pending {
+  .sidebar-link-pending,
+  .sidebar-backdrop-enter {
     animation: none !important;
     transform: none !important;
   }

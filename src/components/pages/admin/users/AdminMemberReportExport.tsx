@@ -25,7 +25,7 @@ export function AdminMemberReportExport({ user }: { user: AdminUser }) {
         }
     }
 
-    return <Button type="button" onClick={() => void exportReport()} disabled={pending} aria-busy={pending} className="shrink-0 gap-2 bg-j-yellow-300 px-3 py-2 text-xs text-j-blue-900 hover:bg-j-yellow-200 sm:text-sm">
+    return <Button type="button" onClick={() => void exportReport()} isLoading={pending} className="shrink-0 gap-2 bg-j-yellow-300 px-3 py-2 text-xs text-j-blue-900 hover:bg-j-yellow-200 sm:text-sm">
         {pending ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Download size={16} aria-hidden="true" />}
         {pending ? "Gerando ficha…" : "Exportar ficha PDF"}
     </Button>;

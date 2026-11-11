@@ -85,7 +85,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
                     <Button type="button" disabled={mutation.isPending || files.length >= MAX_COMMENT_IMAGES} onClick={() => fileInput.current?.click()}><ImagePlus size={16} />Adicionar imagens ({files.length}/{MAX_COMMENT_IMAGES})</Button>
                     <p className="mt-1 text-xs text-j-gray-500">JPEG, PNG ou WebP, até 5 MiB cada.</p>
                 </div>
-                <Button type="submit" disabled={(!text.trim() && files.length === 0) || mutation.isPending} className="ml-auto"><Send size={15} />{mutation.isPending ? "Enviando..." : "Comentar"}</Button>
+                <Button type="submit" isLoading={mutation.isPending} disabled={!text.trim() && files.length === 0} className="ml-auto"><Send size={15} />{mutation.isPending ? "Enviando..." : "Comentar"}</Button>
             </div>
             {files.length > 0 && <ul aria-label="Imagens selecionadas" className="flex flex-col gap-2">
                 {files.map((file, index) => <li key={`${file.name}-${file.lastModified}-${index}`} className="flex items-center justify-between gap-2 rounded-lg bg-j-gray-100 px-3 py-2 text-sm text-j-gray-700">

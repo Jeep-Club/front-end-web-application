@@ -16,7 +16,7 @@ export function Button({children, type='button', tabIndex=0, className, isLoadin
             aria-busy={isLoading || undefined}
             className={twMerge(
                 `
-                relative isolate flex gap-1 items-center justify-center overflow-hidden
+                relative isolate flex gap-1 items-center justify-center
                 p-2.5 rounded-lg font-bold cursor-pointer text-sm md:text-base
                 transition-[background-color,color,box-shadow,transform]
                 duration-200 ease-out
@@ -30,7 +30,7 @@ export function Button({children, type='button', tabIndex=0, className, isLoadin
                 className
             )}
         >
-            {isLoading && <span aria-hidden="true" className="button-loading-progress absolute bottom-0 left-0 z-0 h-1 w-1/3 rounded-full bg-j-yellow-300/90" />}
+            {isLoading && <span aria-hidden="true" className="button-loading-progress absolute inset-x-0 bottom-0 z-0 h-1 rounded-b-lg bg-[linear-gradient(90deg,transparent,rgba(253,224,71,0.9),transparent)] bg-[length:45%_100%] bg-no-repeat" />}
             <span className="relative z-10 inline-flex items-center justify-center gap-1">{children}</span>
             {isLoading && <span className="sr-only" role="status">Carregando</span>}
         </button>

@@ -4,6 +4,14 @@ import { expect, test } from "../fixtures";
 
 const storybookUrl = readLocalUrl("PLAYWRIGHT_STORYBOOK_URL");
 
+test("Button comunica o carregamento sem violações de acessibilidade", async ({ page }, testInfo) => {
+  const id = "componentes-button--carregando";
+  await page.goto(new URL(`/iframe.html?id=${id}&embed=true`, storybookUrl).href);
+  await expect(page.getByRole("button", { name: "Salvar alterações", exact: true })).toBeDisabled();
+  await expect(page.getByRole("status")).toHaveText("Carregando");
+  await auditAccessibility(page, testInfo, id);
+});
+
 for (const theme of ["light", "dark"]) {
   test(`Erro, ajuda e contraste dos campos no tema ${theme}`, async ({ page }, testInfo) => {
     for (const { id, args } of [

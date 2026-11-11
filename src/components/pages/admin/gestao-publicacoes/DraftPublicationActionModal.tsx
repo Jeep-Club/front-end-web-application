@@ -87,8 +87,8 @@ export function DraftPublicationActionModal({ publication, action }: { publicati
             <EditFields onClose={setClose} />
         </Form> : <div className="flex flex-col-reverse gap-3 px-5 py-5 sm:flex-row md:px-8 md:py-6">
             <Button disabled={mutation.isPending} onClick={setClose} className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:bg-j-gray-100 hover:text-j-gray-700">Cancelar</Button>
-            {(action === "delete" || action === "cancel") ? <ConfirmButton onClick={confirm} disabled={mutation.isPending} className="flex-1">{mutation.isPending ? details.progress : details.label}</ConfirmButton>
-                : <Button onClick={confirm} disabled={mutation.isPending} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">{mutation.isPending ? details.progress : details.label}</Button>}
+            {(action === "delete" || action === "cancel") ? <ConfirmButton onClick={confirm} isLoading={mutation.isPending} className="flex-1">{mutation.isPending ? details.progress : details.label}</ConfirmButton>
+                : <Button onClick={confirm} isLoading={mutation.isPending} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">{mutation.isPending ? details.progress : details.label}</Button>}
         </div>}
     </div>;
 }

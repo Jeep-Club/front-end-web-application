@@ -106,7 +106,7 @@ export default function Sidebar({
             {isMobileOpen && (
                 <div
                     onClick={onCloseMobile}
-                    className="fixed inset-0 z-30 bg-j-black/50 md:hidden"
+                    className="sidebar-backdrop-enter fixed inset-0 z-30 cursor-pointer bg-j-black/50 md:hidden"
                 />
             )}
 
@@ -116,7 +116,7 @@ export default function Sidebar({
                     `
                     fixed inset-y-0 left-0 z-40 flex h-dvh min-h-0 w-64 shrink-0 flex-col
                     overflow-x-hidden overflow-y-auto overscroll-contain border-r border-j-yellow-300 bg-j-blue-800
-                    transition-transform duration-300
+                    transition-[transform,width] duration-300 ease-out motion-reduce:transition-none
                     md:sticky md:top-0 md:z-20 md:translate-x-0
                     md:transition-[width]
                     `,
@@ -222,6 +222,7 @@ export default function Sidebar({
                             <span className={isCollapsed ? "md:hidden" : ""}>
                                 Gestão
                             </span>
+                            <NavigationProgress />
                         </Link>
                         {favoriteModules.length > 0 && <div className="mt-3 border-t border-j-blue-700 pt-2">
                             {!isCollapsed && <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-j-transparent-white">Favoritos de gestão</p>}
@@ -230,9 +231,10 @@ export default function Sidebar({
                                     ? "Dados Médicos"
                                     : title.replace(/^Gestão de\s+/i, "").replace(/^./u, (character) => character.toLocaleUpperCase("pt-BR"));
 
-                                return <Link key={key} href={href} title={favoriteTitle} aria-label={favoriteTitle} onClick={onCloseMobile} className={twMerge("mb-0.5 flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15.5px] font-bold text-j-white/80 transition-colors hover:bg-j-blue-700 hover:text-j-white", isCollapsed && "md:justify-center md:px-0", pathname === href.split("?")[0] && "bg-j-blue-700 text-j-yellow-300")}>
+                                return <Link key={key} href={href} title={favoriteTitle} aria-label={favoriteTitle} onClick={onCloseMobile} className={twMerge("relative mb-0.5 flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15.5px] font-bold text-j-white/80 transition-[background-color,color,transform] duration-200 hover:bg-j-blue-700 hover:text-j-white active:scale-[0.98] motion-reduce:transform-none", isCollapsed && "md:justify-center md:px-0", pathname === href.split("?")[0] && "bg-j-blue-700 text-j-yellow-300")}>
                                 <Icon size={18} />
                                 <span className={isCollapsed ? "md:hidden" : ""}>{favoriteTitle}</span>
+                                <NavigationProgress />
                             </Link>;
                             })}
                         </div>}

@@ -99,7 +99,7 @@ export default function ApplyForm() {
                             <InputEmail {...fieldStyle} name="email" label="E-mail (opcional)" placeholder="voce@exemplo.com" maxLength={180} autoComplete="email" />
                             <TextareaRegister name="message" label="Carta de apresentação" placeholder="Fale sobre você, seu interesse pelo clube e o que gostaria de viver com a comunidade..." rows={6} maxLength={2000} labelClassName="text-sm font-semibold text-white" className="min-h-36 rounded-xl border-transparent bg-[#e8efff] text-[#071741] placeholder:text-slate-500 focus:border-j-yellow-400" />
                             <p className="-mt-3 text-xs leading-5 text-white/75">Seus dados serão usados pela diretoria para avaliar e responder à solicitação.</p>
-                            <Button type="submit" disabled={mutation.isPending} aria-busy={mutation.isPending} className="min-h-12 w-full gap-2">{mutation.isPending ? <>Enviando... <LoaderCircle size={18} className="animate-spin" /></> : <>Enviar solicitação <Send size={17} /></>}</Button>
+                            <Button type="submit" isLoading={mutation.isPending} className="min-h-12 w-full gap-2">{mutation.isPending ? <>Enviando... <LoaderCircle size={18} className="animate-spin" /></> : <>Enviar solicitação <Send size={17} /></>}</Button>
                         </Form>
                     )}
                 </section>
