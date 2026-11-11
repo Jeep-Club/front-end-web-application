@@ -4,9 +4,8 @@
 }
 
 .fields :is(input:not([type="file"]), select, textarea) {
-    color-scheme: light;
-    background-color: var(--color-j-white);
-    color: var(--color-j-gray-700);
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
     padding: 0.75rem 1rem;
 }
 
@@ -28,7 +27,7 @@
 }
 
 .fields :is(input, select, textarea)[class*="border-input-border-error"] {
-    color: var(--color-j-gray-700);
+    color: var(--color-input-text);
 }
 
 .fields :is(input, select, textarea):disabled {
