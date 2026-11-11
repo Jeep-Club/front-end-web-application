@@ -88,7 +88,7 @@ export default function PaymentDetailPage({ id }: { id: number }) {
                                 <span id="reason-help" className="text-xs font-normal text-j-gray-600">{reason.length}/500 caracteres. O motivo é obrigatório.</span>
                             </label>}
                             <div className="flex flex-wrap gap-3">
-                                <Button type="submit" disabled={!canSubmit} className={decision === "reject" ? "bg-red-700 text-white hover:bg-red-800 hover:text-white" : "bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"}>{mutation.isPending ? "Salvando decisão..." : decision === "confirm" ? "Confirmar pagamento" : "Rejeitar pagamento"}</Button>
+                                <Button type="submit" isLoading={mutation.isPending} disabled={!canSubmit} className={decision === "reject" ? "bg-red-700 text-white hover:bg-red-800 hover:text-white" : "bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white"}>{mutation.isPending ? "Salvando decisão..." : decision === "confirm" ? "Confirmar pagamento" : "Rejeitar pagamento"}</Button>
                                 <Button disabled={mutation.isPending} onClick={() => { setDecision(null); mutation.reset(); }} className="bg-j-gray-100 text-j-blue-800">Cancelar</Button>
                             </div>
                         </form> : <div className="flex flex-wrap gap-3">

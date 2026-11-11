@@ -10,7 +10,6 @@ import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
-
   FaUserPlus,
   FaIdCard,
   FaChevronRight,
@@ -22,12 +21,9 @@ import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
 
-
 export default function HomeClient({ footer }: { footer: ReactNode }) {
 
-
   const router = useRouter();
-
 
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
@@ -131,7 +127,6 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
           </div>
 
 
-
           <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
           <button
             id="tour-home-join-btn"
@@ -142,7 +137,6 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
             Quero ser sócio
             <FaChevronRight size={12} />
           </button>
-
 
         </div>
 
@@ -245,10 +239,7 @@ export default function HomeClient({ footer }: { footer: ReactNode }) {
             <button
               onClick={handleRegister}
 
-
               className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-lg"
-
-
             >
               <FaIdCard size={18} />
               Quero ser Sócio
