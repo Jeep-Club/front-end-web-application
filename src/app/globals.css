@@ -25,6 +25,24 @@
   animation: app-route-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+@keyframes button-loading-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(410%); }
+}
+
+.button-loading-progress {
+  animation: button-loading-sweep 1.15s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes sidebar-link-pending {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.sidebar-link-pending {
+  animation: sidebar-link-pending 220ms ease-out both;
+}
+
 [data-radix-popper-content-wrapper] [data-state="open"] {
   animation: popover-enter 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -41,6 +59,12 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .button-loading-progress,
+  .sidebar-link-pending {
+    animation: none !important;
+    transform: none !important;
   }
 }
 

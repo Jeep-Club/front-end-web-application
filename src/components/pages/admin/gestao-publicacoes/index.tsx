@@ -1,8 +1,10 @@
 "use client";
 import { Button } from "@/components/common/button";
+import { AdminExport } from "@/components/common/admin-export/AdminExport";
 import { publicationCreationTypes } from "@/config/publicationCreation";
 import { useModal } from "@/providers/ModalProvider";
 import { listAdminPublicationsAction } from "@/server/actions/publications/list";
+import { exportAdminPublicationsAction } from "@/server/actions/publications/export";
 import { parsePublicationPagination,updatePublicationPagination } from "@/utils/publications/pagination";
 import { parsePublicationStatus,publicationStatusOptions } from "@/utils/publications/statusFilters";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +27,7 @@ export default function PublicationManagement() {
     const permissions = useUserStore((state) => state.permissions);
     const { setContent, setOpen } = useModal();
     const canCreate = publicationCreationTypes.some((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
+    const canExport = hasPermission(permissions, "PUBLICATIONS", "EXPORT");
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const pagination = parsePublicationPagination(searchParams);
@@ -100,12 +103,15 @@ export default function PublicationManagement() {
                         <section id="publication-management-content" aria-labelledby="publication-management-title" className="rounded-xl border border-j-gray-200 bg-j-white p-6">
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                 <h2 id="publication-management-title" className="text-center text-lg font-bold text-j-blue-800 sm:text-left">{selectedSections.map((section) => section.title).join(" · ") || "Publicações"}</h2>
+                                <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+                                {canExport && selectedSections.map((section) => <AdminExport key={section.type} formats={["CSV", "PDF"]} label={`Exportar ${section.title}`} className="w-full sm:w-auto" onExport={(format) => exportAdminPublicationsAction({ type: section.type, status, format })} />)}
                                 {canCreate && (
                                     <Button id="tour-publications-create-btn" onClick={() => { setContent(<CreatePublicationModal />); setOpen(); }} className="w-full sm:w-auto">
                                         <Plus size={18} />
                                         Criar publicação
                                     </Button>
                                 )}
+                                </div>
                             </div>
                             <fieldset id="tour-publications-status" className="mt-5 w-full min-w-0">
                                 <legend className="mb-3 text-base font-bold text-j-gray-700">Estado da publicação</legend>

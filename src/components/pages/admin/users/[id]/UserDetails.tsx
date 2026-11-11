@@ -60,6 +60,7 @@ import { ROLE_STATUS_LABEL,USER_STATUS_LABEL,USER_STATUS_STYLE } from "../user-d
 import { UserStatusConfirmationModal } from "../UserStatusConfirmationModal";
 import { UserWorkspace,type UserWorkspaceOption } from "../UserWorkspace";
 import { UserActivationInvitation } from "./UserActivationInvitation";
+import { AdminMemberReportExport } from "../AdminMemberReportExport";
 import { hasAdminSecurityReadPermission,UserSecurityTab } from "./UserSecurityTab";
 
 const BRAZILIAN_STATES = [
@@ -152,6 +153,7 @@ function UserDetailsWorkspace({ user: initialUser, modal }: UserDetailsModalProp
 
     const permissions = useUserStore((state) => state.permissions);
     const canReadUsers = hasPermission(permissions, "IDENTITY", "USER_READ");
+    const canReadMemberRegistry = hasPermission(permissions, "MEMBERSHIP", "MEMBER_READ");
     const canUpdateUsers = hasPermission(permissions, "IDENTITY", "USER_UPDATE");
     const canDisableUsers = hasPermission(permissions, "IDENTITY", "USER_DISABLE");
     const canEnableUsers = hasPermission(permissions, "IDENTITY", "USER_ENABLE");
@@ -205,7 +207,7 @@ function UserDetailsWorkspace({ user: initialUser, modal }: UserDetailsModalProp
             selected={selected}
             onSelect={setSelected}
             summary={(
-                <div className="flex items-center gap-3 bg-j-blue-800 px-4 py-5 sm:px-6">
+                <div className="flex flex-wrap items-center gap-3 bg-j-blue-800 px-4 py-5 sm:px-6">
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-j-white/10 text-j-yellow-300">
                         <UserRound size={22} aria-hidden="true" />
                     </span>
@@ -221,6 +223,7 @@ function UserDetailsWorkspace({ user: initialUser, modal }: UserDetailsModalProp
                             </span>
                         </div>
                     </div>
+                    {canReadUsers && canReadMemberRegistry && <AdminMemberReportExport user={currentUser} />}
                 </div>
             )}
             onBack={() => modal ? router.back() : router.push("/admin/users")}

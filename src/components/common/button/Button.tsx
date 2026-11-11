@@ -3,17 +3,20 @@ import { twMerge } from "tailwind-merge";
 
 export interface ButtonProps extends React.ComponentProps<'button'>{
     children: React.ReactNode,
+    isLoading?: boolean,
 }
 
-export function Button({children, type='button', tabIndex=0, className, ...props}: ButtonProps){
+export function Button({children, type='button', tabIndex=0, className, isLoading = false, disabled, ...props}: ButtonProps){
     return(
         <button
             {...props}
             tabIndex={tabIndex}
             type={type}
+            disabled={disabled || isLoading}
+            aria-busy={isLoading || undefined}
             className={twMerge(
                 `
-                flex gap-1 items-center justify-center
+                relative isolate flex gap-1 items-center justify-center overflow-hidden
                 p-2.5 rounded-lg font-bold cursor-pointer text-sm md:text-base
                 transition-[background-color,color,box-shadow,transform]
                 duration-200 ease-out
@@ -27,7 +30,9 @@ export function Button({children, type='button', tabIndex=0, className, ...props
                 className
             )}
         >
-            {children}
+            {isLoading && <span aria-hidden="true" className="button-loading-progress absolute bottom-0 left-0 z-0 h-1 w-1/3 rounded-full bg-j-yellow-300/90" />}
+            <span className="relative z-10 inline-flex items-center justify-center gap-1">{children}</span>
+            {isLoading && <span className="sr-only" role="status">Carregando</span>}
         </button>
     );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
     HelpCircle,
@@ -19,7 +19,6 @@ import { twMerge } from "tailwind-merge";
 import { useMutation } from "@tanstack/react-query";
 
 import { Logo } from "@/components/common/logo";
-import { legalLinks } from "@/components/common/legal-links";
 import { useModal } from "@/providers/ModalProvider";
 import logoutAction from "@/server/actions/auth/logout";
 import { useUserStore } from "@/stores/userStore";
@@ -55,6 +54,20 @@ const navItems = [
         icon: Megaphone,
     },
 ];
+
+function NavigationProgress() {
+    const { pending } = useLinkStatus();
+
+    return (
+        <span
+            aria-hidden="true"
+            className={twMerge(
+                "pointer-events-none absolute inset-x-2 bottom-0 h-0.5 origin-left rounded-full bg-j-yellow-300 transition-transform duration-200 motion-reduce:transition-none",
+                pending ? "sidebar-link-pending scale-x-100" : "scale-x-0",
+            )}
+        />
+    );
+}
 
 interface SidebarProps {
     isCollapsed: boolean;
@@ -160,7 +173,7 @@ export default function Sidebar({
                                         }
                                     }}
                                     className={twMerge(
-                                        "flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15.5px] font-bold transition-colors",
+                                        "relative flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15.5px] font-bold transition-[background-color,color,transform] duration-200 active:scale-[0.98] motion-reduce:transform-none",
                                         desktopOnly && "hidden md:flex",
                                         isCollapsed &&
                                             "md:justify-center md:px-0",
@@ -180,6 +193,7 @@ export default function Sidebar({
                                     >
                                         {label}
                                     </span>
+                                    <NavigationProgress />
                                 </Link>
                             );
                         },
@@ -197,7 +211,7 @@ export default function Sidebar({
                                 window.dispatchEvent(new CustomEvent("tour:destroy-and-diverge"));
                             }}
                             className={twMerge(
-                            "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-[15.5px] font-bold transition-colors",
+                            "relative flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-[15.5px] font-bold transition-[background-color,color,transform] duration-200 active:scale-[0.98] motion-reduce:transform-none",
                                 isCollapsed && "md:justify-center md:px-0",
                                 pathname.startsWith(panelHref)
                                     ? "bg-j-yellow-300 font-bold text-j-blue-800 shadow-sm"
@@ -265,25 +279,6 @@ export default function Sidebar({
                         {logoutMutation.isPending ? <LoaderCircle size={17} className="animate-spin" aria-hidden="true" /> : <LogOut size={17} aria-hidden="true" />}
                         <span className={isCollapsed ? "md:hidden" : ""}>Sair</span>
                     </button>
-                </nav>
-                <nav
-                    aria-label="Informações legais e contato"
-                    className={twMerge(
-                        "flex shrink-0 flex-col gap-0.5 border-t border-j-blue-700 px-3 py-2",
-                        isCollapsed && "md:hidden",
-                    )}
-                >
-                    {legalLinks.map(({ href, label }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            onClick={onCloseMobile}
-                            aria-current={pathname === href ? "page" : undefined}
-                            className="cursor-pointer rounded-sm py-0.5 pl-3 text-[11px] font-bold text-j-white/60 transition-colors hover:text-j-yellow-300 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"
-                        >
-                            {label}
-                        </Link>
-                    ))}
                 </nav>
             </aside>
         </>

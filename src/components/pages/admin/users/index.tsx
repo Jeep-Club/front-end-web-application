@@ -12,7 +12,7 @@ import { getMembershipApplicationsTourSteps, getUsersTourSteps } from "@/config/
 import { usePageTour } from "@/hooks/useTour";
 import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
-import { exportAdminUsersAction } from "@/server/actions/admin/users/export";
+import { exportAdminUsersAction, exportAdminUsersReportPdfAction } from "@/server/actions/admin/users/export";
 import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
 import {
     getAdminMemberRegistrationAction,
@@ -74,23 +74,6 @@ function normalizeSearchValue(value: string, type: UserSearchType) {
     return trimmedValue;
 }
 
-function downloadBase64File(base64: string, contentType: string, filename: string) {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i += 1) {
-        bytes[i] = binary.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: contentType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-}
-
 interface Props {
     users: PageResponse<AdminUser>;
     searchParams: AdminUserSearchParams;
@@ -111,7 +94,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
         enabled: permissionsFromStore.length > 0 && (canReadApplications || hasPermission(permissionsFromStore, "IDENTITY", "USER_READ")),
     });
     const [isPending, startTransition] = useTransition();
-    const [exportingFormat, setExportingFormat] = useState<"CSV" | "PDF" | null>(null);
     const [selectedSearchType, setSelectedSearchType] = useState<UserSearchType>(() =>
         SEARCH_PARAMS.find((param) => Boolean(query[param])) ?? "q",
     );
@@ -201,16 +183,8 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
 
     const handleExportUsers = useCallback(
         async (format: "CSV" | "PDF") => {
-            setExportingFormat(format);
-            try {
-                const file = await exportAdminUsersAction(query, format, "MEMBER");
-                downloadBase64File(file.base64, file.contentType, file.filename);
-                toast.success(`Exportação ${format} concluída.`);
-            } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Não foi possível exportar os usuários.");
-            } finally {
-                setExportingFormat(null);
-            }
+            if (format === "CSV") return exportAdminUsersAction(query, "CSV", "MEMBER");
+            return exportAdminUsersReportPdfAction(query);
         },
         [query],
     );
@@ -386,7 +360,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         pageSize={users.size}
                         isLoading={false}
                         isFetching={isPending}
-                        isExporting={exportingFormat}
                         onSearchChange={updateSearch}
                         onStatusChange={(status) =>
                             replaceSearchParams(
