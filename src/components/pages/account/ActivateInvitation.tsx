@@ -54,7 +54,7 @@ export default function ActivateInvitation({ token }: { token: string }) {
                             <InputPassword name="password" label="Nova senha" labelClassName="text-j-gray-700" className="h-12 rounded-xl border-j-gray-300 bg-j-white text-j-gray-700" autoComplete="new-password" required />
                             <InputPassword name="confirmPassword" label="Confirmar senha" labelClassName="text-j-gray-700" className="h-12 rounded-xl border-j-gray-300 bg-j-white text-j-gray-700" autoComplete="new-password" required />
                             <p className="text-xs text-j-gray-500">Use de 8 a 72 caracteres.</p>
-                            <Button type="submit" disabled={activation.isPending} className="mt-2 min-h-12 w-full gap-2">{activation.isPending ? <>Ativando... <LoaderCircle size={18} className="animate-spin" /></> : <>Ativar conta <ArrowRight size={18} /></>}</Button>
+                            <Button type="submit" isLoading={activation.isPending} className="mt-2 min-h-12 w-full gap-2">{activation.isPending ? <>Ativando... <LoaderCircle size={18} className="animate-spin" /></> : <>Ativar conta <ArrowRight size={18} /></>}</Button>
                         </div>
                     </Form>
                 </>}

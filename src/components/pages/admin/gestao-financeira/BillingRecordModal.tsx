@@ -35,7 +35,7 @@ export function BillingRecordModal({ resource, id, operation, title, explanation
             {isRejection && <label className="text-sm font-semibold">Motivo da rejeição<textarea required maxLength={500} value={value} onChange={(event) => setValue(event.target.value)} className="mt-2 w-full rounded-xl border border-j-gray-300 p-3" rows={3} /></label>}
             {isAmount && <label className="text-sm font-semibold">Novo valor final (R$)<input required type="number" min="0.01" step="0.01" max={originalAmount} value={value} onChange={(event) => setValue(event.target.value)} className="mt-2 w-full rounded-xl border border-j-gray-300 p-3" /><span className="mt-1 block text-xs font-normal">O valor não pode superar o original. Pagamentos em validação impedem o ajuste.</span></label>}
             {failure && <p role="alert" className="text-sm text-red-600">{failure}</p>}
-            {operation && <footer className="flex justify-end gap-3"><Button type="button" disabled={mutation.isPending} onClick={setClose}>{operation ? "Voltar" : "Fechar"}</Button>{operation && <ConfirmButton type="submit" disabled={!valid || mutation.isPending || !details.data}>{mutation.isPending ? "Processando..." : "Confirmar operação"}</ConfirmButton>}</footer>}
+            {operation && <footer className="flex justify-end gap-3"><Button type="button" disabled={mutation.isPending} onClick={setClose}>{operation ? "Voltar" : "Fechar"}</Button>{operation && <ConfirmButton type="submit" isLoading={mutation.isPending} disabled={!valid || !details.data}>{mutation.isPending ? "Processando..." : "Confirmar operação"}</ConfirmButton>}</footer>}
         </form>
     </section>;
 }

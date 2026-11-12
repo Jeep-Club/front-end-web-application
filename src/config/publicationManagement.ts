@@ -24,7 +24,7 @@ export const publicationManagementSections = [
         description: "Acompanhe anúncios de serviços e solicitações de publicação e alteração.",
         readActions: ["SERVICE_ADMIN_READ", "SERVICE_REQUEST_ADMIN_READ", "SERVICE_CHANGE_REQUEST_ADMIN_READ"],
     },
-];
+] as const;
 
 export const publicationManagementReadActions = publicationManagementSections.flatMap(
     (section) => section.readActions,

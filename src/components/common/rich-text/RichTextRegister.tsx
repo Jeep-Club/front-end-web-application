@@ -3,23 +3,41 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { useController, useFormContext } from "react-hook-form";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
+import * as Popover from "@radix-ui/react-popover";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Quote, Code, Minus, Undo2, Redo2, RemoveFormatting, Link2, Unlink, Check, X } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Quote, Code, Minus, Undo2, Redo2, RemoveFormatting, Link2, Unlink, Check, X, Plus, Ellipsis } from "lucide-react";
 import { publicationEditorHtml } from "@/utils/publications/content";
 import { isolateListSelection } from "@/utils/publications/listSelection";
 import styles from "./rich-text.module.css";
 
-function Tool({ label, children, active = false, disabled = false, onClick }: {
-    label: string; children: ReactNode; active?: boolean; disabled?: boolean; onClick: () => void;
+function Tool({ label, children, active = false, disabled = false, menu = false, onClick }: {
+    label: string; children: ReactNode; active?: boolean; disabled?: boolean; menu?: boolean; onClick: () => void;
 }) {
     return <button type="button" title={label} aria-label={label} aria-pressed={active} disabled={disabled} onMouseDown={(event) => event.preventDefault()} onClick={onClick}
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-40 ${active ? "bg-button-primary-bg text-button-primary-text" : "text-secondary hover:bg-background-tertiary hover:text-primary"}`}>
-        {children}
+        className={`flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-40 ${menu ? "w-full justify-start px-3 text-sm" : "w-9"} ${active ? "bg-button-primary-bg text-button-primary-text" : "text-secondary hover:bg-background-tertiary hover:text-primary"}`}>
+        {children}{menu && <span>{label}</span>}
     </button>;
+}
+
+function ToolbarMenu({ label, icon, disabled, open, onOpenChange, children }: {
+    label: string; icon: ReactNode; disabled: boolean; open: boolean; onOpenChange: (open: boolean) => void; children: ReactNode;
+}) {
+    return <Popover.Root open={open} onOpenChange={onOpenChange}>
+        <Popover.Trigger asChild><button type="button" title={label} aria-label={label} disabled={disabled}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 focus-visible:outline-2 focus-visible:outline-input-border-focus disabled:cursor-not-allowed disabled:opacity-40 data-[state=open]:bg-j-gray-200">
+            {icon}
+        </button></Popover.Trigger>
+        <Popover.Portal><Popover.Content sideOffset={6} collisionPadding={8} onEscapeKeyDown={(event) => event.stopPropagation()}
+            className="z-50 flex w-56 flex-col gap-1 rounded-xl border border-input-border bg-input-bg p-1.5 text-input-text shadow-xl">
+            <p className="px-3 py-1 text-xs font-bold text-j-gray-500">{label}</p>
+            {children}
+        </Popover.Content></Popover.Portal>
+    </Popover.Root>;
 }
 
 function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
     const [linkOpen, setLinkOpen] = useState(false);
+    const [openMenu, setOpenMenu] = useState<"lists" | "insert" | "more" | null>(null);
     const [url, setUrl] = useState("");
     const [linkError, setLinkError] = useState("");
     const id = useId();
@@ -66,19 +84,23 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
             <Tool label="Negrito (Ctrl+B)" active={state.bold} disabled={disabled} onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={17} /></Tool>
             <Tool label="Itálico (Ctrl+I)" active={state.italic} disabled={disabled} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={17} /></Tool>
             <Tool label="Sublinhado (Ctrl+U)" active={state.underline} disabled={disabled} onClick={() => editor.chain().focus().toggleUnderline().run()}><Underline size={17} /></Tool>
-            <Tool label="Tachado" active={state.strike} disabled={disabled} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough size={17} /></Tool>
-            <span className="mx-1 h-6 w-px bg-j-gray-200" aria-hidden="true" />
-            <Tool label="Lista com marcadores" active={state.bulletList} disabled={disabled} onClick={() => toggleList('bulletList')}><List size={17} /></Tool>
-            <Tool label="Lista numerada" active={state.orderedList} disabled={disabled} onClick={() => toggleList('orderedList')}><ListOrdered size={17} /></Tool>
-            <Tool label="Citação" active={state.blockquote} disabled={disabled} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote size={17} /></Tool>
-            <Tool label="Bloco de código" active={state.codeBlock} disabled={disabled} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code size={17} /></Tool>
-            <Tool label="Linha divisória" disabled={disabled} onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus size={17} /></Tool>
-            <Tool label="Inserir ou editar link" active={state.link} disabled={disabled} onClick={() => { setUrl(editor.getAttributes("link").href ?? ""); setLinkError(""); setLinkOpen(!linkOpen); }}><Link2 size={17} /></Tool>
-            <Tool label="Remover link" disabled={disabled || !state.link} onClick={() => editor.chain().focus().extendMarkRange("link").unsetLink().run()}><Unlink size={17} /></Tool>
-            <span className="mx-1 h-6 w-px bg-j-gray-200" aria-hidden="true" />
             <Tool label="Desfazer (Ctrl+Z)" disabled={disabled || !state.undo} onClick={() => editor.chain().focus().undo().run()}><Undo2 size={17} /></Tool>
-            <Tool label="Refazer (Ctrl+Shift+Z)" disabled={disabled || !state.redo} onClick={() => editor.chain().focus().redo().run()}><Redo2 size={17} /></Tool>
-            <Tool label="Limpar formatação" disabled={disabled} onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}><RemoveFormatting size={17} /></Tool>
+            <ToolbarMenu label="Listas" icon={<List size={17} />} disabled={disabled} open={openMenu === "lists"} onOpenChange={(open) => setOpenMenu(open ? "lists" : null)}>
+                <Tool menu label="Lista com marcadores" active={state.bulletList} disabled={disabled} onClick={() => { toggleList('bulletList'); setOpenMenu(null); }}><List size={17} /></Tool>
+                <Tool menu label="Lista numerada" active={state.orderedList} disabled={disabled} onClick={() => { toggleList('orderedList'); setOpenMenu(null); }}><ListOrdered size={17} /></Tool>
+            </ToolbarMenu>
+            <ToolbarMenu label="Inserir" icon={<Plus size={17} />} disabled={disabled} open={openMenu === "insert"} onOpenChange={(open) => setOpenMenu(open ? "insert" : null)}>
+                <Tool menu label="Citação" active={state.blockquote} disabled={disabled} onClick={() => { editor.chain().focus().toggleBlockquote().run(); setOpenMenu(null); }}><Quote size={17} /></Tool>
+                <Tool menu label="Bloco de código" active={state.codeBlock} disabled={disabled} onClick={() => { editor.chain().focus().toggleCodeBlock().run(); setOpenMenu(null); }}><Code size={17} /></Tool>
+                <Tool menu label="Linha divisória" disabled={disabled} onClick={() => { editor.chain().focus().setHorizontalRule().run(); setOpenMenu(null); }}><Minus size={17} /></Tool>
+                <Tool menu label="Inserir ou editar link" active={state.link} disabled={disabled} onClick={() => { setUrl(editor.getAttributes("link").href ?? ""); setLinkError(""); setLinkOpen(true); setOpenMenu(null); }}><Link2 size={17} /></Tool>
+                <Tool menu label="Remover link" disabled={disabled || !state.link} onClick={() => { editor.chain().focus().extendMarkRange("link").unsetLink().run(); setOpenMenu(null); }}><Unlink size={17} /></Tool>
+            </ToolbarMenu>
+            <ToolbarMenu label="Mais ações" icon={<Ellipsis size={17} />} disabled={disabled} open={openMenu === "more"} onOpenChange={(open) => setOpenMenu(open ? "more" : null)}>
+                <Tool menu label="Tachado" active={state.strike} disabled={disabled} onClick={() => { editor.chain().focus().toggleStrike().run(); setOpenMenu(null); }}><Strikethrough size={17} /></Tool>
+                <Tool menu label="Refazer (Ctrl+Shift+Z)" disabled={disabled || !state.redo} onClick={() => { editor.chain().focus().redo().run(); setOpenMenu(null); }}><Redo2 size={17} /></Tool>
+                <Tool menu label="Limpar formatação" disabled={disabled} onClick={() => { editor.chain().focus().clearNodes().unsetAllMarks().run(); setOpenMenu(null); }}><RemoveFormatting size={17} /></Tool>
+            </ToolbarMenu>
         </div>
         {linkOpen && <div className="mt-2 border-t border-j-gray-200 pt-2">
             <label htmlFor={id} className="text-xs font-semibold text-j-gray-700">Endereço do link</label>

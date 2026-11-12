@@ -50,6 +50,16 @@ export const createPublicationSchema = z.discriminatedUnion("type", [
 });
 export type CreatePublicationRequest = z.infer<typeof createPublicationSchema>;
 
+/** Interprets the browser's date and time as one local instant, rejecting incomplete values. */
+export function eventLocalDateTime(date: string, time: string): Date | undefined {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return;
+    const value = new Date(`${date}T${time}`);
+    if (!Number.isFinite(value.getTime()) ||
+        `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}` !== date ||
+        `${String(value.getHours()).padStart(2, "0")}:${String(value.getMinutes()).padStart(2, "0")}` !== time) return;
+    return value;
+}
+
 const fileSchema = z.custom<File>((value) => typeof File !== "undefined" && value instanceof File, "Selecione uma imagem.").refine((file) => !!file && file.size > 0 && file.size <= 5 * 1024 * 1024, "A imagem deve ter até 5 MiB.").refine((file) => !!file && ["image/jpeg", "image/png", "image/webp"].includes(file.type), "Use JPEG, PNG ou WebP.");
 export const publicationFormSchema = z.object({
     type: z.enum(["NOTICE", "EVENT", "SERVICE"]),

@@ -114,7 +114,7 @@ export function MembershipApplicationsTab() {
                     <p className="mt-1 text-sm text-j-gray-600">Analise os dados e a apresentação antes de aprovar ou rejeitar.</p>
                 </div>
                 <label id="tour-applications-status-filter" className="flex flex-col gap-1 text-xs font-bold text-j-gray-600">Status
-                    <select value={status} onChange={(event) => { setStatus(event.target.value as MembershipApplicationStatus | ''); setPage(0); }} className="h-10 min-w-44 rounded-lg border border-j-gray-300 bg-white px-3 text-sm font-normal text-j-gray-800">
+                    <select value={status} onChange={(event) => { setStatus(event.target.value as MembershipApplicationStatus | ''); setPage(0); }} className="h-10 min-w-44 rounded-lg border border-j-gray-300 bg-input-bg px-3 text-sm font-normal text-input-text">
                         <option value="PENDING">Pendentes</option><option value="APPROVED">Aprovadas</option><option value="REJECTED">Rejeitadas</option><option value="COMPLETED">Concluídas</option><option value="">Todos os status</option>
                     </select>
                 </label>

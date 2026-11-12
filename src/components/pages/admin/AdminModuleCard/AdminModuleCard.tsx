@@ -33,7 +33,7 @@ export default function AdminModuleCard({
                 group flex min-h-[330px] flex-col
                 rounded-xl border border-j-gray-300
                 bg-j-white p-5 shadow-sm
-                transition-all duration-200
+                transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200
                 hover:-translate-y-1
                 hover:border-j-yellow-300
                 hover:shadow-md
@@ -110,7 +110,7 @@ export default function AdminModuleCard({
                         bg-j-yellow-300 px-4 py-3
                         text-sm font-black uppercase
                         tracking-wide text-j-blue-800
-                        transition-all
+                        transition-[background-color,border-color,color,box-shadow,opacity,transform]
                         hover:bg-j-yellow-200
                         active:scale-[0.98]
                     "

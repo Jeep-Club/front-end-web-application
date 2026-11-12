@@ -119,6 +119,8 @@ Os testes de [Table](../tests/browser/table/table-interactions.spec.ts) e [login
 
 - Table: a story existente `componentes-table--composicao-completa`, busca, limpeza por teclado, filtro, paginação e apresentação em tabela desktop ou acordeão nas larguras menores. Usa `embed=true`, que desativa autoplay no Storybook instalado, para que só o Playwright conduza essas interações. Isso não executa nem aprova o `play` da story.
 - Login: campos, máscara de CPF, sequência de foco, indicador de foco do campo senha, alternância da senha e validação real de CPF inválido. Não envia credenciais válidas nem testa autenticação. Requisições não locais, APIs e métodos diferentes de GET são bloqueados e fazem o teste falhar; erros JavaScript não tratados também falham o piloto.
+- Home pública: logo à esquerda, ações de ajuda/login à direita e ausência da seção de créditos em viewport mobile.
+- Loading: mensagem acessível de status e duração da animação reduzida quando `prefers-reduced-motion` está ativo.
 - Reflow: elementos principais visíveis, comportamento próprio de cada largura e ausência de overflow horizontal da página. Rolagem interna intencional da tabela não é proibida. Essas verificações não aprovam todos os conteúdos ou requisitos de acessibilidade.
 
 Selecione a execução pelo impacto: ajustes locais pedem specs/cenários diretamente relacionados no projeto adequado; mudanças compartilhadas incluem consumidores afetados e outros motores/larguras conforme o risco; alterações estruturais, de fixture ou configuração pedem a suíte completa. Avalie sempre a cobertura existente; acrescente testes somente para comportamentos ou riscos relevantes ainda não demonstrados.

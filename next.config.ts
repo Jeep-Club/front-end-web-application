@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   // Keep the isolated browser-test server independent of an already running dev server.
   distDir: process.env.JEEP_PLAYWRIGHT === '1' ? '.next-playwright' : '.next',
   allowedDevOrigins: [
+    ...localOrigins,
     "*.app.github.dev",
   ],
 

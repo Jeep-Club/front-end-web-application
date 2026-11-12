@@ -13,6 +13,7 @@ const meta = {
       options: ["button", "submit", "reset"],
     },
     tabIndex: { control: "number" },
+    isLoading: { control: "boolean" },
   },
   args: {
     children: "Salvar alterações",
@@ -32,6 +33,14 @@ export const Padrao: Story = {
   },
 };
 export const Desabilitado: Story = { args: { disabled: true } };
+export const Carregando: Story = {
+  args: { isLoading: true },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: "Salvar alterações" });
+    await expect(button).toBeDisabled();
+    await expect(button).toHaveAttribute("aria-busy", "true");
+  },
+};
 export const TextoLongo: Story = {
   args: { children: "Salvar alterações da definição de cobrança" },
 };
