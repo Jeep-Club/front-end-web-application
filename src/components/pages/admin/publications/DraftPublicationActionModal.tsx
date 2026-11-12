@@ -6,7 +6,7 @@ import { Button, ButtonIcon } from '@/components/common/button';
 import { Form } from '@/components/common/form';
 import { InputRegister } from '@/components/common/input/input-register';
 import { RichTextRegister } from '@/components/common/rich-text/RichTextRegister';
-import { PublicationGalleryFields } from '@/components/pages/publications/PublicationGalleryFields';
+import { PublicationGalleryFields } from './PublicationGalleryFields';
 import { useModal } from '@/providers/ModalProvider';
 import { eventChargeFormRowSchema, parseEventChargeRows } from '@/schemas/publications/create';
 import { EventChargeFields } from './EventChargeFields';
