@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, within } from "storybook/test";
 import { Select } from "./select";
+import { useRef, useState } from 'react';
+import { Button } from '../button';
 
 const OPTIONS = [
     { value: "trilhas", label: "Trilhas" },
@@ -43,10 +45,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Padrao: Story = {
     play: async ({ canvas, canvasElement, userEvent, args }) => {
-        await userEvent.click(canvas.getByRole("combobox", { name: "Categoria" }));
+        await userEvent.click(canvas.getByRole("combobox", { name: /Categoria/ }));
         const body = within(canvasElement.ownerDocument.body);
         await userEvent.click(body.getByRole("option", { name: "Trilhas" }));
-        await expect(canvas.getByRole("combobox", { name: "Categoria" })).toContain("Trilhas");
+        await expect(canvas.getByRole("combobox", { name: /Categoria/ })).toHaveTextContent("Trilhas");
         await expect(args.onChange).toHaveBeenCalled();
     },
 };
@@ -102,5 +104,27 @@ export const ComOpcoesDesabilitadas: Story = {
             { value: "eventos", label: "Eventos" },
             { value: "blocked-last", label: "Indisponível no fim", disabled: true },
         ],
+    },
+};
+
+export const DentroDeDialog: Story = {
+    render: function DialogExample(args) {
+        const dialog = useRef<HTMLDialogElement>(null);
+        const [submitted, setSubmitted] = useState('');
+        return <>
+            <Button type="button" onClick={() => dialog.current?.showModal()}>Abrir formulário</Button>
+            <dialog ref={dialog} aria-label="Formulário de categorias" className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-xl border border-j-gray-200 bg-j-white p-5 text-primary backdrop:bg-black/40">
+                <form className="space-y-4" onSubmit={event => {
+                    event.preventDefault();
+                    const data = new FormData(event.currentTarget);
+                    setSubmitted(`${data.get('category') ?? ''} / ${data.get('interests') ?? ''}`);
+                }}>
+                    <Select {...args} options={[{ value: 'trilhas', label: <strong>Trilhas</strong> }, ...OPTIONS.slice(1)]} />
+                    <Select label="Interesses" name="interests" options={OPTIONS} searchable multiple />
+                    <div className="flex gap-2"><Button type="submit">Enviar exemplo</Button><Button type="button" onClick={() => dialog.current?.close()}>Fechar formulário</Button></div>
+                    <output aria-label="Valores enviados">{submitted}</output>
+                </form>
+            </dialog>
+        </>;
     },
 };

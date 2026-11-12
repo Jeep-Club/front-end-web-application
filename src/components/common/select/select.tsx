@@ -1,11 +1,13 @@
 'use client';
 
-import * as PopoverPrimitive from "@radix-ui/react-popover";
-import * as SelectPrimitive from "@radix-ui/react-select";
+import { Popover } from "@heroui/react/popover";
+import { Select as HeroSelect } from "@heroui/react/select";
+import { ListBox } from "@heroui/react/list-box";
 import { Check, ChevronDown, Search } from "lucide-react";
 import {
     forwardRef,
     useId,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -24,7 +26,7 @@ export interface SelectOption {
     disabled?: boolean;
 }
 
-type SelectTriggerProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>;
+type SelectTriggerProps = React.ComponentPropsWithoutRef<"button">;
 
 export interface SelectProps extends Omit<SelectTriggerProps, "children" | "value" | "onChange" | "disabled" | "id"> {
     label: string;
@@ -73,12 +75,10 @@ function optionsFromChildren(children: ReactNode): SelectOption[] {
 
         if (!nodes || typeof nodes !== "object" || !("type" in nodes)) return;
 
-        const element = nodes as ReactElement<{ value?: string | number; disabled?: boolean; children?: ReactNode }>;
+        const element = nodes as ReactElement<{ value?: string; disabled?: boolean; children?: ReactNode }>;
         if (element.type === "option") {
             result.push({
-                // Native <select> coerces numeric option values to strings. Keep
-                // the same behavior here so controlled state never receives a number.
-                value: String(element.props.value ?? ""),
+                value: element.props.value ?? "",
                 label: element.props.children,
                 disabled: element.props.disabled,
             });
@@ -92,9 +92,8 @@ function optionsFromChildren(children: ReactNode): SelectOption[] {
     return result;
 }
 
-function normalizeValues(value: string | number | string[] | readonly string[] | undefined, multiple: boolean): string[] {
+function normalizeValues(value: string | string[] | readonly string[] | undefined, multiple: boolean): string[] {
     if (typeof value === "string") return value ? [value] : [];
-    if (typeof value === "number") return Number.isFinite(value) ? [String(value)] : [];
     if (!value) return [];
     const values = [...value];
     return multiple ? values : values.slice(0, 1);
@@ -140,9 +139,9 @@ const baseTriggerClassName = `
 
 const optionClassName = `
     relative flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2.5
-    text-left text-sm text-primary outline-none data-[highlighted]:bg-background-secondary
+    text-left text-sm text-primary outline-none data-[focused]:bg-background-secondary
     focus-visible:bg-background-secondary focus-visible:outline-2 focus-visible:outline-input-border-focus
-    data-[state=checked]:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50
+    data-[selected]:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-50
 `;
 
 export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select({
@@ -207,6 +206,17 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
         }
     }
 
+    useEffect(() => {
+        if (!open || !isCustom) return;
+        const frame = requestAnimationFrame(() => {
+            if (searchable) searchRef.current?.focus();
+            else focusOption(0);
+        });
+        return () => cancelAnimationFrame(frame);
+    // Focus the initial option only when the overlay opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, isCustom, searchable]);
+
     const setValue = (nextValues: string[]) => {
         if (!controlled) setInternalValue(nextValues);
         const nextValue = multiple ? nextValues : (nextValues[0] ?? "");
@@ -250,14 +260,15 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     const triggerContent = (
         <>
             <span className="min-w-0 flex-1 truncate">
-                {displayText}
+                {isCustom ? displayText : <HeroSelect.Value>{selectedOptions[0]?.label ?? placeholderText}</HeroSelect.Value>}
             </span>
             <ChevronDown aria-hidden="true" className="shrink-0 text-j-gray-400" size={20} />
         </>
     );
 
+    const { onFocus, onBlur, onClick, ...compatibleTriggerProps } = triggerProps;
     const commonTriggerProps = {
-        ...triggerProps,
+        ...compatibleTriggerProps,
         ref: (node: HTMLButtonElement | null) => {
             triggerRef.current = node;
             if (typeof ref === "function") ref(node);
@@ -277,44 +288,45 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
             </label>
 
             {isCustom ? (
-                <PopoverPrimitive.Root
-                    open={open}
-                    onOpenChange={(nextOpen) => {
-                        setOpen(nextOpen);
-                        if (!nextOpen) setQuery("");
-                    }}
-                >
-                    <PopoverPrimitive.Trigger asChild>
-                        <button
-                            {...commonTriggerProps}
-                            className={triggerClassName}
-                            type="button"
-                            role="combobox"
-                            aria-expanded={open}
-                            aria-controls={listboxId}
-                            aria-haspopup="listbox"
-                            aria-label={multiple && selectedText ? `${label}: ${selectedText}` : undefined}
-                        >
-                            {triggerContent}
-                        </button>
-                    </PopoverPrimitive.Trigger>
-                    <PopoverPrimitive.Portal>
-                        <PopoverPrimitive.Content
-                            align="start"
-                            sideOffset={4}
-                            onOpenAutoFocus={(event) => {
-                                event.preventDefault();
-                                if (searchable) searchRef.current?.focus();
-                                else focusOption(0);
-                            }}
-                            className="z-50 w-[var(--radix-popover-trigger-width)] min-w-48 max-w-[calc(100vw-1rem)] rounded-lg border border-j-gray-200 bg-j-white p-1.5 shadow-xl outline-none"
-                            style={{ maxWidth, maxHeight }}
-                        >
+                <>
+                    <button
+                        {...commonTriggerProps}
+                        onFocus={onFocus}
+                        onBlur={onBlur}
+                        type="button"
+                        role="combobox"
+                        aria-expanded={open}
+                        aria-controls={listboxId}
+                        aria-haspopup="listbox"
+                        aria-label={multiple && selectedText ? `${label}: ${selectedText}` : undefined}
+                        onClick={(event) => {
+                            onClick?.(event);
+                            if (!event.defaultPrevented) setOpen((previous) => !previous);
+                        }}
+                    >
+                        {triggerContent}
+                    </button>
+                    {/* Native dialogs require the overlay inside their top layer. */}
+                    <Popover.Content
+                        isOpen={open}
+                        onOpenChange={(nextOpen) => {
+                            setOpen(nextOpen);
+                            if (!nextOpen) setQuery("");
+                        }}
+                        triggerRef={triggerRef}
+                        UNSTABLE_portalContainer={triggerRef.current?.closest('dialog') ?? undefined}
+                        placement="bottom start"
+                        offset={4}
+                        className="z-50 w-[var(--trigger-width)] min-w-48 max-w-[calc(100vw-1rem)] rounded-lg border border-j-gray-200 bg-j-white p-1.5 shadow-xl outline-none"
+                        style={{ maxWidth, maxHeight }}
+                    >
+                        <Popover.Dialog aria-label={label} className="outline-none">
                             {searchable ? (
                                 <div className="relative mb-1.5">
                                     <Search aria-hidden="true" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-j-gray-400" size={16} />
                                     <input
                                         ref={searchRef}
+                                        autoFocus
                                         type="search"
                                         value={query}
                                         onChange={(event) => setQuery(event.target.value)}
@@ -326,6 +338,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                                             if (event.key === "Escape") {
                                                 event.preventDefault();
                                                 setOpen(false);
+                                                setQuery("");
+                                                triggerRef.current?.focus();
                                             }
                                         }}
                                         placeholder={`Pesquisar ${label}`}
@@ -390,65 +404,58 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
                                     </p>
                                 )}
                             </div>
-                        </PopoverPrimitive.Content>
-                    </PopoverPrimitive.Portal>
-                </PopoverPrimitive.Root>
+                        </Popover.Dialog>
+                    </Popover.Content>
+                </>
             ) : (
-                <SelectPrimitive.Root
+                <HeroSelect
+                    className="w-full min-w-0"
                     name={name}
-                    open={open}
+                    isOpen={open}
                     onOpenChange={setOpen}
-                    value={selectedValues[0] || undefined}
-                    onValueChange={(nextValue) => setValue([nextValue])}
-                    disabled={disabled}
-                    required={required}
+                    selectedKey={selectedValues[0] || null}
+                    onSelectionChange={(key) => setValue(key == null ? [] : [String(key)])}
+                    isDisabled={disabled}
+                    isRequired={required}
+                    aria-label={label}
                 >
-                    <SelectPrimitive.Trigger
+                    <HeroSelect.Trigger
                         {...commonTriggerProps}
+                        render={domProps => <button {...domProps} role="combobox" aria-expanded={open} aria-controls={domProps['aria-controls']} />}
+                        onClick={onClick ? (event) => onClick(event as React.MouseEvent<HTMLButtonElement>) : undefined}
+                        onFocus={onFocus ? (event) => onFocus(event as React.FocusEvent<HTMLButtonElement>) : undefined}
+                        onBlur={onBlur ? (event) => onBlur(event as React.FocusEvent<HTMLButtonElement>) : undefined}
                         className={triggerClassName}
-                        aria-label={undefined}
-                        // Radix hides the outside tree while the menu owns focus.
-                        // Keep its hidden trigger out of the tab order until close.
-                        tabIndex={open ? -1 : triggerProps.tabIndex}
                     >
-                        <span className="min-w-0 flex-1 truncate text-left">
-                            <SelectPrimitive.Value placeholder={placeholderText} />
-                        </span>
-                        <SelectPrimitive.Icon asChild>
-                            <ChevronDown aria-hidden="true" className="shrink-0 text-j-gray-400" size={20} />
-                        </SelectPrimitive.Icon>
-                    </SelectPrimitive.Trigger>
-                    <SelectPrimitive.Portal>
-                        <SelectPrimitive.Content
-                            position="popper"
-                            sideOffset={4}
-                            className="z-50 min-w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-j-gray-200 bg-j-white p-1.5 shadow-xl"
-                            style={{ maxWidth }}
-                        >
-                            <SelectPrimitive.Viewport className="overflow-y-auto" style={{ maxHeight }}>
-                                {availableOptions.length ? availableOptions.map((option) => {
-                                    const selected = selectedValues[0] === option.value;
-                                    return (
-                                        <SelectPrimitive.Item
-                                            key={option.value}
-                                            value={option.value}
-                                            disabled={option.disabled}
-                                            textValue={option.textValue}
-                                            className={optionClassName}
-                                        >
-                                            <span aria-hidden="true" className="flex h-4 w-4 shrink-0 items-center justify-center text-j-blue-700">
-                                                {selected ? <Check aria-hidden="true" size={16} strokeWidth={3} /> : null}
-                                            </span>
-                                            <SelectPrimitive.ItemText className="min-w-0 flex-1 truncate">{option.label}</SelectPrimitive.ItemText>
-                                        </SelectPrimitive.Item>
-                                    );
-                                }) : (
-                                    <p className="px-3 py-3 text-sm text-j-gray-500">Nenhuma opção disponível.</p>
-                                )}
-                            </SelectPrimitive.Viewport>
-                        </SelectPrimitive.Content>
-                    </SelectPrimitive.Portal>
-                </SelectPrimitive.Root>
+                        {triggerContent}
+                    </HeroSelect.Trigger>
+                    <HeroSelect.Popover
+                        UNSTABLE_portalContainer={triggerRef.current?.closest('dialog') ?? undefined}
+                        placement="bottom start"
+                        offset={4}
+                        className="z-50 min-w-[var(--trigger-width)] max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-j-gray-200 bg-j-white p-1.5 shadow-xl"
+                        style={{ maxWidth }}
+                    >
+                        <ListBox aria-label={label} className="overflow-y-auto outline-none" style={{ maxHeight }} renderEmptyState={() => (
+                            <p className="px-3 py-3 text-sm text-j-gray-500">Nenhuma opção disponível.</p>
+                        )}>
+                            {availableOptions.map((option) => (
+                                <ListBox.Item
+                                    key={option.value}
+                                    id={option.value}
+                                    isDisabled={option.disabled}
+                                    textValue={option.textValue}
+                                    className={optionClassName}
+                                >
+                                    <span aria-hidden="true" className="flex h-4 w-4 shrink-0 items-center justify-center text-j-blue-700">
+                                        {selectedValues[0] === option.value ? <Check aria-hidden="true" size={16} strokeWidth={3} /> : null}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                                </ListBox.Item>
+                            ))}
+                        </ListBox>
+                    </HeroSelect.Popover>
+                </HeroSelect>
             )}
 
             {isCustom ? (

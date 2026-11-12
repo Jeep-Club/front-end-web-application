@@ -1,11 +1,15 @@
 /// <reference types="vite/client" />
 
 import type { Preview } from "@storybook/nextjs-vite";
+import { sb } from 'storybook/test';
 import { MINIMAL_VIEWPORTS } from "storybook/viewport";
 import { ThemePreview } from "./ThemePreview";
 import { ThemeDocsContainer } from "./ThemeDocsContainer";
 import "../src/app/globals.css";
 import "./preview.css";
+
+// Event-charge stories seed their own QueryClient. Do not evaluate server-only auth/HTTP modules in the preview.
+sb.mock('../src/server/actions/publications/events.ts');
 
 // font-sans follows the app's current CSS mapping. Unmapped Google font variables
 // add a remote request during preview compilation without changing that font stack.

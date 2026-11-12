@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @source "../components";
 @import "driver.js/dist/driver.css";
+@import "./hero-date.css";
 
 @keyframes app-route-enter {
   from { opacity: 0; transform: translateY(6px); }
@@ -572,16 +573,6 @@ body {
   [role="button"]:not(:disabled):not([aria-disabled="true"]) { cursor: pointer; }
   button:disabled, select:disabled, input:disabled, textarea:disabled,
   [role="button"][aria-disabled="true"] { cursor: not-allowed; }
-}
-
-/* Keep iOS Safari from zooming the page when a small form control receives focus. */
-@media (max-width: 767px) {
-  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
-  select,
-  textarea,
-  [contenteditable="true"] {
-    font-size: 16px !important;
-  }
 }
 
 @layer utilities {

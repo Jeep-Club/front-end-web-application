@@ -1,91 +1,17 @@
 "use server";
-import { ActionError } from "@/utils/http/ActionError";
+import { z } from 'zod';
+import { pageResponseSchema } from '@/schemas/page';
+import { adminEventSchema } from '@/schemas/publications/admin';
+import actionFetchWrapper from '@/services/fetchWrapper/actionFetchWrapper';
+import { haveActionPermission } from '@/utils/permission/actionPermissions';
+import { ActionError } from '@/utils/http/ActionError';
 
-import { pageResponseSchema } from "@/schemas/page";
-import { adminPublicationSchema as publicationSchema, adminEventSchema as eventSchema, pendingServiceRequestSchema as pendingServiceSchema } from '@/schemas/publications/admin';
-import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
-import { haveActionPermission } from "@/utils/permission/actionPermissions";
-import { parsePublicationExportIds } from "@/utils/publications/exportCsv";
-import { parsePublicationPagination } from "@/utils/publications/pagination";
-import { parsePublicationStatus,type PublicationStatusFilter } from "@/utils/publications/statusFilters";
-import { z } from "zod";
-
-const resources = {
-    NOTICE: { path: "admin/notices", action: "NOTICE_READ" },
-    EVENT: { path: "admin/events", action: "EVENT_READ_ADMIN" },
-    SERVICE: { path: "admin/services", action: "SERVICE_ADMIN_READ" },
-} as const;
-type PublicationType = keyof typeof resources;
-type PendingService = z.infer<typeof pendingServiceSchema>;
-type AdminListItem = Omit<z.infer<typeof publicationSchema>, 'status'> & { type: PublicationType; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING'; eventStatus?: z.infer<typeof eventSchema>['eventStatus']; serviceRequest?: boolean };
-
-export async function listAdminPublicationsAction(input: { types: string[]; page: number; size: number; status?: PublicationStatusFilter }) {
-    const status = parsePublicationStatus(input.status);
-    const types = [...new Set(input.types)].filter((type): type is PublicationType => Object.hasOwn(resources, type));
-    if (!types.length) throw new ActionError("Selecione ao menos um tipo de publicação.");
-    const canReadRequests = types.includes('SERVICE') && await haveActionPermission('PUBLICATIONS', 'SERVICE_REQUEST_ADMIN_READ');
-    const canReadServices = types.includes('SERVICE') && await haveActionPermission('PUBLICATIONS', 'SERVICE_ADMIN_READ');
-    const permitted = await Promise.all(types.map(async (type) => (type === 'SERVICE' ? canReadServices || canReadRequests : await haveActionPermission("PUBLICATIONS", resources[type].action)) ? type : null));
-    const allowedTypes = permitted.filter((type): type is PublicationType => type !== null);
-    if (!allowedTypes.length) throw new ActionError("Você não tem permissão para consultar estes tipos de publicação.");
-    const canExport = await haveActionPermission("PUBLICATIONS", "EXPORT");
-    if (!canExport && allowedTypes.some((type) => type !== "EVENT" && (type !== 'SERVICE' || canReadServices))) {
-        throw new ActionError("A consulta administrativa de avisos e serviços pela API atual exige a permissão PUBLICATIONS_EXPORT, além da permissão de leitura do tipo.");
-    }
-    const { pageIndex, pageSize } = parsePublicationPagination(new URLSearchParams({ page: String(input.page), size: String(input.size) }));
-    const groups = await Promise.all(allowedTypes.map(async (type) => {
-        const resource = resources[type];
-        if (type === 'SERVICE' && !canReadServices) return [];
-        if (type === "SERVICE" && status === "DRAFT") return [];
-        if (type === "EVENT" && !canExport) {
-            const summaries: { id: number; type: PublicationType }[] = [];
-            let page = 0;
-            do {
-                const result = await actionFetchWrapper({ url: `admin/events?page=${page}&size=48&sort=id,desc`, method: "GET", cache: "no-store", schema: pageResponseSchema(eventSchema) });
-                summaries.push(...result.data.content.filter((item) => status === "ALL" || item.publicationStatus === status).map((item) => ({ id: item.id, type })));
-                if (result.data.last || !result.data.content.length) break;
-                page++;
-            } while (true);
-            return summaries;
-        }
-        const params = new URLSearchParams({ format: "CSV" });
-        if (status !== "ALL") params.set("status", status);
-        const response = await actionFetchWrapper({ url: `${resource.path}/export?${params}`, method: "GET", cache: "no-store", responseType: 'blob', allowedContentTypes: ['text/csv'], schema: z.instanceof(Blob) });
-        return parsePublicationExportIds(await response.data.text()).map((id) => ({ id, type }));
-    }));
-    const pending: PendingService[] = [];
-    if (canReadRequests && status === 'ALL') {
-        let page = 0;
-        while (true) {
-            const response = await actionFetchWrapper({ url: `admin/service-publication-requests?status=PENDING&page=${page}&size=48&sort=requestedAt,desc`, method: 'GET', cache: 'no-store', schema: pageResponseSchema(pendingServiceSchema) });
-            pending.push(...response.data.content);
-            if (response.data.last || !response.data.content.length) break;
-            page++;
-        }
-    }
-    const summaries: { id: number; type: PublicationType; request?: PendingService }[] = [
-        ...groups.flat(), ...pending.map(request => ({ id: request.id, type: 'SERVICE' as const, request })),
-    ];
-    summaries.sort((a, b) => b.id - a.id);
-    const selected = summaries.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
-    const content: AdminListItem[] = [];
-    // Limita a concorrência da leitura das galerias aos itens da página visível.
-    for (let offset = 0;offset < selected.length;offset += 6) {
-        const batch = await Promise.all(selected.slice(offset, offset + 6).map(async ({ id, type, request }) => {
-            if (request) return { ...request, type, serviceRequest: true };
-            if (type === "EVENT") {
-                const result = await actionFetchWrapper({ url: `${resources[type].path}/${id}`, method: "GET", cache: "no-store", schema: eventSchema });
-                return { ...result.data, type, status: result.data.publicationStatus };
-            }
-            const result = await actionFetchWrapper({ url: `${resources[type].path}/${id}`, method: "GET", cache: "no-store", schema: publicationSchema });
-            return { ...result.data, type };
-        }));
-        content.push(...batch);
-    }
-    const totalElements = summaries.length;
-    const totalPages = Math.ceil(totalElements / pageSize);
-    return {
-        content, totalElements, totalPages, number: pageIndex, size: pageSize,
-        first: pageIndex === 0, last: pageIndex + 1 >= totalPages, numberOfElements: content.length, empty: content.length === 0
-    };
+/** Only events have an administrative JSON collection. Never derive CRUD lists from exports. */
+export async function listAdminPublicationsAction(input: { page: number; size: number; sort?: 'id,desc' | 'startsAt,asc' | 'startsAt,desc' | 'createdAt,asc' | 'createdAt,desc' }) {
+    if (!await haveActionPermission('PUBLICATIONS', 'EVENT_READ_ADMIN')) throw new ActionError('Você não tem permissão para consultar eventos.', { status: 403 });
+    const parsed = z.object({ page: z.number().int().nonnegative(), size: z.number().int().min(1).max(50), sort: z.enum(['id,desc', 'startsAt,asc', 'startsAt,desc', 'createdAt,asc', 'createdAt,desc']).default('id,desc') }).safeParse(input);
+    if (!parsed.success) throw new ActionError('Paginação inválida.');
+    const params = new URLSearchParams({ page: String(parsed.data.page), size: String(parsed.data.size), sort: parsed.data.sort });
+    if (parsed.data.sort !== 'id,desc') params.append('sort', parsed.data.sort === 'createdAt,asc' ? 'id,asc' : 'id,desc');
+    return (await actionFetchWrapper({ url: `admin/events?${params}`, method: 'GET', cache: 'no-store', schema: pageResponseSchema(adminEventSchema) })).data;
 }

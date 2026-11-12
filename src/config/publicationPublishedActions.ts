@@ -13,10 +13,11 @@ export function publishedActionPermission(type: keyof typeof publicationPublishe
 }
 
 export function availablePublishedActions(publication: { type: keyof typeof publicationPublishedActions; status: string; eventStatus?: string }, permissions: PermissionModule[]): PublishedAction[] {
-    if (publication.status !== "PUBLISHED") return [];
     return (["edit", "archive", "cancel", "finish", "delete"] as const).filter((action) => {
         const permission = publishedActionPermission(publication.type, action);
         if (!permission || !hasPermission(permissions, "PUBLICATIONS", permission)) return false;
+        if (action === 'edit' && (publication.status === 'ARCHIVED' || (publication.type === 'NOTICE' && publication.status !== 'PUBLISHED'))) return false;
+        if (action === 'archive' && publication.status !== 'PUBLISHED') return false;
         if (action === "cancel") return publication.eventStatus === "OPEN" || publication.eventStatus === "IN_PROGRESS";
         if (action === "finish") return publication.eventStatus === "IN_PROGRESS";
         return true;

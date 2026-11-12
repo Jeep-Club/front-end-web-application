@@ -24,11 +24,11 @@ describe("Ações administrativas de rascunhos", () => {
     });
     it("aceita resposta vazia 204 na exclusão", async () => {
         jest.mocked(haveActionPermission).mockResolvedValue(true);
-        jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: { status: "DRAFT" } }).mockResolvedValueOnce({ status: 204, data: "" });
+        jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: { status: "DRAFT" } }).mockResolvedValueOnce({ status: 204, data: undefined });
         await expect(mutateDraftPublicationAction({ id: 7, type: "NOTICE", action: "delete" })).resolves.toEqual({ id: 7, type: "NOTICE", action: "delete" });
         const request = jest.mocked(actionFetchWrapper).mock.calls[1][0];
         expect(request.method).toBe("DELETE");
-        expect(request.schema.safeParse("").success).toBe(true);
+        expect(request.schema.safeParse(undefined).success).toBe(true);
     });
     it.each(["edit", "publish", "delete"] as const)("bloqueia %s sem a permissão correspondente", async (action) => {
         jest.mocked(haveActionPermission).mockResolvedValue(false);

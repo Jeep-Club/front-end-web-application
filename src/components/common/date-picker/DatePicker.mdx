@@ -1,0 +1,58 @@
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './DatePicker.stories';
+
+<Meta of={Stories} />
+
+# DatePicker
+
+Seleciona uma data por campos segmentados ou calendário do HeroUI. Use para uma data única; para início e fim, use [DateRangePicker](?path=/docs/componentes-datepicker-intervalo--docs).
+
+## Uso controlado
+
+```tsx
+import { useState } from 'react';
+import { parseDate, type CalendarDate } from '@internationalized/date';
+import { DatePicker } from '@/components/common/date-picker';
+
+const [date, setDate] = useState<CalendarDate | null>(parseDate('2026-11-15'));
+
+<DatePicker label="Data de publicação" value={date} onChange={setDate} />
+```
+
+`value` e `defaultValue` seguem o HeroUI: use `parseDate` para datas civis, `parseDateTime` para data e horário locais e valores com fuso quando o domínio exigir. `onChange` recebe um `DateValue` ou `null`; converta com `toString()` apenas na fronteira consumidora. O componente configura o idioma `pt-BR`, sem exigir provider na aplicação ou no Storybook.
+
+Não exige FormProvider. Em React Hook Form, conecte `value`/`onChange` com `Controller` e valide no schema. `name`, `isRequired`, `minValue`, `maxValue`, `validate` e `validationBehavior` seguem a biblioteca; informe `isInvalid` e `errorMessage` para erros externos. Erros nativos são apresentados pelo `FieldError` do HeroUI. A story de limites usa restrições reais de calendário, sem simular um erro.
+
+## Aparência e controles
+
+O campo e o calendário em portal acompanham os tokens de `data-theme`; alterne claro/escuro na toolbar. A seleção usa o amarelo do clube, com foco e erros dos inputs existentes. `className` ajusta a largura e o contexto. Não há prop de variante de tema.
+
+<Canvas of={Stories.DataUnica} />
+
+<div role="region" aria-label="Propriedades de DatePicker" tabIndex={0} style={{ maxWidth: '100%', overflowX: 'auto' }}>
+  <Controls of={Stories.DataUnica} />
+</div>
+
+Os Controls expõem estados. Valores complexos de data são demonstrados pelas stories e editados no próprio campo; não são objetos JSON editáveis no painel. Na story Com horário, o painel também permite alterar `granularity` e `hourCycle`, com um valor que suporta esses formatos. O resultado abaixo do campo e os eventos em Actions mostram a seleção real.
+
+<Canvas of={Stories.Preenchida} />
+<Canvas of={Stories.Desabilitada} />
+<Canvas of={Stories.Limites} />
+<Canvas of={Stories.ComHorario} />
+
+## Interação e limites
+
+A edição por segmentos, navegação do calendário, seletor de ano, Escape e seleção pertencem ao HeroUI/React Aria. Para editar horários no campo, use `CalendarDateTime` e configure `granularity` e `hourCycle` conforme necessário.
+
+As stories usam estado local e valores determinísticos, sem backend. Conversão de fuso, persistência e regras do domínio são responsabilidade do consumidor. A integração não preserva o antigo contrato de strings nem a máscara de digitação contínua. Para o input date nativo registrado em formulários, consulte [InputDate](?path=/docs/componentes-input-inputdate--docs).
+
+Referência: [DatePicker do HeroUI](https://heroui.com/en/docs/react/components/date-picker). Testes automatizados não certificam acessibilidade completa.
+
+Os campos segmentados no topo do calendário permitem editar a data e, quando disponível, o horário em 24 horas. Os segundos não são exibidos; alterar hora ou minuto define segundos e fração como zero.
+
+
+## Horário
+
+Quando a granularidade inclui horário, o calendário mostra rodas de horas e minutos. Role para percorrer os valores disponíveis e selecione uma opção. Com foco na roda, use as setas para alterar o valor. Limpar remove o valor.
+
+No celular, o seletor abre como Bottom Sheet com as etapas Data, Hora e Minuto. As edições manuais e as escolhas ficam temporárias até Concluir. Fechar pelo X, pelo fundo ou arrastar o indicador descarta as alterações. Limpar altera o valor temporário. O relógio usa formato de 24 horas.
