@@ -45,7 +45,7 @@ export default function RegistrationConsent({ isLoading }: { isLoading: boolean 
             </div>
             <p id="register-terms-description" className="text-xs leading-5 text-j-gray-200">O aceite é obrigatório para criar sua conta.</p>
             {error && <p id="register-terms-error" role="alert" className="text-sm text-j-red-100">{error.message}</p>}
-            <Button type="submit" disabled={isLoading || !value} className="mt-1 w-full">
+            <Button type="submit" isLoading={isLoading} disabled={!value} className="mt-1 w-full">
                 {isLoading ? <>Registrando<LoaderCircle size={15} strokeWidth={3} className="animate-spin" /></> : <>Registrar<ArrowRight size={15} strokeWidth={3} /></>}
             </Button>
         </div>

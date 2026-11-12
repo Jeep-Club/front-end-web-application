@@ -214,7 +214,6 @@ export default function AgendaPage() {
                                     const isToday = key === today;
                                     const eventLabel = dayEvents.length === 1 ? event.title : `${dayEvents.length} eventos`;
 
-
                                     return <div key={key} className={`relative min-h-28 p-1.5 lg:min-h-32 lg:p-2 ${inMonth ? "bg-j-white" : "bg-j-gray-100/70"}`}>
                                         {dayEvents.length > 0 ? <button type="button" onClick={() => openDayEvents(dayEvents, day)} aria-label={`${longDateLabel(day)}: ${eventLabel}`} className={`group relative flex h-full min-h-24 w-full cursor-pointer flex-col overflow-hidden rounded-xl p-2 text-left transition-[transform,box-shadow,ring-color] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 lg:min-h-28 ${isToday ? "ring-2 ring-j-yellow-400" : ""}`}>
                                             {imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-70 transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 bg-gradient-to-br from-j-yellow-100 to-j-yellow-300" />}

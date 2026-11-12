@@ -14,7 +14,7 @@ import { Button, ButtonIcon } from '@/components/common/button';
 import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 import { Plus, Trash2 } from 'lucide-react';
 
-<Button type="submit" disabled={isPending}>Salvar alterações</Button>
+<Button type="submit" isLoading={isPending}>Salvar alterações</Button>
 <Button onClick={onCreate}><Plus aria-hidden="true" size={18} />Criar</Button>
 <ButtonIcon aria-label="Excluir veículo" onClick={onRequestDelete}>
   <Trash2 aria-hidden="true" size={18} />
@@ -47,7 +47,15 @@ O controle de `children` edita texto. Para ícones, componha JSX como no exemplo
 <Canvas of={Stories.Desabilitado} />
 <Canvas of={Stories.TextoLongo} />
 
-Não há prop `loading`: a tela deve indicar o andamento no conteúdo e decidir o bloqueio por `disabled`. Uma operação assíncrona não desabilita o botão automaticamente. Preserve uma mensagem que explique a ação perigosa; a cor de ConfirmButton não substitui essa explicação.
+Use `isLoading` para operações assíncronas: o botão fica indisponível, recebe `aria-busy` e mostra uma faixa animada indeterminada, sem deslocar seu conteúdo. O estado também anuncia "Carregando" a leitores de tela. Passe o estado real da operação; a faixa não representa percentual concluído. Movimento reduzido desativa a animação.
+
+```tsx
+<Button type="submit" isLoading={isPending}>Salvar alterações</Button>
+```
+
+`disabled` continua disponível para bloqueios sem carregamento. Preserve uma mensagem que explique a ação perigosa; a cor de ConfirmButton não substitui essa explicação.
+
+<Canvas of={Stories.Carregando} />
 
 ## Teclado e composição
 

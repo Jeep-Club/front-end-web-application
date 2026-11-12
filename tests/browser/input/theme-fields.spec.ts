@@ -23,6 +23,20 @@ test("Button mantém cursor de ação e de bloqueio", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Salvar alterações" })).toHaveCSS("cursor", "not-allowed");
 });
 
+test("Button comunica carregamento e respeita movimento reduzido", async ({ page }) => {
+  await page.goto(new URL("/iframe.html?id=componentes-button--carregando&embed=true", storybookUrl).href);
+  const button = page.getByRole("button", { name: "Salvar alterações", exact: true });
+  await expect(button).toBeDisabled();
+  await expect(button).toHaveAttribute("aria-busy", "true");
+  await expect(button.getByRole("status")).toHaveText("Carregando");
+  await expect(button.locator(".button-loading-progress")).toHaveCSS("animation-name", "button-loading-sweep");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const animationDuration = await button.locator(".button-loading-progress")
+    .evaluate((element) => parseFloat(getComputedStyle(element).animationDuration));
+  expect(animationDuration).toBeLessThan(0.001);
+});
+
 test("Arquivo preserva a superfície cinza legada nos dois temas", async ({ page }) => {
   for (const theme of ["light", "dark"]) {
     await page.goto(new URL(`/iframe.html?id=componentes-input-inputfile--vazio&embed=true&args=variant:gray&globals=theme:${theme}`, storybookUrl).href);

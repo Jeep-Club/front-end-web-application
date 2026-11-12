@@ -150,7 +150,7 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
                             onClick={backToUsers}
                             className="min-h-12 rounded-xl bg-transparent px-3 text-j-gray-500 hover:bg-j-gray-100 hover:text-j-gray-700"
                         >Cancelar</Button>
-                        <Button type="submit" disabled={isLoading} aria-busy={isLoading} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">
+                        <Button type="submit" isLoading={isLoading} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">
                             {isLoading ? <>Criando… <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /></> : <>Criar usuário <ArrowRight size={18} aria-hidden="true" /></>}
                         </Button>
                     </footer>

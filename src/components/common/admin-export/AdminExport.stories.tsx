@@ -31,4 +31,3 @@ export const Indisponivel: Story = { args: { disabled: true } };
 export const LarguraEstreita: Story = {
     args: { label: "Exportar relatório de usuários", className: "max-w-[320px]" },
 };
-

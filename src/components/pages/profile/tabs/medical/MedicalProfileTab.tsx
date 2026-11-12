@@ -18,6 +18,7 @@ import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
 import { EditMedicalProfileModal } from "./EditMedicalProfileModal";
+import { ProfileTabLoading } from "../ProfileTabLoading";
 
 const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string> = {
     A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-",
@@ -40,7 +41,7 @@ export function MedicalProfileTab() {
     };
 
     if (isLoading) {
-        return <p className="text-sm text-j-gray-400">Carregando perfil médico...</p>;
+        return <ProfileTabLoading label="Carregando perfil médico..." layout="medical" />;
     }
 
     if (isError) {
@@ -56,7 +57,7 @@ export function MedicalProfileTab() {
     }
 
     return (
-        <div className="flex flex-col gap-5 rounded-3xl border border-j-gray-200 bg-gradient-to-br from-j-gray-50 via-white to-j-blue-50/40 p-4 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 rounded-3xl border border-j-gray-200 bg-j-gray-100 p-4 shadow-sm sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm"><HeartPulse size={23} /></span>
@@ -72,7 +73,7 @@ export function MedicalProfileTab() {
             </div>
 
             {!data && (
-                <div className="flex flex-col items-center rounded-2xl border border-dashed border-j-gray-300 bg-white/80 px-5 py-10 text-center">
+                <div className="flex flex-col items-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white px-5 py-10 text-center">
                     <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-700"><Activity size={22} /></span>
                     <p className="mt-3 font-bold text-j-gray-700">Seu perfil médico está vazio</p>
                     <p className="mt-1 max-w-md text-sm text-j-gray-500">Adicione dados de saúde e um contato de emergência para deixá-los disponíveis no seu perfil.</p>
@@ -81,9 +82,9 @@ export function MedicalProfileTab() {
 
             {data && <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <MedicalCard title="Informações médicas" icon={Activity} accent="bg-red-100 text-red-600">
-                    {data.bloodType && data.bloodType !== "UNKNOWN" && <div className="flex items-center justify-between rounded-xl border border-red-100 bg-gradient-to-r from-red-50 to-white px-4 py-3">
+                    {data.bloodType && data.bloodType !== "UNKNOWN" && <div className="flex items-center justify-between rounded-xl border border-j-gray-200 bg-j-gray-100 px-4 py-3">
                         <div><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-j-gray-500">Tipo sanguíneo</span><span className="mt-1 block text-xs text-j-gray-500">Informação importante em emergências</span></div>
-                        <span className="rounded-lg bg-white px-3 py-1 text-2xl font-black text-red-600 shadow-sm">{BLOOD_TYPE_LABELS[data.bloodType]}</span>
+                        <span className="rounded-lg bg-j-white px-3 py-1 text-2xl font-black text-red-600 shadow-sm">{BLOOD_TYPE_LABELS[data.bloodType]}</span>
                     </div>}
                     {hasText(data.allergies) && <ProfileItem label="Alergias" value={data.allergies!} />}
                     {hasText(data.chronicConditions) && <ProfileItem label="Condições crônicas" value={data.chronicConditions!} />}
@@ -118,10 +119,10 @@ export function MedicalProfileTab() {
 
 function MedicalCard({ title, icon: Icon, accent, className = "", children }: { title: string; icon: ElementType; accent: string; className?: string; children: React.ReactNode }) {
     return (
-        <section className={`flex h-full flex-col rounded-2xl border border-j-gray-200/90 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 ${className}`}>
+        <section className={`flex h-full flex-col rounded-2xl border border-j-gray-200/90 bg-j-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5 ${className}`}>
             <header className="mb-4 flex items-center gap-3 border-b border-j-gray-100 pb-3">
                 <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent}`}><Icon size={19} /></span>
-                <h4 className="font-extrabold text-j-gray-800">{title}</h4>
+                <h4 className="font-extrabold text-j-gray-700">{title}</h4>
             </header>
             <div className="flex flex-col gap-3">{children}</div>
         </section>
@@ -132,7 +133,7 @@ function ProfileItem({ label, value }: { label: string; value: string }) {
     return (
         <div>
             <span className="block text-[10px] font-bold uppercase tracking-wide text-j-gray-400">{label}</span>
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-j-gray-800">{value}</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm font-semibold leading-relaxed text-j-gray-700">{value}</p>
         </div>
     );
 }

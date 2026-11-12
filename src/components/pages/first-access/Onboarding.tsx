@@ -132,7 +132,7 @@ export function FirstAccessOnboarding() {
                         </section>
 
                         <div>
-                            <Button type="button" onClick={finish} disabled={!requiredComplete || completion.isPending} className="min-h-12 w-full gap-2">
+                            <Button type="button" onClick={finish} isLoading={completion.isPending} disabled={!requiredComplete} className="min-h-12 w-full gap-2">
                                 {completion.isPending ? <><LoaderCircle size={18} className="animate-spin" /> Finalizando...</> : optionalComplete ? "Concluir e acessar o sistema" : "Pular itens opcionais e acessar o sistema"}
                             </Button>
                             {!requiredComplete && <p className="mt-3 text-center text-xs text-j-gray-500">Conclua os dois itens obrigatórios para liberar o acesso.</p>}

@@ -273,7 +273,7 @@ export function EditPersonalDataModal({
                         label="Selecionar nova foto"
                         maxFiles={1}
                         cropShape="circle"
-                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-j-white [&>div]:py-4"
+                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-input-bg [&>div]:py-4"
                     />
                     {personalData.profilePhotoUrl && (
                         <button
