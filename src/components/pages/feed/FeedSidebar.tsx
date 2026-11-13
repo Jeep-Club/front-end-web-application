@@ -3,12 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Cake, CalendarDays, ChevronRight, Megaphone } from "lucide-react";
+import { Cake, CalendarDays, ChevronRight, Megaphone, Plus, X } from "lucide-react";
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/button';
+import { legalLinks } from '@/components/common/legal-links';
 import { useUserStore } from '@/stores/userStore';
+import { useBirthdayUsers } from '@/hooks/useBirthdayUsers';
 import { feedDate, publicationReadError, publicationReadRetry } from './feedDisplay';
 import { Avatar } from "@/components/common/avatar";
 
@@ -17,32 +19,37 @@ import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
+import { getUpcomingBirthdaysForMonth } from "@/utils/birthdays";
 
-function SideCard({ title, icon: Icon, href, linkLabel, children }: {
+import { SidebarSkeleton } from "./FeedLoading";
+
+function SideCard({ title, icon: Icon, href, linkLabel, onNavigate, children }: {
     title: string;
     icon: typeof CalendarDays;
     href?: string;
     linkLabel?: string;
+    onNavigate?: () => void;
     children: React.ReactNode;
 }) {
     return (
-        <section className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm">
+        <section className="rounded-2xl border border-j-gray-200 bg-j-white p-3 shadow-sm">
             <div className="mb-3 flex items-center justify-between gap-2">
-                <h2 className="flex items-center gap-2 text-sm font-extrabold text-j-blue-900">
-                    <Icon size={17} className="text-j-blue-800" aria-hidden="true" />{title}
+                <h2 className="flex min-w-0 items-center gap-2 whitespace-nowrap text-sm font-extrabold text-j-blue-900">
+                    <Icon size={17} className="shrink-0 text-j-blue-800" aria-hidden="true" /><span>{title}</span>
                 </h2>
-                {href && <Link href={href} className="cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-j-blue-800 inline-flex items-center gap-1 text-xs font-bold text-j-blue-700 hover:underline">{linkLabel ?? "Ver todos"} <ChevronRight size={14} aria-hidden="true" /></Link>}
+                {href && <Link href={href} onClick={onNavigate} className="inline-flex shrink-0 cursor-pointer items-center gap-1 whitespace-nowrap rounded text-xs font-bold text-j-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{linkLabel ?? "Ver todos"} <ChevronRight size={14} aria-hidden="true" /></Link>}
             </div>
             {children}
         </section>
     );
 }
 
-export function FeedSidebar() {
+export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mobilePeriodFilter }: { canCreate: boolean; onCreate: React.MouseEventHandler<HTMLButtonElement>; mobileOpen: boolean; onCloseMobile: () => void; mobilePeriodFilter: React.ReactNode }) {
     const permissions = useUserStore(state => state.permissions);
     const params = useSearchParams();
+    const birthdayMonth = new Date().getMonth() + 1;
+    const birthdaysQuery = useBirthdayUsers(birthdayMonth);
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-    const [now] = useState(() => new Date());
     function detailHref(id: number) {
         const search = new URLSearchParams(params.toString());
         search.set('publication', String(id));
@@ -72,45 +79,44 @@ export function FeedSidebar() {
         .sort((a, b) => Date.parse(a.details.startsAt) - Date.parse(b.details.startsAt))
         .slice(0, 3);
     const notices = (publicationReadError(noticesQuery.error).restricted ? [] : noticesQuery.data?.content ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "NOTICE" }> => item.type === "NOTICE");
+    const birthdays = getUpcomingBirthdaysForMonth(
+        birthdaysQuery.data ?? [],
+        new Date(),
+        birthdaysQuery.data?.length ?? 0,
+    );
 
     return (
-        <aside aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-            <section className="relative rounded-2xl border border-input-border bg-background shadow-sm">
-                <div className="rounded-t-2xl bg-j-blue-900 p-5 text-j-white">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-j-yellow-300">Jeep Clube Tamoios</p>
-                    <h2 className="mt-2 text-lg font-extrabold">A aventura continua por aqui</h2>
-                    <p className="mt-1 text-sm text-white/75">Novidades, encontros e serviços para a nossa comunidade.</p>
-                </div>
-                <div className="p-4">
-                    <h3 className="mb-3 text-sm font-bold capitalize text-primary">{new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(now)}</h3>
-                    <div className="grid grid-cols-7 gap-1 text-center" aria-label="Calendário do mês">
-                        {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, index) => <span key={index} aria-hidden="true" className="text-xs font-semibold text-secondary">{day}</span>)}
-                        {Array.from({ length: new Date(now.getFullYear(), now.getMonth(), 1).getDay() }, (_, index) => <span key={`empty-${index}`} />)}
-                        {Array.from({ length: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() }, (_, index) => {
-                            const day = index + 1;
-                            const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            const dayEvents = allEvents.filter(event => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(event.details.startsAt)) === dateKey);
-                            return <span key={day} aria-label={dayEvents.length ? `${day}: ${dayEvents.length} ${dayEvents.length === 1 ? 'evento' : 'eventos'}` : `${day}`} className="relative mx-auto flex size-9 items-center justify-center text-sm text-secondary">{day}{dayEvents.length > 0 && <span aria-hidden="true" className="absolute bottom-0.5 size-1.5 rounded-full bg-button-primary-bg ring-1 ring-input-border" />}</span>;
-                        })}
-                    </div>
-                    {eventsQuery.isPending && <p role="status" className="mt-2 text-xs text-secondary">Carregando eventos...</p>}
-                    {eventsQuery.isError && <p role="alert" className="mt-2 text-xs text-input-error-text">{publicationReadError(eventsQuery.error).message}</p>}
-                    <Link href="/agenda" className="mt-3 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-input-border-focus">Veja mais <ChevronRight size={16} aria-hidden="true" /></Link>
-                </div>
-            </section>
-
-            <SideCard title="Eventos em destaque" icon={CalendarDays} href="/agenda">
-                {eventsQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(eventsQuery.error).message}</p><Button onClick={() => void eventsQuery.refetch()}>Tentar eventos novamente</Button></div> : eventsQuery.isPending ? <p className="text-sm text-j-gray-500">Carregando eventos...</p> : events.length ? (
+        <>
+        <button
+            type="button"
+            aria-label="Fechar painel lateral"
+            tabIndex={mobileOpen ? 0 : -1}
+            onClick={onCloseMobile}
+            className={`fixed inset-x-0 top-14 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-[92] cursor-pointer bg-black/60 transition-[opacity,visibility] duration-300 ease-in-out motion-reduce:transition-none lg:hidden ${mobileOpen ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}
+        />
+        <aside
+            role={mobileOpen ? "dialog" : undefined}
+            aria-modal={mobileOpen || undefined}
+            aria-label="Informações do clube"
+            className={`flex flex-col gap-3 max-lg:fixed max-lg:right-0 max-lg:top-14 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-lg:z-[93] max-lg:w-[min(88vw,20rem)] max-lg:gap-0 max-lg:overflow-hidden max-lg:bg-background max-lg:text-primary max-lg:shadow-2xl max-lg:transition-[translate,visibility] max-lg:duration-300 max-lg:ease-in-out motion-reduce:transition-none lg:sticky lg:top-6 lg:self-start ${mobileOpen ? "max-lg:visible max-lg:translate-x-0" : "max-lg:invisible max-lg:pointer-events-none max-lg:translate-x-full"}`}
+        >
+            <header className="flex min-h-16 shrink-0 items-center justify-between gap-2 border-b border-j-gray-200 bg-background px-4 py-3 lg:hidden">
+                <div className="min-w-0"><h2 className="font-extrabold text-j-blue-900">Painel do clube</h2><p className="text-xs text-j-gray-500">Eventos, aniversariantes e avisos</p></div>
+                <button type="button" aria-label="Fechar painel lateral" onClick={onCloseMobile} className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-j-gray-100 text-j-gray-600 shadow-sm transition-colors hover:bg-j-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800"><X size={20} aria-hidden="true" /></button>
+            </header>
+            <div className="flex min-h-0 flex-col gap-3 max-lg:flex-1 max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:p-4">
+            <SideCard title="Eventos" icon={CalendarDays} href="/agenda" onNavigate={onCloseMobile}>
+                {eventsQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(eventsQuery.error).message}</p><Button onClick={() => void eventsQuery.refetch()}>Tentar eventos novamente</Button></div> : eventsQuery.isPending ? <SidebarSkeleton label="Carregando eventos..." variant="event" /> : events.length ? (
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
                             const participants = event.details.participants ?? [];
                             const participantCount = event.details.registrationCount ?? participants.length;
 
-                            return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
+                                            return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image && !failedImages.has(image) ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} onError={() => setFailedImages(previous => new Set(previous).add(image))} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}
                                 <div className="min-w-0 flex-1">
-                                    <p className="line-clamp-2 text-sm font-bold text-j-blue-900"><Link onClick={event => event.currentTarget.focus({ preventScroll: true })} href={detailHref(event.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{event.title}</Link></p>
+                                    <p className="line-clamp-2 text-sm font-bold text-j-blue-900"><Link onClick={event => { event.currentTarget.focus({ preventScroll: true }); onCloseMobile(); }} href={detailHref(event.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{event.title}</Link></p>
                                     <p className="mt-1 text-xs text-j-gray-500">{feedDate(event.details.startsAt)}</p>
                                     {participantCount > 0 && <div className="mt-2 flex items-center gap-2" aria-label={`${participantCount} ${participantCount === 1 ? "participante inscrito" : "participantes inscritos"}`}>
                                         <div className="flex shrink-0 items-center" aria-hidden="true">
@@ -131,24 +137,79 @@ export function FeedSidebar() {
                             </li>;
                         })}
                     </ul>
-                ) : <p className="text-sm text-j-gray-500">Nenhum evento publicado no momento.</p>}
+                ) : <p className="text-sm text-j-gray-500">Nenhum evento publicado.</p>}
             </SideCard>
 
-            <SideCard title="Aniversariantes do mês" icon={Cake} href="/agenda" linkLabel="Ver agenda">
-                <p className="text-sm text-j-gray-500">
-                    A listagem de aniversariantes está disponível apenas na área administrativa.
-                </p>
-            </SideCard>
+            <SideCard title="Aniversários" icon={Cake} href="/agenda" linkLabel="Agenda" onNavigate={onCloseMobile}>
+                {birthdaysQuery.isPending ? (
+                    <SidebarSkeleton label="Carregando aniversariantes..." variant="birthday" />
+                ) : birthdaysQuery.isError ? (
+                    <div role="alert" className="text-sm text-j-gray-600">
+                        <p>Não foi possível carregar os aniversariantes.</p>
+                        <Button className="mt-2" onClick={() => void birthdaysQuery.refetch()}>Tentar novamente</Button>
+                    </div>
+                ) : birthdays.length ? (
+                    <ul className="space-y-2">
+                        {birthdays.slice(0, 4).map((birthday) => {
+                            const month = birthday.birthMonth ?? birthdayMonth;
+                            const day = birthday.birthDay ?? 1;
+                            const birthdayDate = birthday.date;
+                            const dateLabel = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(birthdayDate);
 
-            <SideCard title="Avisos recentes" icon={Megaphone} href="/avisos">
-                {noticesQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(noticesQuery.error).message}</p><Button onClick={() => void noticesQuery.refetch()}>Tentar avisos novamente</Button></div> : noticesQuery.isPending ? <p className="text-sm text-j-gray-500">Carregando avisos...</p> : notices.length ? (
-                    <ul className="space-y-3">
-                        {notices.map((notice) => <li key={notice.id} className="border-b border-j-gray-100 pb-3 last:border-0 last:pb-0"><p className="text-sm font-bold text-j-blue-900"><Link onClick={event => event.currentTarget.focus({ preventScroll: true })} href={detailHref(notice.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{notice.title}</Link></p><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-j-gray-600">{publicationPlainText(notice.content)}</p></li>)}
+                            return (
+                                <li key={birthday.id} className="flex min-w-0 items-center justify-between gap-3 text-sm">
+                                    <span className="truncate font-semibold text-j-gray-700">{birthday.name}</span>
+                                    <time dateTime={`2000-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`} className="shrink-0 rounded-lg bg-j-blue-50 px-2 py-1 text-xs font-bold text-j-blue-800">
+                                        {dateLabel}
+                                    </time>
+                                </li>
+                            );
+                        })}
+                        {birthdays.length > 4 && <li className="pt-1 text-xs font-semibold text-j-gray-500">e mais {birthdays.length - 4} neste mês</li>}
                     </ul>
-                ) : <p className="text-sm text-j-gray-500">Nenhum aviso recente.</p>}
+                ) : (
+                    <p className="text-sm text-j-gray-500">Nenhum aniversário neste mês.</p>
+                )}
             </SideCard>
 
+            <SideCard title="Avisos" icon={Megaphone} href="/avisos" onNavigate={onCloseMobile}>
+                {noticesQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(noticesQuery.error).message}</p><Button onClick={() => void noticesQuery.refetch()}>Tentar avisos novamente</Button></div> : noticesQuery.isPending ? <SidebarSkeleton label="Carregando avisos..." variant="notice" /> : notices.length ? (
+                    <ul className="space-y-3">
+                {notices.map((notice) => <li key={notice.id} className="border-b border-j-gray-100 pb-3 last:border-0 last:pb-0"><p className="text-sm font-bold text-j-blue-900"><Link onClick={event => { event.currentTarget.focus({ preventScroll: true }); onCloseMobile(); }} href={detailHref(notice.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{notice.title}</Link></p><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-j-gray-600">{publicationPlainText(notice.content)}</p></li>)}
+                    </ul>
+                ) : <p className="text-sm text-j-gray-500">Nenhum aviso publicado.</p>}
+            </SideCard>
 
+            {mobileOpen && (
+                <section className="shrink-0 lg:hidden" aria-labelledby="feed-mobile-period-title">
+                    <h3 id="feed-mobile-period-title" className="mb-2 text-sm font-extrabold text-j-blue-900">Filtrar por período</h3>
+                    {mobilePeriodFilter}
+                </section>
+            )}
+            {canCreate && (
+                <button
+                    id="tour-feed-create-btn"
+                    type="button"
+                    aria-haspopup="dialog"
+                    onClick={onCreate}
+                    className="hidden min-h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"
+                >
+                    <Plus size={21} aria-hidden="true" />
+                    Postar
+                </button>
+            )}
+            <nav aria-label="Informações legais, contato e equipe" className="mt-1 hidden w-full text-[10px] text-secondary lg:block">
+                <div className="flex flex-nowrap items-center justify-start gap-1 whitespace-nowrap">
+                    {legalLinks.map(({ href, label }) => (
+                        <Link key={href} href={href} className="legal-link shrink-0 whitespace-nowrap rounded-sm underline-offset-4 transition-colors duration-200 ease-out hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-j-yellow-300 motion-reduce:transition-none">
+                            {label}
+                        </Link>
+                    ))}
+                </div>
+            </nav>
+
+            </div>
         </aside>
+        </>
     );
 }

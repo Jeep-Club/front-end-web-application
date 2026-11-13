@@ -6,10 +6,11 @@ import { parseAbsoluteToLocal } from '@internationalized/date';
 import { Button } from '@/components/common/button';
 import { publicationFeedFiltersSchema, type PublicationFeedFilters } from '@/schemas/publications/feed';
 
-export function FeedPeriodFilters({ publishedFrom = '', publishedTo = '', onApply, disabled = false }: {
+export function FeedPeriodFilters({ publishedFrom = '', publishedTo = '', onApply, disabled = false, compact = false }: {
     publishedFrom?: string; publishedTo?: string;
     onApply: (filters: Pick<PublicationFeedFilters, 'publishedFrom' | 'publishedTo'>) => void;
     disabled?: boolean;
+    compact?: boolean;
 }) {
     const [from, setFrom] = useState(publishedFrom);
     const [to, setTo] = useState(publishedTo);
@@ -34,14 +35,14 @@ export function FeedPeriodFilters({ publishedFrom = '', publishedTo = '', onAppl
         setErrors({});
         onApply(result.data);
     }}>
-        <p id={helpId} className="mb-3 text-xs text-j-gray-600">Selecione a data e o horário local. Você pode informar apenas um dos limites.</p>
-        <div className="grid min-w-0 gap-3 md:grid-cols-2">
+        <p id={helpId} className="mb-3 text-xs text-j-gray-600">{compact ? "Preencha uma ou as duas datas." : "Selecione a data e o horário local. Você pode informar apenas um dos limites."}</p>
+        <div className="grid min-w-0 gap-3 lg:grid-cols-2">
             <DatePicker label="Publicada a partir de" granularity="minute" value={dateValue(from)} onChange={value => setFrom(value ? value.toDate().toISOString() : '')} errorMessage={errors.publishedFrom} isInvalid={!!errors.publishedFrom} isDisabled={disabled} />
             <DatePicker label="Publicada até" granularity="minute" value={dateValue(to)} onChange={value => setTo(value ? value.toDate().toISOString() : '')} errorMessage={errors.publishedTo} isInvalid={!!errors.publishedTo} isDisabled={disabled} />
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <Button type="button" disabled={disabled} className="border border-input-border bg-background-secondary text-primary hover:bg-background-tertiary hover:text-primary" onClick={() => { setFrom(''); setTo(''); setErrors({}); onApply({}); }}>Limpar período</Button>
-            <Button type="submit" disabled={disabled}>Aplicar período</Button>
+        <div className={compact ? "mt-3 grid grid-cols-2 gap-2" : "mt-3 flex flex-wrap items-center justify-between gap-2"}>
+            <Button type="button" disabled={disabled} className="border border-input-border bg-background-secondary text-primary hover:bg-background-tertiary hover:text-primary" onClick={() => { setFrom(''); setTo(''); setErrors({}); onApply({}); }}>{compact ? "Limpar" : "Limpar período"}</Button>
+            <Button type="submit" disabled={disabled}>{compact ? "Aplicar" : "Aplicar período"}</Button>
         </div>
     </form>;
 }

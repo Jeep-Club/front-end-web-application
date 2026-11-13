@@ -200,7 +200,6 @@ export function usePageTour({
         }, 100);
     }, [storageKey, startTour]);
 
-    // Registra o tour específico da página no TourContext para que o botão "Precisa de ajuda?" no Topbar o acione.
     useEffect(() => {
         if (isShellTour || !registerPageTour) return;
         registerPageTour(restartTour);
@@ -281,7 +280,7 @@ export function useTour(setMobileMenuOpen?: (open: boolean) => void) {
         autoStartOnFirstVisit: false,
         enabled: permissions.length > 0,
         confirmOnExit: true,
-        exitConfirmMessage: "Deseja realmente sair do tutorial? Você poderá reiniciá-lo a qualquer momento pelo botão 'Precisa de ajuda?' no topo da tela.",
+        exitConfirmMessage: "Deseja realmente sair do tutorial? Você poderá reiniciá-lo a qualquer momento pela página de Tutoriais.",
         isShellTour: true,
     });
 
