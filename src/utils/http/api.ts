@@ -33,6 +33,9 @@ export enum HttpAPIRoutes {
     ADMIN_TOOLS = "admin/tools",
 
     ADMIN_DEPENDENTS = "users/{id}/dependents",
+    ADMIN_DEPENDENTS_LIST = "admin/dependents",
+    ADMIN_DEPENDENTS_EXPORT = "admin/dependents/export",
+    ADMIN_DEPENDENTS_HISTORY_EXPORT = "admin/dependents/history/export",
     ADMIN_MEDICAL_PROFILES = "admin/medical-profiles",
     MEDICAL_PROFILE_MEMBER = "medical-profiles/me",
     MEDICAL_PROFILE_DEPENDENT = "medical-profiles/dependents/{dependentId}",
