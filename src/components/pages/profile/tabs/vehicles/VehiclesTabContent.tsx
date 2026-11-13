@@ -6,13 +6,14 @@ import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesMemberAction } from "@/server/actions/vehicles/list-member";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays,Eye,Palette,Pencil,Plus,Trash2 } from "lucide-react";
+import { CalendarDays,Car,Eye,Palette,Pencil,Plus,Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DeleteVehicleModal } from "./DeleteVehicleModal";
 import { IncludeVehicleModal } from "./IncludeVehicleModal";
 import { VehiclePhotoCarousel } from "./VehiclePhotoCarousel";
 import { ViewVehicleModal } from "./ViewVehicleModal";
 import { ProfileTabLoading } from "../ProfileTabLoading";
+import { ProfileTabEmptyState } from "../ProfileTabEmptyState";
 
 export function VehiclesTabContent() {
     const { setContent, setOpen } = useModal();
@@ -49,6 +50,17 @@ export function VehiclesTabContent() {
         setOpen();
     };
 
+    if (!isLoading && !isError && data?.content.length === 0) {
+        return <ProfileTabEmptyState
+            icon={Car}
+            title="Meus veículos"
+            description="Gerencie os veículos cadastrados no seu perfil."
+            emptyTitle="Você ainda não tem veículos cadastrados"
+            emptyDescription="Inclua seu veículo e mantenha os dados mais organizados no seu perfil."
+            action={<Button onClick={handleOpenIncludeVehicle} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5"><Plus size={16} /><span>Incluir Veículo</span></Button>}
+        />;
+    }
+
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -66,10 +78,6 @@ export function VehiclesTabContent() {
 
             {isError && (
                 <p className="text-sm text-j-red-400">Não foi possível carregar seus veículos.</p>
-            )}
-
-            {!isLoading && !isError && data?.content.length === 0 && (
-                <p className="text-sm text-j-gray-400">Você ainda não tem nenhum veículo cadastrado.</p>
             )}
 
             {!isLoading && !isError && data && data.content.length > 0 && (

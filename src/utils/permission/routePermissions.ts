@@ -73,6 +73,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/admin/gestao-financeira": {
         match: "any",
         permissions: [
+            { module: "MEMBERSHIP", actions: ["BILLING_CONFIGURATION_READ"] },
             { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
             { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
             { module: "BILLING", actions: ["MEMBER_CHARGE_READ"] },

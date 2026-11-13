@@ -19,6 +19,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { getMedicalProfileAction } from "@/server/actions/profile/medical-profile";
 import { EditMedicalProfileModal } from "./EditMedicalProfileModal";
 import { ProfileTabLoading } from "../ProfileTabLoading";
+import { ProfileTabEmptyState } from "../ProfileTabEmptyState";
 
 const BLOOD_TYPE_LABELS: Record<MedicalProfileBloodType, string> = {
     A_POSITIVE: "A+", A_NEGATIVE: "A-", B_POSITIVE: "B+", B_NEGATIVE: "B-",
@@ -56,6 +57,17 @@ export function MedicalProfileTab() {
         );
     }
 
+    if (!data) {
+        return <ProfileTabEmptyState
+            icon={HeartPulse}
+            title="Meu perfil de saúde"
+            description="Informações úteis para seu cuidado e em caso de emergência."
+            emptyTitle="Você ainda não cadastrou informações médicas"
+            emptyDescription="Inclua as informações de saúde e contatos de emergência no seu perfil."
+            action={<Button onClick={openEditor} className="h-11 w-full justify-center whitespace-nowrap rounded-xl px-5"><Plus size={16} /><span>Incluir informações</span></Button>}
+        />;
+    }
+
     return (
         <div className="flex flex-col gap-5 rounded-3xl border border-j-gray-200 bg-j-gray-100 p-4 shadow-sm sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -67,20 +79,11 @@ export function MedicalProfileTab() {
                     </div>
                 </div>
                 <Button onClick={openEditor} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5 sm:w-auto">
-                    {data ? <Edit3 size={16} /> : <Plus size={16} />}
-                    <span>{data ? "Editar informações" : "Adicionar informações"}</span>
+                    <Edit3 size={16} />
+                    <span>Editar informações</span>
                 </Button>
             </div>
-
-            {!data && (
-                <div className="flex flex-col items-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white px-5 py-10 text-center">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-j-blue-50 text-j-blue-700"><Activity size={22} /></span>
-                    <p className="mt-3 font-bold text-j-gray-700">Seu perfil médico está vazio</p>
-                    <p className="mt-1 max-w-md text-sm text-j-gray-500">Adicione dados de saúde e um contato de emergência para deixá-los disponíveis no seu perfil.</p>
-                </div>
-            )}
-
-            {data && <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <MedicalCard title="Informações médicas" icon={Activity} accent="bg-red-100 text-red-600">
                     {data.bloodType && data.bloodType !== "UNKNOWN" && <div className="flex items-center justify-between rounded-xl border border-j-gray-200 bg-j-gray-100 px-4 py-3">
                         <div><span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-j-gray-500">Tipo sanguíneo</span><span className="mt-1 block text-xs text-j-gray-500">Informação importante em emergências</span></div>
@@ -112,7 +115,7 @@ export function MedicalProfileTab() {
                 <MedicalCard title="Observações" icon={ClipboardPlus} accent="bg-violet-100 text-violet-700" className="md:col-span-2 xl:col-span-2">
                     {hasText(data.observations) ? <p className="whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{data.observations}</p> : <EmptyCardState text="Nenhuma observação adicional." />}
                 </MedicalCard>
-            </div>}
+            </div>
         </div>
     );
 }

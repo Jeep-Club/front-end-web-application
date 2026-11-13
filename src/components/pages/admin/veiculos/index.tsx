@@ -109,7 +109,7 @@ export default function VehicleManagement() {
                             </div>
                             <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap">
                                 <AdminExport label="Exportar veículos" formats={["CSV", "PDF"]} className="w-full sm:w-auto" onExport={(format) => exportAdminVehiclesAction(format, exportFilters)} />
-                                <Button type="button" aria-expanded={showExportFilters} aria-controls="vehicle-export-filters" onClick={() => setShowExportFilters((shown) => !shown)} className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 sm:w-auto sm:text-sm"><Filter size={15} aria-hidden="true" />Filtros da exportação</Button>
+                                <Button type="button" aria-expanded={showExportFilters} aria-controls="vehicle-export-filters" onClick={() => setShowExportFilters((shown) => !shown)} className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:text-sm"><Filter size={15} aria-hidden="true" />Filtros da exportação</Button>
                                 {canCreate && <Button id="tour-vehicles-create-btn" onClick={handleOpenCreate} className="h-10 w-full gap-2 sm:w-auto"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
                             </div>
                         </div>

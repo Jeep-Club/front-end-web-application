@@ -197,7 +197,7 @@ export default function Feed() {
 
     return (
         <div className="min-h-full w-full px-3 py-4 pb-4 md:px-6 md:py-6">
-            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
               <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                 {!canRead ? (
                     <div

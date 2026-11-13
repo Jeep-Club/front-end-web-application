@@ -26,13 +26,13 @@ const config = {
     refunds: { title: "Reembolsos", read: "REFUND_READ", statuses: ["ELIGIBLE", "REQUESTED", "APPROVED", "REJECTED", "REFUNDED", "EXPIRED", "CANCELED"], fields: ["userId", "memberPaymentId", "chargeCycleId", "amount", "eligibleUntil", "status"], labels: ["Associado (matrícula)", "Pagamento", "Ciclo", "Valor", "Elegível até", "Situação"] },
 };
 
-export function BillingOperations({ resource }: { resource: BillingResource }) {
+export function BillingOperations({ resource, initialStatus }: { resource: BillingResource; initialStatus?: string }) {
     const permissions = useUserStore((state) => state.permissions);
     const can = (action: string) => hasPermission(permissions, "BILLING", action);
     const { setContent, setOpen } = useModal();
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState(initialStatus && config[resource].statuses.includes(initialStatus) ? initialStatus : "");
     const [definitionId, setDefinitionId] = useState("");
     const [userId, setUserId] = useState("");
     const [cycleId, setCycleId] = useState("");
@@ -91,7 +91,7 @@ export function BillingOperations({ resource }: { resource: BillingResource }) {
                     </p>}
                 </div>
                 {(resource === "cycles" || resource === "member-charges") && <div className="grid w-full grid-cols-2 items-center gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-start lg:justify-end">
-                    <Button type="button" className={twMerge("h-10 w-full justify-center border border-j-gray-300 bg-j-white px-2 py-0 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-blue-800 sm:w-auto sm:px-4 sm:text-sm", !can("EXPORT") && "col-span-2")} onClick={() => { setStatus(""); setUserId(""); setCycleId(""); setDefinitionId(""); setPage(0); }}>Limpar filtros</Button>
+                    <Button type="button" className={twMerge("h-10 w-full justify-center border border-j-gray-300 bg-j-white px-2 py-0 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:px-4 sm:text-sm", !can("EXPORT") && "col-span-2")} onClick={() => { setStatus(""); setUserId(""); setCycleId(""); setDefinitionId(""); setPage(0); }}>Limpar filtros</Button>
                     {can("EXPORT") && <BillingExport kind={resource} filters={exportFilters} mobileActions />}
                     {resource === "cycles" && can("CHARGE_CYCLE_GENERATE") && <div className="col-span-2 flex w-full flex-col gap-1 sm:col-span-1 sm:w-auto sm:min-w-36">
                         <Button type="button" className="h-10 w-full justify-center px-3 py-0 text-xs sm:text-sm" disabled={!selectedDefinition.data || selectedDefinition.data.status !== "ACTIVE" || selectedDefinition.isFetching} onClick={() => { if (selectedDefinition.data) { setContent(<GenerateChargeCycleModal chargeDefinitionId={selectedDefinition.data.id} chargeDefinitionName={selectedDefinition.data.name} />); setOpen(); } }}><Plus size={16} />Criar ciclo</Button>
@@ -106,7 +106,7 @@ export function BillingOperations({ resource }: { resource: BillingResource }) {
             </div>
             {resource !== "cycles" && resource !== "member-charges" && <div className="mt-4 flex flex-col gap-3 border-t border-j-gray-100 pt-4 sm:flex-row-reverse sm:items-end sm:justify-between">
                 <div className="grid w-full grid-cols-2 items-center gap-2 sm:flex sm:w-auto sm:flex-wrap">
-                    <Button type="button" className={twMerge("h-10 w-full justify-center border border-j-gray-300 bg-j-white px-2 py-0 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-blue-800 sm:w-auto sm:px-4 sm:text-sm", !can("EXPORT") && "col-span-2")} onClick={() => { setStatus(""); setUserId(""); setCycleId(""); setDefinitionId(""); setPage(0); }}>Limpar filtros</Button>
+                    <Button type="button" className={twMerge("h-10 w-full justify-center border border-j-gray-300 bg-j-white px-2 py-0 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:px-4 sm:text-sm", !can("EXPORT") && "col-span-2")} onClick={() => { setStatus(""); setUserId(""); setCycleId(""); setDefinitionId(""); setPage(0); }}>Limpar filtros</Button>
                     {can("EXPORT") && <BillingExport kind={resource} filters={exportFilters} mobileActions />}
                 </div>
             </div>}

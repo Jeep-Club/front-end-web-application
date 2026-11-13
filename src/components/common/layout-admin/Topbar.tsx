@@ -45,8 +45,10 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
             <button
                 type="button"
                 onClick={onToggleSidebar}
+                aria-expanded={!isSidebarCollapsed}
+                aria-controls="tour-sidebar"
                 title={isSidebarCollapsed ? "Expandir menu" : "Ocultar menu"}
-                className="hidden cursor-pointer items-center gap-2 text-j-white transition-colors hover:text-j-yellow-300 md:flex"
+                className="hidden cursor-pointer items-center gap-2 rounded-md text-j-white transition-[background-color,color,transform] duration-200 hover:text-j-yellow-300 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300 md:flex motion-reduce:transform-none"
             >
                 {isSidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
                 <span className="text-xs font-semibold uppercase tracking-wider">

@@ -7,12 +7,15 @@ import { Cake, CalendarDays, ChevronRight, Megaphone, Plus } from "lucide-react"
 
 import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
 import { publicationCreationTypes } from "@/config/publicationCreation";
+import { useBirthdayUsers } from "@/hooks/useBirthdayUsers";
 import { useModal } from "@/providers/ModalProvider";
+import LegalLinks from "@/components/common/legal-links";
 
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
+import { getUpcomingBirthdaysForMonth } from "@/utils/birthdays";
 import { useUserStore } from "@/stores/userStore";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 
@@ -26,10 +29,16 @@ function dateLabel(value: string) {
     }).format(new Date(value));
 }
 
-function SideCard({ title, icon: Icon, href, children }: {
+function birthdayDateLabel(value: Date) {
+    const dateOnly = new Date(Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()));
+    return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" }).format(dateOnly);
+}
+
+function SideCard({ title, icon: Icon, href, linkLabel, children }: {
     title: string;
     icon: typeof CalendarDays;
     href?: string;
+    linkLabel?: string;
     children: React.ReactNode;
 }) {
     return (
@@ -38,7 +47,7 @@ function SideCard({ title, icon: Icon, href, children }: {
                 <h2 className="flex items-center gap-2 text-sm font-extrabold text-j-blue-900">
                     <Icon size={17} className="text-j-blue-800" aria-hidden="true" />{title}
                 </h2>
-                {href && <Link href={href} className="inline-flex items-center gap-1 text-xs font-bold text-j-blue-700 hover:underline">Ver todos <ChevronRight size={14} aria-hidden="true" /></Link>}
+                {href && <Link href={href} className="inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-j-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800">{linkLabel ?? "Ver todos"} <ChevronRight size={14} aria-hidden="true" /></Link>}
             </div>
             {children}
         </section>
@@ -51,6 +60,8 @@ export function FeedSidebar() {
         hasPermission(permissions, "PUBLICATIONS", entry.action)
     );
     const { setContent, setOpen } = useModal();
+    const currentDate = new Date();
+    const birthdaysQuery = useBirthdayUsers(currentDate.getMonth() + 1);
     const eventsQuery = useQuery({
         queryKey: ["publications", "feed-sidebar", "EVENT"],
         queryFn: () => listPublicationFeedAction({ type: "EVENT", page: 0, size: 48 }),
@@ -62,10 +73,11 @@ export function FeedSidebar() {
         staleTime: 60_000,
     });
     const events = (eventsQuery.data?.content ?? [])
-        .filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT" && item.details.status !== "CANCELLED" && Date.parse(item.details.startsAt) >= Date.now())
+        .filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT" && item.details.status !== "CANCELLED" && Date.parse(item.details.startsAt) >= currentDate.getTime())
         .sort((a, b) => Date.parse(a.details.startsAt) - Date.parse(b.details.startsAt))
         .slice(0, 3);
     const notices = (noticesQuery.data?.content ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "NOTICE" }> => item.type === "NOTICE");
+    const upcomingBirthdays = getUpcomingBirthdaysForMonth(birthdaysQuery.data ?? [], currentDate, 4);
 
     return (
         <aside id="tour-feed-sidebar" aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
@@ -88,10 +100,22 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum evento publicado no momento.</p>}
             </SideCard>
 
-            <SideCard title="Aniversariantes do mês" icon={Cake}>
-                <p className="text-sm text-j-gray-500">
-                    A listagem de aniversariantes está disponível apenas na área administrativa.
-                </p>
+            <SideCard title="Aniversariantes do mês" icon={Cake} href="/agenda" linkLabel="Ver agenda">
+                {birthdaysQuery.isPending ? <p role="status" className="text-sm text-j-gray-500">Carregando aniversariantes...</p> : birthdaysQuery.isError ? (
+                    <div role="alert" className="text-sm text-j-gray-500">
+                        <p>Não foi possível carregar os aniversariantes.</p>
+                        <button type="button" disabled={birthdaysQuery.isFetching} onClick={() => void birthdaysQuery.refetch()} className="mt-2 cursor-pointer font-bold text-j-blue-700 underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-60">{birthdaysQuery.isFetching ? "Carregando..." : "Tentar novamente"}</button>
+                    </div>
+                ) : upcomingBirthdays.length ? (
+                    <ul className="space-y-2">
+                        {upcomingBirthdays.map((birthday) => <li key={birthday.id} className="flex items-baseline justify-between gap-3 border-b border-j-gray-100 pb-2 last:border-0 last:pb-0">
+                            <span className="min-w-0 break-words text-sm font-bold text-j-blue-900">{birthday.name}</span>
+                            <time dateTime={`${birthday.date.getFullYear()}-${String(birthday.date.getMonth() + 1).padStart(2, "0")}-${String(birthday.date.getDate()).padStart(2, "0")}`} className="shrink-0 text-xs text-j-gray-500">
+                                {birthdayDateLabel(birthday.date)}
+                            </time>
+                        </li>)}
+                    </ul>
+                ) : <p className="text-sm text-j-gray-500">Nenhum próximo aniversário neste mês.</p>}
             </SideCard>
 
             <SideCard title="Avisos recentes" icon={Megaphone} href="/avisos">
@@ -116,6 +140,8 @@ export function FeedSidebar() {
                     Postar
                 </button>
             )}
+
+            <LegalLinks className="mt-1 hidden gap-x-4 gap-y-2 lg:flex" />
         </aside>
     );
 }

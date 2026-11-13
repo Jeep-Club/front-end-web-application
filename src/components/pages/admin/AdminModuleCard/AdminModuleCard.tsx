@@ -33,10 +33,11 @@ export default function AdminModuleCard({
                 group flex min-h-[330px] flex-col
                 rounded-xl border border-j-gray-300
                 bg-j-white p-5 shadow-sm
-                transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200
-                hover:-translate-y-1
+                transition-[background-color,border-color,box-shadow,transform,translate,scale] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+                hover:-translate-y-1 hover:scale-[1.015]
                 hover:border-j-yellow-300
-                hover:shadow-md
+                hover:shadow-lg
+                motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100
             "
         >
             <div className="relative">
@@ -55,7 +56,7 @@ export default function AdminModuleCard({
                             ? "Remover dos favoritos"
                             : "Adicionar aos favoritos"
                     }
-                    className="absolute right-2 top-2 z-10 cursor-pointer rounded-full p-2 text-j-blue-800 transition-colors hover:bg-j-yellow-300/30"
+                    className="absolute right-2 top-2 z-10 cursor-pointer rounded-full p-2 text-j-blue-800 transition-[background-color,transform] duration-200 ease-out hover:scale-110 hover:bg-j-yellow-300/30 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100"
                 >
                     <Star
                         size={21}
@@ -71,6 +72,8 @@ export default function AdminModuleCard({
                         flex h-28 items-center justify-center
                         rounded-xl border border-j-yellow-300/50
                         bg-j-yellow-100/20
+                        transition-[background-color,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+                        group-hover:border-j-yellow-300/80 group-hover:bg-j-yellow-100/40
                     "
                 >
                     <Icon
@@ -78,8 +81,9 @@ export default function AdminModuleCard({
                         strokeWidth={1.8}
                         className="
                             text-j-blue-800
-                            transition-transform duration-200
+                            transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
                             group-hover:scale-110
+                            motion-reduce:transition-none motion-reduce:group-hover:scale-100
                         "
                     />
                 </div>
@@ -105,14 +109,16 @@ export default function AdminModuleCard({
                         }
                     }}
                     className="
-                        mt-auto flex w-full items-center
+                        group/link mt-auto flex w-full items-center
                         justify-center gap-2 rounded-lg
                         bg-j-yellow-300 px-4 py-3
                         text-sm font-black uppercase
                         tracking-wide text-j-blue-800
-                        transition-[background-color,border-color,color,box-shadow,opacity,transform]
-                        hover:bg-j-yellow-200
-                        active:scale-[0.98]
+                        transition-[background-color,box-shadow,transform,translate,scale] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+                        hover:-translate-y-0.5 hover:bg-j-yellow-200 hover:shadow-md
+                        active:translate-y-0 active:scale-[0.98]
+                        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300
+                        motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100
                     "
                 >
                     Gerenciar
@@ -120,6 +126,7 @@ export default function AdminModuleCard({
                     <ArrowRight
                         size={17}
                         strokeWidth={3}
+                        className="transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/link:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover/link:translate-x-0"
                     />
                 </Link>
             </div>

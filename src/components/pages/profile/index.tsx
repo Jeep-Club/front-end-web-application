@@ -65,13 +65,14 @@ export default function Profile() {
                                 key={key}
                                 id={`tour-profile-tab-${key}`}
                                 type="button"
+                                data-active={isActive}
                                 title={label}
                                 onClick={() => setActiveTab(key)}
                                 className={twMerge(
-                                    "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 p-2 text-center transition-colors md:p-4",
+                                    "profile-tab flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 p-2 text-center transition-colors md:p-4",
                                     isActive
                                         ? "border-j-blue-800 bg-j-blue-800 text-j-white shadow-md"
-                                        : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800"
+                                        : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300"
                                 )}
                             >
                                 <Icon size={22} />
