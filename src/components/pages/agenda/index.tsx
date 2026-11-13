@@ -18,7 +18,6 @@ import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetai
 import { feedDate, publicationReadError, publicationReadRetry } from "@/components/pages/feed/feedDisplay";
 
 type EventItem = Extract<PublicationFeedItem, { type: "EVENT" }>;
-const EMPTY_BIRTHDAY_USERS: BirthdayUser[] = [];
 
 const WEEKDAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const EVENT_STATUS_LABELS = {
@@ -49,13 +48,6 @@ function monthLabel(date: Date) {
 
 function longDateLabel(date: Date) {
     return new Intl.DateTimeFormat("pt-BR", { dateStyle: "full", timeZone: "America/Sao_Paulo" }).format(date);
-}
-
-function dayContentLabel(events: EventItem[], birthdays: BirthdayUser[]) {
-    const labels: string[] = [];
-    if (events.length) labels.push(events.length === 1 ? events[0].title : `${events.length} eventos`);
-    if (birthdays.length) labels.push(`${birthdays.length} ${birthdays.length === 1 ? "aniversariante" : "aniversariantes"}: ${birthdays.map(({ name }) => name).join(", ")}`);
-    return labels.join("; ");
 }
 
 function makeCalendarDays(month: Date) {
@@ -104,7 +96,6 @@ export default function AgendaPage() {
         return new Date(now.getFullYear(), now.getMonth(), 1);
     });
     const today = useMemo(() => calendarDateKey(new Date()), []);
-    const birthdaysQuery = useBirthdayUsers(month.getMonth() + 1);
     const query = useInfiniteQuery({
         queryKey: ["publications", "agenda", permissions],
         queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "EVENT", page: pageParam, size: 48 }),
@@ -117,7 +108,6 @@ export default function AgendaPage() {
     const failure = publicationReadError(query.error);
     const events = useMemo(() => failure.restricted ? [] : mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [failure.restricted, query.data]);
     const days = useMemo(() => makeCalendarDays(month), [month]);
-    const birthdayUsers = birthdaysQuery.data ?? EMPTY_BIRTHDAY_USERS;
     const eventsByDate = useMemo(() => {
         const grouped = new Map<string, EventItem[]>();
         for (const event of events) {
@@ -129,28 +119,19 @@ export default function AgendaPage() {
         for (const group of grouped.values()) group.sort((a, b) => Date.parse(a.details.startsAt) - Date.parse(b.details.startsAt));
         return grouped;
     }, [events]);
-    const birthdaysByDate = useMemo(() => {
-        const grouped = new Map<string, BirthdayUser[]>();
-        for (const day of days) {
-            if (day.getMonth() !== month.getMonth()) continue;
-            const birthdays = getBirthdaysOnDate(birthdayUsers, day);
-            if (birthdays.length) grouped.set(calendarDateKey(day), birthdays);
-        }
-        return grouped;
-    }, [birthdayUsers, days, month]);
 
     useEffect(() => {
         if (!hasNextPage || isFetchingNextPage || isError) return;
         void fetchNextPage();
     }, [hasNextPage, isFetchingNextPage, isError, fetchNextPage, pageCount]);
 
-    function openDayEvents(dayEvents: EventItem[], dayBirthdays: BirthdayUser[], date: Date) {
-        if (dayEvents.length === 1 && dayBirthdays.length === 0) {
+    function openDayEvents(dayEvents: EventItem[], date: Date) {
+        if (dayEvents.length === 1) {
             setContent(<EventSummary event={dayEvents[0]} />);
             setOpen();
             return;
         }
-        setContent(<AgendaDayEvents events={dayEvents} birthdays={dayBirthdays} date={date} />);
+        setContent(<AgendaDayEvents events={dayEvents} date={date} />);
         setOpen();
     }
 
@@ -172,8 +153,8 @@ export default function AgendaPage() {
             </nav>
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
-                    <h1 className="mt-1 text-2xl font-extrabold text-j-gray-700 md:text-3xl">{canRead ? "Agenda do clube" : "Aniversariantes do mês"}</h1>
-                    <p className="mt-1 max-w-xl text-sm text-j-gray-500">{canRead ? "Veja os eventos e aniversários do clube; abra um dia para conferir os detalhes." : "Confira os aniversariantes do clube neste mês."}</p>
+                    <h1 className="mt-1 text-2xl font-extrabold text-j-gray-700 md:text-3xl">Agenda de eventos</h1>
+                    <p className="mt-1 max-w-xl text-sm text-j-gray-500">Veja o que vem por aí e abra um evento para conferir os detalhes.</p>
                 </div>
                 <div className="flex w-full items-center justify-between gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:w-auto sm:gap-2">
                     <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
@@ -192,24 +173,19 @@ export default function AgendaPage() {
                                 {days.map((day) => {
                                     const key = calendarDateKey(day);
                                     const dayEvents = eventsByDate.get(key) ?? [];
-                                    const dayBirthdays = birthdaysByDate.get(key) ?? [];
                                     const event = dayEvents[0];
                                     const imageUrl = getMediaImageUrl(event?.primaryImage?.storageKey);
                                     const inMonth = day.getMonth() === month.getMonth();
                                     const isToday = key === today;
-                                    const hasItems = dayEvents.length > 0 || dayBirthdays.length > 0;
+                                    const eventLabel = dayEvents.length === 1 ? event.title : `${dayEvents.length} eventos`;
 
                                     return <div key={key} className={`relative min-h-28 p-1.5 lg:min-h-32 lg:p-2 ${inMonth ? "bg-j-white" : "bg-j-gray-100/70"}`}>
-                                        {hasItems ? <button type="button" onClick={() => openDayEvents(dayEvents, dayBirthdays, day)} aria-label={`${longDateLabel(day)}: ${dayContentLabel(dayEvents, dayBirthdays)}`} className={`group relative flex h-full min-h-24 w-full cursor-pointer flex-col overflow-hidden rounded-xl p-2 text-left transition-[transform,box-shadow,ring-color] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 lg:min-h-28 ${isToday ? "ring-2 ring-j-yellow-400" : ""}`}>
-                                            {imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-70 transition-transform duration-300 group-hover:scale-105" /> : <div className={`absolute inset-0 ${dayEvents.length ? "bg-gradient-to-br from-j-yellow-100 to-j-yellow-300" : "bg-gradient-to-br from-j-yellow-50 to-j-yellow-200"}`} />}
+                                        {dayEvents.length > 0 ? <button type="button" onClick={() => openDayEvents(dayEvents, day)} aria-label={`${longDateLabel(day)}: ${eventLabel}`} className={`group relative flex h-full min-h-24 w-full cursor-pointer flex-col overflow-hidden rounded-xl p-2 text-left transition-[transform,box-shadow,ring-color] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 lg:min-h-28 ${isToday ? "ring-2 ring-j-yellow-400" : ""}`}>
+                                            {imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-70 transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 bg-gradient-to-br from-j-yellow-100 to-j-yellow-300" />}
                                             {imageUrl && <div className="absolute inset-0 bg-gradient-to-br from-j-blue-950/30 via-transparent to-j-blue-950/65" />}
                                             <span className={`relative z-[1] flex size-8 items-center justify-center rounded-lg text-sm font-black shadow-sm ${imageUrl ? "bg-j-yellow-300 text-j-blue-950" : "bg-j-white/90 text-j-blue-900"}`}>{day.getDate()}</span>
-                                            {dayEvents.length > 0 && <span className={`relative z-[1] mt-auto line-clamp-2 w-full text-xs font-extrabold leading-tight ${imageUrl ? "text-white drop-shadow" : "text-j-blue-900"}`}>{event.title}</span>}
-                                            {dayBirthdays.length > 0 && <span className={`relative z-[1] mt-1 inline-flex max-w-full items-center gap-1 truncate text-[10px] font-bold ${imageUrl ? "text-white drop-shadow" : "text-j-blue-900"}`}><Cake size={12} aria-hidden="true" />{dayBirthdays[0].name}{dayBirthdays.length > 1 ? ` +${dayBirthdays.length - 1}` : ""}</span>}
-                                            <span className="absolute right-2 top-2 z-[1] flex gap-1">
-                                                {dayEvents.length > 1 && <span className="rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-extrabold text-j-blue-900 shadow">+{dayEvents.length - 1}</span>}
-                                                {dayBirthdays.length > 0 && <span className="inline-flex items-center gap-1 rounded-full bg-j-yellow-300 px-1.5 py-0.5 text-[10px] font-extrabold text-j-blue-950 shadow"><Cake size={11} aria-hidden="true" />{dayBirthdays.length}</span>}
-                                            </span>
+                                            <span className={`relative z-[1] mt-auto line-clamp-2 w-full text-xs font-extrabold leading-tight ${imageUrl ? "text-white drop-shadow" : "text-j-blue-900"}`}>{event.title}</span>
+                                            {dayEvents.length > 1 && <span className="absolute right-2 top-2 z-[1] rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-extrabold text-j-blue-900 shadow">+{dayEvents.length - 1}</span>}
                                         </button> : <div className={`flex h-full min-h-24 items-start rounded-xl p-2 lg:min-h-28 ${isToday ? "bg-j-yellow-100/70" : ""}`}><span className={`flex size-8 items-center justify-center rounded-lg text-sm font-bold ${inMonth ? "text-j-gray-700" : "text-j-gray-400"} ${isToday ? "bg-j-yellow-300 text-j-blue-950" : ""}`}>{day.getDate()}</span></div>}
 
 
@@ -228,21 +204,16 @@ export default function AgendaPage() {
     </div>;
 }
 
-function AgendaDayEvents({ events, birthdays, date }: { events: EventItem[]; birthdays: BirthdayUser[]; date: Date }) {
+function AgendaDayEvents({ events, date }: { events: EventItem[]; date: Date }) {
     const { setContent, setOpen, setClose } = useModal();
     return <section role="dialog" aria-modal="true" aria-labelledby="agenda-day-title" className="max-h-[85dvh] w-full max-w-xl overflow-y-auto rounded-3xl bg-j-white p-5 shadow-2xl sm:p-6">
-        <header className="mb-4 flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-j-blue-700">{longDateLabel(date)}</p><h2 id="agenda-day-title" className="mt-1 text-xl font-extrabold text-j-blue-800">Agenda do dia</h2></div><ButtonIcon type="button" aria-label="Fechar detalhes do dia" onClick={setClose} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={19} /></ButtonIcon></header>
-        {events.length > 0 && <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-extrabold text-j-blue-800">Eventos</h3>
+        <header className="mb-4 flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-j-blue-700">{longDateLabel(date)}</p><h2 id="agenda-day-title" className="mt-1 text-xl font-extrabold text-j-blue-800">Eventos do dia</h2></div><ButtonIcon type="button" aria-label="Fechar eventos do dia" onClick={setClose} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={19} /></ButtonIcon></header>
+        <div className="flex flex-col gap-3">
             {events.map((event) => <button key={event.id} type="button" onClick={() => { setContent(<EventSummary event={event} />); setOpen(); }} className="flex items-center gap-3 rounded-2xl border border-j-gray-200 p-3 text-left transition-colors hover:border-j-yellow-400 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800">
                 <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-j-blue-800 text-j-yellow-300">{event.primaryImage ? <Image src={getMediaImageUrl(event.primaryImage.storageKey)} alt="" fill unoptimized sizes="64px" className="object-cover opacity-60" /> : <CalendarDays size={22} />}</span>
                 <span className="min-w-0"><span className="block truncate font-bold text-j-blue-800">{event.title}</span><span className="mt-1 block text-xs text-j-gray-500">{feedDate(event.details.startsAt)}</span></span>
                 <ChevronRight size={18} className="ml-auto shrink-0 text-j-gray-400" aria-hidden="true" />
             </button>)}
-        </div>}
-        {birthdays.length > 0 && <section aria-label="Aniversariantes do dia" className="mt-4 rounded-2xl border border-j-gray-200 bg-j-yellow-100/70 p-4">
-            <h3 className="flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><Cake size={17} aria-hidden="true" />Aniversariantes</h3>
-            <ul className="mt-2 space-y-1">{birthdays.map((birthday) => <li key={birthday.id} className="text-sm font-semibold text-j-blue-800">{birthday.name}</li>)}</ul>
-        </section>}
+        </div>
     </section>;
 }
