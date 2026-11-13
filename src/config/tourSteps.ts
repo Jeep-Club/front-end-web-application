@@ -994,7 +994,7 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
             element: "#tour-tutorials-search",
             popover: {
                 title: createStepHeader("Pesquise sua Dúvida", ICONS.compass),
-                description: "Digite sua dúvida ou o que deseja fazer (ex.: <strong>'como cadastrar veículo'</strong>, <strong>'ficha médica'</strong>, <strong>'aprovar pagamento'</strong>) ou clique em uma das sugestões rápidas.",
+                description: "Digite sua dúvida ou o que deseja fazer (ex.: <strong>'como cadastrar veículo'</strong>, <strong>'ficha médica'</strong>, <strong>'carteirinha'</strong>) para filtrar a lista.",
                 side: "bottom",
                 align: "center",
             },
@@ -1002,8 +1002,8 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
         {
             element: "#tour-tutorials-results",
             popover: {
-                title: createStepHeader("Resultados e Sumário de Tutoriais", ICONS.checkCircle),
-                description: "Os tutoriais disponíveis para você aparecem em formato de lista simples logo abaixo, com a quantidade de passos e status de conclusão.",
+                title: createStepHeader("Resultados e Guias Ilustrados", ICONS.checkCircle),
+                description: "Os tutoriais disponíveis para você aparecem em formato de lista logo abaixo, com a quantidade de passos e status de conclusão.",
                 side: isMobile ? "bottom" : "top",
                 align: "center",
             },
@@ -1011,8 +1011,8 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
         {
             element: "#tour-tutorials-start-btn",
             popover: {
-                title: createStepHeader("Iniciar Tutorial Interativo", ICONS.sliders),
-                description: "Clique em <strong>'Iniciar tutorial'</strong> em qualquer card: o sistema levará você até a tela correspondente e iniciará a explicação guiada automaticamente.",
+                title: createStepHeader("Abrir Tutorial Passo a Passo", ICONS.sliders),
+                description: "Clique em <strong>'Ver tutorial'</strong> (ou <strong>'Iniciar tutorial'</strong>) em qualquer card para visualizar o passo a passo ilustrado com imagens ou iniciar o tour na tela.",
                 side: isMobile ? "bottom" : "left",
                 align: "center",
             },
@@ -1020,8 +1020,8 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
         {
             element: "#tour-header-help-btn",
             popover: {
-                title: createStepHeader("Botão 'Precisa de ajuda?'", ICONS.helpCircle),
-                description: "Lembre-se: quando já estiver em qualquer página do sistema, basta clicar no botão vermelho <strong>'Precisa de ajuda?'</strong> no cabeçalho para iniciar o tutorial daquela tela na hora!",
+                title: createStepHeader("Botão de Ajuda no Cabeçalho", ICONS.helpCircle),
+                description: "Lembre-se: quando já estiver em qualquer página do sistema, basta clicar no botão vermelho de <strong>ajuda</strong> no cabeçalho (ele muda conforme a tela atual) para iniciar o tutorial na hora!",
                 side: "bottom",
                 align: "center",
             },
@@ -1174,4 +1174,66 @@ export function resolveRouteTourSteps(
     }
 
     return getTourSteps(canAccessAdmin, isMobile, setMobileMenuOpen);
+}
+
+export interface ContextualHelpLabel {
+    full: string;
+    compact: string;
+}
+
+const CONTEXTUAL_HELP_EXACT_ROUTES: Record<string, ContextualHelpLabel> = {
+    "/": { full: "Como funciona?", compact: "Ajuda?" },
+    "/login": { full: "Ajuda para entrar?", compact: "Ajuda: Login" },
+    "/feed": { full: "Ajuda com o mural?", compact: "Ajuda: Mural" },
+    "/avisos": { full: "Ajuda com os avisos?", compact: "Ajuda: Avisos" },
+    "/servicos": { full: "Ajuda com serviços?", compact: "Ajuda: Serviços" },
+    "/eventos": { full: "Ajuda com eventos?", compact: "Ajuda: Eventos" },
+    "/admin": { full: "Ajuda com o painel?", compact: "Ajuda: Painel" },
+};
+
+const CONTEXTUAL_HELP_PREFIX_ROUTES: Array<[string, ContextualHelpLabel]> = [
+    ["/agenda", { full: "Ajuda com a agenda?", compact: "Ajuda: Agenda" }],
+    ["/financeiro", { full: "Ajuda com financeiro?", compact: "Ajuda: Financeiro" }],
+    ["/profile", { full: "Ajuda com seu perfil?", compact: "Ajuda: Perfil" }],
+    ["/configuracoes", { full: "Ajuda com configurações?", compact: "Ajuda: Ajustes" }],
+    ["/tutoriais", { full: "Ajuda com tutoriais?", compact: "Ajuda: Tutoriais" }],
+    ["/admin/dados-medicos", { full: "Ajuda com dados médicos?", compact: "Ajuda: Saúde" }],
+    ["/admin/pagamentos", { full: "Ajuda com pagamentos?", compact: "Ajuda: Pagamentos" }],
+    ["/admin/gestao-financeira", { full: "Ajuda com finanças?", compact: "Ajuda: Finanças" }],
+    ["/admin/gestao-publicacoes", { full: "Ajuda com publicações?", compact: "Ajuda: Publicações" }],
+    ["/admin/gestao-eventos", { full: "Ajuda com eventos?", compact: "Ajuda: Eventos" }],
+    ["/admin/roles-permissoes", { full: "Ajuda com permissões?", compact: "Ajuda: Cargos" }],
+    ["/admin/veiculos", { full: "Ajuda com veículos?", compact: "Ajuda: Veículos" }],
+    ["/admin/ferramentas", { full: "Ajuda com ferramentas?", compact: "Ajuda: Ferramentas" }],
+    ["/admin/tools", { full: "Ajuda com ferramentas?", compact: "Ajuda: Ferramentas" }],
+];
+
+/**
+ * Retorna o rótulo contextual do botão de ajuda no cabeçalho conforme a rota atual.
+ */
+export function getContextualHelpLabel(
+    pathname: string,
+    tab?: string | null,
+): ContextualHelpLabel {
+    const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+
+    if (CONTEXTUAL_HELP_EXACT_ROUTES[normalizedPath]) {
+        return CONTEXTUAL_HELP_EXACT_ROUTES[normalizedPath];
+    }
+
+    if (normalizedPath.startsWith("/admin/users")) {
+        if (tab === "applications") {
+            return { full: "Ajuda com solicitações?", compact: "Ajuda: Pedidos" };
+        }
+        return { full: "Ajuda com usuários?", compact: "Ajuda: Usuários" };
+    }
+
+    const prefixMatch = CONTEXTUAL_HELP_PREFIX_ROUTES.find(([prefix]) =>
+        normalizedPath.startsWith(prefix),
+    );
+    if (prefixMatch) {
+        return prefixMatch[1];
+    }
+
+    return { full: "Precisa de ajuda?", compact: "Ajuda?" };
 }

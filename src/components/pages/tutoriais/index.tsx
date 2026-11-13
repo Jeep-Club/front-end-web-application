@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+    CalendarDays,
     Car,
     CheckCircle2,
     Compass,
@@ -11,6 +12,7 @@ import {
     KeyRound,
     Newspaper,
     Play,
+    ReceiptText,
     RotateCcw,
     ShieldCheck,
     Sparkles,
@@ -27,7 +29,12 @@ import { Button } from "@/components/common/button";
 import { InputSearch } from "@/components/common/input/input-search";
 import { PageHeader } from "@/components/common/page-header";
 import TourHelpButton from "@/components/common/tour/TourHelpButton";
+import { TutorialImageViewerModal } from "@/components/pages/tutoriais/TutorialImageViewerModal";
 import { adminModules, canAccessAdminModule } from "@/config/adminModules";
+import {
+    MEMBER_VISUAL_GUIDES,
+    type TutorialImageStep,
+} from "@/config/tutorialVisualGuides";
 import {
     getAdminPanelTourSteps,
     getFeedTourSteps,
@@ -62,56 +69,9 @@ export interface TutorialCatalogItem {
     adminModuleKey?: string;
     topics: string[];
     keywords: string[];
+    imageSteps?: TutorialImageStep[];
+    supportsLiveTour?: boolean;
 }
-
-interface QuickQuestionShortcut {
-    id: string;
-    label: string;
-    query: string;
-    icon: LucideIcon;
-    adminModuleKey?: string;
-}
-
-const QUICK_QUESTIONS: QuickQuestionShortcut[] = [
-    {
-        id: "shortcut-vehicle",
-        label: "Quero cadastrar meu veículo 4x4",
-        query: "meu veiculo",
-        icon: Car,
-    },
-    {
-        id: "shortcut-medical",
-        label: "Quero atualizar minha ficha médica",
-        query: "ficha medica",
-        icon: HeartPulse,
-    },
-    {
-        id: "shortcut-events",
-        label: "Quero ver os próximos eventos e trilhas",
-        query: "eventos",
-        icon: Compass,
-    },
-    {
-        id: "shortcut-dependents",
-        label: "Quero gerenciar meus dados ou dependentes",
-        query: "dependentes",
-        icon: User,
-    },
-    {
-        id: "shortcut-payments",
-        label: "Quero analisar comprovantes de pagamento",
-        query: "validar pagamento",
-        icon: WalletCards,
-        adminModuleKey: "payments",
-    },
-    {
-        id: "shortcut-applications",
-        label: "Quero aprovar pedidos de novos sócios",
-        query: "aprovar socio",
-        icon: UserRoundCheck,
-        adminModuleKey: "membership-applications",
-    },
-];
 
 const STOP_WORDS = new Set([
     "a",
@@ -420,20 +380,36 @@ const SYNONYM_MAP: Record<string, string[]> = {
     fatura: ["cobranca", "mensalidade", "pagamento", "financeiro"],
     mensalidade: ["pagamento", "cobranca", "fatura", "financeiro"],
     pagar: ["pagamento", "comprovante", "mensalidade", "fatura"],
-    guincho: ["ferramenta", "ferramentas", "equipamento", "resgate"],
-    cinta: ["ferramenta", "ferramentas", "equipamento", "resgate"],
+    guincho: ["ferramenta", "ferramentas", "equipamento", "resgate", "manilha"],
+    cinta: ["ferramenta", "ferramentas", "equipamento", "resgate", "manilha"],
+    manilha: ["ferramenta", "ferramentas", "equipamento", "resgate"],
+    resgate: ["ferramenta", "ferramentas", "equipamento", "guincho"],
     equipamento: ["ferramenta", "ferramentas", "resgate"],
     equipamentos: ["ferramenta", "ferramentas", "resgate"],
-    trilha: ["evento", "eventos", "passeio", "expedicao", "mural", "agenda"],
-    passeio: ["evento", "eventos", "trilha", "mural", "agenda"],
+    trilha: ["evento", "eventos", "passeio", "expedicao", "mural", "agenda", "calendario"],
+    passeio: ["evento", "eventos", "trilha", "mural", "agenda", "calendario"],
+    inscricao: ["evento", "eventos", "participar", "presenca", "convidado"],
+    participar: ["evento", "eventos", "inscricao", "presenca"],
+    convidado: ["evento", "eventos", "inscricao", "participar"],
+    calendario: ["agenda", "eventos", "datas", "mes"],
+    data: ["agenda", "calendario", "eventos", "vencimento"],
+    datas: ["agenda", "calendario", "eventos"],
     post: ["publicacao", "publicacoes", "postagem", "mural", "feed", "aviso"],
     postar: ["publicacao", "publicacoes", "postagem", "criar", "mural"],
     noticia: ["aviso", "avisos", "publicacao", "mural", "feed"],
-    carteirinha: ["perfil", "conta", "dados", "pessoais", "socio"],
+    carteirinha: ["perfil", "conta", "dados", "pessoais", "socio", "carteira", "pdf", "png"],
+    carteira: ["carteirinha", "perfil", "conta", "dados", "pessoais", "socio"],
+    pdf: ["carteirinha", "baixar", "exportar", "dados", "medicos"],
     endereco: ["perfil", "conta", "dados", "pessoais"],
     telefone: ["perfil", "conta", "dados", "pessoais", "usuarios"],
     email: ["perfil", "conta", "dados", "pessoais", "usuarios"],
-    senha: ["login", "acesso", "conta", "perfil", "provisoria", "aprovar"],
+    tema: ["configuracoes", "escuro", "claro", "modo", "aparencia", "preferencias"],
+    escuro: ["tema", "configuracoes", "modo", "preferencias"],
+    claro: ["tema", "configuracoes", "modo", "preferencias"],
+    notificacao: ["configuracoes", "preferencias", "avisos"],
+    notificacoes: ["configuracoes", "preferencias", "avisos"],
+    privacidade: ["configuracoes", "visibilidade", "perfil"],
+    senha: ["login", "acesso", "conta", "configuracoes", "provisoria", "aprovar"],
     cargo: ["role", "roles", "permissao", "permissoes", "acesso"],
     permissao: ["role", "roles", "permissoes", "cargo", "cargos", "rbac"],
 };
@@ -557,20 +533,22 @@ function isOneEditAway(a: string, b: string): boolean {
 export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
     {
         id: "feed-home",
-        title: "Home e Mural do Clube",
+        title: "Mural do Clube e Inscrição em Eventos",
         description:
-            "Navegue pelas publicações, filtre por avisos e eventos, comente, curta e confirme sua participação.",
+            "Filtre avisos e eventos no mural, curta, comente e confirme sua participação com veículo e dependentes.",
         category: "member",
         categoryLabel: "Membro",
         href: "/feed",
         storageKey: "tour_completed_feed",
         stepCount: getFeedTourSteps(false).length,
         icon: Compass,
+        imageSteps: MEMBER_VISUAL_GUIDES["feed-home"],
+        supportsLiveTour: true,
         topics: [
             "Filtros de publicações",
-            "Criar nova postagem",
+            "Inscrição em eventos e trilhas",
+            "Escolha de veículo e convidado",
             "Curtidas e comentários",
-            "Eventos e agenda",
         ],
         keywords: [
             "home",
@@ -582,44 +560,245 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "eventos",
             "servicos",
             "presenca",
+            "inscricao",
+            "participar",
+            "convidado",
             "curtir",
             "comentar",
         ],
     },
     {
-        id: "profile-account",
-        title: "Perfil e Minha Conta",
+        id: "member-vehicles",
+        title: "Cadastrar e Editar Veículo 4x4",
         description:
-            "Gerencie seus dados pessoais, ficha médica de trilha, dependentes, veículos 4x4 e ferramentas de apoio.",
+            "Adicione seu Jeep ou 4x4 no perfil com modelo, placa, ano e fotos para usar nas inscrições de trilhas.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/profile",
+        storageKey: "tour_completed_member_vehicles",
+        stepCount: MEMBER_VISUAL_GUIDES["member-vehicles"].length,
+        icon: Car,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-vehicles"],
+        supportsLiveTour: true,
+        topics: [
+            "Aba Veículos no perfil",
+            "Incluir veículo 4x4",
+            "Placa, modelo e galeria de fotos",
+        ],
+        keywords: [
+            "meu veiculo",
+            "veiculos",
+            "cadastrar veiculo",
+            "cadastrar carro",
+            "editar veiculo",
+            "meu jeep",
+            "4x4",
+            "placa",
+            "renavam",
+            "foto veiculo",
+        ],
+    },
+    {
+        id: "member-medical",
+        title: "Preencher Ficha Médica de Emergência",
+        description:
+            "Mantenha tipo sanguíneo, alergias, medicações e contato de emergência atualizados para apoio em trilhas.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/profile",
+        storageKey: "tour_completed_member_medical",
+        stepCount: MEMBER_VISUAL_GUIDES["member-medical"].length,
+        icon: HeartPulse,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-medical"],
+        supportsLiveTour: true,
+        topics: [
+            "Aba Dados médicos",
+            "Tipo sanguíneo e alergias",
+            "Contato de emergência",
+        ],
+        keywords: [
+            "ficha medica",
+            "dados medicos",
+            "saude",
+            "tipo sanguineo",
+            "alergia",
+            "remedio",
+            "medicamento",
+            "emergencia",
+        ],
+    },
+    {
+        id: "profile-account",
+        title: "Dados Pessoais e Carteirinha de Associado",
+        description:
+            "Atualize seus dados cadastrais e visualize ou baixe sua Carteirinha do Clube em PNG ou PDF.",
         category: "member",
         categoryLabel: "Membro",
         href: "/profile",
         storageKey: "tour_completed_profile",
         stepCount: getProfileTourSteps(false).length,
         icon: User,
+        imageSteps: MEMBER_VISUAL_GUIDES["profile-account"],
+        supportsLiveTour: true,
         topics: [
-            "Dados cadastrais",
-            "Ficha médica de emergência",
-            "Dependentes",
-            "Meus veículos e ferramentas",
+            "Dados pessoais",
+            "Carteira de Associado frente e verso",
+            "Baixar em PNG ou PDF",
         ],
         keywords: [
             "perfil",
             "conta",
             "dados pessoais",
             "dados cadastrais",
-            "ficha medica",
-            "saude",
-            "tipo sanguineo",
-            "alergia",
-            "emergencia",
-            "dependentes",
-            "meu veiculo",
-            "cadastrar veiculo",
-            "cadastrar carro",
-            "meu jeep",
-            "minhas ferramentas",
             "carteirinha",
+            "carteira de associado",
+            "baixar pdf",
+            "png",
+            "telefone",
+            "email",
+        ],
+    },
+    {
+        id: "member-dependents",
+        title: "Cadastrar Dependentes e Familiares",
+        description:
+            "Inclua filhos, cônjuge ou familiares no seu perfil para levá-los facilmente nos eventos do clube.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/profile",
+        storageKey: "tour_completed_member_dependents",
+        stepCount: MEMBER_VISUAL_GUIDES["member-dependents"].length,
+        icon: Users,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-dependents"],
+        supportsLiveTour: true,
+        topics: [
+            "Aba Dependentes",
+            "Incluir familiar",
+            "Foto e vínculo",
+        ],
+        keywords: [
+            "dependentes",
+            "dependente",
+            "filho",
+            "filha",
+            "esposa",
+            "marido",
+            "conjuge",
+            "familia",
+        ],
+    },
+    {
+        id: "member-tools",
+        title: "Cadastrar Ferramentas e Equipamentos de Resgate",
+        description:
+            "Registre guincho, cinta, manilha e equipamentos de apoio que você leva nas expedições.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/profile",
+        storageKey: "tour_completed_member_tools",
+        stepCount: MEMBER_VISUAL_GUIDES["member-tools"].length,
+        icon: Wrench,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-tools"],
+        supportsLiveTour: true,
+        topics: [
+            "Aba Ferramentas",
+            "Incluir equipamento",
+            "Ativar ou desativar item",
+        ],
+        keywords: [
+            "minhas ferramentas",
+            "ferramentas",
+            "equipamentos",
+            "resgate",
+            "guincho",
+            "cinta",
+            "manilha",
+        ],
+    },
+    {
+        id: "member-agenda",
+        title: "Consultar Agenda Mensal de Trilhas",
+        description:
+            "Veja todos os eventos do clube organizados por mês no calendário e abra os detalhes com um clique.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/agenda",
+        storageKey: "tour_completed_member_agenda",
+        stepCount: MEMBER_VISUAL_GUIDES["member-agenda"].length,
+        icon: CalendarDays,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-agenda"],
+        supportsLiveTour: false,
+        topics: [
+            "Calendário mensal",
+            "Navegação entre meses",
+            "Resumo rápido do evento",
+        ],
+        keywords: [
+            "agenda",
+            "calendario",
+            "datas",
+            "proximos eventos",
+            "trilhas do mes",
+        ],
+    },
+    {
+        id: "member-financial",
+        title: "Consultar Mensalidades e Histórico Financeiro",
+        description:
+            "Acompanhe suas cobranças e mensalidades, filtre por pendentes ou pagas e veja datas de vencimento.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/financeiro",
+        storageKey: "tour_completed_member_financial",
+        stepCount: MEMBER_VISUAL_GUIDES["member-financial"].length,
+        icon: ReceiptText,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-financial"],
+        supportsLiveTour: false,
+        topics: [
+            "Menu Histórico financeiro",
+            "Filtro por status",
+            "Vencimento e valor",
+        ],
+        keywords: [
+            "historico financeiro",
+            "financeiro",
+            "mensalidade",
+            "cobranca",
+            "boleto",
+            "pix",
+            "pagamento",
+            "pendente",
+            "paga",
+        ],
+    },
+    {
+        id: "member-password-recovery",
+        title: "Recuperar Senha de Acesso",
+        description:
+            "Veja como solicitar o código de recuperação com seu CPF caso tenha esquecido a senha de entrada.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/forgot-password",
+        storageKey: "tour_completed_member_password_recovery",
+        stepCount: MEMBER_VISUAL_GUIDES["member-password-recovery"].length,
+        icon: KeyRound,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-password-recovery"],
+        supportsLiveTour: false,
+        topics: [
+            "Atalho Esqueceu a senha?",
+            "Envio do código por CPF",
+            "Redefinição de acesso",
+        ],
+        keywords: [
+            "recuperar senha",
+            "esqueci minha senha",
+            "esqueceu a senha",
+            "redefinir senha",
+            "trocar senha",
+            "alterar senha",
+            "senha",
+            "codigo",
+            "login",
         ],
     },
     {
@@ -633,6 +812,8 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         storageKey: "tour_completed_home",
         stepCount: getHomeTourSteps().length,
         icon: Sparkles,
+        imageSteps: MEMBER_VISUAL_GUIDES["public-landing-home"],
+        supportsLiveTour: true,
         topics: [
             "Área do sócio",
             "Quero ser sócio",
@@ -650,16 +831,18 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         id: "tutorials-hub",
         title: "Central de Tutoriais",
         description:
-            "Aprenda como buscar tópicos de ajuda, filtrar categorias e iniciar tutoriais guiados em qualquer tela.",
+            "Aprenda como buscar dúvidas na Central e usar o botão de ajuda no cabeçalho em qualquer tela.",
         category: "member",
         categoryLabel: "Membro",
         href: "/tutoriais",
         storageKey: "tour_completed_tutorials_page",
         stepCount: getTutorialsPageTourSteps(false).length,
         icon: HelpCircle,
+        imageSteps: MEMBER_VISUAL_GUIDES["tutorials-hub"],
+        supportsLiveTour: true,
         topics: [
             "Barra de busca",
-            "Categorias",
+            "Guias ilustrados",
             "Botão de ajuda no cabeçalho",
         ],
         keywords: [
@@ -1116,6 +1299,9 @@ function TutorialRowItem({
     onStart,
 }: TutorialRowItemProps) {
     const Icon = tutorial.icon;
+    const hasImageGuide = Boolean(tutorial.imageSteps?.length);
+    const stepCount = tutorial.imageSteps?.length ?? tutorial.stepCount;
+    const stepLabel = `${stepCount} ${stepCount === 1 ? "passo" : "passos"}`;
 
     return (
         <article
@@ -1155,7 +1341,7 @@ function TutorialRowItem({
                                 </span>
                             )}
                             <span className="rounded-md border border-j-gray-200 bg-j-gray-100 px-2 py-0.5 text-xs font-semibold text-j-gray-600">
-                                {tutorial.stepCount} passos
+                                {stepLabel}
                             </span>
                             {isCompleted && (
                                 <span
@@ -1187,7 +1373,7 @@ function TutorialRowItem({
                             </span>
                         )}
                         <span className="rounded-lg border border-j-gray-200 bg-j-gray-100 px-2.5 py-0.5 text-xs font-semibold text-j-gray-600">
-                            {tutorial.stepCount} passos
+                            {stepLabel}
                         </span>
                         {isCompleted && (
                             <span
@@ -1235,7 +1421,7 @@ function TutorialRowItem({
                                 fill="currentColor"
                                 aria-hidden="true"
                             />
-                            Iniciar tutorial
+                            {hasImageGuide ? "Ver tutorial" : "Iniciar tutorial"}
                         </>
                     )}
                 </button>
@@ -1251,6 +1437,8 @@ export default function TutorialsPageContent() {
     const [completedKeys, setCompletedKeys] = useState<Record<string, boolean>>(
         {},
     );
+    const [activeImageTutorial, setActiveImageTutorial] =
+        useState<TutorialCatalogItem | null>(null);
 
     const { restartTour } = usePageTour({
         storageKey: "tour_completed_tutorials_page",
@@ -1283,19 +1471,6 @@ export default function TutorialsPageContent() {
         };
     }, []);
 
-    const availableShortcuts = useMemo(
-        () =>
-            QUICK_QUESTIONS.filter((shortcut) => {
-                if (!shortcut.adminModuleKey) return true;
-                const moduleConfig = adminModules.find(
-                    (mod) => mod.key === shortcut.adminModuleKey,
-                );
-                if (!moduleConfig) return false;
-                return canAccessAdminModule(permissions, moduleConfig);
-            }),
-        [permissions],
-    );
-
     const results = useMemo(
         () =>
             filterTutorials(
@@ -1306,7 +1481,7 @@ export default function TutorialsPageContent() {
         [permissions, searchQuery],
     );
 
-    const handleStartTutorial = (tutorial: TutorialCatalogItem) => {
+    const startLiveTour = (tutorial: TutorialCatalogItem) => {
         if (tutorial.id === "tutorials-hub") {
             restartTour();
             return;
@@ -1315,16 +1490,26 @@ export default function TutorialsPageContent() {
         router.push(tutorial.href);
     };
 
-    const handleClearSearch = () => {
-        setSearchQuery("");
+    const handleStartTutorial = (tutorial: TutorialCatalogItem) => {
+        if (tutorial.imageSteps?.length) {
+            setActiveImageTutorial(tutorial);
+            return;
+        }
+        startLiveTour(tutorial);
     };
 
-    const handleShortcutClick = (query: string) => {
-        if (normalizeTutorialText(searchQuery) === normalizeTutorialText(query)) {
-            setSearchQuery("");
-        } else {
-            setSearchQuery(query);
+    const handleMarkImageTutorialCompleted = (storageKey: string) => {
+        try {
+            localStorage.setItem(storageKey, "true");
+            window.dispatchEvent(new Event("tour:progress-updated"));
+        } catch {
+            // Ignora indisponibilidade de storage
         }
+        setCompletedKeys((prev) => ({ ...prev, [storageKey]: true }));
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery("");
     };
 
     const isFiltering = Boolean(searchQuery.trim());
@@ -1349,9 +1534,9 @@ export default function TutorialsPageContent() {
                     }
                 />
 
-                {/* MÓDULO 1 (Protagonismo Principal): "O que você quer fazer hoje?" (Busca em destaque + Atalhos de Dúvidas Frequentes + Filtros) */}
+                {/* MÓDULO 1 (Protagonismo Principal): "O que você quer fazer hoje?" */}
                 <section
-                    aria-label="Pesquisa e dúvidas frequentes"
+                    aria-label="Pesquisa de tutoriais"
                     className="flex flex-col gap-6 rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-xs sm:p-7"
                 >
                     {/* Hero de Busca: Protagonismo máximo logo ao entrar na página */}
@@ -1365,7 +1550,7 @@ export default function TutorialsPageContent() {
                                 O que você quer fazer hoje?
                             </h2>
                             <p className="text-sm text-j-gray-600 sm:text-base">
-                                Escreva abaixo qual é a sua dúvida ou toque em uma das dúvidas frequentes:
+                                Escreva abaixo qual é a sua dúvida ou escolha um tutorial da lista:
                             </p>
                         </div>
 
@@ -1376,64 +1561,13 @@ export default function TutorialsPageContent() {
                                 onSubmit={setSearchQuery}
                                 submitOnChange
                                 label="Qual é a sua dúvida?"
-                                placeholder="Qual é a sua dúvida? Escreva o que procura (ex.: cadastrar veículo, ficha médica, senha, pagamento)..."
+                                placeholder="Qual é a sua dúvida? Escreva o que procura (ex.: cadastrar veículo, ficha médica, carteirinha, senha)..."
                                 iconClassName="left-4 text-j-blue-800"
                                 clearButtonClassName="right-3"
                                 className="h-14 rounded-xl border-2 border-j-blue-800/30 bg-j-white pl-12 pr-11 text-base font-medium text-j-gray-700 shadow-sm focus:border-j-blue-800 sm:h-16 sm:text-lg"
                             />
                         </div>
                     </div>
-
-                    {/* Atalhos Rápidos de Dúvidas Frequentes (exibidos apenas quando não há busca digitada) */}
-                    {!searchQuery.trim() && (
-                        <div className="flex flex-col gap-2.5">
-                            <span className="text-xs font-extrabold uppercase tracking-wider text-j-gray-500">
-                                Ou toque em uma dúvida frequente:
-                            </span>
-                            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                                {availableShortcuts.map((shortcut) => {
-                                    const ShortcutIcon = shortcut.icon;
-                                    const isActive =
-                                        normalizeTutorialText(searchQuery) ===
-                                        normalizeTutorialText(shortcut.query);
-
-                                    return (
-                                        <button
-                                            key={shortcut.id}
-                                            type="button"
-                                            aria-pressed={isActive}
-                                            onClick={() =>
-                                                handleShortcutClick(shortcut.query)
-                                            }
-                                            className={twMerge(
-                                                "flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left text-sm font-bold transition-all focus-visible:outline-2 focus-visible:outline-j-blue-800",
-                                                isActive
-                                                    ? "border-j-yellow-400 bg-j-yellow-300 text-j-blue-900 shadow-xs"
-                                                    : "border-j-gray-200 bg-j-gray-100/70 text-j-gray-700 hover:border-j-gray-300 hover:bg-j-gray-100",
-                                            )}
-                                        >
-                                            <span
-                                                className={twMerge(
-                                                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                                                    isActive
-                                                        ? "bg-j-blue-900/15 text-j-blue-900"
-                                                        : "bg-j-white text-j-blue-800",
-                                                )}
-                                            >
-                                                <ShortcutIcon
-                                                    size={18}
-                                                    aria-hidden="true"
-                                                />
-                                            </span>
-                                            <span className="flex-1 leading-snug">
-                                                {shortcut.label}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
                 </section>
 
                 {/*
@@ -1511,6 +1645,37 @@ export default function TutorialsPageContent() {
                     )}
                 </section>
             </div>
+
+            <TutorialImageViewerModal
+                title={activeImageTutorial?.title ?? ""}
+                steps={activeImageTutorial?.imageSteps ?? []}
+                isOpen={Boolean(activeImageTutorial)}
+                onClose={() => setActiveImageTutorial(null)}
+                completeLabel={
+                    activeImageTutorial && activeImageTutorial.href !== "/tutoriais"
+                        ? "Concluir e ir para a tela"
+                        : "Concluir"
+                }
+                onComplete={() => {
+                    if (!activeImageTutorial) return;
+                    const target = activeImageTutorial;
+                    handleMarkImageTutorialCompleted(target.storageKey);
+                    if (target.href && target.href !== "/tutoriais") {
+                        router.push(target.href);
+                    }
+                }}
+                onOpenLiveTour={
+                    activeImageTutorial &&
+                    activeImageTutorial.supportsLiveTour !== false &&
+                    activeImageTutorial.id !== "tutorials-hub"
+                        ? () => {
+                              const target = activeImageTutorial;
+                              setActiveImageTutorial(null);
+                              startLiveTour(target);
+                          }
+                        : undefined
+                }
+            />
         </div>
     );
 }

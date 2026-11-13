@@ -15,6 +15,7 @@ import {
     getVehiclesTourSteps,
     getToolsTourSteps,
     getTutorialsPageTourSteps,
+    getContextualHelpLabel,
     resolveRouteTourSteps,
     adminStep,
     welcomeStep,
@@ -22,6 +23,8 @@ import {
     mobileMenuStep,
     sidebarStep,
 } from "@/config/tourSteps";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { filterTutorials, TUTORIAL_CATALOG } from "@/components/pages/tutoriais";
 import { FORCE_START_TOUR_KEY, getTourStorageKey, requestTourStart } from "@/hooks/useTour";
 
@@ -275,7 +278,14 @@ describe("Tour Configuration & Logic", () => {
         expect(memberResults.every((item) => item.category === "member")).toBe(true);
         expect(memberResults.map((item) => item.id)).toEqual([
             "feed-home",
+            "member-vehicles",
+            "member-medical",
             "profile-account",
+            "member-dependents",
+            "member-tools",
+            "member-agenda",
+            "member-financial",
+            "member-password-recovery",
             "public-landing-home",
             "tutorials-hub",
         ]);
@@ -286,7 +296,7 @@ describe("Tour Configuration & Logic", () => {
             "como faço para cadastrar meu veículo 4x4",
             "all",
         );
-        expect(vehicleQueryResults[0]?.id).toBe("profile-account");
+        expect(vehicleQueryResults[0]?.id).toBe("member-vehicles");
 
         const aondeQueryResults = filterTutorials(
             TUTORIAL_CATALOG,
@@ -294,7 +304,7 @@ describe("Tour Configuration & Logic", () => {
             "aonde eu cadastro meu veiculo",
             "all",
         );
-        expect(aondeQueryResults[0]?.id).toBe("profile-account");
+        expect(aondeQueryResults[0]?.id).toBe("member-vehicles");
 
         const synonymCarQuery = filterTutorials(
             TUTORIAL_CATALOG,
@@ -302,7 +312,7 @@ describe("Tour Configuration & Logic", () => {
             "onde coloco meu carro",
             "all",
         );
-        expect(synonymCarQuery[0]?.id).toBe("profile-account");
+        expect(synonymCarQuery[0]?.id).toBe("member-vehicles");
 
         const typoVehicleQuery = filterTutorials(
             TUTORIAL_CATALOG,
@@ -310,7 +320,23 @@ describe("Tour Configuration & Logic", () => {
             "como cadastrar veiclo",
             "all",
         );
-        expect(typoVehicleQuery[0]?.id).toBe("profile-account");
+        expect(typoVehicleQuery[0]?.id).toBe("member-vehicles");
+
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "ficha medica", "all")[0]?.id,
+        ).toBe("member-medical");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "baixar carteirinha", "all")[0]?.id,
+        ).toBe("profile-account");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "calendario de trilhas", "all")[0]?.id,
+        ).toBe("member-agenda");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "ver minha mensalidade", "all")[0]?.id,
+        ).toBe("member-financial");
+        expect(
+            filterTutorials(TUTORIAL_CATALOG, memberPermissions, "esqueci minha senha", "all")[0]?.id,
+        ).toBe("member-password-recovery");
 
         const adminPermissions: PermissionModule[] = [
             { module: "VEHICLES", actions: ["VEHICLE_READ"] },
@@ -331,6 +357,54 @@ describe("Tour Configuration & Logic", () => {
             "all",
         );
         expect(paymentDoubtResults[0]?.id).toBe("admin-payments");
+    });
+
+    it("deve possuir imagens desktop e mobile existentes para todos os tutoriais de associados", () => {
+        const memberTutorials = TUTORIAL_CATALOG.filter((item) => item.category === "member");
+        expect(memberTutorials.length).toBeGreaterThan(0);
+
+        for (const tutorial of memberTutorials) {
+            expect(tutorial.imageSteps?.length).toBeGreaterThan(0);
+            for (const step of tutorial.imageSteps ?? []) {
+                const desktopFile = path.join(process.cwd(), "public", step.desktopSrc.replace(/^\//, ""));
+                const mobileFile = path.join(process.cwd(), "public", step.mobileSrc.replace(/^\//, ""));
+                expect(existsSync(desktopFile)).toBe(true);
+                expect(existsSync(mobileFile)).toBe(true);
+                expect(step.caption.trim().length).toBeGreaterThan(0);
+                expect(step.alt.trim().length).toBeGreaterThan(0);
+            }
+        }
+    });
+
+    it("deve retornar frases contextuais e compactas no botão de ajuda conforme a página", () => {
+        expect(getContextualHelpLabel("/feed")).toEqual({
+            full: "Ajuda com o mural?",
+            compact: "Ajuda: Mural",
+        });
+        expect(getContextualHelpLabel("/profile")).toEqual({
+            full: "Ajuda com seu perfil?",
+            compact: "Ajuda: Perfil",
+        });
+        expect(getContextualHelpLabel("/agenda")).toEqual({
+            full: "Ajuda com a agenda?",
+            compact: "Ajuda: Agenda",
+        });
+        expect(getContextualHelpLabel("/financeiro")).toEqual({
+            full: "Ajuda com financeiro?",
+            compact: "Ajuda: Financeiro",
+        });
+        expect(getContextualHelpLabel("/configuracoes")).toEqual({
+            full: "Ajuda com configurações?",
+            compact: "Ajuda: Ajustes",
+        });
+        expect(getContextualHelpLabel("/admin/users", "applications")).toEqual({
+            full: "Ajuda com solicitações?",
+            compact: "Ajuda: Pedidos",
+        });
+        expect(getContextualHelpLabel("/rota-desconhecida")).toEqual({
+            full: "Precisa de ajuda?",
+            compact: "Ajuda?",
+        });
     });
 
     it("deve retornar os passos da página /tutoriais e registrar o alvo no sessionStorage ao solicitar início de tutorial", () => {
