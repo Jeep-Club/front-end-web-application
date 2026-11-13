@@ -65,7 +65,7 @@ test('galeria retida reordena e muda capa sem upload', async ({ page, api }) => 
 
 test('configuração mantém regras fora da página, adiciona inline e remove explicitamente', async ({ page, api }) => {
     await page.goto('/admin/publications/event/7');
-    await page.getByRole('button', { name: 'Configurar cobranças' }).click();
+    await page.getByRole('button', { name: 'Configurar associação' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Próximo catálogo' }).click();
     await expect(dialog.getByText('Catálogo: página 2 de 2')).toBeVisible();
@@ -82,7 +82,7 @@ test('configuração mantém regras fora da página, adiciona inline e remove ex
     await expect(dialog).toHaveCount(0);
     const charges = api.calls.find(call => call.method === 'PATCH')!.body.charges as Record<string, unknown>[];
     expect(charges).toHaveLength(2); expect(charges[0].chargeDefinitionId).toBe(4); expect(charges[1]).toMatchObject({ name: 'Transporte especial', amount: 25.123, billingRequired: true, requiredForParticipation: false });
-    await page.getByRole('button', { name: 'Configurar cobranças' }).click();
+    await page.getByRole('button', { name: 'Configurar associação' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Remover cobrança 2', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Remover cobrança 1', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Salvar regras financeiras', exact: true }).click();
@@ -154,7 +154,7 @@ test('dashboard bloqueia agenda por inscrição cancelada; erro regional preserv
     api.locked = true;
     await page.goto('/admin/publications/event/7');
     await expect(page.getByText(/Agenda e cobranças bloqueadas:/)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Configurar cobranças' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Configurar associação' })).toBeDisabled();
     await openAction(page, 'Editar');
     await expect(page.getByRole('dialog').getByLabel('Início', { exact: true })).toBeDisabled();
     await expect(page.getByRole('dialog').getByRole('textbox', { name: 'Título', exact: true })).toBeEnabled();

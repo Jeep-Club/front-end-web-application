@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import { PageHeader } from "@/components/common/page-header";
 import { getMembershipApplicationsTourSteps, getUsersTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
 import { exportAdminUsersAction, exportAdminUsersReportPdfAction } from "@/server/actions/admin/users/export";
 import { patchUserStatusAction } from "@/server/actions/admin/users/patchStatus";
@@ -275,7 +274,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         ]}
                     />
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
-                        <ManagementBackButton />
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
                         <h2 className="text-lg font-black text-j-blue-800">Acesso não permitido</h2>
                         <p className="mt-1 max-w-md text-sm text-j-gray-600">
@@ -303,7 +301,6 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                 {(permissions.canReadUsers || canReadApplications) && (
                     <div id="tour-users-tabs" className="flex w-full flex-wrap items-center gap-x-2 border-b border-j-gray-200">
                         <div className="basis-full pb-2">
-                            <ManagementBackButton />
                         </div>
                         {permissions.canReadUsers && (
                             <button

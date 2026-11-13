@@ -1,17 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { Archive,CalendarPlus,ClipboardCheck,Eye,FileText,Pencil,Plus,Power,PowerOff,ShieldX,Undo2,Users,type LucideIcon } from "lucide-react";
+import { Archive,CalendarPlus,Eye,FileText,Pencil,Plus,Power,PowerOff,ShieldX,Users } from "lucide-react";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { Button,ButtonIcon } from "@/components/common/button";
-import { PageHeader } from "@/components/common/page-header";
-import { getFinancialTourSteps } from "@/config/tourSteps";
-import { usePageTour } from "@/hooks/useTour";
 import { Table } from "@/components/common/table";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { useModal } from "@/providers/ModalProvider";
 import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
 import { useUserStore } from "@/stores/userStore";
@@ -29,22 +24,13 @@ import {
 } from "./chargeDefinitionDisplay";
 import { CreateChargeDefinitionModal } from "./CreateChargeDefinitionModal";
 import { EditChargeDefinitionModal } from "./EditChargeDefinitionModal";
-import { FinancialDashboard,type FinancialTab } from "./FinancialDashboard";
 import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
 import { ToggleChargeDefinitionStatusModal } from "./ToggleChargeDefinitionStatusModal";
-import PaymentsPage from "../payments";
-import type { PaymentFilters } from "@/schemas/payments";
-import { dashboardMovementStatus, type DashboardDestination } from "./financialDashboardModel";
+
+import { FinancialPage } from "./FinancialPage";
+import { FinancialSectionNav } from "./FinancialSectionNav";
 
 const PAGE_SIZE = 10;
-export type MovementView = "refunds" | "payments" | "member-charges" | "analysis";
-
-const MOVEMENT_VIEWS: { key: MovementView; title: string; permission: string; icon: LucideIcon }[] = [
-    { key: "refunds", title: "Reembolsos", permission: "REFUND_READ", icon: Undo2 },
-    { key: "payments", title: "Pagamentos", permission: "PAYMENT_READ", icon: FileText },
-    { key: "member-charges", title: "Cobrança", permission: "MEMBER_CHARGE_READ", icon: Users },
-    { key: "analysis", title: "Análises", permission: "PAYMENT_READ", icon: ClipboardCheck },
-];
 
 function ChargeDefinitions() {
     const { setContent, setOpen } = useModal();
@@ -131,7 +117,7 @@ function ChargeDefinitions() {
         const iconActionClass = "flex h-10 w-10 items-center justify-center rounded-xl border border-j-gray-200 bg-j-white text-j-blue-800 transition-colors hover:border-j-blue-200 hover:bg-j-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800";
 
         return <div className="flex w-full flex-col gap-3">
-            {(canReadAssignments || canGenerate && definition.status === "ACTIVE") && <div className={twMerge("grid w-full gap-2", canReadAssignments && canGenerate && definition.status === "ACTIVE" ? "grid-cols-2" : "grid-cols-1")}>
+            {(canReadAssignments || canGenerate && definition.status === "ACTIVE") && <div className="grid w-full grid-cols-1 gap-2">
                 {canReadAssignments && <Button type="button" onClick={() => handleOpenAssignments(definition)} aria-label={`Associar membros a ${definition.name}`} className="h-10 w-full min-w-0 whitespace-nowrap border border-j-blue-200 bg-j-blue-50 px-2 text-xs text-j-blue-800 hover:bg-j-blue-100 hover:text-j-blue-800 focus-visible:bg-j-blue-100 sm:px-3 sm:text-sm"><Users size={16} />Associar</Button>}
                 {canGenerate && definition.status === "ACTIVE" && <Button type="button" onClick={() => handleOpenGenerateCycle(definition)} aria-label={`Gerar cobrança para ${definition.name}`} className="h-10 w-full min-w-0 whitespace-nowrap bg-j-yellow-300 px-2 text-xs text-j-blue-800 hover:bg-j-yellow-400 hover:text-j-blue-800 sm:px-3 sm:text-sm"><CalendarPlus size={16} />Gerar cobrança</Button>}
             </div>}
@@ -180,12 +166,11 @@ function ChargeDefinitions() {
                         <Table.Header
                             title="Definições de cobrança"
                             description="Regras e valores das cobranças do clube."
-                            className="gap-5 lg:items-start xl:items-center"
+                            className="gap-3 lg:flex-wrap lg:items-start"
                         >
-                            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end xl:w-auto xl:flex-nowrap">
-                                <label className="flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-j-gray-300 bg-j-white px-3 text-xs font-semibold text-j-gray-600">
-                                    Ordenar
-                                    <select aria-label="Ordenar definições" value={sort ?? ""} onChange={(event) => { setSort(event.target.value || undefined); setPage(0); }} className="max-w-36 bg-transparent text-sm font-bold text-j-blue-800 outline-none">
+                            <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
+                                <label className="flex h-10 shrink-0 items-center rounded-lg border border-j-gray-300 bg-j-white px-2">
+                                    <select aria-label="Ordenar definições" value={sort ?? ""} onChange={(event) => { setSort(event.target.value || undefined); setPage(0); }} className="w-24 bg-transparent text-xs font-semibold text-j-blue-800 focus-visible:outline-2">
                                         <option value="">Padrão</option>
                                         <option value="name,asc">Nome (A–Z)</option>
                                         <option value="name,desc">Nome (Z–A)</option>
@@ -193,8 +178,8 @@ function ChargeDefinitions() {
                                         <option value="defaultAmount,desc">Maior valor</option>
                                     </select>
                                 </label>
-                                {canExport && <BillingExport kind="definitions" variant="secondary" className="shrink-0 flex-nowrap" />}
-                                {canCreate && <Button type="button" onClick={handleOpenCreate} className="h-11 w-full shrink-0 whitespace-nowrap px-5 py-0 text-sm sm:w-auto"><Plus size={16} strokeWidth={3} />Criar definição</Button>}
+                                {canExport && <BillingExport kind="definitions" variant="secondary" className="min-w-0" />}
+                                {canCreate && <Button type="button" onClick={handleOpenCreate} className="h-10 w-full shrink-0 whitespace-nowrap px-4 py-0 text-sm sm:w-auto"><Plus size={16} strokeWidth={3} />Criar definição</Button>}
                             </div>
                         </Table.Header>
                         {error ? <div role="alert" className="flex flex-col items-center gap-3 px-5 py-14 text-center"><p className="text-sm text-j-red-500">{error.message}</p><Button onClick={() => { void refetch(); }}>Tentar novamente</Button></div>
@@ -225,122 +210,29 @@ function ChargeDefinitions() {
     );
 }
 
-export default function FinancialManagement({
-    initialTab = "dashboard",
-    initialMovement = "member-charges",
-    initialStatus,
-}: {
-    initialTab?: FinancialTab;
-    initialMovement?: MovementView;
-    initialStatus?: string;
-}) {
-    const router = useRouter();
+export default function ChargeSetup({ initialSection }: { initialSection: "definitions" | "cycles" }) {
     const permissions = useUserStore((state) => state.permissions);
-    const tabs: { key: Exclude<FinancialTab, "dashboard">; title: string; permissions: string[] }[] = [
-        { key: "definitions", title: "Definições e atribuições", permissions: ["CHARGE_DEFINITION_READ"] },
-        { key: "cycles", title: "Ciclos", permissions: ["CHARGE_CYCLE_READ"] },
-        { key: "movements", title: "Movimentações financeiras", permissions: ["MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"] },
-    ];
-    const visibleTabs = tabs.filter((tab) => tab.permissions.some((permission) => hasPermission(permissions, "BILLING", permission)));
-    const canReadMembershipConfiguration = hasPermission(permissions, "MEMBERSHIP", "BILLING_CONFIGURATION_READ");
-    const hasFinancialAccess = visibleTabs.length > 0 || canReadMembershipConfiguration;
-    const routeKey = `${initialTab}:${initialMovement}:${initialStatus ?? ""}`;
-    const initialNavigation = { routeKey, tab: initialTab, movement: initialMovement, status: initialStatus };
-    const [navigation, setNavigation] = useState(initialNavigation);
-    // URL changes (including browser back/forward) supersede pending local navigation.
-    if (navigation.routeKey !== routeKey) setNavigation(initialNavigation);
-    const currentNavigation = navigation.routeKey === routeKey ? navigation : initialNavigation;
-    const { tab: selected, movement: selectedMovement, status: selectedStatus } = currentNavigation;
-    const [paymentFilters, setPaymentFilters] = useState<PaymentFilters>({ status: "PENDING_VALIDATION", page: 0, size: 20 });
-    const selectTab = (tab: FinancialTab) => {
-        setNavigation({ ...currentNavigation, routeKey, tab, status: undefined });
-        router.replace(`/admin/gestao-financeira?tab=${tab}${tab === "movements" ? `&movement=${selectedMovement}` : ""}`, { scroll: false });
-    };
-    const visibleMovementViews = MOVEMENT_VIEWS.filter((view) => hasPermission(permissions, "BILLING", view.permission));
-    const activeMovement = visibleMovementViews.some((view) => view.key === selectedMovement)
-        ? selectedMovement
-        : visibleMovementViews[0]?.key;
-    const selectMovement = (movement: MovementView) => {
-        setNavigation({ ...currentNavigation, routeKey, movement, status: undefined });
-        router.replace(`/admin/gestao-financeira?tab=movements&movement=${movement}`, { scroll: false });
-    };
-    const active = hasFinancialAccess ? selected === "dashboard" ? "dashboard" : visibleTabs.find((tab) => tab.key === selected)?.key ?? "dashboard" : undefined;
-    const openDashboardDestination = (destination: DashboardDestination) => {
-        if (destination.tab !== "movements") return selectTab(destination.tab);
-        const status = dashboardMovementStatus(destination.movement, destination.status);
-        setNavigation({ ...currentNavigation, routeKey, tab: "movements", movement: destination.movement, status });
-        if (destination.movement === "analysis") setPaymentFilters({ status: "PENDING_VALIDATION", page: 0, size: 20 });
-        router.replace(`/admin/gestao-financeira?tab=movements&movement=${destination.movement}${status ? `&status=${status}` : ""}`, { scroll: false });
-    };
-    usePageTour({
-        storageKey: "tour_completed_admin_financial",
-        steps: getFinancialTourSteps,
-        autoStartOnFirstVisit: false,
-        enabled: Boolean(active),
-    });
-    const breadcrumbLabels: Record<FinancialTab, string> = {
-        dashboard: "Dashboard",
-        definitions: "Definições de cobrança",
-        cycles: "Ciclos de cobrança",
-        movements: "Movimentações financeiras",
-    };
-    const financialContext: Record<FinancialTab, { title: string; description: string }> = {
-        dashboard: {
-            title: "Visão geral financeira",
-            description: "Acompanhe os principais números de cobranças, pagamentos e reembolsos dos associados.",
-        },
-        definitions: {
-            title: "Definições e atribuições de cobrança",
-            description: "Configure os valores e as regras das cobranças e escolha quais associados ou cargos serão incluídos.",
-        },
-        cycles: {
-            title: "Ciclos de cobrança",
-            description: "Gere e acompanhe cada rodada de cobrança. Um ciclo registra a cobrança no histórico dos associados vinculados.",
-        },
-        movements: {
-            title: "Histórico financeiro dos associados",
-            description: "Aqui ficam reunidas as cobranças vinculadas a cada associado, os pagamentos realizados, os reembolsos e a análise dos pagamentos. Escolha uma opção abaixo para consultar cada assunto separadamente.",
-        },
-    };
-    return <div className="min-h-full w-full p-3 md:p-4"><div className="flex flex-col gap-4 pb-6">
-        <PageHeader id="tour-financial-header" title="Gestão financeira" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Financeira", ...(active ? { href: "/admin/gestao-financeira" } : {}) }, ...(active ? [{ label: breadcrumbLabels[active] }] : [])]} />
-        <div className="flex w-full flex-col items-start gap-2"><ManagementBackButton /><p className="text-sm text-j-gray-600">Configure cobranças, acompanhe os ciclos e gerencie pagamentos e reembolsos dos associados.</p></div>
-        <nav id="tour-financial-tabs" aria-label="Áreas da gestão financeira" className="flex w-full flex-wrap gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1">{(hasFinancialAccess ? [{ key: "dashboard" as const, title: "Dashboard" }, ...visibleTabs] : []).map((tab) => <button key={tab.key} aria-current={active === tab.key ? "page" : undefined} onClick={() => selectTab(tab.key)} className={twMerge("flex min-h-12 min-w-0 flex-1 basis-[calc(50%-0.25rem)] cursor-pointer items-center justify-center rounded-xl px-3 py-3 text-center text-sm font-bold leading-tight text-j-blue-800 transition-colors hover:bg-j-gray-100 md:basis-0", active === tab.key && "bg-j-blue-800 text-j-yellow-300 hover:bg-j-blue-800")}>{tab.title}</button>)}</nav>
-        {active && <section className="rounded-xl border border-j-blue-200 bg-j-blue-50 px-4 py-3" aria-label={financialContext[active].title}>
-            <h2 className="text-sm font-bold text-j-blue-900">{financialContext[active].title}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-j-gray-700">{financialContext[active].description}</p>
-        </section>}
-        <div id="tour-financial-content">
-            {!active ? <p className="rounded-xl bg-j-white p-6">Seu usuário não possui permissão para consultar a gestão financeira.</p>
-                : active === "dashboard" ? <FinancialDashboard onNavigate={openDashboardDestination} />
-                    : active === "definitions" ? <ChargeDefinitions />
-                        : active === "cycles" ? <BillingOperations resource="cycles" />
-                            : <div className="flex flex-col gap-4">
-                                <nav aria-label="Tipo de movimentação financeira" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                    {visibleMovementViews.map(({ key, title, icon: Icon }) => (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            role="tab"
-                                            aria-selected={activeMovement === key}
-                                            onClick={() => selectMovement(key)}
-                                            className={twMerge(
-                                                "flex min-h-12 items-center justify-center gap-2 rounded-xl border px-3 py-3 text-center text-sm font-bold leading-tight transition-colors",
-                                                activeMovement === key
-                                                    ? "border-j-blue-800 bg-j-blue-800 text-j-yellow-300"
-                                                    : "border-j-gray-200 bg-j-white text-j-blue-800 hover:border-j-blue-300 hover:bg-j-blue-50",
-                                            )}
-                                        >
-                                            <Icon size={17} className="shrink-0" />
-                                            <span>{title}</span>
-                                        </button>
-                                    ))}
-                                </nav>
-                                {activeMovement === "refunds" && <BillingOperations key={`refunds:${selectedStatus ?? ""}`} resource="refunds" initialStatus={selectedStatus} />}
-                                {activeMovement === "payments" && <BillingOperations key={`payments:${selectedStatus ?? ""}`} resource="payments" initialStatus={selectedStatus} />}
-                                {activeMovement === "member-charges" && <BillingOperations key={`member-charges:${selectedStatus ?? ""}`} resource="member-charges" initialStatus={selectedStatus} />}
-                                {activeMovement === "analysis" && <PaymentsPage filters={paymentFilters} embedded onFiltersChange={setPaymentFilters} />}
-                            </div>}
-        </div>
-    </div></div>;
+    return (
+        <FinancialPage title="Configuração de cobranças">
+            <FinancialSectionNav label="Configuração de cobranças" active={initialSection} links={[
+                { key: "definitions", label: "Definições de cobrança", href: "?tab=definitions" },
+                { key: "cycles", label: "Ciclos de cobrança", href: "?tab=cycles" },
+            ]} />
+            {initialSection === "definitions" ? <section id="definitions">
+                {hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_READ") ? <ChargeDefinitions /> : (
+                    <div className="rounded-xl border border-input-border bg-j-white p-4">
+                        <h2 className="font-bold text-primary">Definições de cobrança</h2>
+                        <p className="mt-1 text-sm text-secondary">Você não tem permissão para consultar as definições.</p>
+                    </div>
+                )}
+            </section> : <section id="cycles">
+                {hasPermission(permissions, "BILLING", "CHARGE_CYCLE_READ") ? <BillingOperations resource="cycles" /> : (
+                    <div className="rounded-xl border border-input-border bg-j-white p-4">
+                        <h2 className="font-bold text-primary">Ciclos de cobrança</h2>
+                        <p className="mt-1 text-sm text-secondary">Você não tem permissão para consultar os ciclos.</p>
+                    </div>
+                )}
+            </section>}
+        </FinancialPage>
+    );
 }

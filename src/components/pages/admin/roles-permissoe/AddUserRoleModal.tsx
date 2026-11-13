@@ -1,5 +1,4 @@
 'use client';
-import { ConfirmButton } from '@/components/common/button/ConfirmButton';
 
 import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
 import { AlertCircle,KeyRound,LoaderCircle,Plus,Search,X } from "lucide-react";
@@ -94,33 +93,31 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                         >
                             Cancelar
                         </Button>
-                        <ConfirmButton
+                        <Button
                             type="button"
                             onClick={() => mutation.mutate(pendingRole)}
                             disabled={mutation.isPending}
-                            className="flex-1 bg-j-yellow-300 text-j-black hover:bg-j-yellow-500 hover:text-j-black"
+                            className="flex-1 bg-green-700 text-white hover:bg-green-800 hover:text-white"
                         >
                             {mutation.isPending ? "Atribuindo..." : "Confirmar"}
-                        </ConfirmButton>
+                        </Button>
                     </div>
                 </>
             ) : (
                 <>
-                    <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                        <div className="flex items-start gap-4">
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">
+                    <header className="border-b border-j-gray-200 px-4 pb-4 pt-4 md:px-8 md:pb-6 md:pt-8">
+                        <div className="flex min-h-10 items-center gap-2 pr-12 md:gap-4">
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-j-blue-800 text-j-yellow-300 md:size-11">
                                 <Plus size={20} />
                             </span>
-                            <div>
-                                <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
+                                <h2 className="text-base font-extrabold leading-tight text-j-blue-800 md:text-2xl">
                                     Adicionar cargo
                                 </h2>
-                                <p className="mt-1 max-w-lg text-xs leading-relaxed text-j-gray-500 md:text-sm">
+                        </div>
+                                <p className="mt-2 max-w-lg text-xs leading-relaxed text-secondary [overflow-wrap:anywhere] md:text-sm">
                                     Selecione o cargo que deseja atribuir a{" "}
                                     <span className="font-bold text-j-blue-800">{userName}</span>.
                                 </p>
-                            </div>
-                        </div>
                     </header>
 
                     <div className="px-5 py-5 md:px-8 md:py-6">
@@ -154,7 +151,7 @@ export function AddUserRoleModal({ userId, userName, currentRoleIds }: AddUserRo
                             </div>
                         ) : (
                             <div className="flex flex-col gap-3">
-                                <label className="relative block"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-j-gray-400"/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar cargo por nome" aria-label="Buscar cargo" className="h-11 w-full rounded-xl border border-j-gray-200 bg-j-gray-100 pl-10 pr-3 text-sm text-j-gray-700 outline-none focus:border-j-blue-400 focus:bg-j-white"/></label>
+                                <label className="relative block"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-j-gray-400"/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar cargo por nome" aria-label="Buscar cargo" className="h-11 w-full rounded-xl border border-j-gray-200 bg-j-gray-100 pl-10 pr-3 text-sm text-j-gray-700 outline-none focus:border-j-blue-400 focus:bg-input-bg-focus"/></label>
                                 <p className="text-xs font-semibold text-j-gray-500">{filteredRoles?.length ?? 0} cargo(s) disponível(is)</p>
                                 {filteredRoles?.map((role) => (
                                     <div

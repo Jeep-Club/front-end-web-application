@@ -341,7 +341,7 @@ export function UserManagementView({
                             onChange={(event) =>
                                 onStatusChange(event.target.value as UserStatus | "ALL")
                             }
-                            className="h-10 w-full border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-j-white lg:w-auto"
+                            className="h-10 w-full border-j-gray-200 bg-j-gray-100 py-2 text-sm text-j-gray-700 focus:bg-input-bg-focus lg:w-auto"
                         >
                             <option value="ALL">Todos os status</option>
                             <option value="ACTIVE">{USER_STATUS_LABEL.ACTIVE}</option>

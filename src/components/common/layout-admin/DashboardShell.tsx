@@ -80,11 +80,13 @@ export default function DashboardShell({ fullName, userId, initialProfilePhotoUr
                         initialProfilePhotoUrl={initialProfilePhotoUrl}
                     />
                     <div id="dashboard-main" data-dashboard-scroll tabIndex={-1} className="isolate min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-j-gray-100 [-webkit-overflow-scrolling:touch] focus-visible:outline-none">
-                        {children}
+                        <div className="flex min-h-full flex-col">
+                            <div className="flex-1">{children}</div>
+                            <footer className="shrink-0 border-t border-j-gray-200 bg-j-white px-6 py-3 text-center text-[11px] font-normal leading-relaxed text-j-gray-600">
+                                © {new Date().getFullYear()} Desenvolvido pelo Instituto Federal de São Paulo - Câmpus Caraguatatuba
+                            </footer>
+                        </div>
                     </div>
-                    <footer className="hidden shrink-0 border-t border-j-gray-200 bg-j-white px-6 py-3 text-center text-[11px] font-normal leading-relaxed text-j-gray-600 md:block">
-                        © {new Date().getFullYear()} Desenvolvido pelo Instituto Federal de São Paulo - Câmpus Caraguatatuba
-                    </footer>
                     <nav aria-label="Navegação principal" className="flex shrink-0 border-t border-j-gray-200 bg-j-white pb-[env(safe-area-inset-bottom)] md:hidden">
                         {mobileTabs.map(({ href, label, icon: Icon }) => {
                             const isActive = pathname.startsWith(href);

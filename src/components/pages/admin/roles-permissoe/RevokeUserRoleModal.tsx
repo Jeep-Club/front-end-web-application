@@ -22,7 +22,7 @@ export function RevokeUserRoleModal({
     roleId,
     roleName,
 }: RevokeUserRoleModalProps) {
-    const { setContent, setClose } = useModal();
+    const { setContent, setClose, openFromTrigger } = useModal();
     const queryClient = useQueryClient();
 
     const backToRolesView = () => {
@@ -77,7 +77,10 @@ export function RevokeUserRoleModal({
             <div className="flex w-full gap-3 px-5 py-5 md:px-8 md:py-6">
                 <Button
                     type="button"
-                    onClick={backToRolesView}
+                    onClick={(event) => {
+                        backToRolesView();
+                        openFromTrigger(event.currentTarget);
+                    }}
                     disabled={mutation.isPending}
                     className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700"
                 >

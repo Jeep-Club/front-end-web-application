@@ -157,7 +157,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                         setEventId("");
                     }}
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-input-bg-focus"
                 >
                     <option value="">Selecione</option>
                     {AUDIENCE_OPTIONS.map((option) => (
@@ -175,7 +175,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                         value={userId}
                         onChange={(event) => setUserId(event.target.value)}
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                     />
                 )}
 
@@ -197,7 +197,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                             value={roleId}
                             onChange={(event) => setRoleId(event.target.value)}
                             labelClassName="text-j-gray-700"
-                            className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-j-white"
+                            className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-input-bg-focus"
                         >
                             <option value="">Selecione</option>
                             {roles.map((role) => (
@@ -217,7 +217,7 @@ export function AddChargeAssignmentModal({ chargeDefinitionId, chargeDefinitionN
                         value={eventId}
                         onChange={(event) => setEventId(event.target.value)}
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                     />
                 )}
 

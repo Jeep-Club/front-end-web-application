@@ -9,7 +9,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { billingLabels } from "./billingDisplay";
 import { MembershipBilling } from "./MembershipBilling";
 import { FinancialDashboardView } from "./FinancialDashboardView";
-import type { DashboardDestination, DashboardMetric, DashboardQueueGroup, DashboardQueueItem, DashboardSegment, FinancialDashboardViewProps } from "./financialDashboardModel";
+import type { DashboardDestination, DashboardMetric, DashboardQueueGroup, DashboardQueueItem, DashboardSegment } from "./financialDashboardModel";
 
 export type FinancialTab = "dashboard" | "definitions" | "cycles" | "movements";
 
@@ -83,11 +83,6 @@ export function FinancialDashboard({ onNavigate }: { onNavigate: (destination: D
         }];
         return [];
     }) ?? [];
-    const shortcuts: FinancialDashboardViewProps["shortcuts"] = [];
-    if (canReadDefinitions) shortcuts.push({ label: "Definições e atribuições", description: definitions.isError ? "Consultar regras e públicos" : definitions.data ? `${definitions.data.totalElements} definição(ões) cadastrada(s)` : "Organize as cobranças do clube", destination: { tab: "definitions" } });
-    if (can("CHARGE_CYCLE_READ")) shortcuts.push({ label: "Ciclos de cobrança", description: "Acompanhe e gere novas rodadas", destination: { tab: "cycles" } });
-    if (canReadCharges) shortcuts.push({ label: "Débitos dos associados", description: "Consulte cobranças e vencimentos", destination: { tab: "movements", movement: "member-charges" } });
-    if (can("PAYMENT_READ")) shortcuts.push({ label: "Analisar pagamentos", description: "Confira os comprovantes recebidos", destination: queueGroups[0].destination });
     const activeQueries = [...(canReadCharges ? charges : []), ...availableGroups.map(group => group.query), ...(canReadDefinitions ? [definitions] : [])];
     const updatedAt = Math.max(0, ...activeQueries.map(query => query.dataUpdatedAt));
 
@@ -95,7 +90,6 @@ export function FinancialDashboard({ onNavigate }: { onNavigate: (destination: D
         metrics={metrics}
         distribution={{ segments, available: canReadCharges, loading: canReadCharges && charges.some(query => query.isPending), error: distributionError }}
         queue={{ groups: availableGroups.map(group => ({ id: group.id, label: group.label, total: group.query.data?.totalElements, loading: group.query.isPending })), selected: activeQueue?.id, items: queueItems, total: activeQueue?.query.data?.totalElements, loading: activeQueue?.query.isPending ?? false, error: activeQueue?.query.error?.message, destination: activeQueue?.destination }}
-        shortcuts={shortcuts}
         updatedAt={updatedAt || undefined}
         refreshing={manualRefresh || activeQueries.some(query => query.isFetching)}
         onRefresh={() => {

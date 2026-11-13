@@ -1,6 +1,7 @@
 'use client';
 
 import { ButtonIcon } from '@/components/common/button';
+import { Select } from '@/components/common/select';
 import { useModal } from '@/providers/ModalProvider';
 import { assignPermissionToRoleAction } from '@/server/actions/authorization/assign-role-permission';
 import { listPermissionsAction } from '@/server/actions/authorization/list-permissions';
@@ -13,7 +14,7 @@ import { CheckCheck, ListChecks, LoaderCircle, Save, Search, X, XCircle } from '
 import { useId, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { twMerge } from 'tailwind-merge';
-import { getModuleLabel, getPermissionDescription, getPermissionName } from './permissionLabels';
+import { getModuleLabel, getPermissionDescription, getPermissionName, isMemberPermission } from './permissionLabels';
 import styles from './ManageRolePermissionsModal.module.css';
 
 interface Props { roleId: number; roleName: string; roleKind: RoleKind }
@@ -21,7 +22,7 @@ interface Props { roleId: number; roleName: string; roleKind: RoleKind }
 function PermissionRow({ permission, checked, disabled, isSaving, onToggle }: {
     permission: PermissionResponse; checked: boolean; disabled: boolean; isSaving: boolean; onToggle: (checked: boolean) => void;
 }) {
-    return <label className={twMerge(styles.permission, 'flex w-full items-start gap-3 rounded-xl border p-3 transition-colors', checked ? 'border-j-blue-200 bg-blue-50/60' : 'border-j-gray-200 bg-j-white', disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-j-blue-300 hover:bg-j-gray-100/60')}>
+    return <label className={twMerge(styles.permission, 'flex w-full items-start gap-3 rounded-xl border p-3 transition-colors', checked ? 'border-j-blue-200 bg-j-blue-50' : 'border-j-gray-200 bg-j-white', disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-j-blue-300 hover:bg-j-gray-100/60')}>
         <input type="checkbox" checked={checked} disabled={disabled || isSaving} onChange={(event) => onToggle(event.target.checked)} className={styles.checkbox} />
         <span className="min-w-0">
             <span className="block text-sm font-black text-j-blue-800">{getPermissionName(permission)}</span>
@@ -41,7 +42,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     const isProtected = roleKind === 'ROOT';
     const [draftIds, setDraftIds] = useState<Set<number> | null>(null);
     const [search, setSearch] = useState('');
-    const [moduleFilter, setModuleFilter] = useState('all');
+    const [moduleFilter, setModuleFilter] = useState<string[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
     const [saveError, setSaveError] = useState('');
@@ -58,7 +59,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     );
     const filtered = useMemo(() => {
         const query = search.trim().toLocaleLowerCase();
-        return (catalog ?? []).filter((permission) => (moduleFilter === 'all' || permission.module === moduleFilter)
+        return (catalog ?? []).filter((permission) => (!moduleFilter.length || moduleFilter.includes(permission.module))
             && (!query || `${getPermissionName(permission)} ${getPermissionDescription(permission)} ${getModuleLabel(permission.module)}`.toLocaleLowerCase().includes(query)));
     }, [catalog, moduleFilter, search]);
     const grouped = useMemo(() => filtered.reduce<Record<string, PermissionResponse[]>>((groups, permission) => {
@@ -68,6 +69,9 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
     const changes = (catalog ?? []).filter((permission) => assignedIds.has(permission.id) !== selectedIds.has(permission.id));
     const isLoading = isLoadingCatalog || isLoadingRolePermissions;
     const isError = isCatalogError || isRolePermissionsError;
+    const unselectedMemberPermissions = (catalog ?? []).filter(
+        (permission) => isMemberPermission(permission.code) && !selectedIds.has(permission.id),
+    );
 
     const togglePermission = (permissionId: number, checked: boolean) => {
         if (savingRef.current || isProtected || isLoading || isError) return;
@@ -81,12 +85,12 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
         });
     };
 
-    const setFiltered = (checked: boolean) => {
+    const setPermissionSelection = (permissions: PermissionResponse[], checked: boolean) => {
         if (savingRef.current || isProtected || isLoading || isError) return;
         setSaveError('');
         setDraftIds((previous) => {
             const next = new Set(previous ?? assignedIds);
-            filtered.forEach((permission) => {
+            permissions.forEach((permission) => {
                 if (checked && canAssign) next.add(permission.id);
                 if (!checked && canRevoke) next.delete(permission.id);
             });
@@ -155,18 +159,30 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px]">
                 <label className="relative block">
                     <Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-j-gray-400" />
-                    <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome ou descrição" aria-label="Buscar permissão" className="h-11 w-full rounded-xl border border-j-gray-200 bg-j-gray-100 pl-10 pr-3 text-sm text-j-gray-700 outline-none focus:border-j-blue-400 focus:bg-j-white" />
+                    <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome ou descrição" aria-label="Buscar permissão" className="h-11 w-full rounded-xl border border-input-border bg-background-secondary pl-10 pr-3 text-sm text-input-text outline-none placeholder:text-input-placeholder focus:border-input-border-focus focus:bg-input-bg-focus" />
                 </label>
-                <select value={moduleFilter} onChange={(event) => setModuleFilter(event.target.value)} aria-label="Filtrar por módulo" className="h-11 rounded-xl border border-j-gray-200 bg-j-gray-100 px-3 text-sm text-j-gray-700 outline-none focus:border-j-blue-400 focus:bg-j-white">
-                    <option value="all">Todos os módulos</option>{modules.map((module) => <option key={module} value={module}>{getModuleLabel(module)}</option>)}</select>
+                <Select.Unregister
+                    label="Filtrar por módulos"
+                    labelClassName="sr-only"
+                    name="permission-modules"
+                    multiple
+                    searchable
+                    placeholder="Todos os módulos"
+                    value={moduleFilter}
+                    onValueChange={(value) => setModuleFilter(Array.isArray(value) ? value : [])}
+                    options={modules.map((module) => ({ value: module, label: getModuleLabel(module) }))}
+                    className="h-11 rounded-xl bg-background-secondary px-3 py-0 text-sm"
+                />
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-j-gray-500">{selectedIds.size} {selectedIds.size === 1 ? 'permissão selecionada' : 'permissões selecionadas'}</p>
-                <div className="flex gap-2">
-                    <button type="button" disabled={!canAssign || isProtected || isSaving || !filtered.length} onClick={() => setFiltered(true)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-j-gray-200 px-3 text-xs font-bold text-j-blue-800 disabled:opacity-40">
-                        <CheckCheck size={15} />Selecionar filtradas</button>
-                    <button type="button" disabled={!canRevoke || isProtected || isSaving || !filtered.length} onClick={() => setFiltered(false)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-j-gray-200 px-3 text-xs font-bold text-j-gray-600 disabled:opacity-40">
-                        <XCircle size={15} />Limpar filtradas</button>
+                <div className="flex flex-wrap gap-1">
+                    <button type="button" title="Seleciona permissões de associado em todos os módulos" disabled={!canAssign || isProtected || isSaving || isLoading || isError || !unselectedMemberPermissions.length} onClick={() => setPermissionSelection(unselectedMemberPermissions, true)} className="inline-flex min-h-8 items-center gap-1 rounded-md bg-j-blue-50 px-2 text-xs font-semibold text-j-blue-800 enabled:hover:bg-input-bg-focus disabled:opacity-40">
+                        <CheckCheck size={14} aria-hidden="true" />Selecionar acessos de associado</button>
+                    <button type="button" aria-label="Selecionar permissões filtradas" disabled={!canAssign || isProtected || isSaving || !filtered.length} onClick={() => setPermissionSelection(filtered, true)} className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary enabled:hover:bg-background-secondary disabled:opacity-40">
+                        <CheckCheck size={14} aria-hidden="true" />Selecionar</button>
+                    <button type="button" aria-label="Limpar permissões filtradas" disabled={!canRevoke || isProtected || isSaving || !filtered.length} onClick={() => setPermissionSelection(filtered, false)} className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary enabled:hover:bg-background-secondary disabled:opacity-40">
+                        <XCircle size={14} aria-hidden="true" />Limpar</button>
                 </div>
             </div>
         </section>
@@ -174,7 +190,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
             {isLoading && <div className="flex items-center justify-center gap-2 py-10 text-j-gray-500">
                 <LoaderCircle size={20} className="animate-spin" />Carregando permissões...</div>}
             {isError && <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <p className="text-sm text-red-600">Não foi possível carregar o catálogo ou as permissões do cargo.</p>
+                <p className="text-sm text-input-error-text">Não foi possível carregar o catálogo ou as permissões do cargo.</p>
                 <button type="button" onClick={() => { void reloadCatalog(); void reloadRolePermissions(); }} className="rounded-lg border border-j-gray-200 px-4 py-2 text-sm font-bold text-j-blue-800">Tentar novamente</button>
             </div>}
             {!isLoading && !isError && filtered.length === 0 && <p className="py-10 text-center text-sm text-j-gray-500">Nenhuma permissão corresponde aos filtros.</p>}
