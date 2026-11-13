@@ -8,7 +8,6 @@ import { twMerge } from "tailwind-merge";
 
 import { Button } from "@/components/common/button";
 import { Avatar } from "@/components/common/avatar";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Select } from "@/components/common/select";
 import { Table } from "@/components/common/table";
 import { USER_STATUS_LABEL, USER_STATUS_STYLE } from "@/components/pages/admin/users/user-display";
@@ -18,6 +17,7 @@ import { useUserStore } from "@/stores/userStore";
 import { maskCPF,maskPhoneNumber,unMaskCPF,unMaskPhoneNumber } from "@/utils/masks";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { UserRolesViewModal } from "./UserRolesViewModal";
+import { RoleManagementLoading } from "./RoleManagementLoading";
 
 type SearchType = "q" | "name" | "email" | "cpf" | "phoneNumber";
 
@@ -30,7 +30,7 @@ function normalizeSearchValue(value: string, type: SearchType) {
 }
 
 export function UserRoleAssignmentsTab() {
-    const { setContent, setOpen } = useModal();
+    const { setContent, openFromTrigger } = useModal();
 
     const permissions = useUserStore((state) => state.permissions);
     const canReadUserRoles = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_READ");
@@ -81,6 +81,20 @@ export function UserRoleAssignmentsTab() {
             ),
         },
         {
+            accessorKey: "name",
+            header: "Nome",
+            meta: { label: "Nome" },
+            cell: ({ row }) => {
+                const name = row.original.name;
+                const parts = name.trim().split(/\s+/);
+                const shortName = parts.length > 1 ? `${parts[0]} ${parts.at(-1)}` : parts[0];
+                return <span className="font-bold text-j-gray-700">
+                    <span className="lg:hidden">{shortName}</span>
+                    <span className="hidden lg:inline">{name}</span>
+                </span>;
+            },
+        },
+        {
             accessorKey: "membershipNumber",
             header: "Matrícula",
             meta: { label: "Matrícula" },
@@ -88,14 +102,6 @@ export function UserRoleAssignmentsTab() {
                 <span className="font-bold text-j-gray-700">
                     {row.original.membershipNumber ?? "—"}
                 </span>
-            ),
-        },
-        {
-            accessorKey: "name",
-            header: "Nome",
-            meta: { label: "Nome completo" },
-            cell: ({ row }) => (
-                <span className="font-bold text-j-gray-700">{row.original.name}</span>
             ),
         },
         {
@@ -137,11 +143,11 @@ export function UserRoleAssignmentsTab() {
                         type="button"
                         title={canAssignUserRoles ? "Gerenciar cargos" : "Ver cargos"}
                         aria-label={`${canAssignUserRoles ? "Gerenciar" : "Ver"} cargos de ${row.original.name}`}
-                        onClick={() => {
+                        onClick={(event) => {
                             setContent(
                                 <UserRolesViewModal userId={row.original.id} userName={row.original.name} />,
                             );
-                            setOpen();
+                            openFromTrigger(event.currentTarget);
                         }}
                         className="min-h-10 whitespace-nowrap px-3 py-2 text-sm"
                     >
@@ -151,7 +157,7 @@ export function UserRoleAssignmentsTab() {
                 </div>
             ),
         },
-    ], [canAssignUserRoles, setContent, setOpen]);
+    ], [canAssignUserRoles, setContent, openFromTrigger]);
 
     if (!canReadUserRoles) {
         return (
@@ -167,18 +173,6 @@ export function UserRoleAssignmentsTab() {
 
     return (
         <div className="flex w-full flex-col gap-4">
-            <div className="flex flex-col gap-3 rounded-2xl border border-j-blue-100 bg-j-blue-50 px-4 py-3 sm:flex-row sm:items-center md:px-5">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <ManagementBackButton />
-                    <div>
-                        <h2 className="font-black text-j-blue-800">Atribuições de cargos</h2>
-                        <p className="text-sm text-j-gray-600">
-                            Consulte os cargos atribuídos aos usuários e gerencie seus acessos.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <Table.Root
                 data={data?.content ?? []}
                 columns={columns}
@@ -217,7 +211,7 @@ export function UserRoleAssignmentsTab() {
                             setPage(0);
                         }}
                         label="Buscar usuários"
-                        placeholder="Digite a busca e pressione Enter"
+                        placeholder="Buscar usuário"
                         submitOnChange={false}
                         mask={searchType === "cpf"
                             ? maskCPF
@@ -226,7 +220,7 @@ export function UserRoleAssignmentsTab() {
                                 : undefined}
                         inputMode={searchType === "cpf" || searchType === "phoneNumber" ? "numeric" : "search"}
                         formClassName="w-0 min-w-0 flex-1"
-                        className="rounded-r-none"
+                        className="rounded-r-none max-sm:pr-8"
                     />
                     <div className="w-fit shrink-0">
                         <Select.Unregister
@@ -239,7 +233,7 @@ export function UserRoleAssignmentsTab() {
                                 setSearchValue("");
                                 setPage(0);
                             }}
-                            className="h-10 w-32 min-w-32 rounded-l-none border-j-gray-200 border-l-0 bg-j-gray-100 px-3 py-2 text-sm text-j-blue-800 focus:bg-j-white"
+                            className="h-10 w-20 min-w-0 rounded-l-none border border-l-0 border-input-border bg-background-secondary px-2 py-2 text-sm text-primary focus:bg-input-bg-focus max-sm:gap-1 max-sm:text-xs max-sm:[&>svg]:size-3.5 sm:w-32 sm:px-3"
                         >
                             <option value="q">Geral</option>
                             <option value="name">Nome</option>
@@ -260,7 +254,11 @@ export function UserRoleAssignmentsTab() {
                     className="justify-end border-b border-j-gray-200 bg-j-white px-4 pb-3 md:px-6"
                 />
 
-                <Table.Content loadingRows={pageSize} />
+                {isFetching ? (
+                    <RoleManagementLoading label="Buscando usuários e seus cargos…" assignments />
+                ) : (
+                    <Table.Content />
+                )}
             </Table.Root>
         </div>
     );

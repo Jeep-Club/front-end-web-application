@@ -20,7 +20,7 @@ interface UserRolesViewModalProps {
 }
 
 export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps) {
-    const { setContent, setOpen, setClose } = useModal();
+    const { setContent, openFromTrigger, setClose } = useModal();
 
     const permissions = useUserStore((state) => state.permissions);
     const canAssign = hasPermission(permissions, "AUTHORIZATION", "USER_ROLE_ASSIGN");
@@ -33,14 +33,14 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
 
     const currentRoleIds = roles?.map((role) => role.id) ?? [];
 
-    const handleAddRole = () => {
+    const handleAddRole = (trigger: HTMLElement) => {
         setContent(
             <AddUserRoleModal userId={userId} userName={userName} currentRoleIds={currentRoleIds} />,
         );
-        setOpen();
+        openFromTrigger(trigger);
     };
 
-    const handleRevokeRole = (role: RoleResponse) => {
+    const handleRevokeRole = (trigger: HTMLElement, role: RoleResponse) => {
         setContent(
             <RevokeUserRoleModal
                 userId={userId}
@@ -49,7 +49,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                 roleName={role.name}
             />,
         );
-        setOpen();
+        openFromTrigger(trigger);
     };
 
     return (
@@ -80,7 +80,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                 {canAssign && (
                     <Button
                         type="button"
-                        onClick={handleAddRole}
+                        onClick={(event) => handleAddRole(event.currentTarget)}
                         className="w-full sm:w-auto sm:self-end"
                     >
                         <Plus size={16} strokeWidth={3} />
@@ -141,7 +141,7 @@ export function UserRolesViewModal({ userId, userName }: UserRolesViewModalProps
                                     <div className="mt-1 flex justify-end border-t border-j-gray-100 pt-2">
                                         <button
                                             type="button"
-                                            onClick={() => handleRevokeRole(role)}
+                                            onClick={(event) => handleRevokeRole(event.currentTarget, role)}
                                             className="text-xs font-bold text-red-500 hover:text-red-600"
                                         >
                                             Revogar
