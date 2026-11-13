@@ -15,11 +15,11 @@ export function FeedInteractions({ publication, onComments }: { publication: { i
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["publications"] }),
 
     });
-    return <div className="flex items-center gap-5 text-sm text-j-gray-600">
+    return <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-j-gray-600">
         {canLike ? <button type="button" disabled={mutation.isPending} aria-pressed={publication.likedByMe} aria-label={publication.likedByMe ? "Remover curtida" : "Curtir publicação"} onClick={() => mutation.mutate()} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-1 transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50 ${publication.likedByMe ? "text-red-500" : "hover:text-red-500"}`}>
-            <Heart size={19} fill={publication.likedByMe ? "currentColor" : "none"} aria-hidden="true" />{publication.likeCount}
-        </button> : <span className="inline-flex items-center gap-2" aria-label={`${publication.likeCount} curtidas`}><Heart size={19} aria-hidden="true" />{publication.likeCount}</span>}
-        {onComments ? <button type="button" onClick={onComments} aria-label={`${publication.commentCount} comentários. Abrir publicação`} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-1 hover:text-j-blue-800 focus-visible:outline-2 focus-visible:outline-j-blue-800"><MessageCircle size={19} aria-hidden="true" />{publication.commentCount}</button>
+            <Heart size={19} fill={publication.likedByMe ? "currentColor" : "none"} aria-hidden="true" /><span>{publication.likedByMe ? "Curtido" : "Curtir"}</span><span>{publication.likeCount}</span>
+        </button> : <span className="inline-flex items-center gap-2" aria-label={`${publication.likeCount} curtidas`}><Heart size={19} aria-hidden="true" /><span>{publication.likedByMe ? "Curtido" : "Curtir"}</span><span>{publication.likeCount}</span></span>}
+        {onComments ? <button type="button" onClick={onComments} aria-label={`${publication.commentCount} comentários. Abrir comentários`} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-1 hover:text-j-blue-800 focus-visible:outline-2 focus-visible:outline-j-blue-800"><MessageCircle size={19} aria-hidden="true" /><span>Comentar</span><span>{publication.commentCount}</span></button>
             : <span className="inline-flex items-center gap-2" aria-label={`${publication.commentCount} comentários`}><MessageCircle size={19} aria-hidden="true" />{publication.commentCount}</span>}
     </div>;
 }

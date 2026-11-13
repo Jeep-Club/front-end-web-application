@@ -18,7 +18,7 @@ const MAX_COMMENT_IMAGES = 10;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const COMMENT_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export function PublicationComments({ publicationId }: { publicationId: number }) {
+export function PublicationComments({ publicationId, focusComposer = false }: { publicationId: number; focusComposer?: boolean }) {
     const permissions = useUserStore((state) => state.permissions);
     const canRead = hasPermission(permissions, "PUBLICATIONS", "COMMENT_READ");
     const canCreate = hasPermission(permissions, "PUBLICATIONS", "COMMENT_CREATE");
@@ -68,7 +68,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
         if (fileInput.current) fileInput.current.value = "";
     };
     if (!canRead && !canCreate) return null;
-    return <section aria-label="Comentários" className="border-t border-j-gray-200 p-5 md:p-8">
+    return <section aria-label="Comentários" className={focusComposer ? "border-t border-j-gray-200 pt-2" : "border-t border-j-gray-200 p-5 md:p-8"}>
         <div className="flex items-center justify-between gap-3">
             <h3 className="font-bold text-j-blue-800">Comentários</h3>
             <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-j-blue-700 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800">
@@ -76,16 +76,16 @@ export function PublicationComments({ publicationId }: { publicationId: number }
             </button>
         </div>
         {expanded && <>
-        {canCreate && <form onSubmit={(event) => { event.preventDefault(); if ((text.trim() || files.length) && !mutation.isPending) mutation.mutate(); }} className="mt-4 flex flex-col gap-3">
-            <label htmlFor={id} className="text-sm font-semibold text-j-gray-700">Seu comentário</label>
-            <textarea id={id} value={text} maxLength={10_000} disabled={mutation.isPending} onChange={(event) => setText(event.target.value)} rows={3} placeholder="Escreva um comentário..." className="w-full resize-y rounded-xl border border-j-gray-200 bg-j-white p-3 text-sm text-j-gray-700 placeholder:text-j-gray-400 focus:outline-2 focus:outline-j-blue-700" />
+        {canCreate && <form onSubmit={(event) => { event.preventDefault(); if ((text.trim() || files.length) && !mutation.isPending) mutation.mutate(); }} className="mt-2 flex flex-col gap-2">
+            <label htmlFor={id} className="sr-only">Seu comentário</label>
+            <textarea autoFocus={focusComposer} id={id} value={text} maxLength={10_000} disabled={mutation.isPending} onChange={(event) => setText(event.target.value)} rows={1} placeholder="Escreva um comentário..." className="w-full resize-y rounded-xl border border-j-gray-200 bg-j-white px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:outline-2 focus:outline-j-blue-700" />
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                     <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={mutation.isPending || files.length >= MAX_COMMENT_IMAGES} onChange={(event) => addFiles(event.target.files)} className="sr-only" tabIndex={-1} aria-hidden="true" />
-                    <Button type="button" disabled={mutation.isPending || files.length >= MAX_COMMENT_IMAGES} onClick={() => fileInput.current?.click()}><ImagePlus size={16} />Adicionar imagens ({files.length}/{MAX_COMMENT_IMAGES})</Button>
-                    <p className="mt-1 text-xs text-j-gray-500">JPEG, PNG ou WebP, até 5 MiB cada.</p>
+                    <Button type="button" disabled={mutation.isPending || files.length >= MAX_COMMENT_IMAGES} aria-label={`Adicionar imagens (${files.length}/${MAX_COMMENT_IMAGES})`} title="Adicionar imagens JPEG, PNG ou WebP, até 5 MiB cada" className="min-h-10 min-w-10 border border-input-border bg-background-secondary p-2 text-primary hover:bg-background-tertiary hover:text-primary" onClick={() => fileInput.current?.click()}><ImagePlus size={18} aria-hidden="true" /></Button>
+
                 </div>
-                <Button type="submit" isLoading={mutation.isPending} disabled={!text.trim() && files.length === 0} className="ml-auto"><Send size={15} />{mutation.isPending ? "Enviando..." : "Comentar"}</Button>
+                <Button type="submit" isLoading={mutation.isPending} disabled={!text.trim() && files.length === 0} className="ml-auto px-3 py-2 text-sm md:text-sm"><Send size={15} />{mutation.isPending ? "Enviando..." : "Comentar"}</Button>
             </div>
             {files.length > 0 && <ul aria-label="Imagens selecionadas" className="flex flex-col gap-2">
                 {files.map((file, index) => <li key={`${file.name}-${file.lastModified}-${index}`} className="flex items-center justify-between gap-2 rounded-lg bg-j-gray-100 px-3 py-2 text-sm text-j-gray-700">
@@ -94,7 +94,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
                 </li>)}
             </ul>}
         </form>}
-        {canRead && <div className="mt-5 flex flex-col gap-4" aria-live="polite">
+        {canRead && <div className="mt-3 flex flex-col gap-2" aria-live="polite">
             {comments.isLoading ? <p className="text-sm text-j-gray-500">Carregando comentários...</p>
                 : comments.isError ? <div role="alert"><p className="text-sm text-red-500">{comments.error.message}</p><Button onClick={() => void comments.refetch()} className="mt-2">Tentar novamente</Button></div>
                 : !comments.data?.content.length ? <p className="text-sm text-j-gray-500">Ainda não há comentários.</p>

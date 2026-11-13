@@ -107,7 +107,7 @@
   .panel[data-collapsed="false"] { --sidebar-time: 1000ms; }
   .panel[data-collapsed="true"] { --sidebar-time: 1000ms; width: 80px; }
   .panel[data-collapsed="true"] .label { max-width: 0; opacity: 0; transform: translateX(-8px); }
-  .panel[data-collapsed="true"] .item { gap: 0; padding-inline: 18px; }
+  .panel[data-collapsed="true"] .item { gap: 0; justify-content: center; padding-inline: 0; }
   .panel[data-collapsed="true"] .favoritesHeading { height: 0; opacity: 0; }
   .desktopOnly { display: flex; }
   .closeButton, .backdrop { display: none; }

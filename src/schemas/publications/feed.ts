@@ -21,6 +21,11 @@ export type PublicationFeedFilters = z.infer<typeof publicationFeedFiltersSchema
 export const publicationImageSchema = z.object({ storageKey: z.string(), position: z.number().int(), primary: z.boolean() });
 const common = z.object({
     id: z.number().int().positive(), authorUserId: z.number(), title: z.string(), content: z.string(),
+    authorName: z.string().nullish(),
+    authorPhotoStorageKey: z.string().nullish(),
+    authorProfilePhotoStorageKey: z.string().nullish(),
+    authorPhotoUrl: z.string().nullish(),
+    authorProfilePhotoUrl: z.string().nullish(),
     primaryImage: publicationImageSchema.nullable(), publishedAt: publicationInstantSchema,
     likeCount: z.number().nonnegative(), commentCount: z.number().nonnegative(), likedByMe: z.boolean(),
 });
