@@ -1,0 +1,42 @@
+"use client";
+import { useState } from 'react';
+import { Controller, useFieldArray, useFormContext, useWatch } from 'react-hook-form';
+import { parseAbsoluteToLocal, parseDate } from '@internationalized/date';
+import { DatePicker } from '@/components/common/date-picker';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/common/button';
+import { InputRegister } from '@/components/common/input/input-register';
+import { InputCheckbox } from '@/components/common/input/input-checkbox';
+import { SelectRegister } from '@/components/common/select/select-register';
+import { listEventChargeCatalogAction } from '@/server/actions/publications/events';
+import type { EventChargeFormRow } from '@/schemas/publications/create';
+import { useUserStore } from '@/stores/userStore';
+import { hasPermission } from '@/utils/permission/hasPermission';
+
+/** Event rules are a complete collection, distinct from billing definitions and actual debts. */
+export function EventChargeFields({ disabled = false }: { disabled?: boolean }) {
+    const { control, setValue, formState: { errors } } = useFormContext<{ charges: EventChargeFormRow[] }>();
+    const { fields, append, remove } = useFieldArray({ control, name: 'charges' });
+    const rows = useWatch({ control, name: 'charges' }) ?? [];
+    const [page, setPage] = useState(0);
+    const permissions = useUserStore(state => state.permissions);
+    const canCatalog = ['EVENT_CREATE', 'EVENT_UPDATE'].some(action => hasPermission(permissions, 'PUBLICATIONS', action));
+    const catalog = useQuery({ queryKey: ['publications', 'admin', 'event-charge-catalog', { page, size: 12 }, permissions], queryFn: () => listEventChargeCatalogAction({ page, size: 12 }), enabled: canCatalog && !disabled, retry: false });
+    return <fieldset disabled={disabled} className="w-full min-w-0 space-y-4"><legend className="text-lg font-bold text-primary">Regras de cobrança</legend>
+        <p className="text-sm">Adicione as cobranças necessárias para o evento. Preencha cada cobrança adicionada ou remova-a antes de continuar.</p>
+        {!canCatalog && <p>Sem permissão para consultar o catálogo.</p>}
+        {catalog.isLoading && <p role="status">Carregando catálogo...</p>}
+        {catalog.isError && <div role="alert"><p>{catalog.error.message}</p><Button onClick={() => void catalog.refetch()}>Tentar catálogo novamente</Button></div>}
+        {catalog.data && <div aria-busy={catalog.isFetching} className="flex flex-wrap items-center gap-2"><p>Catálogo: página {page + 1} de {Math.max(1, catalog.data.totalPages)}</p><Button disabled={disabled || page === 0 || catalog.isFetching} onClick={() => setPage(page - 1)}>Catálogo anterior</Button><Button disabled={disabled || catalog.data.last || catalog.isFetching} onClick={() => setPage(page + 1)}>Próximo catálogo</Button></div>}
+        {fields.map((field, index) => { const row = rows[index]; if (!row) return null; return <fieldset key={field.id} className="min-w-0 space-y-3 rounded-xl border border-input-border p-4"><legend className="font-bold">Cobrança {index + 1}</legend>
+            <SelectRegister name={`charges.${index}.mode`} label="Origem da definição"><option value="existing">Definição existente</option><option value="inline">Criar definição inline</option></SelectRegister>
+            {row.mode === 'existing' ? <><SelectRegister name={`charges.${index}.chargeDefinitionId`} label="Definição de cobrança" required onChange={event => { const entry = catalog.data?.content.find(item => item.id === Number(event.target.value)); setValue(`charges.${index}.paymentAcceptancePolicy`, entry?.paymentAcceptancePolicy ?? ''); }}><option value="">Selecione uma definição</option>{row.chargeDefinitionId && !catalog.data?.content.some(item => String(item.id) === row.chargeDefinitionId) && <option value={row.chargeDefinitionId}>Definição #{row.chargeDefinitionId} (fora desta página)</option>}{catalog.data?.content.map(entry => <option key={entry.id} value={String(entry.id)}>#{entry.id} · {entry.name} · valor atual {entry.defaultAmount}</option>)}</SelectRegister><p className="text-sm text-secondary">O valor exibido é o valor atual no catálogo.</p></> : <><InputRegister name={`charges.${index}.name`} label="Nome da definição" required /><InputRegister name={`charges.${index}.description`} label="Descrição da definição" /><InputRegister name={`charges.${index}.amount`} label="Valor da definição" inputMode="decimal" required /><InputCheckbox name={`charges.${index}.billingRequired`} label="Cobrança obrigatória" /></>}
+            <Controller name={`charges.${index}.participationCutoff`} control={control} render={({ field }) => <DatePicker label="Prazo para confirmar participação (opcional)" granularity="minute" isDisabled={disabled} value={field.value ? parseAbsoluteToLocal(field.value) : null} onChange={value => field.onChange(value ? value.toDate().toISOString() : '')} onBlur={field.onBlur} description="Se não informar, será usado o início do evento. O prazo deve ser futuro e não pode ultrapassar o início." />} />
+            <Controller name={`charges.${index}.financialDueDate`} control={control} render={({ field }) => <DatePicker label="Vencimento da cobrança (opcional)" isDisabled={disabled} value={field.value ? parseDate(field.value) : null} onChange={value => field.onChange(value?.toString() ?? '')} onBlur={field.onBlur} />} />
+            <Button aria-label={`Remover cobrança ${index + 1}`} onClick={() => remove(index)}>Remover cobrança</Button>
+        </fieldset>; })}
+        {!rows.length && <p>Sem regras de cobrança. Salvar assim envia a coleção vazia.</p>}
+        {errors.charges && <p role="alert" className="text-input-error-text">{errors.charges.message ?? errors.charges.root?.message ?? 'Confira as regras de cobrança.'}</p>}
+        <Button onClick={() => append({ mode: 'existing', chargeDefinitionId: '', name: '', description: '', amount: '', billingRequired: false, requiredForParticipation: false, participationCutoff: '', financialDueDate: '', paymentAcceptancePolicy: '' })}>Adicionar cobrança</Button>
+    </fieldset>;
+}

@@ -68,7 +68,7 @@ A aparência padrão é resolvida pelos tokens CSS sob `data-theme`. Use a toolb
 
 ## Interação e limites
 
-A seleção simples usa Radix Select; os modos com busca ou seleção múltipla usam Radix Popover com listbox. Enter abre o controle; setas, Home e End navegam pelas opções disponíveis, Enter/Espaço selecionam e Escape fecha devolvendo foco ao trigger. Na busca, seta para baixo move o foco à primeira opção disponível. Opções desabilitadas são puladas. Não confunda esses comportamentos com certificação completa de acessibilidade.
+A seleção simples usa HeroUI Select e ListBox; os modos com busca ou seleção múltipla usam HeroUI Popover com listbox. Enter abre o controle; setas, Home e End navegam pelas opções disponíveis, Enter/Espaço selecionam e Escape fecha devolvendo foco ao trigger. Na busca, seta para baixo move o foco à primeira opção disponível. Opções desabilitadas são puladas. Não confunda esses comportamentos com certificação completa de acessibilidade.
 
 <Canvas of={Stories.ComOpcoesDesabilitadas} />
 
@@ -79,3 +79,9 @@ Filtros de `UserManagementView` usam a base sem registro; `ChargeDefinitionFormF
 `onChange` fornece um evento compatível com a integração existente, mas sintetizado, não um evento de um select nativo real. No modo múltiplo, o campo oculto serializa valores separados por vírgula; prefira o array do React Hook Form ou `onValueChange` para submissão, em vez de tratar esse texto como um contrato de transporte.
 
 As stories não incluem backend nem provider de formulário e não comprovam um fluxo completo de submissão. Veja o [guia de componentes e páginas](?path=/docs/documentação-componentes-e-páginas--docs) para compor formulários.
+
+## Uso em dialog nativo
+
+O menu é montado dentro do dialog que contém o campo, para permanecer interativo na camada modal do navegador. Este exemplo envia um formulário HTML local e mostra os valores serializados, sem backend. O label em JSX permanece no controle simples selecionado; busca e múltipla seleção mantêm o resumo textual.
+
+<Canvas of={Stories.DentroDeDialog} />

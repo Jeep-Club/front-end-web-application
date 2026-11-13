@@ -32,17 +32,17 @@ describe("visibilidade e acesso à análise de pagamentos", () => {
     it("preserva os módulos de pagamentos e publicações com acesso independente", async () => {
         const permissions = [{ module: "PUBLICATIONS", actions: ["NOTICE_READ"] }];
         verify.mockResolvedValue(permissions);
-        expect(getAvailableAdminModules(permissions).map(module => module.href)).toEqual(["/admin/gestao-publicacoes"]);
-        await expect(haveRoutePermissions({ pathname: "/admin/gestao-publicacoes", permissionsToken: "signed", onCatch: jest.fn() })).resolves.toBe(true);
+        expect(getAvailableAdminModules(permissions).map(module => module.href)).toEqual(["/admin/publications"]);
+        await expect(haveRoutePermissions({ pathname: "/admin/publications", permissionsToken: "signed", onCatch: jest.fn() })).resolves.toBe(true);
         await expect(haveRoutePermissions({ pathname: "/admin/pagamentos", permissionsToken: "signed", onCatch: jest.fn() })).resolves.toBe(false);
 
         const combined = [...permissions, { module: "BILLING", actions: ["PAYMENT_READ"] }];
-        expect(getAvailableAdminModules(combined).map(module => module.href)).toEqual(["/admin/pagamentos", "/admin/gestao-publicacoes", "/admin/gestao-financeira"]);
+        expect(getAvailableAdminModules(combined).map(module => module.href)).toEqual(["/admin/pagamentos", "/admin/publications", "/admin/gestao-financeira"]);
     });
 
     it("nega a gestão de publicações para quem tem apenas leitura de pagamentos", async () => {
         verify.mockResolvedValue([{ module: "BILLING", actions: ["PAYMENT_READ"] }]);
-        await expect(haveRoutePermissions({ pathname: "/admin/gestao-publicacoes", permissionsToken: "signed", onCatch: jest.fn() })).resolves.toBe(false);
+        await expect(haveRoutePermissions({ pathname: "/admin/publications", permissionsToken: "signed", onCatch: jest.fn() })).resolves.toBe(false);
     });
 
     it("aciona o tratamento de sessão inválida quando a verificação falha", async () => {

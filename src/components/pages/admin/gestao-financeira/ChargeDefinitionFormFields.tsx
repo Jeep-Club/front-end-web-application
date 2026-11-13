@@ -11,7 +11,8 @@ import {
     PAYMENT_ACCEPTANCE_POLICY_LABEL,
 } from "./chargeDefinitionDisplay";
 
-const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+// Keep the focused surface theme-aware so dark text tokens never sit on a forced white background.
+const LIGHT_FIELD_CLASS = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400";
 
 const RECURRENCE_OPTIONS: ChargeRecurrenceType[] = ["ONE_TIME", "MONTHLY", "YEARLY"];
 const PAYMENT_POLICY_OPTIONS: PaymentAcceptancePolicy[] = [

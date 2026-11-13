@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Archive,CalendarPlus,ClipboardCheck,Eye,FileText,Pencil,Plus,Power,PowerOff,ShieldX,Undo2,Users,type LucideIcon } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { Button,ButtonIcon } from "@/components/common/button";
@@ -34,6 +34,7 @@ import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
 import { ToggleChargeDefinitionStatusModal } from "./ToggleChargeDefinitionStatusModal";
 import PaymentsPage from "../payments";
 import type { PaymentFilters } from "@/schemas/payments";
+import { dashboardMovementStatus, type DashboardDestination } from "./financialDashboardModel";
 
 const PAGE_SIZE = 10;
 export type MovementView = "refunds" | "payments" | "member-charges" | "analysis";
@@ -227,9 +228,11 @@ function ChargeDefinitions() {
 export default function FinancialManagement({
     initialTab = "dashboard",
     initialMovement = "member-charges",
+    initialStatus,
 }: {
     initialTab?: FinancialTab;
     initialMovement?: MovementView;
+    initialStatus?: string;
 }) {
     const router = useRouter();
     const permissions = useUserStore((state) => state.permissions);
@@ -239,15 +242,18 @@ export default function FinancialManagement({
         { key: "movements", title: "Movimentações financeiras", permissions: ["MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"] },
     ];
     const visibleTabs = tabs.filter((tab) => tab.permissions.some((permission) => hasPermission(permissions, "BILLING", permission)));
-    const [selected, setSelected] = useState<FinancialTab>(initialTab);
-    const [selectedMovement, setSelectedMovement] = useState<MovementView>(initialMovement);
+    const canReadMembershipConfiguration = hasPermission(permissions, "MEMBERSHIP", "BILLING_CONFIGURATION_READ");
+    const hasFinancialAccess = visibleTabs.length > 0 || canReadMembershipConfiguration;
+    const routeKey = `${initialTab}:${initialMovement}:${initialStatus ?? ""}`;
+    const initialNavigation = { routeKey, tab: initialTab, movement: initialMovement, status: initialStatus };
+    const [navigation, setNavigation] = useState(initialNavigation);
+    // URL changes (including browser back/forward) supersede pending local navigation.
+    if (navigation.routeKey !== routeKey) setNavigation(initialNavigation);
+    const currentNavigation = navigation.routeKey === routeKey ? navigation : initialNavigation;
+    const { tab: selected, movement: selectedMovement, status: selectedStatus } = currentNavigation;
     const [paymentFilters, setPaymentFilters] = useState<PaymentFilters>({ status: "PENDING_VALIDATION", page: 0, size: 20 });
-    useEffect(() => {
-        setSelected(initialTab);
-        setSelectedMovement(initialMovement);
-    }, [initialTab, initialMovement]);
     const selectTab = (tab: FinancialTab) => {
-        setSelected(tab);
+        setNavigation({ ...currentNavigation, routeKey, tab, status: undefined });
         router.replace(`/admin/gestao-financeira?tab=${tab}${tab === "movements" ? `&movement=${selectedMovement}` : ""}`, { scroll: false });
     };
     const visibleMovementViews = MOVEMENT_VIEWS.filter((view) => hasPermission(permissions, "BILLING", view.permission));
@@ -255,10 +261,17 @@ export default function FinancialManagement({
         ? selectedMovement
         : visibleMovementViews[0]?.key;
     const selectMovement = (movement: MovementView) => {
-        setSelectedMovement(movement);
+        setNavigation({ ...currentNavigation, routeKey, movement, status: undefined });
         router.replace(`/admin/gestao-financeira?tab=movements&movement=${movement}`, { scroll: false });
     };
-    const active = visibleTabs.length ? selected === "dashboard" ? "dashboard" : visibleTabs.find((tab) => tab.key === selected)?.key ?? "dashboard" : undefined;
+    const active = hasFinancialAccess ? selected === "dashboard" ? "dashboard" : visibleTabs.find((tab) => tab.key === selected)?.key ?? "dashboard" : undefined;
+    const openDashboardDestination = (destination: DashboardDestination) => {
+        if (destination.tab !== "movements") return selectTab(destination.tab);
+        const status = dashboardMovementStatus(destination.movement, destination.status);
+        setNavigation({ ...currentNavigation, routeKey, tab: "movements", movement: destination.movement, status });
+        if (destination.movement === "analysis") setPaymentFilters({ status: "PENDING_VALIDATION", page: 0, size: 20 });
+        router.replace(`/admin/gestao-financeira?tab=movements&movement=${destination.movement}${status ? `&status=${status}` : ""}`, { scroll: false });
+    };
     usePageTour({
         storageKey: "tour_completed_admin_financial",
         steps: getFinancialTourSteps,
@@ -292,14 +305,14 @@ export default function FinancialManagement({
     return <div className="min-h-full w-full p-3 md:p-4"><div className="flex flex-col gap-4 pb-6">
         <PageHeader id="tour-financial-header" title="Gestão financeira" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Financeira", ...(active ? { href: "/admin/gestao-financeira" } : {}) }, ...(active ? [{ label: breadcrumbLabels[active] }] : [])]} />
         <div className="flex w-full flex-col items-start gap-2"><ManagementBackButton /><p className="text-sm text-j-gray-600">Configure cobranças, acompanhe os ciclos e gerencie pagamentos e reembolsos dos associados.</p></div>
-        <nav id="tour-financial-tabs" aria-label="Áreas da gestão financeira" className="flex w-full flex-wrap gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1">{(visibleTabs.length ? [{ key: "dashboard" as const, title: "Dashboard" }, ...visibleTabs] : []).map((tab) => <button key={tab.key} aria-current={active === tab.key ? "page" : undefined} onClick={() => selectTab(tab.key)} className={twMerge("flex min-h-12 min-w-0 flex-1 basis-[calc(50%-0.25rem)] cursor-pointer items-center justify-center rounded-xl px-3 py-3 text-center text-sm font-bold leading-tight text-j-blue-800 transition-colors hover:bg-j-gray-100 md:basis-0", active === tab.key && "bg-j-blue-800 text-j-yellow-300 hover:bg-j-blue-800")}>{tab.title}</button>)}</nav>
+        <nav id="tour-financial-tabs" aria-label="Áreas da gestão financeira" className="flex w-full flex-wrap gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1">{(hasFinancialAccess ? [{ key: "dashboard" as const, title: "Dashboard" }, ...visibleTabs] : []).map((tab) => <button key={tab.key} aria-current={active === tab.key ? "page" : undefined} onClick={() => selectTab(tab.key)} className={twMerge("flex min-h-12 min-w-0 flex-1 basis-[calc(50%-0.25rem)] cursor-pointer items-center justify-center rounded-xl px-3 py-3 text-center text-sm font-bold leading-tight text-j-blue-800 transition-colors hover:bg-j-gray-100 md:basis-0", active === tab.key && "bg-j-blue-800 text-j-yellow-300 hover:bg-j-blue-800")}>{tab.title}</button>)}</nav>
         {active && <section className="rounded-xl border border-j-blue-200 bg-j-blue-50 px-4 py-3" aria-label={financialContext[active].title}>
             <h2 className="text-sm font-bold text-j-blue-900">{financialContext[active].title}</h2>
             <p className="mt-1 text-sm leading-relaxed text-j-gray-700">{financialContext[active].description}</p>
         </section>}
         <div id="tour-financial-content">
             {!active ? <p className="rounded-xl bg-j-white p-6">Seu usuário não possui permissão para consultar a gestão financeira.</p>
-                : active === "dashboard" ? <FinancialDashboard onNavigate={selectTab} />
+                : active === "dashboard" ? <FinancialDashboard onNavigate={openDashboardDestination} />
                     : active === "definitions" ? <ChargeDefinitions />
                         : active === "cycles" ? <BillingOperations resource="cycles" />
                             : <div className="flex flex-col gap-4">
@@ -323,9 +336,9 @@ export default function FinancialManagement({
                                         </button>
                                     ))}
                                 </nav>
-                                {activeMovement === "refunds" && <BillingOperations resource="refunds" />}
-                                {activeMovement === "payments" && <BillingOperations resource="payments" />}
-                                {activeMovement === "member-charges" && <BillingOperations resource="member-charges" />}
+                                {activeMovement === "refunds" && <BillingOperations key={`refunds:${selectedStatus ?? ""}`} resource="refunds" initialStatus={selectedStatus} />}
+                                {activeMovement === "payments" && <BillingOperations key={`payments:${selectedStatus ?? ""}`} resource="payments" initialStatus={selectedStatus} />}
+                                {activeMovement === "member-charges" && <BillingOperations key={`member-charges:${selectedStatus ?? ""}`} resource="member-charges" initialStatus={selectedStatus} />}
                                 {activeMovement === "analysis" && <PaymentsPage filters={paymentFilters} embedded onFiltersChange={setPaymentFilters} />}
                             </div>}
         </div>

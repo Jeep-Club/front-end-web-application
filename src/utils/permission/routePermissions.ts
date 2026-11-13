@@ -17,6 +17,12 @@ interface RoutePermissionRule {
 type RoutePermissionsConfig = RoutePermissionRule | PermissionModule[];
 
 export const routePermissions: Record<string, RoutePermissionsConfig> = {
+    '/admin/publications/event': { match: 'any', permissions: [{ module: 'PUBLICATIONS', actions: ['EVENT_READ_ADMIN'] }, { module: 'PUBLICATIONS', actions: ['EVENT_CREATE'] }] },
+    '/admin/publications/notice': { match: 'any', permissions: [{ module: 'PUBLICATIONS', actions: ['NOTICE_READ'] }, { module: 'PUBLICATIONS', actions: ['NOTICE_CREATE'] }] },
+    '/admin/publications/service': { match: 'any', permissions: [{ module: 'PUBLICATIONS', actions: ['SERVICE_ADMIN_READ'] }, { module: 'PUBLICATIONS', actions: ['SERVICE_REQUEST_ADMIN_READ'] }, { module: 'PUBLICATIONS', actions: ['SERVICE_CHANGE_REQUEST_ADMIN_READ'] }, { module: 'PUBLICATIONS', actions: ['SERVICE_REQUEST_CREATE'] }] },
+    '/admin/publications/event/[id]': [{ module: 'PUBLICATIONS', actions: ['EVENT_READ_ADMIN'] }],
+    '/admin/publications/notice/[id]': [{ module: 'PUBLICATIONS', actions: ['NOTICE_READ'] }],
+    '/admin/publications/service/[id]': [{ module: 'PUBLICATIONS', actions: ['SERVICE_ADMIN_READ'] }],
     "/admin/pagamentos": [{ module: paymentPermissions.module, actions: [paymentPermissions.read] }],
     "/register": [
         {
@@ -73,6 +79,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/admin/gestao-financeira": {
         match: "any",
         permissions: [
+            { module: "MEMBERSHIP", actions: ["BILLING_CONFIGURATION_READ"] },
             { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
             { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
             { module: "BILLING", actions: ["MEMBER_CHARGE_READ"] },
@@ -81,7 +88,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         ],
     },
 
-    "/admin/gestao-publicacoes": {
+    "/admin/publications": {
         match: "any",
         permissions: publicationManagementAccessActions.map((action) => ({
             module: "PUBLICATIONS",

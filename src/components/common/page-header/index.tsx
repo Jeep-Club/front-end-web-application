@@ -17,18 +17,18 @@ export function PageHeader({ title, breadcrumbs, actions, id }: PageHeaderProps)
     return (
         <div id={id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex flex-col gap-1">
-                <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-1 text-xs text-j-gray-400 md:text-sm">
+                <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-1 text-xs text-secondary md:text-sm">
                     {breadcrumbs.map((crumb, index) => {
                         const isLast = index === breadcrumbs.length - 1;
                         return (
-                            <span key={`${crumb.label}-${index}`} className="flex items-center gap-1">
-                                {index > 0 && <ChevronRight size={14} />}
+                            <span key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-1">
+                                {index > 0 && <ChevronRight size={14} aria-hidden="true" />}
                                 {crumb.href && !isLast ? (
-                                    <Link href={crumb.href} className="transition-colors hover:text-j-blue-700">
+                                    <Link href={crumb.href} className="cursor-pointer rounded-sm text-secondary transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus">
                                         {crumb.label}
                                     </Link>
                                 ) : (
-                                    <span className={isLast ? "font-semibold text-j-blue-800" : ""}>
+                                    <span aria-current={isLast ? "page" : undefined} className={isLast ? "font-semibold text-primary" : ""}>
                                         {crumb.label}
                                     </span>
                                 )}
@@ -36,7 +36,7 @@ export function PageHeader({ title, breadcrumbs, actions, id }: PageHeaderProps)
                         );
                     })}
                 </nav>
-                <h1 className="text-xl font-extrabold text-j-gray-700 md:text-2xl">{title}</h1>
+                <h1 className="text-xl font-extrabold text-primary md:text-2xl">{title}</h1>
             </div>
 
             {actions && (

@@ -63,6 +63,8 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     MEMBERSHIP_MEMBERSHIP_APPLICANT_BLOCK: "Bloquear CPF de solicitante",
     MEMBERSHIP_MEMBER_READ: "Consultar matrículas",
     MEMBERSHIP_MEMBER_REGISTRATION_MANAGE: "Atribuir e retificar matrículas",
+    MEMBERSHIP_BILLING_CONFIGURATION_READ: "Consultar cobrança de referência da associação",
+    MEMBERSHIP_BILLING_CONFIGURATION_UPDATE: "Configurar cobrança de referência da associação",
 
     PUBLICATIONS_INTERACTION_LIKE: "Curtir publicações",
     PUBLICATIONS_COMMENT_CREATE: "Comentar em publicações",

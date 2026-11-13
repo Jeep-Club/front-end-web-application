@@ -32,6 +32,7 @@ export interface AdminModuleConfig {
     href: string;
     icon: LucideIcon;
     visibilityPermission: AdminVisibilityPermission;
+    alternativeVisibilityPermissions?: AdminVisibilityPermission[];
 }
 
 export const adminModules: AdminModuleConfig[] = [
@@ -47,7 +48,7 @@ export const adminModules: AdminModuleConfig[] = [
         key: "publication-management",
         title: "Gestão de publicações",
         description: "Gerencie eventos, avisos e anúncios de serviços do clube.",
-        href: "/admin/gestao-publicacoes",
+        href: "/admin/publications",
         icon: Newspaper,
         visibilityPermission: {
             module: "PUBLICATIONS",
@@ -102,6 +103,7 @@ export const adminModules: AdminModuleConfig[] = [
             action: "CHARGE_DEFINITION_READ",
             alternativeActions: ["CHARGE_CYCLE_READ", "MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"],
         },
+        alternativeVisibilityPermissions: [{ module: "MEMBERSHIP", action: "BILLING_CONFIGURATION_READ" }],
     },
     {
         key: "vehicles",
@@ -133,17 +135,9 @@ export function canAccessAdminModule(
     userPermissions: PermissionModule[],
     adminModule: AdminModuleConfig,
 ): boolean {
-    const { module, action } = adminModule.visibilityPermission;
-
-    const userModule = userPermissions.find(
-        (permissionModule) => permissionModule.module === module,
+    return [adminModule.visibilityPermission, ...(adminModule.alternativeVisibilityPermissions ?? [])].some(({ module, action, alternativeActions = [] }) =>
+        userPermissions.some(permission => permission.module === module && [action, ...alternativeActions].some(candidate => permission.actions.includes(candidate))),
     );
-
-    if (!userModule) {
-        return false;
-    }
-
-    return [action, ...(adminModule.visibilityPermission.alternativeActions ?? [])].some((candidate) => userModule.actions.includes(candidate));
 }
 
 // retorna somente os módulos que devem aparecer
