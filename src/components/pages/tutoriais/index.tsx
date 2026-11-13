@@ -29,6 +29,7 @@ import TourHelpButton from "@/components/common/tour/TourHelpButton";
 import { adminModules, canAccessAdminModule } from "@/config/adminModules";
 import {
     getAdminPanelTourSteps,
+    getDependentsTourSteps,
     getFeedTourSteps,
     getFinancialTourSteps,
     getHomeTourSteps,
@@ -467,6 +468,32 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "resgate",
             "guincho",
             "cinta",
+        ],
+    },
+    {
+        id: "admin-dependents",
+        title: "Gestão de Dependentes",
+        description:
+            "Consulte dependentes de todos os associados, gerencie fotos privadas 3x4, status operacional e exporte relatórios.",
+        category: "admin",
+        categoryLabel: "Administração",
+        href: "/admin/dependentes",
+        storageKey: "tour_completed_admin_dependents",
+        stepCount: getDependentsTourSteps(false).length,
+        icon: Users,
+        adminModuleKey: "dependents",
+        topics: [
+            "Busca por titular, nome e CPF",
+            "Fotos 3x4 e ciclo de vida",
+            "Exportação CSV/PDF e histórico",
+        ],
+        keywords: [
+            "dependentes",
+            "familiares",
+            "filhos",
+            "conjuge",
+            "convidados",
+            "titular",
         ],
     },
 ];

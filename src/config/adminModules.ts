@@ -146,6 +146,18 @@ export const adminModules: AdminModuleConfig[] = [
             action: "TOOL_READ",
         },
     },
+    {
+        key: "dependents",
+        title: "Gestão de dependentes",
+        description:
+            "Visualize, ative, desative, arquive e exporte os dependentes dos associados.",
+        href: "/admin/dependentes",
+        icon: Users,
+        visibilityPermission: {
+            module: "DEPENDENTS",
+            action: "DEPENDENT_READ",
+        },
+    },
 ];
 
 export function canAccessAdminModule(
