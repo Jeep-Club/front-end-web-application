@@ -51,7 +51,7 @@ export function EventParticipants({ details }: { details: EventDetails }) {
         className="group"
         onClick={(event) => event.stopPropagation()}
     >
-        <summary className="inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-lg text-left text-sm text-j-gray-500 focus-visible:outline-2 focus-visible:outline-j-blue-800 [&::-webkit-details-marker]:hidden">
+        <summary className="ml-auto flex min-h-10 w-fit cursor-pointer list-none items-center gap-2 rounded-lg text-right text-base text-j-gray-500 focus-visible:outline-2 focus-visible:outline-j-blue-800 [&::-webkit-details-marker]:hidden">
             <span className="flex items-center" aria-hidden="true">
                 {preview.map((participant, index) => <span key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className={index ? "-ml-2" : ""}>
                     <ParticipantAvatar participant={participant} compact />
