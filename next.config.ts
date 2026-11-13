@@ -35,6 +35,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "encrypted-tbn0.gstatic.com",
       },
+      {
+        protocol: "https",
+        hostname: "github.com",
+        pathname: "/*.png",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        pathname: "/u/**",
+      },
     ],
   },
 };

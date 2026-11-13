@@ -113,7 +113,6 @@ export function usePageTour({
             }
             markAsCompleted();
             if (typeof window !== "undefined") {
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
                 document.querySelectorAll('.driver-overlay, .driver-popover').forEach((el) => el.remove());
             }
         };
@@ -156,7 +155,6 @@ export function usePageTour({
                     if (!confirmed || !d.isActive()) return;
                 }
                 markAsCompleted();
-                window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
                 d.destroy();
             };
 
@@ -175,17 +173,11 @@ export function usePageTour({
                 onDestroyStarted: requestExit,
                 onDoneClick: (_element, _step, { driver: d }) => {
                     markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
                     d.destroy();
                 },
                 onDestroyed: () => {
                     exitConfirmationRef.current?.abort();
                     markAsCompleted();
-                    if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent('tour:close-avatar-menu'));
-                    }
                 },
             });
 

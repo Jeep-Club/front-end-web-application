@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import styles from "./CreatePublicationModal.module.css";
 import { useFormContext } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,13 +21,11 @@ import { publicationFormSchema, type PublicationFormData, type CreatePublication
 import { createPublicationAction } from "@/server/actions/publications/create";
 import { mutateDraftPublicationAction } from "@/server/actions/publications/draft";
 import { uploadImageAction } from "@/server/actions/media/upload-image";
-import { maskServiceAmount } from "@/utils/masks/maskServiceAmount";
+import { maskServiceAmount, parseServiceAmount } from "@/utils/masks/maskServiceAmount";
 import { maskPhoneNumber, unMaskPhoneNumber } from "@/utils/masks/maskPhoneNumber";
-import { createChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/create";
-import { assignChargeToEventParticipantsAction } from "@/server/actions/billing/chargeAssignments/assign";
 
 
-function Fields({ initialType, publishEventImmediately }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean }) {
+function Fields({ initialType, publishEventImmediately, savedDraft }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; savedDraft: boolean }) {
     const { setClose } = useModal();
     const { watch, formState: { isSubmitting } } = useFormContext<PublicationFormData>();
     const type = watch("type");
@@ -36,8 +34,7 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
     const types = publicationCreationTypes.filter((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
     const canPublishEvent = hasPermission(permissions, "PUBLICATIONS", "EVENT_PUBLISH")
         && hasPermission(permissions, "PUBLICATIONS", "EVENT_READ_ADMIN");
-    const canConfigureEventPrice = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_CREATE")
-        && hasPermission(permissions, "BILLING", "CHARGE_ASSIGNMENT_CREATE");
+    const canConfigureEventPrice = hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE");
     return (
         <>
             <fieldset disabled={isSubmitting} className={`${styles.fields} flex w-full min-w-0 flex-col gap-5`}>
@@ -56,8 +53,12 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
                         <InputRegister name="endsAt" label="Término (opcional)" type="datetime-local" />
                     </div>
                     {canConfigureEventPrice ? <div className="rounded-xl border border-j-yellow-300/60 bg-j-yellow-100/20 p-4">
-                        <InputRegister name="amount" label="Valor por participante (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="Deixe vazio para gratuito" />
-                        <p className="mt-2 text-xs leading-relaxed text-j-gray-500">Evento pago gera cobranca unica obrigatoria para cada participante, integrada ao financeiro do clube.</p>
+                        <InputRegister name="amount" label="Valor da inscrição (R$)" inputMode="decimal" mask={maskServiceAmount} placeholder="Deixe vazio para gratuito" />
+                        {watch("amount")?.trim() && <>
+                            <InputRegister name="chargeName" label="Descrição do valor" placeholder="Entrada, Inscrição ou Por veículo" />
+                            <InputRegister name="chargeDescription" label="Informações adicionais da cobrança" placeholder="Opcional" />
+                        </>}
+                        <p className="mt-2 text-xs leading-relaxed text-j-gray-500">O valor será exibido no evento e associado à cobrança dos participantes inscritos.</p>
                     </div> : <p className="text-xs text-j-gray-500">Seu perfil nao pode configurar cobrancas; o evento sera gratuito.</p>}
                 </>}
                 {type === "SERVICE" && <div className="grid gap-4 sm:grid-cols-2">
@@ -75,8 +76,8 @@ function Fields({ initialType, publishEventImmediately }: { initialType?: Public
             </fieldset>
             <div className="flex w-full flex-col-reverse gap-3 border-t border-j-gray-200 pt-5 sm:flex-row">
                 <Button disabled={isSubmitting} onClick={setClose} className="flex-1 border-2 border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-gray-300 hover:bg-j-gray-100 hover:text-j-gray-700">Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting || !types.some((entry) => entry.type === type)} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">
-                {isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Criar e publicar evento" : type === "EVENT" ? "Criar evento" : "Criar rascunho"}
+            <Button type="submit" disabled={isSubmitting || savedDraft || !types.some((entry) => entry.type === type)} className="flex-1 bg-j-blue-700 text-j-white hover:bg-j-blue-800 hover:text-j-white">
+                {savedDraft ? "Evento salvo como rascunho" : isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Criar e publicar evento" : type === "EVENT" ? "Criar evento" : "Criar rascunho"}
             </Button>
             </div>
         </>
@@ -89,14 +90,9 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
     const types = publicationCreationTypes.filter((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
     const uploads = useRef(new Map<File, string>());
     const queryClient = useQueryClient();
+    const [publishFailure, setPublishFailure] = useState<string | null>(null);
     const mutation = useMutation({
         mutationFn: async (data: PublicationFormData) => {
-            if (data.type === "EVENT" && data.amount.trim()) {
-                const currentPermissions = useUserStore.getState().permissions;
-                if (!hasPermission(currentPermissions, "BILLING", "CHARGE_DEFINITION_CREATE") || !hasPermission(currentPermissions, "BILLING", "CHARGE_ASSIGNMENT_CREATE")) {
-                    throw new Error("Seu perfil nao pode configurar a cobranca deste evento.");
-                }
-            }
             const config = publicationCreationTypes.find((entry) => entry.type === data.type)!;
             if (!hasPermission(useUserStore.getState().permissions, "PUBLICATIONS", config.action)) throw new Error("Você não tem permissão para criar este tipo de publicação.");
             const images = [];
@@ -112,26 +108,12 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             }
             const common = { title: data.title, content: data.content, images };
             const payload: CreatePublicationRequest = data.type === "EVENT"
-                ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null }
+                ? { ...common, type: "EVENT", startsAt: new Date(data.startsAt).toISOString(), endsAt: data.endsAt ? new Date(data.endsAt).toISOString() : null,
+                    charges: data.amount.trim() ? [{ name: (data.chargeName.trim() || "Entrada").slice(0, 120), description: (data.chargeDescription.trim() || `Cobrança de participação no evento: ${data.title}`).slice(0, 255), amount: parseServiceAmount(data.amount), billingRequired: true, requiredForParticipation: true }] : [] }
                 : data.type === "SERVICE"
-                    ? { ...common, type: "SERVICE", amount: Number(data.amount.replace(",", ".")), contactPhone: unMaskPhoneNumber(data.contactPhone) }
+                    ? { ...common, type: "SERVICE", amount: parseServiceAmount(data.amount), contactPhone: unMaskPhoneNumber(data.contactPhone) }
                     : { ...common, type: "NOTICE" };
             const created = await createPublicationAction(payload);
-            if (data.type === "EVENT" && data.amount.trim()) {
-                try {
-                    const charge = await createChargeDefinitionAction({
-                        name: `Inscricao - ${data.title}`.slice(0, 120),
-                        description: `Cobranca obrigatoria de participacao no evento: ${data.title}`.slice(0, 255),
-                        defaultAmount: Number(data.amount.replace(",", ".")),
-                        recurrenceType: "ONE_TIME",
-                        required: true,
-                        paymentAcceptancePolicy: "UNTIL_DUE_DATE",
-                    });
-                    await assignChargeToEventParticipantsAction(charge.id, created.id);
-                } catch (error) {
-                    return { ...created, published: false, financeError: error instanceof Error ? error.message : "Nao foi possivel configurar a cobranca." };
-                }
-            }
             if (created.type !== "EVENT" || !publishEventImmediately) return { ...created, published: false };
 
             const currentPermissions = useUserStore.getState().permissions;
@@ -157,8 +139,12 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             }
             if (result.type === "SERVICE") toast.success("Solicitação enviada para aprovação!");
             else if (result.type === "EVENT" && result.published) toast.success("Evento criado e publicado no feed!");
-            else if (result.type === "EVENT" && "financeError" in result && result.financeError) toast.error(`Evento criado, mas a cobranca falhou: ${result.financeError}. Acesse Gestao financeira para concluir a configuracao.`);
-            else if (result.type === "EVENT" && "publishError" in result && result.publishError) toast.error(`O evento foi salvo como rascunho, mas não foi publicado: ${result.publishError}`);
+            else if (result.type === "EVENT" && "publishError" in result && result.publishError) {
+                setPublishFailure(result.publishError);
+                toast.error(`O evento foi salvo como rascunho, mas não foi publicado: ${result.publishError}`);
+                void queryClient.invalidateQueries({ queryKey: ["publications"] });
+                return;
+            }
             else if (result.type === "EVENT" && publishEventImmediately) toast.success("Evento salvo como rascunho. Para aparecer no feed, publique em Gestão de publicações.");
             else toast.success("Rascunho criado com sucesso!");
             void queryClient.invalidateQueries({ queryKey: ["publications"] });
@@ -185,8 +171,24 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
 
 
             </header>
-            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="px-5 py-5 md:px-8 md:py-6">
-                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} />
+            <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" } }} onSubmit={async (data) => { try { await mutation.mutateAsync(data); } catch { /* A falha fica visível no próprio formulário. */ } }} onError={(errors) => {
+                const firstError = Object.values(errors).map((error) => error?.message).find((message) => typeof message === "string");
+                toast.error(typeof firstError === "string" ? firstError : "Confira os campos destacados.");
+            }} className="px-5 py-5 md:px-8 md:py-6">
+                {mutation.isError && <div role="alert" className="w-full rounded-xl border border-j-red-300 bg-j-red-100 p-4 text-sm text-j-red-700">
+                    <p className="font-bold">Não foi possível concluir o cadastro.</p>
+                    <p className="mt-1 break-words">{mutation.error.message || "Tente novamente após conferir os campos."}</p>
+                </div>}
+
+
+                {publishFailure && <div role="alert" className="w-full rounded-xl border border-j-red-300 bg-j-red-100 p-4 text-sm text-j-red-700">
+                    <p className="font-bold">O evento foi salvo como rascunho, mas não foi publicado.</p>
+                    <p className="mt-1 break-words">{publishFailure}</p>
+                    <p className="mt-2">O rascunho está em Gestão de publicações. Feche esta janela para evitar criar outro evento igual.</p>
+                </div>}
+                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} savedDraft={!!publishFailure} />
+
+
             </Form>
         </div>
     );

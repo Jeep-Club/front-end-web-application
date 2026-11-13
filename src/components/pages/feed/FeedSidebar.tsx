@@ -2,15 +2,22 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, ChevronRight, Megaphone, Users, Wrench } from "lucide-react";
+import { Cake, CalendarDays, ChevronRight, Megaphone, Plus } from "lucide-react";
 
-import { Avatar } from "@/components/common/avatar";
+import { CreatePublicationModal } from "@/components/pages/admin/gestao-publicacoes/CreatePublicationModal";
+import { publicationCreationTypes } from "@/config/publicationCreation";
+import { useModal } from "@/providers/ModalProvider";
 
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
+import { useUserStore } from "@/stores/userStore";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
+import { useBirthdayUsers } from "@/hooks/useBirthdayUsers";
+import { getUpcomingBirthdaysForMonth } from "@/utils/birthdays";
 
 function dateLabel(value: string) {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -42,6 +49,18 @@ function SideCard({ title, icon: Icon, href, children }: {
 }
 
 export function FeedSidebar() {
+    const permissions = useUserStore((state) => state.permissions);
+    const canCreate = publicationCreationTypes.some((entry) =>
+        hasPermission(permissions, "PUBLICATIONS", entry.action)
+    );
+    const { setContent, setOpen } = useModal();
+    const birthdayQuery = useBirthdayUsers();
+    const [referenceDate] = useState(() => new Date());
+    const upcomingBirthdays = useMemo(
+        () => getUpcomingBirthdaysForMonth(birthdayQuery.users, referenceDate),
+        [birthdayQuery.users, referenceDate],
+    );
+
     const eventsQuery = useQuery({
         queryKey: ["publications", "feed-sidebar", "EVENT"],
         queryFn: () => listPublicationFeedAction({ type: "EVENT", page: 0, size: 48 }),
@@ -60,51 +79,42 @@ export function FeedSidebar() {
 
     return (
         <aside id="tour-feed-sidebar" aria-label="Informações do clube" className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-            <section className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                <div className="bg-j-blue-900 p-5 text-j-white">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-j-yellow-300">Jeep Clube Tamoios</p>
-                    <h2 className="mt-2 text-lg font-extrabold">A aventura continua por aqui</h2>
-                    <p className="mt-1 text-sm text-white/75">Novidades, encontros e serviços para a nossa comunidade.</p>
-                </div>
-                <div className="grid grid-cols-2 divide-x divide-j-gray-200">
-                    <Link href="/agenda" className="flex items-center justify-center gap-2 p-3 text-sm font-bold text-j-blue-800 hover:bg-j-gray-100"><CalendarDays size={16} />Agenda</Link>
-                    <Link href="/servicos" className="flex items-center justify-center gap-2 p-3 text-sm font-bold text-j-blue-800 hover:bg-j-gray-100"><Wrench size={16} />Serviços</Link>
-                </div>
-            </section>
-
             <SideCard title="Próximos eventos" icon={CalendarDays} href="/agenda">
                 {eventsQuery.isPending ? <p className="text-sm text-j-gray-500">Carregando eventos...</p> : events.length ? (
                     <ul className="space-y-3">
                         {events.map((event) => {
                             const image = getMediaImageUrl(event.primaryImage?.storageKey);
 
-                            const participants = event.details.participants ?? [];
-                            const participantCount = event.details.registrationCount ?? participants.length;
                             return <li key={event.id} className="flex gap-3 border-b border-j-gray-100 pb-3 last:border-0 last:pb-0">
                                 {image ? <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg"><Image src={image} alt="" fill unoptimized sizes="64px" className="object-cover" /></div> : <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-j-blue-50 text-j-blue-700"><CalendarDays size={20} /></div>}
                                 <div className="min-w-0 flex-1">
                                     <p className="line-clamp-2 text-sm font-bold text-j-blue-900">{event.title}</p>
                                     <p className="mt-1 text-xs text-j-gray-500">{dateLabel(event.details.startsAt)}</p>
-                                    {participantCount > 0 && <div className="mt-2 flex items-center gap-2" aria-label={`${participantCount} ${participantCount === 1 ? "participante inscrito" : "participantes inscritos"}`}>
-                                        <div className="flex shrink-0 items-center" aria-hidden="true">
-                                            {participants.slice(0, 4).map((participant, index) => {
-                                                const photo = getMediaImageUrl(participant.profilePhotoStorageKey ?? participant.profilePhotoUrl ?? participant.photoStorageKey ?? participant.photoUrl);
-                                                const initials = participant.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => Array.from(part)[0]?.toLocaleUpperCase("pt-BR")).join("");
-                                                return <span key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className={index ? "-ml-2" : ""} title={participant.name}>
-                                                    {photo ? <Avatar src={photo} alt="" className="h-7 w-7 border-2 border-j-white bg-j-gray-200" /> : <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-j-white bg-j-blue-800 text-[9px] font-bold text-j-white">{initials || "A"}</span>}
-                                                </span>;
-                                            })}
-                                        </div>
-                                        <p className="truncate text-[11px] text-j-gray-500">
-                                            {participants.length ? `${participants.slice(0, 2).map((participant) => participant.name.split(" ")[0]).join(", ")}${participantCount > 2 ? ` +${participantCount - Math.min(participants.length, 2)}` : ""}` : `${participantCount} ${participantCount === 1 ? "inscrito" : "inscritos"}`}
-                                        </p>
-                                    </div>}
                                 </div>
 
                             </li>;
                         })}
                     </ul>
                 ) : <p className="text-sm text-j-gray-500">Nenhum evento publicado no momento.</p>}
+            </SideCard>
+
+            <SideCard title="Aniversariantes do mês" icon={Cake}>
+                {birthdayQuery.isPending || (birthdayQuery.hasNextPage && !birthdayQuery.isError) ? <p role="status" className="text-sm text-j-gray-500">Carregando aniversariantes...</p>
+                    : birthdayQuery.isError && !birthdayQuery.users.length ? <div role="alert" className="text-sm text-j-gray-600"><p>Não foi possível carregar os aniversariantes.</p><button type="button" onClick={() => void birthdayQuery.refetch()} className="mt-2 cursor-pointer font-bold text-j-blue-800 hover:underline">Tentar novamente</button></div>
+                        : upcomingBirthdays.length ? <ul className="space-y-3">
+                            {upcomingBirthdays.map(({ id, name, date }) => (
+                                <li key={id} className="flex items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-j-blue-800 text-xs font-bold text-j-white" aria-hidden="true">
+                                        {name.split(" ").map((part) => part[0]).slice(0, 2).join("")}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate text-sm font-bold text-j-blue-900">{name}</span>
+                                    <time dateTime={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`} className="shrink-0 text-xs font-medium text-j-gray-500">
+                                        {new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" }).format(date)}
+                                    </time>
+                                </li>
+                            ))}
+                        </ul> : <p className="text-sm text-j-gray-500">Nenhum aniversário próximo neste mês.</p>}
+                {birthdayQuery.isFetchNextPageError && <p role="alert" className="mt-2 text-xs text-red-600">Não foi possível carregar todos os aniversários. <button type="button" onClick={() => void birthdayQuery.fetchNextPage()} className="cursor-pointer font-bold underline">Tentar novamente</button></p>}
             </SideCard>
 
             <SideCard title="Avisos recentes" icon={Megaphone} href="/avisos">
@@ -115,13 +125,20 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum aviso recente.</p>}
             </SideCard>
 
-            <section id="tour-feed-quick-access" className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm">
-                <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><Users size={17} aria-hidden="true" />Acesso rápido</h2>
-                <div className="grid grid-cols-2 gap-2">
-                    <Link href="/agenda" className="rounded-xl bg-j-gray-100 px-3 py-2.5 text-center text-xs font-bold text-j-blue-800 hover:bg-j-yellow-100">Minha agenda</Link>
-                    <Link href="/servicos" className="rounded-xl bg-j-gray-100 px-3 py-2.5 text-center text-xs font-bold text-j-blue-800 hover:bg-j-yellow-100">Serviços do clube</Link>
-                </div>
-            </section>
+            {canCreate && (
+                <button
+                    id="tour-feed-create-btn"
+                    type="button"
+                    onClick={() => {
+                        setContent(<CreatePublicationModal publishEventImmediately />);
+                        setOpen();
+                    }}
+                    className="hidden min-h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"
+                >
+                    <Plus size={21} aria-hidden="true" />
+                    Postar
+                </button>
+            )}
         </aside>
     );
 }
