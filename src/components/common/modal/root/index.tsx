@@ -8,10 +8,11 @@ export interface ModalRootProps {
     isOpen: boolean;
     ref?: React.RefObject<HTMLDivElement | null>;
     isEscapable?: boolean;
+    animateContent?: boolean;
     contentClassName?: string;
 }
 
-export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true, contentClassName }: ModalRootProps) {
+export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true, animateContent = true, contentClassName }: ModalRootProps) {
     useEffect(() => {
         if (!isEscapable) return;
         if (!isOpen) return;
@@ -38,7 +39,7 @@ export function ModalRoot({ children, onClose, isOpen, ref, isEscapable = true, 
             <div
                 ref={ref}
                 data-modal-content
-                className={twMerge("flex w-full max-w-4xl justify-center", isOpen && "modal-content-enter", contentClassName)}
+                className={twMerge("flex w-full max-w-4xl justify-center", isOpen && animateContent && "modal-content-enter", contentClassName)}
                 onClick={ref ? undefined : (event) => event.stopPropagation()}
             >
                 {children}

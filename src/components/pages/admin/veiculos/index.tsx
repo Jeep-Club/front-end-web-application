@@ -11,7 +11,6 @@ import { PageHeader } from "@/components/common/page-header";
 import { getVehiclesTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { ListPagination } from "@/components/common/table/ListPagination";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesAdminAction } from "@/server/actions/admin/vehicles/list";
@@ -104,7 +103,6 @@ export default function VehicleManagement() {
                     <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-3">
-                                <ManagementBackButton />
                                 <h3 className="text-base font-bold text-j-gray-700">Veículos cadastrados</h3>
                             </div>
                             <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap">

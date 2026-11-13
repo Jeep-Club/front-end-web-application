@@ -726,15 +726,6 @@ export function getFinancialTourSteps(isMobile: boolean = false): DriveStep[] {
             },
         },
         {
-            element: "#tour-financial-tabs",
-            popover: {
-                title: createStepHeader("Áreas Financeiras", ICONS.layers),
-                description: "Navegue entre o <strong>Dashboard</strong> resumido, <strong>Definições e atribuições</strong>, <strong>Ciclos</strong>, <strong>Cobranças</strong>, <strong>Pagamentos</strong> e <strong>Reembolsos</strong>.",
-                side: "bottom",
-                align: "center",
-            },
-        },
-        {
             element: "#tour-financial-content",
             popover: {
                 title: createStepHeader("Painel e Operações da Área", ICONS.sliders),

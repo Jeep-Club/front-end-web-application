@@ -96,13 +96,21 @@ function MobileAccordionRow<TData extends RowData>({
                     aria-hidden="true"
                     size={18}
                     className={twMerge(
-                        "shrink-0 text-j-gray-400 transition-transform duration-200",
+                        "shrink-0 text-j-gray-400 transition-transform duration-200 motion-reduce:transition-none",
                         isOpen && "rotate-180",
                     )}
                 />
             </button>
 
-            {isOpen && (
+            <div
+                inert={!isOpen}
+                aria-hidden={!isOpen}
+                className={twMerge(
+                    "grid transition-[grid-template-rows,opacity] duration-200 ease-in-out motion-reduce:transition-none",
+                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                )}
+            >
+                <div className="min-h-0 overflow-hidden">
                 <div className="flex flex-col gap-3 border-t border-j-gray-100 bg-j-gray-100/40 px-4 py-4">
                     {restCells.map((cell) => (
                         <div
@@ -118,7 +126,8 @@ function MobileAccordionRow<TData extends RowData>({
                         </div>
                     ))}
                 </div>
-            )}
+                </div>
+            </div>
         </div>
     );
 }

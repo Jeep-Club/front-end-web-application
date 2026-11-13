@@ -46,11 +46,6 @@ const meta = {
             ], loading: false, available: true,
         },
         queue: { groups, selected: "payments", items: items.payments, total: 3, loading: false, destination: { tab: "movements", movement: "analysis" } },
-        shortcuts: [
-            { label: "Definições de cobrança", description: "Gerencie as regras de cobrança", destination: { tab: "definitions" } },
-            { label: "Ciclos de cobrança", description: "Consulte os ciclos gerados", destination: { tab: "cycles" } },
-            { label: "Histórico de cobranças", description: "Consulte movimentações", destination: { tab: "movements", movement: "member-charges" } },
-        ],
         updatedAt: new Date("2026-11-12T12:00:00-03:00").getTime(),
         refreshing: false,
         onRefresh: fn(), onNavigate: fn(), onQueueChange: fn(), onRetryQueue: fn(),
@@ -103,7 +98,6 @@ export const AcessoLimitado: Story = {
         metrics: [metrics[2]],
         distribution: { segments: [], loading: false, available: false },
         queue: { groups: [groups[0]], selected: "payments", items: items.payments, total: 3, loading: false },
-        shortcuts: [{ label: "Análise de pagamentos", description: "Valide os comprovantes recebidos", destination: { tab: "movements", movement: "analysis" } }],
         configuration: undefined,
     },
 };

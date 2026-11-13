@@ -60,7 +60,7 @@ function findElementOrNull(node: ReactNode, type: unknown) {
 beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useModal).mockReturnValue({
-        setClose: close, setOpen: jest.fn(), setContent: jest.fn(), content: null, ref: { current: null },
+        setClose: close, setOpen: jest.fn(), openFromTrigger: jest.fn(), setContent: jest.fn(), content: null, ref: { current: null },
     });
     jest.mocked(useQueryClient).mockReturnValue({ invalidateQueries } as unknown as ReturnType<typeof useQueryClient>);
     jest.mocked(useMutation).mockReturnValue({ mutateAsync, isPending: false } as unknown as ReturnType<typeof useMutation>);

@@ -97,7 +97,7 @@ function ToolPhotoField({ storageKey }: { storageKey?: string | null }) {
 }
 
 const LIGHT_FIELD_CLASS =
-    "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+    "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus";
 
 interface IncludeAdminToolModalProps {
     toolId?: number;

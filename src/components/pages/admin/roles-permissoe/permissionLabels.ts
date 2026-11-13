@@ -280,8 +280,12 @@ const MEMBER_PERMISSION_CODES = new Set([
     "PUBLICATIONS_SERVICE_DELETE",
 ]);
 
+export function isMemberPermission(code: string): boolean {
+    return MEMBER_PERMISSION_CODES.has(code.trim().toLocaleUpperCase("pt-BR"));
+}
+
 function getPermissionScopeLabel(code: string): string {
-    return MEMBER_PERMISSION_CODES.has(code.trim().toLocaleUpperCase("pt-BR"))
+    return isMemberPermission(code)
         ? "Acesso de associado"
         : "Acesso administrativo";
 }

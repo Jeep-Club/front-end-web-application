@@ -88,6 +88,23 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
         ],
     },
 
+    "/admin/gestao-financeira/cobrancas": {
+        match: "any",
+        permissions: [
+            { module: "BILLING", actions: ["CHARGE_DEFINITION_READ"] },
+            { module: "BILLING", actions: ["CHARGE_CYCLE_READ"] },
+        ],
+    },
+
+    "/admin/gestao-financeira/movimentacoes": {
+        match: "any",
+        permissions: [
+            { module: "BILLING", actions: ["MEMBER_CHARGE_READ"] },
+            { module: "BILLING", actions: ["PAYMENT_READ"] },
+            { module: "BILLING", actions: ["REFUND_READ"] },
+        ],
+    },
+
     "/admin/publications": {
         match: "any",
         permissions: publicationManagementAccessActions.map((action) => ({

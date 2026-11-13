@@ -43,7 +43,7 @@ it("accepts null audit dates and canceled cycle histories from the backend", () 
 });
 
 it("grants page visibility to payment readers without definition access", () => {
-    const finance = adminModules.find((module) => module.key === "financial-management")!;
+    const finance = adminModules.find((module) => module.key === "financial-movements")!;
     expect(canAccessAdminModule([{ module: "BILLING", actions: ["PAYMENT_READ"] }], finance)).toBe(true);
     expect(canAccessAdminModule([{ module: "BILLING", actions: ["PAYMENT_CONFIRM"] }], finance)).toBe(false);
 });
