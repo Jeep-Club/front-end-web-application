@@ -30,8 +30,8 @@ import toast from "react-hot-toast";
 import { EventChargeFields } from "./EventChargeFields";
 import { invalidatePublicationAdministration } from "@/utils/publications/administration";
 
-function Fields({ initialType, publishEventImmediately, serverError, step, setStep }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown; step: "details" | "charges"; setStep: (step: "details" | "charges") => void }) {
-    const { setClose } = useModal();
+function Fields({ initialType, publishEventImmediately, serverError, step, setStep, onClose }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown; step: "details" | "charges"; setStep: (step: "details" | "charges") => void; onClose: () => void }) {
+    const setClose = onClose;
     const { watch, setValue, setError, trigger, control, formState: { isSubmitting, errors } } = useFormContext<PublicationFormData>();
     const type = watch("type");
     useEffect(() => {
@@ -89,8 +89,9 @@ function Fields({ initialType, publishEventImmediately, serverError, step, setSt
     );
 }
 
-export function CreatePublicationModal({ initialType, publishEventImmediately = false }: { initialType?: PublicationFormData["type"]; publishEventImmediately?: boolean }) {
-    const { setClose } = useModal();
+export function CreatePublicationModal({ initialType, publishEventImmediately = false, onClose }: { initialType?: PublicationFormData["type"]; publishEventImmediately?: boolean; onClose?: () => void }) {
+    const { setClose: closeProvider } = useModal();
+    const setClose = onClose ?? closeProvider;
     const permissions = useUserStore((state) => state.permissions);
     const types = publicationCreationTypes.filter((entry) => hasPermission(permissions, "PUBLICATIONS", entry.action));
     const uploads = useRef(new Map<File, string>());
@@ -196,7 +197,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
                 {createdResult.type !== 'SERVICE' && hasPermission(permissions, 'PUBLICATIONS', createdResult.type === 'EVENT' ? 'EVENT_READ_ADMIN' : 'NOTICE_READ') && <Link onClick={setClose} className="block cursor-pointer font-bold text-j-blue-800 underline" href={`/admin/publications/${createdResult.type === 'EVENT' ? 'event' : 'notice'}/${createdResult.id}`}>Administrar publicação #{createdResult.id}</Link>}
                 <Button onClick={setClose}>Concluir</Button></div> : <Form<PublicationFormData> schema={publicationFormSchema} formOptions={{ defaultValues: { type: types.some((entry) => entry.type === initialType) ? initialType! : types[0].type, title: "", content: "", photos: [], charges: [], primaryIndex: "0", startsAt: "", endsAt: "", amount: "", contactPhone: "" } }} onSubmit={async (data) => { if (data.type === "EVENT" && step !== "charges") { setStep("charges"); return; } try { await mutation.mutateAsync(data); } catch { /* A mensagem é apresentada pelo onError. */ } }} onError={() => toast.error("Confira os campos destacados.")} className="min-h-0 flex-1 gap-0 overflow-hidden">
                 {mutation.isError && <p role="alert" className="text-input-error-text">{getActionFailure(mutation.error)?.message ?? mutation.error.message}</p>}
-                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} serverError={mutation.error} step={step} setStep={setStep} />
+                <Fields initialType={initialType} publishEventImmediately={publishEventImmediately} serverError={mutation.error} step={step} setStep={setStep} onClose={setClose} />
             </Form>}
         </dialog>
     );

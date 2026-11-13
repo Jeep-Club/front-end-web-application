@@ -77,6 +77,22 @@ describe("Feed de publicações", () => {
         expect(actionFetchWrapper).toHaveBeenLastCalledWith(expect.objectContaining({ url: "publications/7/comments", method: "POST", body: JSON.stringify({ text: "Olá", images: [] }) }));
         await expect(createPublicationCommentAction({ id: 7, text: " " })).rejects.toThrow();
     });
+    it("aceita comentário só com imagens e bloqueia posições descontínuas e chaves repetidas antes do HTTP", async () => {
+        jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 201, data: {} });
+        await createPublicationCommentAction({ id: 7, images: [{ storageKey: "images/photo.webp", position: 0 }] });
+        expect(actionFetchWrapper).toHaveBeenLastCalledWith(expect.objectContaining({ body: JSON.stringify({ text: null, images: [{ storageKey: "images/photo.webp", position: 0 }] }) }));
+        jest.mocked(actionFetchWrapper).mockClear();
+        await expect(createPublicationCommentAction({ id: 7, images: [{ storageKey: "images/photo.webp", position: 1 }] })).rejects.toThrow();
+        await expect(createPublicationCommentAction({ id: 7, images: [{ storageKey: "images/photo.webp", position: 0 }, { storageKey: "images/photo.webp", position: 1 }] })).rejects.toThrow();
+        expect(actionFetchWrapper).not.toHaveBeenCalled();
+    });
+    it("respeita leitura e criação independentes de comentários e a permissão de curtir", async () => {
+        jest.mocked(haveActionPermission).mockResolvedValue(false);
+        await expect(listPublicationCommentsAction({ id: 7, page: 0 })).rejects.toMatchObject({ status: 403 });
+        await expect(createPublicationCommentAction({ id: 7, text: "Olá" })).rejects.toMatchObject({ status: 403 });
+        await expect(setPublicationLikeAction({ id: 7, like: true })).rejects.toMatchObject({ status: 403 });
+        expect(actionFetchWrapper).not.toHaveBeenCalled();
+    });
     it('requests only the three newest comments for a feed card', async () => {
         jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: {} });
         await listPublicationCommentsAction({ id: 7, page: 0, size: 3 });

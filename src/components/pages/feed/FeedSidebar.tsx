@@ -8,8 +8,7 @@ import { Cake, CalendarDays, ChevronRight, Megaphone } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/common/button';
-import { useUserStore } from '@/stores/userStore';
-import { feedDate, publicationReadError, publicationReadRetry } from './feedDisplay';
+import { feedDate, publicationReadError } from './feedDisplay';
 import { Avatar } from "@/components/common/avatar";
 
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
@@ -38,33 +37,39 @@ function SideCard({ title, icon: Icon, href, children }: {
 }
 
 export function FeedSidebar() {
-    const permissions = useUserStore(state => state.permissions);
     const params = useSearchParams();
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
     const [now] = useState(() => new Date());
     function detailHref(id: number) {
         const search = new URLSearchParams(params.toString());
-        search.set('publication', String(id));
-        return `/feed?${search}`;
+        return `/feed/${id}${search.size ? `?${search}` : ''}`;
     }
     const eventsQuery = useInfiniteQuery({
-        queryKey: ["publications", "feed-sidebar", { type: "EVENT", page: 0, size: 48 }, permissions],
+        queryKey: ["publications", "feed-sidebar", { type: "EVENT", page: 0, size: 48 }],
         queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "EVENT", page: pageParam, size: 48 }),
         initialPageParam: 0, getNextPageParam: nextFeedPage,
         staleTime: 60_000,
-        retry: publicationReadRetry,
+        retry: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        retryOnMount: false,
+        meta: { handlesError: true },
     });
     const noticesQuery = useQuery({
-        queryKey: ["publications", "feed-sidebar", { type: "NOTICE", page: 0, size: 3 }, permissions],
+        queryKey: ["publications", "feed-sidebar", { type: "NOTICE", page: 0, size: 3 }],
         queryFn: () => listPublicationFeedAction({ type: "NOTICE", page: 0, size: 3 }),
         staleTime: 60_000,
-        retry: publicationReadRetry,
+        retry: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        retryOnMount: false,
+        meta: { handlesError: true },
     });
-    const { hasNextPage, isFetchingNextPage, isError, fetchNextPage } = eventsQuery;
+    const { hasNextPage, isFetching, isError, fetchNextPage } = eventsQuery;
     const pageCount = eventsQuery.data?.pages.length ?? 0;
     useEffect(() => {
-        if (hasNextPage && !isFetchingNextPage && !isError) void fetchNextPage();
-    }, [hasNextPage, isFetchingNextPage, isError, fetchNextPage, pageCount]);
+        if (hasNextPage && !isFetching && !isError) void fetchNextPage({ cancelRefetch: false });
+    }, [hasNextPage, isFetching, isError, fetchNextPage, pageCount]);
     const allEvents = publicationReadError(eventsQuery.error).restricted ? [] : mergeFeedPages(eventsQuery.data?.pages ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT");
     const events = allEvents
         .filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT" && item.details.status === "OPEN")

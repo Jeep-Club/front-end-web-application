@@ -62,13 +62,12 @@ export function EventParticipants({ details }: { details: EventDetails }) {
                 <strong className="font-semibold text-j-gray-700">{count}</strong>{" "}
                 {count === 1 ? "pessoa" : "pessoas"}
             </span>
-            <ChevronDown size={14} aria-hidden="true" className="shrink-0 text-j-gray-400 transition-transform group-open:rotate-180" />
+            {participants.length > 0 && <ChevronDown size={14} aria-hidden="true" className="shrink-0 text-j-gray-400 transition-transform group-open:rotate-180" />}
         </summary>
 
-        <div className="mt-2 border-t border-j-gray-200 pt-3">
+        {participants.length > 0 && <div className="mt-2 border-t border-j-gray-200 pt-3">
 
-            {participants.length > 0 ? <>
-                <ul className="flex flex-col gap-2">
+           <ul className="flex flex-col gap-2">
                     {participants.map((participant, index) => <li key={participant.id ?? participant.userId ?? `${participant.name}-${index}`} className="flex min-w-0 items-center gap-2.5">
                         <ParticipantAvatar participant={participant} />
                         <span className="truncate text-sm font-semibold text-j-gray-700">{participant.name}</span>
@@ -77,9 +76,6 @@ export function EventParticipants({ details }: { details: EventDetails }) {
                 {participants.length < count && <p className="mt-3 text-xs text-j-gray-500">
                     Exibindo {participants.length} de {count} participantes.
                 </p>}
-            </> : <p className="text-sm text-j-gray-500">
-                A API ainda não retornou os nomes dos participantes.
-            </p>}
-        </div>
+        </div>}
     </details>;
 }

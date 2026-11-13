@@ -1,25 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
-import { useSearchParams } from "next/navigation";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, ChevronRight, Megaphone, Newspaper, Plus, Share2, Wrench } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import type { PublicationFeedItem } from "@/schemas/publications/feed";
+import type { ActionFailure } from "@/utils/http/ActionError";
+import { CalendarDays, ChevronRight, Megaphone, Newspaper, Pencil, Plus, Share2, Wrench } from "lucide-react";
 import { Button } from "@/components/common/button";
-import { useModal } from "@/providers/ModalProvider";
+
 import type { PublicationFeedFilters } from "@/schemas/publications/feed";
 import { parsePublicationFeedFilters, updatePublicationFeedFilters } from "@/utils/publications/feedFilters";
 import { FeedPeriodFilters } from "./FeedPeriodFilters";
-import { ModalRoot } from "@/components/common/modal/root";
-import { listPublicationFeedAction } from "@/server/actions/publications/feed";
+
 import { useUserStore } from "@/stores/userStore";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { publicationPlainText } from "@/utils/publications/content";
-import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
-import { feedTypes, publicationReadError, publicationReadRetry } from "./feedDisplay";
-import { CreatePublicationModal } from "@/components/pages/admin/publications/CreatePublicationModal";
-import { PublicationDetailModal } from "./PublicationDetailModal";
+
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
@@ -27,10 +25,9 @@ import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { FeedSidebar } from "./FeedSidebar";
-import { usePageTour } from "@/hooks/useTour";
-import { getFeedTourSteps } from "@/config/tourSteps";
 
 import Image from "next/image";
+import { feedTypes, publicationReadError } from "./feedDisplay";
 
 const publicationFilterIcons = {
     SERVICE: Wrench,
@@ -43,20 +40,21 @@ function preview(value: string, max: number) {
     return text.length > max ? `${text.slice(0, max - 1).join("")}…` : value;
 }
 
-function getEventShareLink(publicationId: number) {
-    const url = new URL("/feed", window.location.origin);
-    url.searchParams.set("publication", String(publicationId));
-    return url.toString();
-}
+const subscribeToOrigin = () => () => {};
+const getOrigin = () => window.location.origin;
+const getServerOrigin = () => '';
 
-export default function Feed() {
+export default function Feed({ data, error, page = 0 }: { data?: PageResponse<PublicationFeedItem>; error?: ActionFailure; page?: number }) {
+    const router = useRouter();
+    const origin = useSyncExternalStore(subscribeToOrigin, getOrigin, getServerOrigin);
+    const [isPending, startTransition] = useTransition();
     const permissions = useUserStore((state) => state.permissions);
     const canCreate = {
         EVENT: hasPermission(permissions, "PUBLICATIONS", "EVENT_CREATE"),
         NOTICE: hasPermission(permissions, "PUBLICATIONS", "NOTICE_CREATE"),
         SERVICE: hasPermission(permissions, "PUBLICATIONS", "SERVICE_REQUEST_CREATE"),
     };
-    const { setContent, setOpen, content: activeModal } = useModal();
+
     const params = useSearchParams();
     const filtersResult = parsePublicationFeedFilters(params);
     const filters = filtersResult.success ? filtersResult.data : {};
@@ -67,11 +65,8 @@ export default function Feed() {
         ? feedTypes[creationType].label.toLocaleLowerCase("pt-BR")
         : "publicação";
 
-    const detailValue = params.get('publication');
-    const detailId = detailValue && /^\d+$/.test(detailValue) && Number.isSafeInteger(Number(detailValue)) && Number(detailValue) > 0 ? Number(detailValue) : null;
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
-    const loadMoreRef = useRef<HTMLDivElement>(null);
     const filterNavRef = useRef<HTMLElement>(null);
     const [showFilterHint, setShowFilterHint] = useState(false);
     const [periodOpen, setPeriodOpen] = useState(false);
@@ -97,95 +92,23 @@ export default function Feed() {
         };
     }, []);
 
-    const queryClient = useQueryClient();
-    const feedKey = ["publications", "feed", "infinite", { type, publishedFrom, publishedTo, size: 12 }, permissions];
-    function refreshFeed() { void queryClient.resetQueries({ queryKey: feedKey, exact: true }); }
-    const query = useInfiniteQuery({
-        queryKey: feedKey,
-        queryFn: ({ pageParam }) =>
-            listPublicationFeedAction({
-                type, publishedFrom, publishedTo,
-                page: pageParam,
-                size: 12,
-            }),
-        initialPageParam: 0,
-        getNextPageParam: nextFeedPage,
-        enabled: filtersResult.success,
-        staleTime: 0,
-        retry: publicationReadRetry,
-    });
-
-    const failure = publicationReadError(query.error);
-    const publications = failure.restricted || !filtersResult.success ? [] : mergeFeedPages(query.data?.pages ?? []);
-
-    const {
-        fetchNextPage,
-        hasNextPage,
-        isFetching,
-        isFetchNextPageError,
-    } = query;
-
-    const pageCount = query.data?.pages.length ?? 0;
-
-    useEffect(() => {
-        const sentinel = loadMoreRef.current;
-
-        if (
-            !sentinel ||
-            !filtersResult.success ||
-            failure.restricted ||
-            !hasNextPage ||
-            isFetching ||
-            isFetchNextPageError
-        ) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    observer.disconnect();
-                    void fetchNextPage({ cancelRefetch: false });
-                }
-            },
-            {
-                root: sentinel.closest("[data-dashboard-scroll]"),
-                rootMargin: "300px 0px",
-            }
-        );
-
-        observer.observe(sentinel);
-
-        return () => observer.disconnect();
-    }, [
-        filtersResult.success,
-        failure.restricted,
-        hasNextPage,
-        isFetching,
-        isFetchNextPageError,
-        fetchNextPage,
-        pageCount,
-    ]);
-
-    function closePublication() {
-        const search = new URLSearchParams(window.location.search);
-        search.delete('publication');
-        window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
-    }
-
+    const failure = error ? { message: error.message, restricted: [401, 402, 403, 404].includes(error.status ?? 0) } : publicationReadError(undefined);
+    const publications = error || !filtersResult.success ? [] : data?.content ?? [];
+    function refreshFeed() { startTransition(() => router.refresh()); }
     function publicationHref(id: number) {
-        const search = new URLSearchParams(params.toString());
-        search.set('publication', String(id));
-        return `/feed?${search}`;
+        const search = params.toString();
+        return `/feed/${id}${search ? `?${search}` : ''}`;
     }
-
-    function openPublication(id: number) {
-        window.history.pushState(null, '', publicationHref(id));
+    function openPublication(id: number) { router.push(publicationHref(id), { scroll: false }); }
+    function changePage(next: number) {
+        const search = new URLSearchParams(params.toString());
+        search.set('page', String(next));
+        startTransition(() => router.push(`/feed?${search}`, { scroll: false }));
     }
 
     function applyFilters(next: PublicationFeedFilters) {
         const search = updatePublicationFeedFilters(new URLSearchParams(params.toString()), next);
-        window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
+        startTransition(() => router.replace(`/feed${search.size ? `?${search}` : ''}`, { scroll: false }));
     }
 
     function filterType(next?: 'NOTICE' | 'EVENT' | 'SERVICE') {
@@ -193,12 +116,13 @@ export default function Feed() {
         search.delete('type');
         if (next) search.set('type', next);
         for (const key of ['publication', 'page', 'size']) search.delete(key);
-        window.history.replaceState(null, '', `/feed${search.size ? `?${search}` : ''}`);
+        startTransition(() => router.replace(`/feed${search.size ? `?${search}` : ''}`, { scroll: false }));
     }
 
     function openCreatePublication() {
-        setContent(<CreatePublicationModal initialType={creationType} publishEventImmediately />);
-        setOpen();
+        const search = new URLSearchParams(params.toString());
+        if (creationType) search.set('type', creationType);
+        router.push(`/feed/new${search.size ? `?${search}` : ''}`, { scroll: false });
     }
 
     return (
@@ -215,9 +139,6 @@ export default function Feed() {
                                         aria-label="Tipos de publicação"
                                         aria-describedby="feed-filter-swipe-hint"
                                         className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-2xl border border-j-gray-200 bg-j-white p-2 shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-
-
-
 
                                     >
                                         <button
@@ -301,8 +222,8 @@ export default function Feed() {
                                 )}
                             </div>
 
-                            <Button disabled={!filtersResult.success || query.isFetching} onClick={refreshFeed}>Atualizar publicações</Button>
-                            {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : query.isLoading ? (
+                            <Button disabled={!filtersResult.success || isPending} onClick={refreshFeed}>Atualizar publicações</Button>
+                            {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : isPending && !data ? (
                                 <div
                                     role="status"
                                     aria-label="Carregando feed"
@@ -315,7 +236,7 @@ export default function Feed() {
                                         />
                                     ))}
                                 </div>
-                            ) : query.isError && !publications.length ? (
+                            ) : !!error && !publications.length ? (
                                 <div
                                     role="alert"
                                     className="rounded-2xl border border-red-200 bg-j-white p-6"
@@ -326,7 +247,7 @@ export default function Feed() {
 
                                     <Button
                                         className="mt-4"
-                                        onClick={() => void query.refetch()}
+                                        onClick={refreshFeed}
                                     >
                                         Tentar novamente
                                     </Button>
@@ -372,6 +293,9 @@ export default function Feed() {
                                     {publications.map((publication) => {
                                         const Icon = publicationFilterIcons[publication.type];
                                         const isEvent = publication.type === "EVENT";
+                                        const canEdit = publication.type === "EVENT"
+                                            ? hasPermission(permissions, "PUBLICATIONS", "EVENT_UPDATE") && hasPermission(permissions, "PUBLICATIONS", "EVENT_READ_ADMIN")
+                                            : publication.type === "NOTICE" && hasPermission(permissions, "PUBLICATIONS", "NOTICE_UPDATE") && hasPermission(permissions, "PUBLICATIONS", "NOTICE_READ");
 
                                         return (
                                             <article
@@ -431,12 +355,15 @@ export default function Feed() {
                                                             }
                                                         </span>
 
+                                                        <div className="flex items-center gap-2">
                                                         <RelativeTime
                                                             value={
                                                                 publication.publishedAt
                                                             }
                                                             className="text-xs text-j-gray-500"
                                                         />
+                                                        {canEdit && <Link href={`/feed/${publication.id}/edit${params.size ? `?${params}` : ''}`} scroll={false} aria-label={`Editar: ${publication.title}`} className="cursor-pointer inline-flex min-h-10 items-center gap-1 rounded-lg px-2 text-sm font-bold text-j-blue-700 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><Pencil size={15} aria-hidden="true" />Editar</Link>}
+                                                        </div>
                                                     </div>
 
                                                     <div>
@@ -476,30 +403,26 @@ export default function Feed() {
                                                                 publication.details
                                                                     .status
                                                             }
+                                                            routedRegistration
                                                             compact
                                                         />
                                                     )}
 
-                                                        <a aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} onClick={event => {
-                                                            if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                                                            event.preventDefault(); openPublication(publication.id);
-                                                        }} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
+                                                        <Link scroll={false} aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></Link>
 
                                                     <div className="mt-auto border-t border-j-gray-200 pt-3">
                                                         <div className="flex flex-wrap items-center justify-between gap-3">
-                                                            <FeedInteractions
+                                                            {publication.type !== "SERVICE" && <FeedInteractions
                                                                 publication={
                                                                     publication
                                                                 }
                                                                 onComments={() => openPublication(publication.id)}
-                                                            />
+                                                            />}
 
                                                             {isEvent && (
                                                                     <a
                                                                         href={`https://wa.me/?text=${encodeURIComponent(
-                                                                            `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${getEventShareLink(
-                                                                                publication.id
-                                                                            )}`
+                                                                            `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${origin}/feed/${publication.id}`
                                                                         )}`}
                                                                         target="_blank"
                                                                         rel="noreferrer noopener"
@@ -523,7 +446,7 @@ export default function Feed() {
                                                         </div>
                                                     </div>
 
-                                                    <PublicationCommentPreview
+                                                    {publication.type !== "SERVICE" && <PublicationCommentPreview
                                                         publicationId={
                                                             publication.id
                                                         }
@@ -531,7 +454,7 @@ export default function Feed() {
                                                             publication.commentCount
                                                         }
                                                         onOpen={() => openPublication(publication.id)}
-                                                    />
+                                                    />}
                                                 </div>
                                             </article>
                                         );
@@ -539,48 +462,15 @@ export default function Feed() {
                                 </div>
                             )}
 
-                            {filtersResult.success && query.hasNextPage && !failure.restricted && <Button disabled={query.isFetching} aria-busy={query.isFetchingNextPage} onClick={() => void query.fetchNextPage({ cancelRefetch: false })}>Carregar mais publicações</Button>}
-                            {query.isRefetchError && !query.isFetchNextPageError && publications.length > 0 && <p role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700">Não foi possível atualizar. Exibindo as publicações carregadas anteriormente.</p>}
-                            <div
-                                ref={loadMoreRef}
-                                className="h-px"
-                                aria-hidden="true"
-                            />
-
-                            {query.isFetchingNextPage && (
-                                <p
-                                    role="status"
-                                    className="py-4 text-center text-sm text-j-gray-500"
-                                >
-                                    Carregando mais publicações...
-                                </p>
-                            )}
-
-                            {query.isFetchNextPageError && (
-                                <div
-                                    role="alert"
-                                    className="py-4 text-center"
-                                >
-                                    <p className="text-sm text-input-error-text">
-                                        Não foi possível carregar mais publicações.
-                                    </p>
-
-                                    <Button
-                                        className="mt-3"
-                                        onClick={() =>
-                                            void query.fetchNextPage()
-                                        }
-                                    >
-                                        Tentar novamente
-                                    </Button>
-                                </div>
-                            )}
+                            {data && <nav aria-label="Páginas do feed" className="flex gap-3">
+                                {page > 0 && <Button disabled={isPending} onClick={() => changePage(page - 1)}>Publicações anteriores</Button>}
+                                {!data.last && <Button disabled={isPending} onClick={() => changePage(page + 1)}>Próximas publicações</Button>}
+                                <span role="status">Página {page + 1} de {Math.max(1, data.totalPages)}</span>
+                            </nav>}
                         </>
                 </div>
                 <FeedSidebar />
             </div>
-            {detailValue && !detailId && <p role="alert">Identificação de publicação inválida.</p>}
-            {detailId && <ModalRoot isOpen isEscapable={!activeModal} onClose={closePublication}><PublicationDetailModal key={detailId} publicationId={detailId} onClose={closePublication} /></ModalRoot>}
         </div>
     );
 }

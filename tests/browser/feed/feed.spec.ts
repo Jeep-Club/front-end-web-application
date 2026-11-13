@@ -32,13 +32,13 @@ test('criação contextual existente continua disponível sem executar escrita',
 test('participação existente recebe foco e Escape retorna ao detalhe', async ({ page, api }) => {
     api.eventOpen = true;
     await api.grant(['PUBLICATION_READ', 'EVENT_REGISTER']);
-    await page.goto('/feed?publication=2');
+    await page.goto('/feed/2');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Participar do evento' }).click();
     await expect(page.getByRole('heading', { name: 'Como você vai participar?' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
-    await expect(page).toHaveURL(/publication=2/);
+    await expect(page).toHaveURL(/\/feed\/2/);
 });
 
 test('sidebar distingue erro de consulta e usa tamanho solicitado', async ({ page, api }) => {
@@ -48,9 +48,28 @@ test('sidebar distingue erro de consulta e usa tamanho solicitado', async ({ pag
     expect(api.calls.some(url => url.searchParams.get('type') === 'NOTICE' && url.searchParams.get('size') === '3')).toBe(true);
 });
 
+test('sidebar interrompe paginação em erro e recupera sem toasts duplicados', async ({ page, api }) => {
+    api.feedStatus = 503;
+    await page.goto('/feed');
+    const sidebar = page.getByRole('complementary', { name: 'Informações do clube' });
+    await expect(sidebar.getByRole('button', { name: 'Tentar eventos novamente' })).toBeVisible();
+    await expect(sidebar.getByRole('button', { name: 'Tentar avisos novamente' })).toBeVisible();
+    const count = () => api.calls.filter(url => url.pathname === '/publications/feed' && url.searchParams.get('type') === 'EVENT').length;
+    // Dev Strict Mode remounts the authenticated boundary and clears its cache.
+    // Measure retries after initialization, independently of that dev lifecycle.
+    const initialRequests = count();
+    expect(initialRequests).toBeGreaterThan(0);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    api.feedStatus = 200;
+    await sidebar.getByRole('button', { name: 'Tentar eventos novamente' }).click();
+    await expect(sidebar.getByRole('button', { name: 'Tentar eventos novamente' })).toHaveCount(0);
+    await expect.poll(count).toBe(initialRequests + 1);
+    await expect(page.getByRole('status').filter({ hasText: 'Resposta sintética corrigível.' })).toHaveCount(0);
+});
+
 test('falha de imagem conserva leitura e galeria navegável', async ({ page, api }) => {
     api.mediaFails = true;
-    await page.goto('/feed?publication=1');
+    await page.goto('/feed/1');
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Imagem indisponível.')).toBeVisible();
     await expect(dialog.getByText('Conteúdo completo para os associados.')).toBeVisible();
@@ -68,16 +87,20 @@ test('período exato, tipos, deep link e retorno preservam contexto', async ({ p
     const link = page.getByRole('link', { name: 'Ver publicação completa: Serviço anunciado', exact: true });
     await expect(link).toBeVisible();
     await link.click();
-    await expect(page).toHaveURL(/publication=3/);
+    await expect(page).toHaveURL(/\/feed\/3/);
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(page).not.toHaveURL(/publication=/);
+    await expect(page).toHaveURL(/\/feed\?/);
     await expect(page).toHaveURL(/publishedFrom=/);
     await link.click();
+    await expect(page).toHaveURL(/\/feed\/3\?/);
+    await expect(page.getByRole('dialog')).toBeVisible();
     await page.goBack();
+    await expect(page).toHaveURL(/\/feed\?/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.goForward();
+    await expect(page).toHaveURL(/\/feed\/3\?/);
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.reload();
     await expect(page.getByRole('dialog').getByText('Serviço anunciado', { exact: true })).toBeVisible();
@@ -86,7 +109,7 @@ test('período exato, tipos, deep link e retorno preservam contexto', async ({ p
 for (const [status, message] of [[402, 'Acesso restrito pela Membership.'], [403, 'Acesso negado'], [404, 'Publicação não encontrada'], [503, 'temporariamente indisponível']] as const) {
     test(`detalhe ${status} não vira vazio nem logout`, async ({ page, api }) => {
         api.detailStatus = status;
-        await page.goto('/feed?publication=1');
+        await page.goto('/feed/1');
         await expect(page.getByRole('dialog').getByRole('alert')).toContainText(message);
         await expect(page).toHaveURL(/\/feed/);
         await expect(page.getByRole('dialog').getByText('Conteúdo completo para os associados.')).toHaveCount(0);
@@ -112,8 +135,9 @@ test('intervalo inválido não consulta e pode ser corrigido', async ({ page, ap
 
 test('sessão autenticada consulta feed e detalhe sem permissões granulares de leitura', async ({ page, api }) => {
     await api.grant([]);
-    await page.goto('/feed?publication=1');
+    await page.goto('/feed/1');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
+    await page.getByRole('button', { name: 'Fechar publicação' }).click();
     await expect.poll(() => api.calls.some(url => url.pathname === '/publications/feed')).toBe(true);
 });
 
@@ -133,19 +157,20 @@ test('foco fica contido no diálogo e retorna ao link acionador', async ({ page 
     await expect(link).toBeFocused();
 });
 
-test('paginação falha sem apagar cards e retoma sem duplicar IDs', async ({ page, api }) => {
-    api.pages = 2;
-    api.failPage = 1;
+test('paginação via URL consulta o servidor e permite recuperar erro', async ({ page, api }) => {
+    api.pages = 2; api.failPage = 1;
     await page.goto('/feed');
-    await expect(page.getByRole('link', { name: 'Ver publicação completa: Aviso do clube', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Carregar mais publicações' }).scrollIntoViewIfNeeded();
-    await expect(page.getByText('Não foi possível carregar mais publicações.')).toBeVisible();
     await expect(page.locator('article')).toHaveCount(3);
+    await page.getByRole('button', { name: 'Próximas publicações' }).click();
+    await expect(page).toHaveURL(/page=1/);
+    await expect(page.getByRole('button', { name: 'Tentar novamente', exact: true })).toBeVisible();
     api.failPage = -1;
     await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
-    await expect(page.locator('article')).toHaveCount(6);
-    await expect(page.getByRole('button', { name: 'Carregar mais publicações' })).toHaveCount(0);
-    await expect.poll(() => api.calls.filter(url => url.searchParams.get('page') === '1').length).toBeGreaterThan(0);
+    await expect(page.locator('article')).toHaveCount(3);
+    await expect(page.getByRole('button', { name: 'Publicações anteriores' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Próximas publicações' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Publicações anteriores' }).click();
+    await expect(page).toHaveURL(/page=0/);
 });
 
 test('resposta atrasada de filtro anterior não substitui seleção atual', async ({ page, api }) => {
@@ -163,7 +188,7 @@ test('resposta atrasada de filtro anterior não substitui seleção atual', asyn
 });
 
 test('revalidação 404 retira detalhe previamente disponível', async ({ page, api }) => {
-    await page.goto('/feed?publication=1');
+    await page.goto('/feed/1');
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText('Conteúdo completo para os associados.')).toBeVisible();
     api.detailStatus = 404;
@@ -187,16 +212,16 @@ for (const theme of ['light', 'dark']) {
 
 test('401 recuperável renova sessão sem perder o detalhe', async ({ page, api }) => {
     api.unauthorizedOnce = true;
-    await page.goto('/feed?publication=1');
+    await page.goto('/feed/1');
     await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
     expect(api.calls.some(url => url.pathname === '/authentication/refresh')).toBe(true);
-    await expect(page).toHaveURL(/publication=1/);
+    await expect(page).toHaveURL(/\/feed\/1/);
 });
 
 test('sessão expirada usa recuperação transversal e retorna à entrada pública', async ({ page, api }) => {
     api.unauthorizedOnce = true;
     api.refreshFails = true;
-    await page.goto('/feed?publication=1');
+    await page.goto('/feed/1');
     await expect(page).toHaveURL(new URL('/', page.url()).href);
     const cookies = await page.context().cookies();
     expect(cookies.some(cookie => ['AuthAccessToken', 'AuthRefreshToken', 'Me', 'Permissions'].includes(cookie.name))).toBe(false);
@@ -218,7 +243,7 @@ test('URL inválida desabilita continuação mesmo com páginas no cache', async
     await page.evaluate(() => window.history.replaceState(null, '', '/feed?type=ALL'));
     await expect(page.getByText('Revise os filtros da URL.', { exact: false })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Atualizar publicações' })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Carregar mais publicações' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Próximas publicações' })).toHaveCount(0);
 });
 
 for (const status of [400, 500]) {

@@ -4,6 +4,21 @@ Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o a
 
 ## Feed e detalhe de publicações (WEB-224)
 
+O feed usa leitura no servidor e filtros/paginação na URL. As rotas `/feed/new`,
+`/feed/[id]`, `/feed/[id]/edit` e `/feed/[id]/register` também possuem entradas
+interceptadas em `@modal`; os botões de fechar têm destinos explícitos.
+`routing.spec.ts` cobre essas entradas e permissões. `social.spec.ts` cobre
+POST 200/DELETE 204 idempotentes, releitura dos totais, recuperação após falha
+da releitura e comentários com texto/imagens, paginação e permissões independentes.
+O 404 `EVENT_REGISTRATION_NOT_FOUND` é ausência de inscrição; outros 404 continuam
+como erro. A fixture permite essas escritas somente na API HTTP sintética local.
+
+A sidebar interrompe paginação automática em erro, não repete por foco/reconexão
+e oferece recuperação explícita. Queries com `meta.handlesError` apresentam erros
+na própria tela, sem toast global adicional; expiração de sessão continua global.
+`playwright.feed-local.config.ts` executa os testes da aplicação com Chrome instalado
+e somente o servidor Next, sem Storybook ou controle interativo do computador.
+
 `tests/browser/feed/fixtures.ts` inicia uma API HTTP sintética na origem local de
 `PLAYWRIGHT_API_URL` e fornece cookies assinados exclusivos do ambiente Playwright.
 Configure essa variável com uma porta livre >= 1024 para estes cenários; o valor

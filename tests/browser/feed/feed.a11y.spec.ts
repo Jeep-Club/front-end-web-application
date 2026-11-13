@@ -23,14 +23,14 @@ for (const theme of ['light', 'dark']) {
     test(`erro do detalhe mantém contraste e ações acessíveis em ${theme}`, async ({ page, api }, testInfo) => {
         api.detailStatus = 503;
         await page.addInitScript(value => localStorage.setItem('jeep-clube-theme', value), theme);
-        await page.goto('/feed?publication=1');
+        await page.goto('/feed/1');
         await expect(page.getByRole('dialog').getByRole('alert')).toContainText('temporariamente indisponível');
         await auditAccessibility(page, testInfo, `detail-error-${theme}`);
     });
     for (const { id, type } of [{ id: 2, type: 'EVENT' }, { id: 3, type: 'SERVICE' }]) {
         test(`detalhe ${type} mantém contraste e semântica em ${theme}`, async ({ page }, testInfo) => {
             await page.addInitScript(value => localStorage.setItem('jeep-clube-theme', value), theme);
-            await page.goto(`/feed?publication=${id}`);
+            await page.goto(`/feed/${id}`);
             await expect(page.getByRole('dialog').getByText('Autor — identificação #7')).toBeVisible();
             await auditAccessibility(page, testInfo, `detail-${type}-${theme}`);
         });

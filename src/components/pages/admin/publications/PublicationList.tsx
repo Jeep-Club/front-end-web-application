@@ -96,7 +96,7 @@ export function PublicationList({ page, pageIndex, pageSize, onPaginationChange,
                 <div className={view === 'grid' ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-3' : 'divide-y divide-j-gray-200'}>
                     {page.content.map(item => {
                         const { label, icon: TypeIcon } = types[item.type];
-                        const href = canManage ? publicationAdministrationHref(item.type, listParams, item.id) : canViewFeed ? `/feed?publication=${item.id}` : undefined;
+                        const href = canManage ? publicationAdministrationHref(item.type, listParams, item.id) : canViewFeed ? `/feed/${item.id}` : undefined;
                         return <article key={`${item.type}-${item.serviceRequest ? 'request' : 'publication'}-${item.id}`} className={view === 'grid' ? 'flex min-w-0 flex-col overflow-hidden rounded-xl border border-j-gray-200 bg-j-white' : 'flex min-w-0 flex-wrap items-center gap-3 py-3'}>
                             <PublicationImage key={item.images.find(image => image.primary)?.storageKey ?? 'placeholder'} item={item} view={view} />
                             <div className={view === 'grid' ? 'min-w-0 space-y-2 p-3' : 'min-w-0 flex-1 space-y-1'}>

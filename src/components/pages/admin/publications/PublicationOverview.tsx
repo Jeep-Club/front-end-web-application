@@ -38,13 +38,13 @@ function ImagePreview({ item, className }: { item: PublicationFeedItem; classNam
 
 function PublicationLink({ item, canAdmin }: { item: PublicationFeedItem; canAdmin: boolean }) {
     const category = categories.find(entry => entry.type === item.type)!;
-    const href = canAdmin ? `/admin/publications/${category.route}/${item.id}` : `/feed?publication=${item.id}`;
+    const href = canAdmin ? `/admin/publications/${category.route}/${item.id}` : `/feed/${item.id}`;
     return <Link href={href} className="cursor-pointer text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus">{item.title}</Link>;
 }
 
 function OverviewActions({ item, canAdmin }: { item: PublicationFeedItem; canAdmin: boolean }) {
     const category = categories.find(entry => entry.type === item.type)!;
-    const href = canAdmin ? `/admin/publications/${category.route}/${item.id}` : `/feed?publication=${item.id}`;
+    const href = canAdmin ? `/admin/publications/${category.route}/${item.id}` : `/feed/${item.id}`;
     return <PublicationActionMenu publication={{ id: item.id, type: item.type, title: item.title, content: item.content, status: 'PUBLISHED', eventStatus: item.type === 'EVENT' ? item.details.status : undefined }} href={href} allowActions={canAdmin} />;
 }
 

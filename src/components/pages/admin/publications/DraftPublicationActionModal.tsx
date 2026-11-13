@@ -58,8 +58,9 @@ function EditFields({ publication, gallery, primaryId, onChange, galleryError, o
         {publication.images && <PublicationGalleryFields publicationType={publication.type} items={gallery} primaryId={primaryId} onChange={onChange} disabled={isSubmitting} error={galleryError} />}
     </fieldset><div className="flex w-full flex-wrap gap-3"><Button disabled={isSubmitting} onClick={onClose}>Voltar</Button><Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Salvando...' : 'Salvar alterações'}</Button></div></>;
 }
-export function DraftPublicationActionModal({ publication, action, returnHref, agendaLocked = false, returnFocus }: { publication: DraftPublicationTarget; action: keyof typeof labels; returnHref?: string; agendaLocked?: boolean; returnFocus?: HTMLElement | null }) {
-    const { setClose } = useModal();
+export function DraftPublicationActionModal({ publication, action, returnHref, agendaLocked = false, returnFocus, onClose }: { publication: DraftPublicationTarget; action: keyof typeof labels; returnHref?: string; agendaLocked?: boolean; returnFocus?: HTMLElement | null; onClose?: () => void }) {
+    const { setClose: closeProvider } = useModal();
+    const setClose = onClose ?? closeProvider;
     const router = useRouter();
     const client = useQueryClient();
     const dialog = useRef<HTMLDialogElement>(null);

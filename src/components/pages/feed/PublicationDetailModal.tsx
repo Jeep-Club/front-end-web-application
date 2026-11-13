@@ -18,7 +18,7 @@ import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 
 
-export function PublicationDetailModal({ publicationId, onClose }: { publicationId: number; onClose?: () => void }) {
+export function PublicationDetailModal({ publicationId, onClose, routedRegistration = false }: { publicationId: number; onClose?: () => void; routedRegistration?: boolean }) {
     const { setClose, content: overlayContent } = useModal();
     const permissions = useUserStore((state) => state.permissions);
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -61,7 +61,7 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
     }} onCancel={event => { event.preventDefault(); (onClose ?? setClose)(); }} aria-modal="true" aria-labelledby="feed-detail-title" className="m-auto border-0 p-0 text-j-gray-700 backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
         <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
             {publication?.type === "EVENT" && <a
-                href={typeof window === "undefined" ? "https://wa.me/" : `https://wa.me/?text=${encodeURIComponent(`Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${new URL("/feed?publication=" + publication.id, window.location.origin).toString()}`)}`}
+                href={typeof window === "undefined" ? "https://wa.me/" : `https://wa.me/?text=${encodeURIComponent(`Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${new URL("/feed/" + publication.id, window.location.origin).toString()}`)}`}
                 target="_blank"
                 rel="noreferrer noopener"
                 aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
@@ -80,12 +80,12 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
                 <PublicationPhotoCarousel key={publication.id} images={publication.images} title={publication.title} />
                 <FeedMetadata publication={publication} />
                 {publication.type === "EVENT" && <EventParticipants details={publication.details} />}
-                {publication.type === "EVENT" && <EventParticipation eventId={publication.id} eventStatus={publication.details.status} />}
+                {publication.type === "EVENT" && <EventParticipation routedRegistration={routedRegistration} eventId={publication.id} eventStatus={publication.details.status} />}
                 <p className="text-sm text-j-gray-600">Autor — identificação #{publication.authorUserId}</p>
                 <RichTextContent content={publication.content} />
-                <FeedInteractions publication={publication} />
+                {publication.type !== "SERVICE" && <FeedInteractions publication={publication} />}
             </div>
-            <PublicationComments publicationId={publication.id} />
+            {publication.type !== "SERVICE" && <PublicationComments publicationId={publication.id} />}
         </>}
     </dialog>;
 }

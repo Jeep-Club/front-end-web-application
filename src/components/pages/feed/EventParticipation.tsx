@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { BadgeCheck, CalendarCheck, X } from "lucide-react";
 import { cancelMyEventRegistrationAction, getMyEventRegistrationAction, registerForEventAction, requestEventGuestAction } from "@/server/actions/publications/event-registration";
@@ -14,7 +15,7 @@ type EventCharge = { name: string; description?: string | null; amount: number; 
 const currency = (amount: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amount);
 
 
-export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus, charges, compact = false }: { eventId: number; eventTitle?: string; eventStatus: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED"; charges?: EventCharge[]; compact?: boolean }) {
+export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus, charges, compact = false, routedRegistration = false, autoOpenRegistration = false, onRegistrationClose }: { eventId: number; eventTitle?: string; eventStatus: "OPEN" | "IN_PROGRESS" | "FINISHED" | "CANCELLED"; charges?: EventCharge[]; compact?: boolean; routedRegistration?: boolean; autoOpenRegistration?: boolean; onRegistrationClose?: () => void }) {
 
     const permissions = useUserStore((state) => state.permissions);
     const canRegister = hasPermission(permissions, "PUBLICATIONS", "EVENT_REGISTER");
@@ -22,6 +23,8 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
     const canCancel = hasPermission(permissions, "PUBLICATIONS", "EVENT_REGISTRATION_CANCEL");
     const canRequestGuest = hasPermission(permissions, "PUBLICATIONS", "EVENT_GUEST_REQUEST_CREATE");
     const queryClient = useQueryClient();
+    const router = useRouter();
+    const params = useSearchParams();
     const { setContent, setOpen, setClose } = useModal();
     const [guestRetryData, setGuestRetryData] = useState<{ vehicleId: number; cpf: string; guestName: string } | null>(null);
     const registrationQueryKey = ["events", "registration", "me", eventId, permissions];
@@ -50,6 +53,8 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
             if (guestRequested) toast.success("Solicitação do convidado enviada para aprovação.");
             if (guestError) toast.error("Sua inscrição foi feita, mas o pedido do convidado não foi enviado. Tente novamente no botão abaixo.");
             setClose();
+            if (!guestError) onRegistrationClose?.();
+            router.refresh();
             toast.success(result.status === "PENDING_PAYMENT" ? "Inscrição registrada. Há um pagamento pendente para este evento." : "Presença confirmada. Você está na lista do evento!");
         },
 
@@ -65,6 +70,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
         onSuccess: async (result) => {
             queryClient.setQueryData(registrationQueryKey, result);
             await queryClient.invalidateQueries({ queryKey: ["publications"] });
+            router.refresh();
             toast.success("Sua inscrição foi cancelada.");
         },
         onError: (error) => toast.error(error.message || "Não foi possível cancelar sua inscrição."),
@@ -104,8 +110,8 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
     const isPending = register.isPending || cancel.isPending;
 
     const buttonClass = compact
-        ? "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900 shadow-sm transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-wait disabled:opacity-60"
-        : "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-j-yellow-300 px-5 text-sm font-extrabold text-j-blue-900 shadow-sm transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-wait disabled:opacity-60";
+        ? "cursor-pointer inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900 shadow-sm transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-wait disabled:opacity-60"
+        : "cursor-pointer inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-j-yellow-300 px-5 text-sm font-extrabold text-j-blue-900 shadow-sm transition-colors hover:bg-j-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 disabled:cursor-wait disabled:opacity-60";
 
     if (currentRegistration && currentRegistration.status !== "CANCELLED") {
         const pendingPayment = currentRegistration.status === "PENDING_PAYMENT";
@@ -114,10 +120,10 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
             <span role="status" className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-extrabold ${pendingPayment ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-900"}`}>
                 {pendingPayment ? <CalendarCheck size={17} aria-hidden="true" /> : <BadgeCheck size={17} aria-hidden="true" />}{label}
             </span>
-            {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600 transition-colors hover:border-red-300 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
+            {canCancel && eventStatus === "OPEN" && <button type="button" disabled={isPending} onClick={() => cancel.mutate()} className="cursor-pointer inline-flex min-h-11 items-center gap-2 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600 transition-colors hover:border-red-300 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:opacity-50">
                 <X size={16} aria-hidden="true" />{cancel.isPending ? "Cancelando..." : "Cancelar inscrição"}
             </button>}
-            {canRequestGuest && guestRetryData && eventStatus === "OPEN" && <button type="button" disabled={retryGuest.isPending} onClick={() => retryGuest.mutate()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300 px-4 text-sm font-bold text-amber-800 transition-colors hover:bg-amber-50 disabled:opacity-50">
+            {canRequestGuest && guestRetryData && eventStatus === "OPEN" && <button type="button" disabled={retryGuest.isPending} onClick={() => retryGuest.mutate()} className="cursor-pointer inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-300 px-4 text-sm font-bold text-amber-800 transition-colors hover:bg-amber-50 disabled:opacity-50">
                 {retryGuest.isPending ? "Enviando pedido..." : "Tentar pedido do convidado novamente"}
             </button>}
         </div>;
@@ -135,12 +141,22 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
     if (canReadOwnRegistration && registration.isLoading) return <button type="button" disabled className={buttonClass}>Verificando inscrição...</button>;
 
 
+    if (canReadOwnRegistration && registration.isError) return <div role="alert" className="text-sm text-input-error-text">
+        <p>Não foi possível verificar sua inscrição.</p>
+        <button type="button" onClick={() => void registration.refetch()} className="mt-2 min-h-11 cursor-pointer font-bold underline">Tentar novamente</button>
+    </div>;
+    if (autoOpenRegistration) return <EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onClose={onRegistrationClose} onSubmit={(data) => register.mutateAsync(data)} />;
+
     function openRegistrationForm() {
         setContent(<EventRegistrationModal eventId={eventId} canRequestGuest={canRequestGuest} onSubmit={(data) => register.mutateAsync(data)} />);
         setOpen();
     }
 
     function openRegistration() {
+        if (routedRegistration) {
+            router.push(`/feed/${eventId}/register${params.size ? `?${params}` : ''}`, { scroll: false });
+            return;
+        }
 
         if (requiredAmount <= 0) {
 
@@ -162,7 +178,7 @@ export function EventParticipation({ eventId, eventTitle = "Evento", eventStatus
 
             </>}
 
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row"><button type="button" onClick={setClose} className="min-h-11 flex-1 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600">Cancelar</button><button type="button" onClick={openRegistrationForm} className="min-h-11 flex-1 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900">Confirmar e continuar</button></div>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row"><button type="button" onClick={setClose} className="cursor-pointer min-h-11 flex-1 rounded-xl border border-j-gray-300 px-4 text-sm font-bold text-j-gray-600">Cancelar</button><button type="button" onClick={openRegistrationForm} className="cursor-pointer min-h-11 flex-1 rounded-xl bg-j-yellow-300 px-4 text-sm font-extrabold text-j-blue-900">Confirmar e continuar</button></div>
         </section>);
         setOpen();
     }

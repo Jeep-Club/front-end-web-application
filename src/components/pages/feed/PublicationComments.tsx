@@ -12,6 +12,7 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { PublicationCommentAuthor } from "./PublicationCommentAuthor";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 const MAX_COMMENT_IMAGES = 10;
@@ -30,9 +31,11 @@ export function PublicationComments({ publicationId }: { publicationId: number }
     const fileInput = useRef<HTMLInputElement>(null);
     const uploadedImages = useRef(new Map<File, string>());
     const client = useQueryClient();
-    const comments = useQuery({ queryKey: ["publications", "comments", publicationId, page, permissions], queryFn: () => listPublicationCommentsAction({ id: publicationId, page }), enabled: canRead });
+    const router = useRouter();
+    const comments = useQuery({ queryKey: ["publications", "comments", publicationId, page, permissions], queryFn: () => listPublicationCommentsAction({ id: publicationId, page }), enabled: canRead, retry: false, meta: { handlesError: true } });
     const mutation = useMutation({
         mutationFn: async () => {
+            if (!canCreate || (!text.trim() && files.length === 0)) throw new Error("Escreva um comentário ou anexe uma imagem.");
             const images: { storageKey: string; position: number }[] = [];
             for (const file of files) {
                 let storageKey = uploadedImages.current.get(file);
@@ -46,7 +49,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
             }
             return createPublicationCommentAction({ id: publicationId, text, images });
         },
-        onSuccess: async () => { setText(""); setFiles([]); uploadedImages.current.clear(); setPage(0); await client.invalidateQueries({ queryKey: ["publications"] }); toast.success("Comentário enviado!"); },
+        onSuccess: async () => { setText(""); setFiles([]); uploadedImages.current.clear(); setPage(0); await client.invalidateQueries({ queryKey: ["publications"] }); router.refresh(); toast.success("Comentário enviado!"); },
         onError: (error) => toast.error(error instanceof Error ? error.message : "Não foi possível enviar o comentário."),
 
     });
@@ -71,7 +74,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
     return <section aria-label="Comentários" className="border-t border-j-gray-200 p-5 md:p-8">
         <div className="flex items-center justify-between gap-3">
             <h3 className="font-bold text-j-blue-800">Comentários</h3>
-            <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-j-blue-700 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800">
+            <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} className="cursor-pointer inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-j-blue-700 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800">
                 {expanded ? <><ChevronUp size={16} aria-hidden="true" />Ocultar</> : <><ChevronDown size={16} aria-hidden="true" />Mostrar</>}
             </button>
         </div>
@@ -95,7 +98,7 @@ export function PublicationComments({ publicationId }: { publicationId: number }
             </ul>}
         </form>}
         {canRead && <div className="mt-5 flex flex-col gap-4" aria-live="polite">
-            {comments.isLoading ? <p className="text-sm text-j-gray-500">Carregando comentários...</p>
+            {comments.isLoading ? <p role="status" className="text-sm text-j-gray-500">Carregando comentários...</p>
                 : comments.isError ? <div role="alert"><p className="text-sm text-red-500">{comments.error.message}</p><Button onClick={() => void comments.refetch()} className="mt-2">Tentar novamente</Button></div>
                 : !comments.data?.content.length ? <p className="text-sm text-j-gray-500">Ainda não há comentários.</p>
                 : comments.data.content.map((comment) => <article key={comment.id} className="rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-4">
