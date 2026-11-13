@@ -880,6 +880,59 @@ export function getToolsTourSteps(isMobile: boolean = false): DriveStep[] {
 
 export const toolsTourSteps = getToolsTourSteps(false);
 
+// Tour da tela de Gestão de Dependentes (/admin/dependentes)
+export function getDependentsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
+        {
+            element: "#tour-dependents-header",
+            popover: {
+                title: createStepHeader("Gestão de Dependentes", ICONS.users, "Associados"),
+                description: "Consulte, audite fotos privadas 3x4, exporte relatórios e gerencie o ciclo de vida dos dependentes vinculados aos associados.",
+                side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-dependents-export",
+            popover: {
+                title: createStepHeader("Exportação e Histórico", ICONS.layers),
+                description: "Exporte a listagem em <strong>CSV</strong> ou <strong>PDF</strong> institucional, incluindo opcionalmente o histórico de exclusões.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-dependents-filters",
+            popover: {
+                title: createStepHeader("Busca e Filtros Combinados", ICONS.compass),
+                description: "Pesquise por nome do dependente, nome do titular, CPF ou telefone, e refine por grau de parentesco ou status operacional.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-dependents-list",
+            popover: {
+                title: createStepHeader("Cadastro de Dependentes", ICONS.users),
+                description: "Confira a foto privada 3x4, CPF, data de nascimento, parentesco, titular vinculado e situação atual.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-dependents-actions",
+            popover: {
+                title: createStepHeader("Ações Administrativas", ICONS.sliders),
+                description: "Visualize a ficha completa (incluindo foto e perfil médico), ative/inative, arquive/desarquive ou exclua o dependente conforme suas permissões.",
+                side: isMobile ? "top" : "left",
+                align: "center",
+            },
+        },
+    ];
+}
+
+export const dependentsTourSteps = getDependentsTourSteps(false);
+
 // Tour da Central de Tutoriais (/tutoriais)
 export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[] {
     return [
@@ -1055,6 +1108,9 @@ export function resolveRouteTourSteps(
     }
     if (normalizedPath.startsWith("/admin/ferramentas")) {
         return getToolsTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/dependentes") || normalizedPath.startsWith("/admin/dependents")) {
+        return getDependentsTourSteps(isMobile);
     }
 
     return getTourSteps(canAccessAdmin, isMobile, setMobileMenuOpen);

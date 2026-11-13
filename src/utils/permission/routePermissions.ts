@@ -137,6 +137,18 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
             actions: ["TOOL_READ"],
         },
     ],
+    "/admin/dependentes": [
+        {
+            module: "DEPENDENTS",
+            actions: ["DEPENDENT_READ"],
+        },
+    ],
+    "/admin/dependents": [
+        {
+            module: "DEPENDENTS",
+            actions: ["DEPENDENT_READ"],
+        },
+    ],
 };
 
 function normalizeRule(config: RoutePermissionsConfig): RoutePermissionRule {

@@ -124,6 +124,15 @@ const PERMISSION_NAME_LABELS: Record<string, string> = {
     TOOLS_TOOL_UNARCHIVE: "Desarquivar ferramentas",
     TOOLS_TOOL_EXPORT: "Exportar ferramentas",
 
+    DEPENDENTS_DEPENDENT_READ: "Consultar dependentes",
+    DEPENDENTS_DEPENDENT_ACTIVATE: "Ativar dependentes",
+    DEPENDENTS_DEPENDENT_DEACTIVATE: "Desativar dependentes",
+    DEPENDENTS_DEPENDENT_ARCHIVE: "Arquivar dependentes",
+    DEPENDENTS_DEPENDENT_UNARCHIVE: "Desarquivar dependentes",
+    DEPENDENTS_DEPENDENT_DELETE: "Excluir dependentes",
+    DEPENDENTS_DEPENDENT_PHOTO_UPDATE: "Atualizar foto de dependentes",
+    DEPENDENTS_DEPENDENT_EXPORT: "Exportar dependentes",
+
     PUBLICATIONS_SERVICE_REQUEST_REJECT:
         "Rejeitar solicitação inicial de serviço",
     PUBLICATIONS_NOTICE_CREATE: "Criar avisos",
