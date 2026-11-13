@@ -1,7 +1,7 @@
 import { publicationEditorHtml, publicationPlainText } from "@/utils/publications/content";
 import { createPublicationSchema } from "@/schemas/publications/create";
 
-const notice = { type: "NOTICE", title: "Aviso", images: [{ storageKey: "images/test.jpg", position: 0, primary: true }] };
+const notice = { type: "NOTICE", title: "Aviso", images: [{ storageKey: "images/2026/10/30/550e8400-e29b-41d4-a716-446655440000.jpg", position: 0, primary: true }] };
 
 describe("Conteúdo formatado de publicações", () => {
     it("salva títulos, negrito e listas no campo content", () => {

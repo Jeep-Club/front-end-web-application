@@ -71,10 +71,10 @@ function MobileAccordionRow<TData extends RowData>({
             >
                 <div className="flex min-w-0 flex-1 items-start gap-4">
                     {headerCellA && (
-                        <div className={twMerge("flex w-14 shrink-0 flex-col justify-center gap-1 self-stretch", mobileFirstColumnClassName)}>
-                            {!mobileColumnHeaders && <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
+                        <div className="flex min-w-0 shrink-0 flex-col gap-1">
+                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
                                 {getColumnLabel(headerCellA)}
-                            </span>}
+                            </span>
                             <span className="truncate text-sm font-bold text-j-gray-700">
                                 {flexRender(headerCellA.column.columnDef.cell, headerCellA.getContext())}
                             </span>
@@ -82,9 +82,9 @@ function MobileAccordionRow<TData extends RowData>({
                     )}
                     {headerCellB && (
                         <div className="flex min-w-0 flex-1 flex-col gap-1 border-l border-j-gray-200 pl-4">
-                            {!mobileColumnHeaders && <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
+                            <span className="truncate text-[10px] font-bold uppercase tracking-wide text-tertiary">
                                 {getColumnLabel(headerCellB)}
-                            </span>}
+                            </span>
                             <span className="min-w-0 whitespace-normal break-words text-sm font-bold text-j-gray-700">
                                 {flexRender(headerCellB.column.columnDef.cell, headerCellB.getContext())}
                             </span>

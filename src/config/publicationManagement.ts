@@ -2,6 +2,7 @@ import { publicationCreationTypes } from "./publicationCreation";
 export const publicationManagementSections = [
     {
         key: "notices",
+        route: "notice",
         type: "NOTICE",
         title: "Avisos",
         description: "Gerencie os comunicados do clube, da criação à publicação e ao arquivamento.",
@@ -9,13 +10,15 @@ export const publicationManagementSections = [
     },
     {
         key: "events",
+        route: "event",
         type: "EVENT",
         title: "Eventos",
-        description: "Organize eventos, inscrições, convidados, transporte e cobranças.",
+        description: "Organize eventos, agenda, publicação e regras financeiras; consulte participação e cobranças.",
         readActions: ["EVENT_READ_ADMIN"],
     },
     {
         key: "services",
+        route: "service",
         type: "SERVICE",
         title: "Serviços",
         description: "Acompanhe anúncios de serviços e solicitações de publicação e alteração.",

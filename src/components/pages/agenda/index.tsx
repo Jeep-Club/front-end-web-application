@@ -4,23 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Cake, CalendarDays, ChevronLeft, ChevronRight, Clock3, List, MessageCircle, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock3, MessageCircle, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/providers/ModalProvider";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
 import { nextFeedPage, mergeFeedPages } from "@/utils/publications/infiniteFeed";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { EventParticipation } from "@/components/pages/feed/EventParticipation";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
-import { feedDate } from "@/components/pages/feed/feedDisplay";
-import { useBirthdayUsers } from "@/hooks/useBirthdayUsers";
-import type { BirthdayUser } from "@/schemas/identity/birthdays";
-import { getBirthdaysOnDate } from "@/utils/birthdays";
-import styles from "./AgendaPage.module.css";
+import { feedDate, publicationReadError, publicationReadRetry } from "@/components/pages/feed/feedDisplay";
 
 type EventItem = Extract<PublicationFeedItem, { type: "EVENT" }>;
 const EMPTY_BIRTHDAY_USERS: BirthdayUser[] = [];
@@ -73,8 +68,6 @@ function makeCalendarDays(month: Date) {
 
 function EventSummary({ event }: { event: EventItem }) {
     const { setContent, setOpen, setClose } = useModal();
-    const permissions = useUserStore((state) => state.permissions);
-    const canReadDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
     const imageUrl = getMediaImageUrl(event.primaryImage?.storageKey);
     const excerpt = publicationPlainText(event.content).trim();
 
@@ -97,25 +90,19 @@ function EventSummary({ event }: { event: EventItem }) {
                 {excerpt && <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{excerpt}</p>}
             </div>
             <div className="flex items-center gap-2 text-sm text-j-gray-500"><MessageCircle size={16} aria-hidden="true" />{event.commentCount} {event.commentCount === 1 ? "comentário" : "comentários"}</div>
-            <EventParticipation eventId={event.id} eventStatus={event.details.status} charges={event.details.charges} compact />
-            {canReadDetail && <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>}
+            <EventParticipation eventId={event.id} eventStatus={event.details.status} compact />
+            <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>
         </div>
     </section>;
 }
 
 export default function AgendaPage() {
     const permissions = useUserStore((state) => state.permissions);
-    const canRead = permissions.some((module) => module.module === "PUBLICATIONS" && module.actions.includes("FEED_READ"));
     const { setContent, setOpen } = useModal();
     const [month, setMonth] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
     });
-    const [monthDirection, setMonthDirection] = useState<"forward" | "back">("forward");
-
-    const [mobileView, setMobileView] = useState<"calendar" | "agenda">("agenda");
-
-
     const today = useMemo(() => calendarDateKey(new Date()), []);
     const birthdaysQuery = useBirthdayUsers(month.getMonth() + 1);
     const query = useInfiniteQuery({
@@ -123,11 +110,12 @@ export default function AgendaPage() {
         queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "EVENT", page: pageParam, size: 48 }),
         initialPageParam: 0,
         getNextPageParam: nextFeedPage,
-        enabled: canRead,
+        retry: publicationReadRetry,
     });
     const { hasNextPage, isFetchingNextPage, isError, fetchNextPage } = query;
     const pageCount = query.data?.pages.length ?? 0;
-    const events = useMemo(() => mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [query.data]);
+    const failure = publicationReadError(query.error);
+    const events = useMemo(() => failure.restricted ? [] : mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [failure.restricted, query.data]);
     const days = useMemo(() => makeCalendarDays(month), [month]);
     const birthdayUsers = birthdaysQuery.data ?? EMPTY_BIRTHDAY_USERS;
     const eventsByDate = useMemo(() => {
@@ -167,30 +155,13 @@ export default function AgendaPage() {
     }
 
     function moveMonth(offset: number) {
-        setMonthDirection(offset > 0 ? "forward" : "back");
         setMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
     }
 
     function goToToday() {
         const now = new Date();
-        setMonthDirection(now >= month ? "forward" : "back");
         setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
     }
-
-    const monthEntries = days.flatMap((day) => {
-        if (day.getMonth() !== month.getMonth()) return [];
-        const key = calendarDateKey(day);
-        const dayEvents = eventsByDate.get(key) ?? [];
-        const dayBirthdays = birthdaysByDate.get(key) ?? [];
-        return dayEvents.length || dayBirthdays.length ? [{ day, events: dayEvents, birthdays: dayBirthdays }] : [];
-    });
-    const emptyMonthMessage = canRead && query.isError && !events.length
-        ? "Não foi possível carregar os eventos deste mês."
-        : birthdaysQuery.isError
-            ? canRead ? "Não há eventos publicados neste mês; os aniversariantes não puderam ser carregados." : "Não foi possível carregar os aniversariantes deste mês."
-        : birthdaysQuery.isPending
-            ? canRead ? "Não há eventos publicados neste mês; carregando aniversariantes..." : "Carregando aniversariantes..."
-            : canRead ? "Não há eventos ou aniversariantes neste mês." : "Não há aniversariantes neste mês.";
 
     return <div className="min-h-full w-full p-3 pb-8 md:p-5">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
@@ -212,31 +183,10 @@ export default function AgendaPage() {
                 </div>
             </header>
 
-            {birthdaysQuery.isPending && <p role="status" className="text-sm text-j-gray-500">Carregando aniversariantes...</p>}
-            {birthdaysQuery.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-j-white p-4">
-                <p className="text-sm text-red-600">Não foi possível carregar os aniversariantes deste mês.</p>
-                <Button type="button" disabled={birthdaysQuery.isFetching} onClick={() => void birthdaysQuery.refetch()}>{birthdaysQuery.isFetching ? "Carregando..." : "Tentar novamente"}</Button>
-            </div>}
-
-            <div className="grid grid-cols-2 gap-1 rounded-2xl border border-j-gray-200 bg-j-gray-100/80 p-1 md:hidden" role="group" aria-label="Forma de visualizar a agenda">
-                <button type="button" aria-pressed={mobileView === "calendar"} onClick={() => setMobileView("calendar")} className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${mobileView === "calendar" ? "bg-j-white text-j-blue-800 shadow-sm" : "text-j-gray-600 hover:bg-j-white/70"}`}>
-                    <CalendarDays size={17} aria-hidden="true" />Calendário
-                </button>
-                <button type="button" aria-pressed={mobileView === "agenda"} onClick={() => setMobileView("agenda")} className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-3 text-sm font-bold transition-[background-color,color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 ${mobileView === "agenda" ? "bg-j-white text-j-blue-800 shadow-sm" : "text-j-gray-600 hover:bg-j-white/70"}`}>
-                    <List size={17} aria-hidden="true" />Lista do mês
-                </button>
-            </div>
-
-            {canRead && query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-56 animate-pulse rounded-3xl bg-j-gray-200 md:h-[32rem]" />
-                : <>
-                        {canRead && query.isError && !events.length && <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-4"><p className="text-sm text-red-600">{query.error.message}</p><Button type="button" className="mt-3" disabled={query.isFetching} onClick={() => void query.refetch()}>{query.isFetching ? "Carregando..." : "Tentar novamente"}</Button></div>}
-                        <section aria-label="Calendário mensal" className="hidden overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm md:block">
-                            <div key={calendarDateKey(month)} data-direction={monthDirection} className={styles.monthTransition}>
-
-
-                            <div className="grid grid-cols-7 gap-px border-b border-j-gray-200 bg-j-gray-200">
-                                {WEEKDAYS.map((day) => <div key={day} className="bg-j-gray-100/80 py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
-
+            {query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
+                        : <section aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
+                            <div className="grid grid-cols-7 border-b border-j-gray-200 bg-j-gray-100/70">
+                                {WEEKDAYS.map((day) => <div key={day} className="py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-px bg-j-gray-200">
                                 {days.map((day) => {
@@ -266,63 +216,14 @@ export default function AgendaPage() {
                                     </div>;
                                 })}
                             </div>
-                            </div>
                             {query.isFetchingNextPage && <p role="status" className="border-t border-j-gray-200 px-4 py-3 text-center text-xs text-j-gray-500">Carregando mais eventos…</p>}
-                            {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
-                            {!events.length && !birthdayUsers.length && !query.isError && !birthdaysQuery.isPending && !birthdaysQuery.isError && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos ou aniversariantes neste mês.</p>}
-                        </section>
-
-                        <section aria-label="Calendário mensal" className={`overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm md:hidden ${mobileView === "calendar" ? "block" : "hidden"}`}>
-                            <div key={`${calendarDateKey(month)}-${mobileView}`} data-direction={monthDirection} className={styles.monthTransition}>
-                                <div className="grid grid-cols-7 gap-px border-b border-j-gray-200 bg-j-gray-200">
-                                    {WEEKDAYS.map((day) => <div key={day} className="bg-j-gray-100/80 py-2 text-center text-[10px] font-extrabold uppercase tracking-wide text-j-gray-500">{day}</div>)}
-                                </div>
-                                <div className="grid grid-cols-7 gap-px bg-j-gray-200">
-                                    {days.map((day) => {
-                                        const key = calendarDateKey(day);
-                                        const dayEvents = eventsByDate.get(key) ?? [];
-                                        const dayBirthdays = birthdaysByDate.get(key) ?? [];
-                                        const inMonth = day.getMonth() === month.getMonth();
-                                        const isToday = key === today;
-                                        const dateClass = `flex size-8 items-center justify-center rounded-xl text-sm font-bold ${isToday ? "bg-j-yellow-300 text-j-blue-950 shadow-sm" : inMonth ? "text-j-gray-700" : "text-j-gray-400"}`;
-                                        return <div key={key} className={`flex min-h-12 flex-col items-center justify-start gap-1.5 p-1.5 ${inMonth ? "bg-j-white" : "bg-j-gray-100/70"}`}>
-                                            {dayEvents.length || dayBirthdays.length ? <button type="button" onClick={() => openDayEvents(dayEvents, dayBirthdays, day)} aria-label={`${longDateLabel(day)}: ${dayContentLabel(dayEvents, dayBirthdays)}`} className={`flex w-full cursor-pointer flex-col items-center gap-1 rounded-xl py-0.5 transition-colors hover:bg-j-yellow-100/70 focus-visible:outline-2 focus-visible:outline-j-blue-800 ${isToday ? "ring-1 ring-inset ring-j-yellow-400" : ""}`}>
-                                                <span className={dateClass}>{day.getDate()}</span>
-                                                <span aria-hidden="true" className="flex h-1.5 items-center justify-center gap-0.5">{dayEvents.slice(0, 2).map((event) => <span key={`event-${event.id}`} className="size-1.5 rounded-full bg-j-blue-700" />)}{dayBirthdays.length > 0 && <span className="size-1.5 rounded-full bg-j-yellow-500" />}</span>
-                                            </button> : <div className="flex w-full flex-col items-center gap-1 rounded-xl py-0.5"><span className={dateClass}>{day.getDate()}</span><span aria-hidden="true" className="h-1.5" /></div>}
-                                        </div>;
-                                    })}
-                                </div>
-                            </div>
-                        </section>
-                        <section aria-label="Agenda do mês" className={`flex flex-col gap-3 md:hidden ${mobileView === "agenda" ? "" : "hidden"}`}>
-                            <div key={`${calendarDateKey(month)}-${mobileView}`} data-direction={monthDirection} className={`${styles.monthTransition} flex flex-col gap-3`}>
-
-
-                                {monthEntries.length ? monthEntries.map(({ day, events: dayEvents, birthdays: dayBirthdays }) => <article key={calendarDateKey(day)} className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
-                                    <h3 className={`border-b border-j-gray-100 px-4 py-2.5 text-sm font-extrabold capitalize ${calendarDateKey(day) === today ? "bg-j-yellow-300/20 text-j-blue-900" : "bg-j-gray-100/70 text-j-blue-800"}`}>{longDateLabel(day)}</h3>
-                                    <div className="flex flex-col gap-2 p-3">
-                                        {dayEvents.map((event) => <button key={event.id} type="button" onClick={() => openDayEvents([event], dayBirthdays, day)} className="group flex min-h-20 w-full cursor-pointer items-center gap-3 overflow-hidden rounded-xl border border-j-gray-100 p-2 text-left transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-j-yellow-400 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-j-blue-800">
-                                            <span className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-j-blue-800 sm:size-20">{event.primaryImage ? <Image src={getMediaImageUrl(event.primaryImage.storageKey)} alt="" fill unoptimized sizes="80px" className="object-cover transition-transform duration-300 group-hover:scale-105" /> : <CalendarDays className="absolute inset-0 m-auto text-j-yellow-300" size={24} />}</span>
-                                            <span className="min-w-0 flex-1 py-1"><span className="block break-words text-sm font-extrabold text-j-blue-800">{event.title}</span><span className="mt-1 block text-xs text-j-gray-500">{feedDate(event.details.startsAt)}</span><span className="mt-1 block text-[11px] font-semibold text-j-gray-500">{EVENT_STATUS_LABELS[event.details.status]}</span></span>
-                                            <ChevronRight size={18} aria-hidden="true" className="mr-1 shrink-0 text-j-gray-400 transition-transform group-hover:translate-x-0.5" />
-                                        </button>)}
-                                        {dayBirthdays.length > 0 && <section aria-label="Aniversariantes do dia" className="rounded-xl bg-j-yellow-100/70 p-3">
-                                            <h4 className="flex items-center gap-2 text-xs font-extrabold text-j-blue-900"><Cake size={15} aria-hidden="true" />Aniversariantes</h4>
-                                            <ul className="mt-2 space-y-1">{dayBirthdays.map((birthday) => <li key={birthday.id} className="text-sm font-semibold text-j-blue-800">{birthday.name}</li>)}</ul>
-                                        </section>}
-                                    </div>
-                                </article>) : <div className="rounded-2xl border border-j-gray-200 bg-j-white px-5 py-8 text-center"><CalendarDays className="mx-auto text-j-gray-400" size={28} /><p className="mt-3 text-sm font-semibold text-j-gray-600">{emptyMonthMessage}</p></div>}
-                            </div>
-                            {query.isFetchingNextPage && <p role="status" className="py-2 text-center text-xs text-j-gray-500">Carregando mais eventos…</p>}
-                            {query.isFetchNextPageError && <div role="alert" className="rounded-2xl border border-red-200 bg-j-white p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
-                        </section>
-                        </>}
-
-
-            {canRead && <p className="text-center text-xs text-j-gray-400">Selecione um dia com evento ou aniversariante para conferir os detalhes.</p>}
-
-
+                            {query.isError && !query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
+                            {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
+                            {!query.isError && !events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda.</p>}
+                        </section>}
+            <p className="text-center text-xs text-j-gray-400">
+                Toque em um dia com evento para ver os detalhes. A listagem de aniversariantes está disponível apenas na área administrativa.
+            </p>
         </div>
     </div>;
 }

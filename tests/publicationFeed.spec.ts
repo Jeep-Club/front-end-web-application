@@ -5,17 +5,35 @@ import { publicationFeedItemSchema, publicationFeedDetailSchema } from "@/schema
 import { renderPublicationContent } from "@/utils/publications/renderContent";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
+import { getAuthCookies } from "@/utils/auth/get";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
+jest.mock("@/utils/auth/get", () => ({ getAuthCookies: { SERVER: jest.fn() } }));
 const item = { id: 7, authorUserId: 1, title: "Aviso", content: "<p>Publicado</p>", type: "NOTICE", primaryImage: null, publishedAt: "2026-10-20T12:00:00Z", likeCount: 0, commentCount: 0, likedByMe: false, details: {} };
 
 describe("Feed de publicações", () => {
-    beforeEach(() => { jest.resetAllMocks(); jest.mocked(haveActionPermission).mockResolvedValue(true); });
+    beforeEach(() => {
+        jest.resetAllMocks();
+        jest.mocked(haveActionPermission).mockResolvedValue(true);
+        jest.mocked(getAuthCookies.SERVER).mockResolvedValue({ AuthAccessToken: "access", AuthRefreshToken: "refresh", AccessTokenExpiration: "expiry" });
+    });
+    it('preserva limites absolutos e tamanho pequeno da sidebar', async () => {
+        jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: {} });
+        await listPublicationFeedAction({ page: 0, size: 3, publishedFrom: '2026-10-29T12:00:00.123456Z' });
+        const url = new URL(jest.mocked(actionFetchWrapper).mock.calls[0][0].url, 'http://local/');
+        expect(url.searchParams.get('size')).toBe('3');
+        expect(url.searchParams.get('publishedFrom')).toBe('2026-10-29T12:00:00.123456Z');
+        expect(url.searchParams.has('publishedTo')).toBe(false);
+    });
+    it('rejeita tamanho inválido sem HTTP', async () => {
+        await expect(listPublicationFeedAction({ page: 0, size: 51 })).rejects.toThrow();
+        expect(actionFetchWrapper).not.toHaveBeenCalled();
+    });
     it("busca todos os publicados com paginação nativa, sem exportação", async () => {
         jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: { content: [item] } });
         await listPublicationFeedAction({ page: 0, size: 12 });
-        expect(haveActionPermission).toHaveBeenCalledWith("PUBLICATIONS", "FEED_READ");
+        expect(haveActionPermission).not.toHaveBeenCalled();
         expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "publications/feed?page=0&size=12", cache: "no-store" }));
     });
     it("envia o filtro do tipo e preserva a paginação", async () => {
@@ -23,9 +41,10 @@ describe("Feed de publicações", () => {
         await listPublicationFeedAction({ type: "EVENT", page: 2, size: 24 });
         expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "publications/feed?page=2&size=24&type=EVENT" }));
     });
-    it("bloqueia consultas sem permissão", async () => {
-        jest.mocked(haveActionPermission).mockResolvedValue(false);
-        await expect(listPublicationFeedAction({ page: 0, size: 12 })).rejects.toThrow("permissão");
+    it("exige sessão para leituras de publicações", async () => {
+        jest.mocked(getAuthCookies.SERVER).mockResolvedValue(null);
+        await expect(listPublicationFeedAction({ page: 0, size: 12 })).rejects.toMatchObject({ status: 401 });
+        await expect(getPublicationFeedDetailAction(7)).rejects.toMatchObject({ status: 401 });
         expect(actionFetchWrapper).not.toHaveBeenCalled();
     });
     it("valida detalhes específicos dos três tipos e a galeria completa", () => {
@@ -37,7 +56,7 @@ describe("Feed de publicações", () => {
     it("consulta o detalhe publicado sem usar a rota administrativa", async () => {
         jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 200, data: {} });
         await getPublicationFeedDetailAction(7);
-        expect(haveActionPermission).toHaveBeenCalledWith("PUBLICATIONS", "PUBLICATION_READ");
+        expect(haveActionPermission).not.toHaveBeenCalled();
         expect(actionFetchWrapper).toHaveBeenCalledWith(expect.objectContaining({ url: "publications/7" }));
     });
     it("curte e remove a própria curtida usando os comandos da API", async () => {

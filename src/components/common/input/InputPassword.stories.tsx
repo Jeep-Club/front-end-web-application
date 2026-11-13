@@ -12,7 +12,7 @@ const meta = {
   argTypes: {
     variant: { control: "radio", options: ["white", "gray"] },
     disabled: { control: "boolean" },
-    notSeePassword: { control: "boolean" },
+    stepErrors: { control: "boolean" }, notSeePassword: { control: "boolean" },
   },
   decorators: [(Story) => (
     <div className="w-full max-w-md p-4">
@@ -42,5 +42,6 @@ export const Padrao: Story = {
 export const Gray: Story = { args: { variant: "gray" } };
 export const Desabilitado: Story = { args: { disabled: true } };
 
+export const ComRequisitos: Story = { args: { stepErrors: true } };
 export const SemVisibilidade: Story = { args: { notSeePassword: true } };
 
