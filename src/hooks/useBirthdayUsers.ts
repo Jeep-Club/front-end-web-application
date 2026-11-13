@@ -7,6 +7,10 @@ export function useBirthdayUsers(month: number) {
     return useQuery({
         queryKey: ["identity", "birthdays", month],
         queryFn: () => listBirthdayUsersAction({ month }),
-        staleTime: 5 * 60_000,
+        staleTime: 0,
+        refetchOnMount: "always",
+        refetchOnWindowFocus: true,
+        refetchInterval: 30_000,
+        refetchIntervalInBackground: false,
     });
 }

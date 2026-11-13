@@ -30,7 +30,7 @@ const BLOOD_TYPES: Array<{ value: MedicalProfileBloodType; label: string }> = [
     { value: "O_NEGATIVE", label: "O-" },
 ];
 
-const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus";
 
 const NOT_APPLICABLE = "Não se aplica";
 

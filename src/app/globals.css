@@ -592,6 +592,21 @@ body {
   text-decoration-color: var(--yellow-300);
 }
 
+:root[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] input:-webkit-autofill,
+:root[data-theme="dark"] input:-webkit-autofill:hover {
+  -webkit-text-fill-color: var(--input-text) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  caret-color: var(--input-text);
+}
+
+:root[data-theme="dark"] input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg-focus) inset;
+}
+
 :root:not([data-theme="dark"]) .legal-link:hover {
   color: var(--blue-900);
   text-decoration-color: var(--blue-900);

@@ -82,14 +82,7 @@ export default function Profile() {
                     })}
                 </div>
 
-                <div
-                    className={twMerge(
-                        "flex min-h-40 flex-col gap-4",
-                        activeTab === "personal"
-                            ? "w-full"
-                            : "rounded-2xl border border-j-gray-200 bg-j-white p-3 shadow-sm sm:p-4 lg:p-6",
-                    )}
-                >
+                <div className="flex min-h-40 w-full flex-col gap-4">
                     {activeTab === "personal" ? (
                         <PersonalDataTab />
                     ) : activeTab === "medical" ? (

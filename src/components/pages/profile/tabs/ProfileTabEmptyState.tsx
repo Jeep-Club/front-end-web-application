@@ -17,7 +17,7 @@ export function ProfileTabEmptyState({
     action: ReactNode;
 }) {
     return (
-        <section className="flex flex-col gap-5 rounded-3xl border border-j-gray-200 bg-j-gray-100 p-4 shadow-sm sm:p-6" aria-label={title}>
+        <section className="flex flex-col gap-5" aria-label={title}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-j-blue-800 text-j-yellow-300 shadow-sm">

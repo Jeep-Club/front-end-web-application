@@ -2,7 +2,7 @@
 
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarRange, HelpCircle, LoaderCircle, LogOut, Megaphone, Newspaper, Settings, ShieldCheck, UserRound, WalletCards, X } from "lucide-react";
+import { CalendarRange, HelpCircle, LoaderCircle, LogOut, Megaphone, Newspaper, Settings, ShieldCheck, Store, UserRound, WalletCards, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { twMerge } from "tailwind-merge";
 import { Logo } from "@/components/common/logo";
@@ -19,6 +19,7 @@ const navItems = [
     { href: "/profile", label: "Conta", icon: UserRound },
     { href: "/financeiro", label: "Histórico financeiro", icon: WalletCards },
     { href: "/agenda", label: "Agenda", icon: CalendarRange },
+    { href: "/servicos", label: "Serviços", icon: Store },
     { href: "/notificacoes", label: "Avisos", icon: Megaphone },
 ];
 
@@ -89,7 +90,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile, user
                 </>}
             </nav>
             <nav aria-label="Opções da conta" className={styles.account}>
-                <Link href="/tutoriais" title="Tutoriais" aria-label="Tutoriais" aria-current={pathname.startsWith("/tutoriais") ? "page" : undefined} onClick={onCloseMobile} className={twMerge(styles.item, "text-red-300 hover:bg-j-blue-700 hover:text-red-200")}>
+                <Link href="/tutoriais" title="Tutoriais" aria-label="Tutoriais" aria-current={pathname.startsWith("/tutoriais") ? "page" : undefined} onClick={onCloseMobile} className={twMerge(styles.item, "text-j-yellow-300 hover:bg-j-yellow-300/10")}>
                     <HelpCircle size={18} aria-hidden="true" /><span className={styles.label}>Tutoriais</span>
                 </Link>
                 <button type="button" title="Configurações" aria-label="Configurações" onClick={() => { onCloseMobile(); router.push("/configuracoes"); }} className={twMerge(styles.item, "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>

@@ -43,9 +43,9 @@ const STEPS = [
 const LIGHT_FIELDS_CLASS = `
     [&_label]:!text-j-gray-700
     [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!px-4 [&_input]:!py-3
-    [&_input]:!text-j-gray-700 [&_input]:placeholder:!text-j-gray-400 [&_input:focus]:!bg-j-white
+    [&_input]:!text-j-gray-700 [&_input]:placeholder:!text-j-gray-400 [&_input:focus]:!bg-input-bg-focus
     [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!px-4 [&_select]:!py-3
-    [&_select]:!text-j-gray-700 [&_select:focus]:!bg-j-white
+    [&_select]:!text-j-gray-700 [&_select:focus]:!bg-input-bg-focus
 `;
 
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
@@ -189,7 +189,7 @@ function VehicleStepsFields({ currentStep, onNext, onBack, onStepChange, isEditM
                     label="Foto do veículo"
                     maxFiles={5 - vehiclePhotoKeys(vehicle).length}
                     cropShape="landscape"
-                    className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:bg-j-white"
+                    className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-blue-400 [&>div]:min-h-48 [&>div]:!border-input-border [&>div]:!bg-input-bg"
                 />}
                 {isEditMode && vehicle?.photo && (
                     <div className="flex items-center gap-3 rounded-xl border border-j-gray-200 bg-j-white p-3">

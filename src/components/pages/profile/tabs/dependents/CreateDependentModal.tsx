@@ -23,7 +23,7 @@ import toast from 'react-hot-toast';
 import { DependentPhoto } from './DependentPhoto';
 
 const NOT_APPLICABLE = 'Não se aplica';
-const light = '[&_button[aria-haspopup=dialog]]:!text-j-blue-800 [&_button[aria-haspopup=dialog]_svg]:!text-j-blue-800 [&_input]:!h-11 [&_input]:!py-2 [&_input]:!text-base [&_select]:!h-11 [&_select]:!py-2 [&_select]:!text-base [&_textarea]:!min-h-28 [&_textarea]:!py-3 [&_label]:!text-j-gray-700 [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!text-j-gray-700 [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!text-j-gray-700 [&_textarea]:!border-j-gray-200 [&_textarea]:!bg-j-gray-100 [&_textarea]:!text-j-gray-700';
+const light = '[&_button[aria-haspopup=dialog]]:!text-j-blue-800 [&_button[aria-haspopup=dialog]_svg]:!text-j-blue-800 [&_input]:!h-11 [&_input]:!py-2 [&_input]:!text-base [&_select]:!h-11 [&_select]:!py-2 [&_select]:!text-base [&_textarea]:!min-h-28 [&_textarea]:!py-3 [&_label]:!text-j-gray-700 [&_input]:!border-j-gray-200 [&_input]:!bg-j-gray-100 [&_input]:!text-j-gray-700 [&_select]:!border-j-gray-200 [&_select]:!bg-j-gray-100 [&_select]:!text-j-gray-700 [&_textarea]:!border-j-gray-200 [&_textarea]:!bg-j-gray-100 [&_textarea]:!text-j-gray-700 [&_input:focus]:!bg-input-bg-focus [&_select:focus]:!bg-input-bg-focus [&_textarea:focus]:!bg-input-bg-focus';
 
 function DependentHealthField({ name, label, question, placeholder }: {
   name: 'medicalProfile.allergies' | 'medicalProfile.chronicDiseases' | 'medicalProfile.medications' | 'medicalProfile.medicalNotes';
@@ -91,7 +91,7 @@ function Fields({ dependent, isEdit, isSaving }: { dependent?: MemberDependent; 
         <button type="button" aria-label="Remover foto atual do dependente" title="Remover foto" onClick={() => setValue('removePhoto', true, { shouldDirty: true })} className="absolute right-0 top-0 flex size-9 items-center justify-center rounded-full bg-white text-red-600 shadow-md"><X size={20} /></button>
       </div>}
       {removePhoto && !photo?.length && <div className="mb-3 flex items-center justify-between gap-3 text-sm text-j-gray-600"><p>A foto será removida ao salvar.</p><button type="button" onClick={() => setValue('removePhoto', false)} className="font-bold text-j-blue-800">Desfazer</button></div>}
-      <InputFile.Image name="photo" label="Selecionar foto (opcional)" maxFiles={1} maxSizeMB={5} cropShape="circle" className="[&_label]:font-semibold [&_label]:!text-j-gray-700 [&_p]:!text-j-gray-600 [&_svg]:!text-j-gray-400 [&>div]:!border-j-gray-200 [&>div]:!bg-j-white [&>div]:py-4" />
+      <InputFile.Image name="photo" label="Selecionar foto (opcional)" maxFiles={1} maxSizeMB={5} cropShape="circle" className="[&_label]:font-semibold [&_label]:!text-j-gray-700 [&_p]:!text-j-gray-600 [&_svg]:!text-j-gray-400 [&>div]:!border-input-border [&>div]:!bg-input-bg [&>div]:py-4" />
       <p className="mt-2 text-xs text-j-gray-500">JPEG, PNG ou WebP de até 5 MiB. Ajuste o enquadramento antes de salvar.</p>
     </section>
     <section className="w-full"><h3 className="mb-2 text-sm font-extrabold text-j-blue-800">Dados pessoais</h3><div className={`grid gap-3 sm:grid-cols-2 ${light}`}>
