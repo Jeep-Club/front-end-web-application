@@ -12,7 +12,6 @@ import { hasPermission } from "@/utils/permission/hasPermission";
 import { useMutation,useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
-import { twMerge } from "tailwind-merge";
 import { BillingExport } from "./BillingExport";
 import { BillingRecordModal } from "./BillingRecordModal";
 import { GenerateChargeCycleModal } from "./GenerateChargeCycleModal";
@@ -82,32 +81,24 @@ export function BillingOperations({ resource, initialStatus }: { resource: Billi
     if (resource === "refunds" && cycleId) exportFilters.chargeCycleId = cycleId;
     const controlClassName = "mt-1.5 block h-11 w-full rounded-xl border border-j-gray-300 bg-j-white px-3 text-sm font-medium text-j-blue-800 outline-none transition-colors placeholder:text-j-gray-400 hover:border-j-gray-400 focus:border-j-blue-500 focus:ring-2 focus:ring-j-blue-100";
     return <section className="flex flex-col gap-4">
-        <div className="rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm md:p-5">
-            <div className={twMerge("mb-4 flex flex-col gap-3", (resource === "cycles" || resource === "member-charges") && "lg:flex-row lg:items-center lg:justify-between")}>
-                <div className="min-w-0">
-                    <h2 className="text-base font-extrabold text-j-blue-800">{resource === "cycles" ? "Criar e consultar ciclos de cobrança" : resource === "member-charges" ? "Cobranças dos associados" : "Filtros"}</h2>
-                    {resource === "member-charges" ? <p className="mt-1 text-xs text-j-gray-500">Consulte cobranças e localize associados pela matrícula.</p> : <p className="mt-1 text-xs text-j-gray-500">
-                        {resource === "cycles" ? "Primeiro, selecione a cobrança que deseja gerar. Depois, clique em “Criar ciclo”." : `Refine a consulta de ${settings.title.toLocaleLowerCase("pt-BR")}.`}
-                    </p>}
-                </div>
-                {(resource === "cycles" || resource === "member-charges") && <div className="grid w-full grid-cols-2 items-center gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-start lg:justify-end">
-                    <Button type="button" className={twMerge("h-10 w-full justify-center border border-j-gray-300 bg-j-white px-2 py-0 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:px-4 sm:text-sm", !can("EXPORT") && "col-span-2")} onClick={() => { setStatus(""); setUserId(""); setCycleId(""); setDefinitionId(""); setPage(0); }}>Limpar filtros</Button>
-                    {can("EXPORT") && <BillingExport kind={resource} filters={exportFilters} mobileActions />}
-                    {resource === "cycles" && can("CHARGE_CYCLE_GENERATE") && <div className="col-span-2 flex w-full flex-col gap-1 sm:col-span-1 sm:w-auto sm:min-w-36">
-                        <Button type="button" className="h-10 w-full justify-center px-3 py-0 text-xs sm:text-sm" disabled={!selectedDefinition.data || selectedDefinition.data.status !== "ACTIVE" || selectedDefinition.isFetching} onClick={() => { if (selectedDefinition.data) { setContent(<GenerateChargeCycleModal chargeDefinitionId={selectedDefinition.data.id} chargeDefinitionName={selectedDefinition.data.name} />); setOpen(); } }}><Plus size={16} />Criar ciclo</Button>
+        <div className="rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+            <Table.Header title={resource === "cycles" ? "Ciclos de cobrança" : resource === "member-charges" ? "Cobranças dos associados" : "Filtros"} description={resource === "cycles" ? "Gere e consulte os ciclos das cobranças do clube." : resource === "member-charges" ? "Consulte cobranças pela matrícula do associado." : undefined} className="gap-3 lg:flex-wrap lg:items-start">
+                {((resource === "cycles" && (can("EXPORT") || can("CHARGE_CYCLE_GENERATE"))) || (resource === "member-charges" && can("EXPORT"))) && <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
+                    {can("EXPORT") && <BillingExport kind={resource} filters={exportFilters} />}
+                    {resource === "cycles" && can("CHARGE_CYCLE_GENERATE") && <div className="flex w-full sm:w-auto">
+                        <Button type="button" className="h-10 w-full shrink-0 whitespace-nowrap px-4 py-0 text-sm sm:w-auto" disabled={!selectedDefinition.data || selectedDefinition.data.status !== "ACTIVE" || selectedDefinition.isFetching} onClick={() => { if (selectedDefinition.data) { setContent(<GenerateChargeCycleModal chargeDefinitionId={selectedDefinition.data.id} chargeDefinitionName={selectedDefinition.data.name} />); setOpen(); } }}><Plus size={16} strokeWidth={3} />Criar ciclo</Button>
                     </div>}
                 </div>}
-            </div>
-            <div className={`grid grid-cols-1 items-end gap-3 ${resource === "cycles" ? "" : "sm:grid-cols-2"}`}>
+            </Table.Header>
+            <div className={`grid grid-cols-1 items-end gap-3 p-4 md:px-6 ${resource === "cycles" ? "" : "sm:grid-cols-2"}`}>
                 {resource === "cycles" && <label className="block min-w-0 text-xs font-bold text-j-blue-800"><span className="flex min-h-4 items-center justify-between gap-2"><span>1. Selecione a cobrança <span className="font-semibold text-j-red-500">*</span></span></span><select aria-label="Selecione a cobrança que deseja gerar" value={definitionId} onChange={(event) => change(setDefinitionId, event.target.value)} className={controlClassName}><option value="">Escolha uma cobrança ativa</option>{definitions.data?.content.filter((definition) => definition.status === "ACTIVE").map((definition) => <option key={definition.id} value={definition.id}>{definition.name}</option>)}</select></label>}
                 {resource === "member-charges" && <label className="block min-w-0 text-xs font-bold text-j-gray-600">Matrícula do associado<input type="number" min="1" value={userId} onChange={(event) => change(setUserId, event.target.value)} className={controlClassName} /></label>}
                 {resource !== "cycles" && !(resource === "refunds" && cycleId) && <label className="block min-w-0 text-xs font-bold text-j-gray-600">Situação<select value={status} onChange={(event) => change(setStatus, event.target.value)} className={controlClassName}><option value="">Todas</option>{settings.statuses.map((value) => <option key={value} value={value}>{billingLabels[value]}</option>)}</select></label>}
                 {resource === "refunds" && <label className="block min-w-0 text-xs font-bold text-j-gray-600">Código do ciclo<input type="number" min="1" value={cycleId} onChange={(event) => { change(setCycleId, event.target.value); setStatus(""); }} className={controlClassName} /></label>}
             </div>
-            {resource !== "cycles" && resource !== "member-charges" && <div className="mt-4 flex flex-col gap-3 border-t border-j-gray-100 pt-4 sm:flex-row-reverse sm:items-end sm:justify-between">
+            {resource !== "cycles" && resource !== "member-charges" && can("EXPORT") && <div className="flex flex-col gap-3 border-t border-j-gray-100 p-4 md:px-6 sm:flex-row-reverse sm:items-end sm:justify-between">
                 <div className="grid w-full grid-cols-2 items-center gap-2 sm:flex sm:w-auto sm:flex-wrap">
-                    <Button type="button" className={twMerge("h-10 w-full justify-center border border-j-gray-300 bg-j-white px-2 py-0 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:px-4 sm:text-sm", !can("EXPORT") && "col-span-2")} onClick={() => { setStatus(""); setUserId(""); setCycleId(""); setDefinitionId(""); setPage(0); }}>Limpar filtros</Button>
-                    {can("EXPORT") && <BillingExport kind={resource} filters={exportFilters} mobileActions />}
+                    {can("EXPORT") && <BillingExport kind={resource} filters={exportFilters} />}
                 </div>
             </div>}
         </div>

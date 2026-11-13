@@ -89,7 +89,7 @@ export function GenerateChargeCycleModal({
                     value={code}
                     onChange={(event) => setCode(event.target.value)}
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                 />
 
                 {showHelp && <aside id="generate-charge-help" className="-mt-2 rounded-xl border border-j-blue-100 bg-j-blue-50 p-4 text-sm leading-relaxed text-j-blue-800">
@@ -106,7 +106,7 @@ export function GenerateChargeCycleModal({
                     value={dueDate}
                     onChange={(event) => setDueDate(event.target.value)}
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-input-bg-focus"
                 />
 
                 <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">

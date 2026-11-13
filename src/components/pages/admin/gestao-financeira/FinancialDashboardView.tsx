@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Activity, ArrowDownLeft, ArrowRight, ArrowUpRight, BarChart3, CheckCircle2, Clock3, Compass, Layers3, RefreshCw, Wallet } from "lucide-react";
+import { Activity, ArrowDownLeft, ArrowRight, BarChart3, CheckCircle2, Clock3, Layers3, Wallet } from "lucide-react";
 import { distributionPercentage, type FinancialDashboardViewProps } from "./financialDashboardModel";
 import styles from "./FinancialDashboardView.module.css";
 
@@ -21,7 +21,7 @@ const chartHints = {
 
 type ChartMode = keyof typeof chartHints;
 
-export function FinancialDashboardView({ metrics, distribution, queue, shortcuts, updatedAt, refreshing, onRefresh, onNavigate, onQueueChange, onRetryQueue, configuration }: FinancialDashboardViewProps) {
+export function FinancialDashboardView({ metrics, distribution, queue, onRefresh, onNavigate, onQueueChange, onRetryQueue, configuration }: FinancialDashboardViewProps) {
     const [selectedSegment, setSelectedSegment] = useState<string>();
     const [chartMode, setChartMode] = useState<ChartMode>("Receitas");
     const [months, setMonths] = useState<6 | 12>(6);
@@ -31,16 +31,7 @@ export function FinancialDashboardView({ metrics, distribution, queue, shortcuts
     let offset = 0;
 
     return <section className={styles.dashboard} aria-label="Dashboard financeiro">
-        <header className={styles.hero}>
-            <div className={styles.heroContent}>
-                <span className={styles.eyebrow}><span className={styles.eyebrowDot} /> Visão da diretoria</span>
-                <h2>Panorama financeiro<span>.</span></h2>
-                <p>Uma visão clara para acompanhar as finanças e cuidar do futuro do clube.</p>
-                <div className={styles.heroMeta}><span><Clock3 size={15} /> {updatedAt ? `Atualizado às ${new Date(updatedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Aguardando atualização"}</span><span className={styles.metaDivider} /> <span>Todo o histórico</span></div>
-            </div>
-            <button className={styles.refresh} type="button" onClick={onRefresh} disabled={refreshing}><RefreshCw size={16} className={refreshing ? styles.spinning : undefined} /> {refreshing ? "Atualizando..." : "Atualizar dados"}</button>
-            <div className={styles.heroDecoration} aria-hidden="true"><Activity size={100} strokeWidth={1} /></div>
-        </header>
+        {configuration}
 
         {metrics.length > 0 && <div className={styles.metrics} aria-label="Indicadores financeiros">{metrics.map((metric, index) => {
             const Icon = [Wallet, Clock3, CheckCircle2, Layers3][index % 4];
@@ -81,11 +72,8 @@ export function FinancialDashboardView({ metrics, distribution, queue, shortcuts
                 {queue.destination && <button type="button" className={styles.textAction} onClick={() => onNavigate(queue.destination!)}>Ver todas as pendências <ArrowRight size={15} /></button>}
             </article>}
             <article className={styles.panel}>
-                <div className={styles.panelHeader}><div><span className={styles.kicker}>GESTÃO MAIS SIMPLES</span><h3>Acesso rápido</h3><p>Continue de onde precisar.</p></div><span className={styles.panelIcon}><Compass size={19} /></span></div>
-                {shortcuts.length ? <div className={styles.shortcuts}>{shortcuts.map((shortcut) => <button type="button" className={styles.shortcut} key={shortcut.label} onClick={() => onNavigate(shortcut.destination)}><span className={styles.shortcutIcon}><ArrowUpRight size={18} /></span><span><strong>{shortcut.label}</strong><small>{shortcut.description}</small></span><ArrowRight size={16} /></button>)}</div> : <div className={styles.state}>Nenhum acesso rápido disponível.</div>}
                 <div className={styles.future}><span className={styles.kicker}>OLHANDO ADIANTE</span><h4>Planejamento financeiro</h4><p>Mais ferramentas para apoiar as próximas decisões do clube.</p><div>{(Object.keys(futureHints) as (keyof typeof futureHints)[]).map((topic) => <button type="button" key={topic} aria-expanded={futureTopic === topic} onClick={() => setFutureTopic(futureTopic === topic ? undefined : topic)}>{topic}</button>)}</div>{futureTopic ? <p aria-live="polite">{futureHints[futureTopic]}</p> : <small>Em planejamento</small>}</div>
             </article>
         </div>
-        {configuration}
     </section>;
 }

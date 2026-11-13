@@ -348,11 +348,11 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "Consulte comprovantes enviados pelos associados e aprove ou rejeite pagamentos de mensalidades e eventos.",
         category: "admin",
         categoryLabel: "Administração",
-        href: "/admin/gestao-financeira?tab=movements",
+        href: "/admin/gestao-financeira/movimentacoes?movement=analysis",
         storageKey: "tour_completed_admin_payments",
         stepCount: getPaymentsTourSteps(false).length,
         icon: WalletCards,
-        adminModuleKey: "financial-management",
+        adminModuleKey: "financial-movements",
         topics: [
             "Pagamentos pendentes",
             "Conferir comprovante",
@@ -378,7 +378,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         storageKey: "tour_completed_admin_financial",
         stepCount: getFinancialTourSteps(false).length,
         icon: WalletCards,
-        adminModuleKey: "financial-management",
+        adminModuleKey: "financial-overview",
         topics: [
             "Dashboard financeiro",
             "Definições e ciclos",

@@ -47,7 +47,10 @@ export const chargeDefinitionResponseSchema: z.ZodType<ChargeDefinition> = z.obj
 function parseNumericFormValue(value: unknown): unknown {
     if (value === "" || value === null || value === undefined) return undefined;
     if (typeof value === "number" && Number.isNaN(value)) return undefined;
-    return typeof value === "string" ? Number(value) : value;
+    if (typeof value !== "string") return value;
+    const trimmed = value.trim().replace(/\s/g, "");
+    const normalized = trimmed.includes(",") ? trimmed.replace(/\./g, "").replace(",", ".") : trimmed;
+    return Number(normalized);
 }
 
 function normalizeChargeDefinitionName(value: string): string {

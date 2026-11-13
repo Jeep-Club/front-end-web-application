@@ -1,8 +1,9 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { CheckCircle2, RefreshCw, Save } from "lucide-react";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { CheckCircle2, RefreshCw, Save, Settings2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input/input";
@@ -19,6 +20,48 @@ const configurationKey = ["membership", "billing-configuration"] as const;
 const secondaryButton = "border border-j-gray-300 bg-j-white text-j-gray-700 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700";
 
 export function MembershipBilling() {
+    const dialog = useRef<HTMLDialogElement>(null);
+    const [opened, setOpened] = useState(false);
+
+    function openFromButton(button: HTMLButtonElement) {
+        const modal = dialog.current;
+        if (!modal || modal.open) return;
+
+        const from = button.getBoundingClientRect();
+        flushSync(() => setOpened(true));
+        modal.showModal();
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const to = modal.getBoundingClientRect();
+        modal.animate(
+            [
+                { transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`, opacity: 0.6 },
+                { transform: "none", opacity: 1 },
+            ],
+            { duration: 280, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+        );
+    }
+
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-input-border bg-j-white p-3 sm:px-4">
+            <div className="min-w-0">
+                <h2 className="font-bold text-primary">Configuração da associação</h2>
+                <p className="text-sm text-secondary">Defina qual cobrança serve de referência para os associados.</p>
+            </div>
+            <Button aria-haspopup="dialog" className="font-extrabold" onClick={event => openFromButton(event.currentTarget)}>
+                <Settings2 size={17} aria-hidden="true" /> <strong className="font-black">Configurar associação</strong>
+            </Button>
+            <dialog ref={dialog} aria-label="Configuração da cobrança da associação" onClose={() => setOpened(false)} className="m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-2xl origin-top-left overflow-y-auto rounded-2xl border border-input-border bg-j-white p-0 text-primary shadow-xl backdrop:bg-black/50">
+                <button type="button" aria-label="Fechar configuração" onClick={() => dialog.current?.close()} className="absolute right-4 top-4 z-10 grid size-10 cursor-pointer place-items-center rounded-full bg-background-secondary text-primary transition-colors hover:bg-j-gray-200 focus-visible:outline-2 sm:right-6 sm:top-6">
+                        <X size={20} aria-hidden="true" />
+                </button>
+                {opened && <MembershipBillingForm />}
+            </dialog>
+        </div>
+    );
+}
+
+function MembershipBillingForm() {
     const permissions = useUserStore(state => state.permissions);
     const canRead = hasPermission(permissions, "MEMBERSHIP", "BILLING_CONFIGURATION_READ");
     const canUpdate = hasPermission(permissions, "MEMBERSHIP", "BILLING_CONFIGURATION_UPDATE");
@@ -61,18 +104,21 @@ export function MembershipBilling() {
     if (configuration.isError) return <section role="alert" className="rounded-2xl border border-j-gray-200 bg-j-white p-5"><p className="text-sm text-j-red-500">{configuration.error.message}</p><Button onClick={() => void configuration.refetch()} className={`mt-4 ${secondaryButton}`}><RefreshCw size={16} />Tentar novamente</Button></section>;
 
     return (
-        <section className="rounded-2xl border border-j-gray-200 bg-j-white p-4 sm:p-6" aria-labelledby="membership-billing-title">
-            <h2 id="membership-billing-title" className="text-lg font-extrabold text-j-blue-800">Cobrança de referência da associação</h2>
-            <p className="mt-2 text-sm leading-relaxed text-j-gray-600">Escolha a cobrança usada para avaliar os débitos dos associados. Esta configuração é única para o clube e não cria cobranças automaticamente.</p>
+        <section aria-labelledby="membership-billing-title" className="p-5 pt-7 sm:p-7">
+            <header className="mb-5 border-b border-j-gray-200 pb-4 pr-12 sm:pr-14">
+                <span className="mb-2 inline-flex size-10 items-center justify-center rounded-xl bg-j-blue-50 text-j-blue-800"><Settings2 size={20} aria-hidden="true" /></span>
+                <h2 id="membership-billing-title" className="text-lg font-extrabold text-j-blue-800 sm:text-xl">Cobrança de referência da associação</h2>
+                <p className="mt-1 text-sm leading-relaxed text-j-gray-600">Escolha a cobrança que será usada como referência para acompanhar a regularidade financeira dos associados.</p>
+            </header>
 
-            <div className="my-5 rounded-xl border border-j-gray-200 bg-j-gray-100 p-4" role="status">
+            <div className="mb-5 rounded-xl border border-j-blue-200 bg-j-blue-50/70 p-4" role="status">
                 {configuration.data ? <>
                     <p className="flex items-center gap-2 font-bold text-j-blue-800"><CheckCircle2 size={18} aria-hidden="true" />{configuredDefinition.data?.name ?? `Cobrança #${configuredId}`}</p>
-                    {configuredDefinition.data && <p className="mt-1 text-sm text-j-gray-600">{CHARGE_RECURRENCE_LABEL[configuredDefinition.data.recurrenceType]} · {formatCurrencyBRL(configuredDefinition.data.defaultAmount)} · {billingLabels[configuredDefinition.data.status]}</p>}
+                    {configuredDefinition.data && <p className="mt-1 text-sm text-j-gray-700">{CHARGE_RECURRENCE_LABEL[configuredDefinition.data.recurrenceType]} · {formatCurrencyBRL(configuredDefinition.data.defaultAmount)} · {billingLabels[configuredDefinition.data.status]}</p>}
                     {configuredDefinition.isError && <p className="mt-2 text-sm text-j-red-500">Não foi possível carregar os detalhes da cobrança. <button type="button" className="cursor-pointer underline focus-visible:outline-2" onClick={() => void configuredDefinition.refetch()}>Tentar novamente</button></p>}
                     {configuredDefinition.data && configuredDefinition.data.status !== "ACTIVE" && <p className="mt-2 text-sm text-j-red-500">A cobrança configurada não está ativa. Escolha uma cobrança ativa antes de gerar novos ciclos.</p>}
                     <p className="mt-2 text-sm text-j-gray-600">{configuration.data.enforcementEnabled ? "O controle de acesso por pagamento já está ativo. Alterar a cobrança preserva essa configuração." : "O controle de acesso por pagamento está desativado. Salvar esta referência não ativa bloqueios de acesso."}</p>
-                </> : <><p className="font-bold text-j-blue-800">Nenhuma cobrança de referência configurada</p><p className="mt-1 text-sm text-j-gray-600">Selecione uma cobrança ativa para começar a organizar a regularidade financeira dos associados.</p></>}
+                </> : <><p className="font-bold text-j-blue-800">Nenhuma cobrança de referência configurada</p><p className="mt-1 text-sm text-j-gray-600">Selecione uma cobrança ativa para organizar o acompanhamento financeiro dos associados.</p></>}
             </div>
 
             {canUpdate ? <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (validSelection && changed && !mutation.isPending && !configuration.isFetching) mutation.mutate(); }}>

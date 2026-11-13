@@ -58,7 +58,6 @@ export interface FinancialDashboardViewProps {
         error?: string;
         destination?: DashboardDestination;
     };
-    shortcuts: { label: string; description: string; destination: DashboardDestination }[];
     updatedAt?: number;
     refreshing: boolean;
     onRefresh: () => void;
