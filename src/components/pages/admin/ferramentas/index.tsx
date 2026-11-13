@@ -8,7 +8,6 @@ import { twMerge } from "tailwind-merge";
 import { PageHeader } from "@/components/common/page-header";
 import { getToolsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { Button } from "@/components/common/button";
 import { InputSearch } from "@/components/common/input/input-search";
 import { ListPagination } from "@/components/common/table/ListPagination";
@@ -150,7 +149,6 @@ export default function ToolManagement() {
                     <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex min-w-0 items-center gap-3">
-                                <ManagementBackButton />
                                 <div>
                                 <h3 className="text-base font-bold text-j-gray-700">
                                     Ferramentas cadastradas
@@ -183,7 +181,7 @@ export default function ToolManagement() {
                                     isLoading={isFetching}
                                     label="Buscar ferramenta pelo nome"
                                     placeholder="Buscar ferramenta pelo nome..."
-                                    className="h-10 border border-j-gray-200 bg-j-white py-2 pl-10 pr-10 text-sm font-normal text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:bg-j-white focus:text-j-gray-700"
+                                    className="h-10 border border-j-gray-200 bg-j-white py-2 pl-10 pr-10 text-sm font-normal text-j-gray-700 placeholder:text-j-gray-400 focus:border-j-yellow-400 focus:bg-input-bg-focus focus:text-j-gray-700"
                                     iconClassName="text-j-gray-400"
                                     clearButtonClassName="text-j-gray-400 hover:bg-j-gray-200 hover:text-j-blue-800"
                                 />
