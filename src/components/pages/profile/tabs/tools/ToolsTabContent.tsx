@@ -14,6 +14,7 @@ import { IncludeToolModal } from "./IncludeToolModal";
 import { ToggleToolStatusModal } from "./ToggleToolStatusModal";
 import { ViewToolModal } from "./ViewToolModal";
 import { ProfileTabLoading } from "../ProfileTabLoading";
+import { ProfileTabEmptyState } from "../ProfileTabEmptyState";
 
 const STATUS_LABEL: Record<ToolStatus, string> = {
     ACTIVE: "Ativa",
@@ -68,6 +69,17 @@ export function ToolsTabContent() {
         setOpen();
     };
 
+    if (!isLoading && !isError && data?.content.length === 0) {
+        return <ProfileTabEmptyState
+            icon={Wrench}
+            title="Minhas ferramentas"
+            description="Gerencie as ferramentas cadastradas no seu perfil."
+            emptyTitle="Você ainda não tem ferramentas cadastradas"
+            emptyDescription="Inclua suas ferramentas e mantenha os dados organizados no seu perfil."
+            action={<Button onClick={handleOpenInclude} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5"><Plus size={16} /><span>Incluir Ferramenta</span></Button>}
+        />;
+    }
+
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -85,10 +97,6 @@ export function ToolsTabContent() {
 
             {isError && (
                 <p className="text-sm text-j-red-400">Não foi possível carregar suas ferramentas.</p>
-            )}
-
-            {!isLoading && !isError && data?.content.length === 0 && (
-                <p className="text-sm text-j-gray-400">Você ainda não tem nenhuma ferramenta cadastrada.</p>
             )}
 
             {!isLoading && !isError && data && data.content.length > 0 && (

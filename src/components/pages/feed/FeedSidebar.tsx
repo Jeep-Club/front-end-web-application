@@ -18,10 +18,11 @@ import { publicationPlainText } from "@/utils/publications/content";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
 
-function SideCard({ title, icon: Icon, href, children }: {
+function SideCard({ title, icon: Icon, href, linkLabel, children }: {
     title: string;
     icon: typeof CalendarDays;
     href?: string;
+    linkLabel?: string;
     children: React.ReactNode;
 }) {
     return (
@@ -30,7 +31,7 @@ function SideCard({ title, icon: Icon, href, children }: {
                 <h2 className="flex items-center gap-2 text-sm font-extrabold text-j-blue-900">
                     <Icon size={17} className="text-j-blue-800" aria-hidden="true" />{title}
                 </h2>
-                {href && <Link href={href} className="cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-j-blue-800 inline-flex items-center gap-1 text-xs font-bold text-j-blue-700 hover:underline">Ver todos <ChevronRight size={14} aria-hidden="true" /></Link>}
+                {href && <Link href={href} className="cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-j-blue-800 inline-flex items-center gap-1 text-xs font-bold text-j-blue-700 hover:underline">{linkLabel ?? "Ver todos"} <ChevronRight size={14} aria-hidden="true" /></Link>}
             </div>
             {children}
         </section>
@@ -133,7 +134,7 @@ export function FeedSidebar() {
                 ) : <p className="text-sm text-j-gray-500">Nenhum evento publicado no momento.</p>}
             </SideCard>
 
-            <SideCard title="Aniversariantes do mês" icon={Cake}>
+            <SideCard title="Aniversariantes do mês" icon={Cake} href="/agenda" linkLabel="Ver agenda">
                 <p className="text-sm text-j-gray-500">
                     A listagem de aniversariantes está disponível apenas na área administrativa.
                 </p>
