@@ -6,11 +6,12 @@ import {
     UserRoundCheck,
     Users,
     WalletCards,
+    ChartNoAxesCombined,
+    Receipt,
     Wrench,
     HeartPulse,
     type LucideIcon,
 } from "lucide-react";
-import { paymentPermissions } from "@/config/paymentPermissions";
 
 /**
  * Permissão de leitura que decide se o módulo existe para o usuário.
@@ -33,6 +34,7 @@ export interface AdminModuleConfig {
     href: string;
     icon: LucideIcon;
     visibilityPermission: AdminVisibilityPermission;
+    alternativeVisibilityPermissions?: AdminVisibilityPermission[];
 }
 
 export const adminModules: AdminModuleConfig[] = [
@@ -45,18 +47,10 @@ export const adminModules: AdminModuleConfig[] = [
         visibilityPermission: { module: "HEALTH", action: "MEDICAL_PROFILE_READ" },
     },
     {
-        key: "payments",
-        title: "Análise de pagamentos",
-        description: "Consulte comprovantes e confirme ou rejeite pagamentos.",
-        href: "/admin/pagamentos",
-        icon: WalletCards,
-        visibilityPermission: { module: paymentPermissions.module, action: paymentPermissions.read },
-    },
-    {
         key: "publication-management",
         title: "Gestão de publicações",
         description: "Gerencie eventos, avisos e anúncios de serviços do clube.",
-        href: "/admin/gestao-publicacoes",
+        href: "/admin/publications",
         icon: Newspaper,
         visibilityPermission: {
             module: "PUBLICATIONS",
@@ -89,7 +83,7 @@ export const adminModules: AdminModuleConfig[] = [
     },
     {
         key: "roles-permissions",
-        title: "Gestão de roles e permissões",
+        title: "Gestão de cargos e permissões",
         description:
             "Defina o que cada administrador pode acessar e fazer.",
         href: "/admin/roles-permissoes",
@@ -100,17 +94,33 @@ export const adminModules: AdminModuleConfig[] = [
         },
     },
     {
-        key: "financial-management",
-        title: "Gestão financeira",
-        description:
-            "Acompanhe mensalidades, faturas e a saúde financeira do clube.",
+        key: "financial-overview",
+        title: "Visão geral financeira",
+        description: "Acompanhe os indicadores do clube e configure a cobrança de referência da associação.",
         href: "/admin/gestao-financeira",
-        icon: WalletCards,
+        icon: ChartNoAxesCombined,
         visibilityPermission: {
             module: "BILLING",
             action: "CHARGE_DEFINITION_READ",
             alternativeActions: ["CHARGE_CYCLE_READ", "MEMBER_CHARGE_READ", "PAYMENT_READ", "REFUND_READ"],
         },
+        alternativeVisibilityPermissions: [{ module: "MEMBERSHIP", action: "BILLING_CONFIGURATION_READ" }],
+    },
+    {
+        key: "financial-charges",
+        title: "Configuração de cobranças",
+        description: "Defina valores e regras, gerencie atribuições e acompanhe os ciclos de cobrança.",
+        href: "/admin/gestao-financeira/cobrancas",
+        icon: Receipt,
+        visibilityPermission: { module: "BILLING", action: "CHARGE_DEFINITION_READ", alternativeActions: ["CHARGE_CYCLE_READ"] },
+    },
+    {
+        key: "financial-movements",
+        title: "Movimentações financeiras",
+        description: "Consulte cobranças dos associados, pagamentos, análises e reembolsos.",
+        href: "/admin/gestao-financeira/movimentacoes",
+        icon: WalletCards,
+        visibilityPermission: { module: "BILLING", action: "MEMBER_CHARGE_READ", alternativeActions: ["PAYMENT_READ", "REFUND_READ"] },
     },
     {
         key: "vehicles",
@@ -136,23 +146,27 @@ export const adminModules: AdminModuleConfig[] = [
             action: "TOOL_READ",
         },
     },
+    {
+        key: "dependents",
+        title: "Gestão de dependentes",
+        description:
+            "Visualize, ative, desative, arquive e exporte os dependentes dos associados.",
+        href: "/admin/dependentes",
+        icon: Users,
+        visibilityPermission: {
+            module: "DEPENDENTS",
+            action: "DEPENDENT_READ",
+        },
+    },
 ];
 
 export function canAccessAdminModule(
     userPermissions: PermissionModule[],
     adminModule: AdminModuleConfig,
 ): boolean {
-    const { module, action } = adminModule.visibilityPermission;
-
-    const userModule = userPermissions.find(
-        (permissionModule) => permissionModule.module === module,
+    return [adminModule.visibilityPermission, ...(adminModule.alternativeVisibilityPermissions ?? [])].some(({ module, action, alternativeActions = [] }) =>
+        userPermissions.some(permission => permission.module === module && [action, ...alternativeActions].some(candidate => permission.actions.includes(candidate))),
     );
-
-    if (!userModule) {
-        return false;
-    }
-
-    return [action, ...(adminModule.visibilityPermission.alternativeActions ?? [])].some((candidate) => userModule.actions.includes(candidate));
 }
 
 // retorna somente os módulos que devem aparecer

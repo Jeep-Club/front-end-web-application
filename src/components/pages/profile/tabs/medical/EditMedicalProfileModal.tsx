@@ -30,7 +30,7 @@ const BLOOD_TYPES: Array<{ value: MedicalProfileBloodType; label: string }> = [
     { value: "O_NEGATIVE", label: "O-" },
 ];
 
-const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white";
+const fieldClassName = "border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus";
 
 const NOT_APPLICABLE = "Não se aplica";
 
@@ -165,7 +165,7 @@ export function EditMedicalProfileModal({ medicalProfile }: EditMedicalProfileMo
                     <Button type="button" onClick={setClose} disabled={mutation.isPending} className="border-2 border-j-gray-200 bg-j-white px-5 text-j-gray-600 hover:bg-j-gray-100 hover:text-j-gray-700">
                         Cancelar
                     </Button>
-                    <Button type="submit" disabled={mutation.isPending} className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white">
+                    <Button type="submit" isLoading={mutation.isPending} className="gap-2 bg-j-blue-700 px-6 text-j-white hover:bg-j-blue-800 hover:text-j-white">
                         {mutation.isPending ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
                         {mutation.isPending ? "Salvando..." : "Salvar alterações"}
                     </Button>

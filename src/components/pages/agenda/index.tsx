@@ -9,17 +9,16 @@ import { Button, ButtonIcon } from "@/components/common/button";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/providers/ModalProvider";
-import { hasPermission } from "@/utils/permission/hasPermission";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
 import { publicationPlainText } from "@/utils/publications/content";
 import { nextFeedPage, mergeFeedPages } from "@/utils/publications/infiniteFeed";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { EventParticipation } from "@/components/pages/feed/EventParticipation";
 import { PublicationDetailModal } from "@/components/pages/feed/PublicationDetailModal";
-import { feedDate } from "@/components/pages/feed/feedDisplay";
+import { feedDate, publicationReadError, publicationReadRetry } from "@/components/pages/feed/feedDisplay";
 import { useBirthdayUsers } from "@/hooks/useBirthdayUsers";
-import type { BirthdayUser } from "@/schemas/admin/birthdays";
 import { getBirthdaysOnDate } from "@/utils/birthdays";
+import type { BirthdayUser } from "@/schemas/identity/birthdays";
 
 type EventItem = Extract<PublicationFeedItem, { type: "EVENT" }>;
 
@@ -64,8 +63,6 @@ function makeCalendarDays(month: Date) {
 
 function EventSummary({ event }: { event: EventItem }) {
     const { setContent, setOpen, setClose } = useModal();
-    const permissions = useUserStore((state) => state.permissions);
-    const canReadDetail = hasPermission(permissions, "PUBLICATIONS", "PUBLICATION_READ");
     const imageUrl = getMediaImageUrl(event.primaryImage?.storageKey);
     const excerpt = publicationPlainText(event.content).trim();
 
@@ -88,15 +85,14 @@ function EventSummary({ event }: { event: EventItem }) {
                 {excerpt && <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-j-gray-600">{excerpt}</p>}
             </div>
             <div className="flex items-center gap-2 text-sm text-j-gray-500"><MessageCircle size={16} aria-hidden="true" />{event.commentCount} {event.commentCount === 1 ? "comentário" : "comentários"}</div>
-            <EventParticipation eventId={event.id} eventStatus={event.details.status} charges={event.details.charges} compact />
-            {canReadDetail && <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>}
+            <EventParticipation eventId={event.id} eventStatus={event.details.status} compact />
+            <Button type="button" onClick={openDetails} className="w-full">Ver evento e comentários</Button>
         </div>
     </section>;
 }
 
 export default function AgendaPage() {
     const permissions = useUserStore((state) => state.permissions);
-    const canRead = permissions.some((module) => module.module === "PUBLICATIONS" && module.actions.includes("FEED_READ"));
     const { setContent, setOpen } = useModal();
     const [month, setMonth] = useState(() => {
         const now = new Date();
@@ -108,21 +104,14 @@ export default function AgendaPage() {
         queryFn: ({ pageParam }) => listPublicationFeedAction({ type: "EVENT", page: pageParam, size: 48 }),
         initialPageParam: 0,
         getNextPageParam: nextFeedPage,
-        enabled: canRead,
+        retry: publicationReadRetry,
     });
+    const birthdaysQuery = useBirthdayUsers(month.getMonth() + 1);
     const { hasNextPage, isFetchingNextPage, isError, fetchNextPage } = query;
     const pageCount = query.data?.pages.length ?? 0;
-    const events = useMemo(() => mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [query.data]);
+    const failure = publicationReadError(query.error);
+    const events = useMemo(() => failure.restricted ? [] : mergeFeedPages(query.data?.pages ?? []).filter((item): item is EventItem => item.type === "EVENT"), [failure.restricted, query.data]);
     const days = useMemo(() => makeCalendarDays(month), [month]);
-    const birthdayQuery = useBirthdayUsers();
-    const birthdaysByDate = useMemo(() => {
-        const grouped = new Map<string, BirthdayUser[]>();
-        for (const day of days) {
-            const birthdays = getBirthdaysOnDate(birthdayQuery.users, day);
-            if (birthdays.length) grouped.set(calendarDateKey(day), birthdays);
-        }
-        return grouped;
-    }, [birthdayQuery.users, days]);
     const eventsByDate = useMemo(() => {
         const grouped = new Map<string, EventItem[]>();
         for (const event of events) {
@@ -154,6 +143,11 @@ export default function AgendaPage() {
         setMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
     }
 
+    function goToToday() {
+        const now = new Date();
+        setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    }
+
     return <div className="min-h-full w-full p-3 pb-8 md:p-5">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
             <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-1 text-xs text-j-gray-400 md:text-sm">
@@ -161,60 +155,59 @@ export default function AgendaPage() {
                 <ChevronRight size={14} aria-hidden="true" />
                 <span className="font-semibold text-j-blue-800">Agenda</span>
             </nav>
-            <header className="flex flex-wrap items-end justify-between gap-4">
-                <div>
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
                     <h1 className="mt-1 text-2xl font-extrabold text-j-gray-700 md:text-3xl">Agenda de eventos</h1>
-                    <p className="mt-1 text-sm text-j-gray-500">Veja o que vem por aí e abra um evento para conferir os detalhes.</p>
+                    <p className="mt-1 max-w-xl text-sm text-j-gray-500">Veja o que vem por aí e abra um evento para conferir os detalhes.</p>
                 </div>
-                <div className="flex w-full items-center justify-between gap-2 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:w-auto sm:justify-start">
-                    <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 items-center justify-center rounded-xl text-j-gray-600 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
-                    <h2 aria-live="polite" className="min-w-36 flex-1 text-center text-sm font-extrabold capitalize text-j-blue-800 sm:flex-none">{monthLabel(month)}</h2>
-                    <button type="button" aria-label="Próximo mês" onClick={() => moveMonth(1)} className="flex size-10 items-center justify-center rounded-xl text-j-gray-600 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronRight size={20} /></button>
-                    <button type="button" onClick={() => setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))} className="ml-1 hidden min-h-10 rounded-xl bg-j-gray-100 px-3 text-xs font-bold text-j-gray-600 hover:bg-j-gray-200 sm:block">Hoje</button>
+                <div className="flex w-full items-center justify-between gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:w-auto sm:gap-2">
+                    <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
+                    <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-sm font-extrabold capitalize text-j-blue-800 sm:min-w-36">{monthLabel(month)}</h2>
+                    <button type="button" aria-label="Próximo mês" onClick={() => moveMonth(1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronRight size={20} /></button>
+                    <button type="button" onClick={goToToday} className="ml-1 min-h-10 shrink-0 cursor-pointer rounded-xl bg-j-gray-100 px-3 text-xs font-bold text-j-gray-600 transition-colors hover:bg-j-gray-200 focus-visible:outline-2 focus-visible:outline-j-blue-800">Hoje</button>
                 </div>
             </header>
+            {birthdaysQuery.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-j-gray-200 bg-j-white px-4 py-3 text-sm text-j-gray-600"><span>Não foi possível carregar os aniversariantes deste mês.</span><Button onClick={() => void birthdaysQuery.refetch()}>Tentar novamente</Button></div>}
 
-            {!canRead ? <div role="status" className="rounded-2xl border border-j-gray-200 bg-j-white p-6 text-sm text-j-gray-600">Seu usuário não possui permissão para ver os eventos.</div>
-                : query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
+            {query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
                         : <section aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="grid grid-cols-7 border-b border-j-gray-200 bg-j-gray-100/70">
                                 {WEEKDAYS.map((day) => <div key={day} className="py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
                             </div>
-                            <div className="grid grid-cols-7">
+                            <div className="grid grid-cols-7 gap-px bg-j-gray-200">
                                 {days.map((day) => {
                                     const key = calendarDateKey(day);
                                     const dayEvents = eventsByDate.get(key) ?? [];
-                                    const dayBirthdays = birthdaysByDate.get(key) ?? [];
+                                    const dayBirthdays = getBirthdaysOnDate(birthdaysQuery.data ?? [], day);
                                     const event = dayEvents[0];
                                     const imageUrl = getMediaImageUrl(event?.primaryImage?.storageKey);
                                     const inMonth = day.getMonth() === month.getMonth();
                                     const isToday = key === today;
                                     const eventLabel = dayEvents.length === 1 ? event.title : `${dayEvents.length} eventos`;
-                                    const birthdayLabel = dayBirthdays.map((person) => person.name).join(", ");
-                                    const dayLabel = [dayEvents.length ? eventLabel : "", dayBirthdays.length ? `Aniversários: ${birthdayLabel}` : ""].filter(Boolean).join(". ");
-                                    const hasAgendaItems = dayEvents.length > 0 || dayBirthdays.length > 0;
-                                    return <div key={key} className={`relative min-h-[4.6rem] border-b border-r border-j-gray-100 p-1 sm:min-h-28 sm:p-1.5 ${inMonth ? "bg-j-white" : "bg-j-gray-100/55"}`}>
-                                        {hasAgendaItems ? <button type="button" onClick={() => openDayEvents(dayEvents, dayBirthdays, day)} aria-label={`${longDateLabel(day)}: ${dayLabel}`} className={`group relative flex h-full min-h-[4rem] w-full flex-col overflow-hidden rounded-xl text-left transition-transform hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 sm:min-h-[6.4rem] ${isToday ? "ring-2 ring-inset ring-j-yellow-400" : ""}`}>
-                                            {event ? (imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-65 transition-opacity group-hover:opacity-80" /> : <div className="absolute inset-0 bg-gradient-to-br from-j-blue-700 to-j-blue-950" />) : <div className="absolute inset-0 bg-j-yellow-100" />}
-                                            {event && <div className="absolute inset-0 bg-gradient-to-br from-j-blue-950/35 via-j-blue-950/5 to-j-blue-950/55" />}
-                                            <span className={`relative z-[1] flex size-7 items-center justify-center rounded-lg text-sm font-black shadow-md sm:size-8 sm:text-base ${event ? "bg-j-yellow-300 text-j-blue-950" : "bg-j-white text-j-blue-800"}`}>{day.getDate()}</span>
-                                            <span className="relative z-[1] mt-auto flex w-full items-center justify-between gap-1">
-                                                {event && <span className="line-clamp-1 min-w-0 flex-1 text-[10px] font-bold leading-tight text-white drop-shadow">{event.title}</span>}
-                                                {dayBirthdays.length > 0 && <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-j-yellow-300 px-1.5 py-1 text-[9px] font-extrabold text-j-blue-950 shadow sm:text-[10px]"><Cake size={12} aria-hidden="true" /><span className="hidden sm:inline">{dayBirthdays.length === 1 ? dayBirthdays[0].name.split(" ")[0] : `${dayBirthdays.length} aniversariantes`}</span></span>}
-                                            </span>
-                                            {dayEvents.length > 1 && <span className="absolute right-1 top-1 rounded-full bg-white/90 px-1.5 py-0.5 text-[9px] font-extrabold text-j-blue-900 shadow sm:text-[10px]">+{dayEvents.length - 1}</span>}
-                                        </button> : <div className={`flex h-full min-h-[4rem] items-start justify-start rounded-xl p-1.5 sm:min-h-[6.4rem] sm:p-2 ${isToday ? "bg-j-yellow-300/20" : ""}`}><span className={`flex size-7 items-center justify-center rounded-lg text-sm font-bold sm:size-8 sm:text-base ${inMonth ? "text-j-gray-700" : "text-j-gray-400"} ${isToday ? "bg-j-yellow-300 text-j-blue-950" : ""}`}>{day.getDate()}</span></div>}
+
+                                    return <div key={key} className={`relative min-h-28 p-1.5 lg:min-h-32 lg:p-2 ${inMonth ? "bg-j-white" : "bg-j-gray-100/70"}`}>
+                                        {dayEvents.length > 0 || dayBirthdays.length > 0 ? <button type="button" onClick={() => openDayEvents(dayEvents, dayBirthdays, day)} aria-label={`${longDateLabel(day)}${dayEvents.length ? `: ${eventLabel}` : ""}${dayBirthdays.length ? `; ${dayBirthdays.length} ${dayBirthdays.length === 1 ? "aniversariante" : "aniversariantes"}` : ""}`} className={`group relative flex h-full min-h-24 w-full cursor-pointer flex-col overflow-hidden rounded-xl p-2 text-left transition-[transform,box-shadow,ring-color] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-j-blue-800 lg:min-h-28 ${isToday ? "ring-2 ring-j-yellow-400" : ""}`}>
+                                            {dayEvents.length > 0 ? <>
+                                            {imageUrl ? <Image src={imageUrl} alt="" fill unoptimized sizes="(min-width: 768px) 14vw, 14vw" className="object-cover opacity-70 transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 bg-gradient-to-br from-j-yellow-100 to-j-yellow-300" />}
+                                            {imageUrl && <div className="absolute inset-0 bg-gradient-to-br from-j-blue-950/30 via-transparent to-j-blue-950/65" />}
+                                            <span className={`relative z-[1] flex size-8 items-center justify-center rounded-lg text-sm font-black shadow-sm ${imageUrl ? "bg-j-yellow-300 text-j-blue-950" : "bg-j-white/90 text-j-blue-900"}`}>{day.getDate()}</span>
+                                            <span className={`relative z-[1] mt-auto line-clamp-2 w-full text-xs font-extrabold leading-tight ${imageUrl ? "text-white drop-shadow" : "text-j-blue-900"}`}>{event.title}</span>
+                                            {dayEvents.length > 1 && <span className="absolute right-2 top-2 z-[1] rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-extrabold text-j-blue-900 shadow">+{dayEvents.length - 1}</span>}
+                                            </> : <span className={`relative z-[1] flex size-8 items-center justify-center rounded-lg text-sm font-bold ${isToday ? "bg-j-yellow-300 text-j-blue-950" : "bg-j-blue-50 text-j-blue-800"}`}>{day.getDate()}</span>}
+                                            {dayBirthdays.length > 0 && <span className={`relative z-[1] mt-1 flex max-w-full items-center gap-1 truncate rounded-md px-1.5 py-1 text-[10px] font-bold leading-tight ${dayEvents.length > 0 ? "bg-j-yellow-300 text-j-blue-950" : "bg-j-blue-800 text-j-white"}`}><Cake size={12} className="shrink-0" aria-hidden="true" /><span className="truncate">{dayBirthdays[0].name}{dayBirthdays.length > 1 ? ` +${dayBirthdays.length - 1}` : ""}</span></span>}
+                                        </button> : <div className={`flex h-full min-h-24 items-start rounded-xl p-2 lg:min-h-28 ${isToday ? "bg-j-yellow-100/70" : ""}`}><span className={`flex size-8 items-center justify-center rounded-lg text-sm font-bold ${inMonth ? "text-j-gray-700" : "text-j-gray-400"} ${isToday ? "bg-j-yellow-300 text-j-blue-950" : ""}`}>{day.getDate()}</span></div>}
+
+
                                     </div>;
                                 })}
                             </div>
                             {query.isFetchingNextPage && <p role="status" className="border-t border-j-gray-200 px-4 py-3 text-center text-xs text-j-gray-500">Carregando mais eventos…</p>}
-                            {query.isError && !events.length && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar os eventos.</p><Button className="mt-2" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
-                            {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">Não foi possível carregar todos os eventos.</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
-                            {!events.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos publicados neste calendário ainda. Datas de aniversários também aparecem marcadas.</p>}
+                            {query.isError && !query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.refetch()}>Tentar novamente</Button></div>}
+                            {query.isFetchNextPageError && <div role="alert" className="border-t border-j-gray-200 p-4 text-center"><p className="text-sm text-red-600">{failure.message}</p><Button className="mt-2" onClick={() => void query.fetchNextPage()}>Tentar novamente</Button></div>}
+                            {!query.isError && !birthdaysQuery.isPending && !birthdaysQuery.isError && !events.length && !birthdaysQuery.data?.length && <p className="border-t border-j-gray-200 p-5 text-center text-sm text-j-gray-500">Não há eventos ou aniversariantes neste mês.</p>}
+                            {!query.isError && !events.length && Boolean(birthdaysQuery.data?.length) && <p className="border-t border-j-gray-200 p-4 text-center text-sm text-j-gray-500">Não há eventos neste mês. Os aniversários estão marcados no calendário.</p>}
                         </section>}
-            {birthdayQuery.isFetching && <p role="status" className="text-center text-xs text-j-gray-500">Carregando aniversariantes...</p>}
-            {birthdayQuery.isError && <div role="alert" className="flex flex-col items-center gap-2 text-center text-xs text-red-600"><span>Não foi possível carregar todos os aniversariantes.</span><button type="button" onClick={() => void birthdayQuery.refetch()} className="cursor-pointer font-bold underline">Tentar novamente</button></div>}
-            <p className="text-center text-xs text-j-gray-400">Eventos e aniversários aparecem marcados no calendário. Toque em um dia para ver os detalhes.</p>
+            <p className="flex items-center justify-center gap-2 text-center text-xs text-j-gray-500"><Cake size={14} className="text-j-blue-700" aria-hidden="true" />Toque em um dia marcado para ver os eventos e aniversariantes.</p>
         </div>
     </div>;
 }
@@ -222,22 +215,15 @@ export default function AgendaPage() {
 function AgendaDayEvents({ events, birthdays, date }: { events: EventItem[]; birthdays: BirthdayUser[]; date: Date }) {
     const { setContent, setOpen, setClose } = useModal();
     return <section role="dialog" aria-modal="true" aria-labelledby="agenda-day-title" className="max-h-[85dvh] w-full max-w-xl overflow-y-auto rounded-3xl bg-j-white p-5 shadow-2xl sm:p-6">
-        <header className="mb-4 flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-j-blue-700">{longDateLabel(date)}</p><h2 id="agenda-day-title" className="mt-1 text-xl font-extrabold text-j-blue-800">Eventos e aniversários</h2></div><ButtonIcon type="button" aria-label="Fechar detalhes do dia" onClick={setClose} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={19} /></ButtonIcon></header>
+        <header className="mb-4 flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-j-blue-700">{longDateLabel(date)}</p><h2 id="agenda-day-title" className="mt-1 text-xl font-extrabold text-j-blue-800">Agenda do dia</h2></div><ButtonIcon type="button" aria-label="Fechar agenda do dia" onClick={setClose} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={19} /></ButtonIcon></header>
+        {birthdays.length > 0 && <section className="mb-4 rounded-2xl border border-j-gray-200 bg-j-blue-50 p-4"><h3 className="flex items-center gap-2 font-extrabold text-j-blue-900"><Cake size={18} className="text-j-yellow-500" aria-hidden="true" />Aniversariantes</h3><ul className="mt-2 space-y-1 text-sm text-j-gray-700">{birthdays.map((birthday) => <li key={birthday.id}>{birthday.name}</li>)}</ul></section>}
         <div className="flex flex-col gap-3">
             {events.map((event) => <button key={event.id} type="button" onClick={() => { setContent(<EventSummary event={event} />); setOpen(); }} className="flex items-center gap-3 rounded-2xl border border-j-gray-200 p-3 text-left transition-colors hover:border-j-yellow-400 hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800">
                 <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-j-blue-800 text-j-yellow-300">{event.primaryImage ? <Image src={getMediaImageUrl(event.primaryImage.storageKey)} alt="" fill unoptimized sizes="64px" className="object-cover opacity-60" /> : <CalendarDays size={22} />}</span>
                 <span className="min-w-0"><span className="block truncate font-bold text-j-blue-800">{event.title}</span><span className="mt-1 block text-xs text-j-gray-500">{feedDate(event.details.startsAt)}</span></span>
                 <ChevronRight size={18} className="ml-auto shrink-0 text-j-gray-400" aria-hidden="true" />
             </button>)}
-            {birthdays.length > 0 && <section aria-labelledby="agenda-birthdays-title" className="rounded-2xl bg-j-yellow-100/60 p-4">
-                <h3 id="agenda-birthdays-title" className="mb-3 flex items-center gap-2 text-sm font-extrabold text-j-blue-900"><Cake size={17} aria-hidden="true" />Aniversariantes</h3>
-                <ul className="flex flex-col gap-3">
-                    {birthdays.map((person) => <li key={person.id} className="flex items-center gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-j-blue-800 text-xs font-bold text-j-white" aria-hidden="true">{person.name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span>
-                        <span className="text-sm font-bold text-j-blue-900">{person.name}</span>
-                    </li>)}
-                </ul>
-            </section>}
         </div>
+        {events.length === 0 && birthdays.length === 0 && <p className="text-sm text-j-gray-500">Nenhum evento ou aniversariante nesta data.</p>}
     </section>;
 }

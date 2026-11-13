@@ -4,11 +4,10 @@ import { getMediaImageUrl } from '@/utils/media/imageUrl';
 
 export const userStatusSchema = z.enum([
     'ACTIVE',
+    'INACTIVE',
+    'ARCHIVED',
     'DISABLED',
-    'LOCKED',
-    'CHANGE_PASSWORD_REQUIRED',
-    'PENDING_FIRST_ACCESS',
-]);
+]).transform((status): UserStatus => (status === 'DISABLED' ? 'INACTIVE' : status));
 
 export const getUserProfileResponseSchema: z.ZodType<GetUserProfileResponse> = z.object({
     id: z.number(),

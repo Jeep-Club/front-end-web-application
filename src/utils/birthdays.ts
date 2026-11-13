@@ -1,4 +1,4 @@
-import type { BirthdayUser } from "@/schemas/admin/birthdays";
+import type { BirthdayUser } from "@/schemas/identity/birthdays";
 
 export interface UpcomingBirthday extends BirthdayUser {
     date: Date;

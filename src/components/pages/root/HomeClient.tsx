@@ -1,42 +1,30 @@
 "use client";
 
+import ExperiencesCarousel from "./ExperiencesCarousel";
+import ImpactCards from "./ImpactCards";
 import { useCallback, useEffect, useRef } from "react";
 import { Logo } from "@/components/common/logo";
-import LegalLinks from "@/components/common/legal-links";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import * as Scroll from 'react-scroll';
 const ScrollLink = Scroll.Link;
 import {
-  FaGithub,
-  FaGift,
   FaUserPlus,
   FaIdCard,
-  FaUsers,
   FaChevronRight,
   FaChevronDown,
   FaQuestionCircle,
 } from "react-icons/fa";
 import { GiJeep } from "react-icons/gi";
-import { MdOutlineExplore, MdGroups, MdVolunteerActivism } from "react-icons/md";
 import { driver } from "driver.js";
 import { getHomeTourSteps } from "@/config/tourSteps";
 import { FORCE_START_TOUR_KEY } from "@/hooks/useTour";
 
-const contributors = [
-  { username: "Vitorram", name: "Vitorram" },
-  { username: "joaogabrielbeserra", name: "joaogabrielbeserra" },
-  { username: "TulioKenji", name: "TulioKenji" },
-  { username: "joaoapassos", name: "joaoapassos" },
-  { username: "vinikyo", name: "vinikyo" },
-  { username: "KauanLeonel", name: "KauanLeonel" },
-  { username: "gumello244", name: "gumello244" },
-  { username: "DanielPMorais", name: "DanielPMorais" },
-  { username: "Luskahz", name: "Lucas Alves" },
-];
+export default function HomeClient({ footer }: { footer: ReactNode }) {
 
-export default function HomeClient() {
   const router = useRouter();
+
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
 
   const handleLogin = () => {
@@ -108,16 +96,14 @@ export default function HomeClient() {
 
         {/* Top nav */}
         <div className="relative z-10 flex items-center justify-between px-6 pt-8">
-          <a href="#creditos" className="rounded-full border border-white/20 bg-black/30 px-4 py-2.5 text-xs font-bold text-white/90 backdrop-blur-md transition-colors hover:border-yellow-400/60 hover:text-yellow-300 md:text-sm">
-            Créditos
-          </a>
-          <div className="flex items-center gap-3">
+          <Logo />
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Botão de ajuda / tour da tela inicial */}
             <button
               id="tour-home-help-btn"
               onClick={handleHomeTour}
               title="Como navegar nesta página?"
-              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 shadow-md shadow-yellow-500/10"
+              className="flex items-center gap-2 bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 hover:border-yellow-400 backdrop-blur-md px-3.5 py-2.5 rounded-full text-xs md:text-sm font-bold transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-md shadow-yellow-500/10"
             >
               <FaQuestionCircle size={15} />
               <span>Como funciona?</span>
@@ -126,14 +112,12 @@ export default function HomeClient() {
             <button
               id="tour-home-member-btn"
               onClick={handleLogin}
-              className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-all active:scale-95 hover:bg-[#001a52] shadow-lg"
+              className="flex items-center gap-2 bg-[#00236F] text-white text-xs md:text-sm px-4 py-2.5 rounded-full transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 hover:bg-[#001a52] shadow-lg"
             >
               <FaIdCard size={14} />
               Entrar
             </button>
 
-            <Logo />
-            
           </div>
         </div>
 
@@ -149,16 +133,18 @@ export default function HomeClient() {
             <p className="text-xs md:text-sm text-white/90">09/09/1999</p>
           </div>
 
+
           <p className="mb-3 text-xs font-semibold text-white md:text-sm">Quer ser sócio do Jeep Clube Tamoios?</p>
           <button
             id="tour-home-join-btn"
             onClick={handleRegister}
-            className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-all active:scale-95 shadow-xl"
+            className="flex items-center gap-2 mx-auto bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm md:text-base px-8 py-4 rounded-full transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-xl"
           >
             <FaUserPlus size={20} />
             Quero ser sócio
             <FaChevronRight size={12} />
           </button>
+
         </div>
 
         {/* Scroll down trigger */}
@@ -175,44 +161,12 @@ export default function HomeClient() {
       </section>
 
       {/* ── EXPERIÊNCIAS ── */}
-      <section id="experiencias" className="px-6 py-16 md:py-24 bg-[#111]">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
-          <p className="text-xl md:text-2xl text-white/70 italic mb-10">Onde o asfalto termina, a vida começa.</p>
+      <section id="experiencias" className="px-6 py-12 md:px-0 md:py-16 bg-[#111]">
+        <div className="max-w-6xl mx-auto md:max-w-none">
+          <p className="text-center text-[10px] tracking-[0.2em] text-yellow-400 uppercase mb-2 font-bold">Nossas Experiências</p>
+          <p className="text-center text-xl md:text-2xl text-white/70 italic mb-6">Onde o asfalto termina, a vida começa.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
-              <div className="relative h-64 md:h-80">
-                <Image 
-                src="/images/jeep_vermelho.jpeg" 
-                alt="Expedições" fill className="object-cover" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <MdOutlineExplore size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Expedições &amp; Trilhas</h3>
-                </div>
-                <p className="text-sm md:text-base text-white/50 leading-relaxed">
-                  Trilhas icônicas do Litoral Norte. De passeios leves a desafios técnicos extremos em meio à Mata Atlântica.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-3xl overflow-hidden bg-[#1a1a1a] border border-white/5 flex flex-col">
-              <div className="relative h-64 md:h-80">
-                <Image src="/images/mato.jpeg" alt="Eventos" fill className="object-cover" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <FaUsers size={20} className="text-yellow-400" />
-                  <h3 className="text-xl font-bold">Eventos &amp; Encontros</h3>
-                </div>
-                <p className="text-sm md:text-base text-white/50 leading-relaxed">
-                  Muito mais que carros — celebramos a amizade com encontros gastronômicos e workshops técnicos.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ExperiencesCarousel />
         </div>
       </section>
 
@@ -274,76 +228,25 @@ export default function HomeClient() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {[
-            { icon: <MdGroups size={26} />, title: "Apoio em Calamidades", text: "Logística e transporte de mantimentos em áreas isoladas por chuvas no Litoral Norte." },
-            { icon: <FaGift size={24} />, title: "Dia das Crianças", text: "Tradicional caravana de entrega de brinquedos e cestas básicas para comunidades." },
-            { icon: <MdVolunteerActivism size={26} />, title: "Doações Regulares", text: "Apoio contínuo a instituições locais de assistência social e proteção ambiental." }
-          ].map((item, i) => (
-            <div key={i} className="bg-white/5 rounded-3xl p-8 border border-white/10 hover:bg-white/10 transition-all group">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-400/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <span className="text-yellow-400">{item.icon}</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* CRÉDITOS */}
-      <section id="creditos" className="scroll-mt-8 border-t border-white/5 bg-[#111] px-6 py-16 md:py-24">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,2fr)] lg:gap-14">
-          <div className="text-center lg:sticky lg:top-10 lg:self-start lg:text-left">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-yellow-400">Feito em equipe</p>
-            <h2 className="text-3xl font-black text-white md:text-4xl">Créditos</h2>
-            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/60 lg:mx-0 md:text-base">
-              Um projeto construído por pessoas que compartilham a paixão por tecnologia, comunidade e aventura.
-            </p>
-          </div>
+        <ImpactCards />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {contributors.map(({ username, name }) => (
-              <article key={username} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center transition-colors hover:border-yellow-400/40 hover:bg-white/[0.07]">
-                <div className="relative mx-auto mb-5 h-28 w-28 overflow-hidden rounded-full border-2 border-yellow-400/70 bg-[#202020] shadow-lg shadow-black/30">
-                  <Image
-                    src={`https://github.com/${username}.png?size=256`}
-                    alt={`Foto de perfil de ${username}`}
-                    fill
-                    sizes="112px"
-                    className="object-cover"
-                  />
-                </div>
-                <h3 className="break-all text-base font-extrabold text-white">{name}</h3>
-                <a
-                  href={`https://github.com/${username}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label={`Abrir perfil GitHub de ${username} em nova aba`}
-                  className="mx-auto mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/15 px-4 text-sm font-semibold text-yellow-300 transition-colors hover:border-yellow-400/60 hover:bg-yellow-400/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
-                >
-                  <FaGithub size={16} aria-hidden="true" />
-                  GitHub
-                </a>
-              </article>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* ── CTA ── */}
-      <section className="px-6 py-20 bg-[#f5f7fb]">
-        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-yellow-400 rounded-[2.5rem] overflow-hidden relative p-8 md:p-16 flex flex-col md:flex-row items-center justify-between shadow-2xl">
-          <div className="relative z-10 text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-black text-[#00236F] leading-tight mb-4">
-              Pronto para a sua<br className="hidden md:block" />próxima aventura?
+      <section className="px-6 py-12 md:py-20 bg-[#f5f7fb]">
+        <div id="tour-home-cta" className="max-w-5xl mx-auto bg-gradient-to-br from-yellow-300 to-yellow-400 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden relative px-6 py-9 md:p-16 flex items-center shadow-xl shadow-[#00236F]/10">
+          <div className="relative z-10 mx-auto max-w-md text-center md:mx-0 md:max-w-[60%] md:text-left">
+            <h2 className="text-2xl md:text-5xl font-black text-[#00236F] leading-tight mb-3 md:mb-4">
+              Pronto para a sua<span className="md:hidden"> </span><br className="hidden md:block" />próxima aventura?
             </h2>
-            <p className="text-base text-[#00236F]/80 mb-8 font-medium">
+            <p className="text-sm md:text-base leading-relaxed text-[#00236F]/80 mb-6 md:mb-8 font-medium">
               Junte-se à maior família off-road do Litoral Norte.
             </p>
             <button
               onClick={handleRegister}
-              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-all active:scale-95 shadow-lg"
+
+              className="flex items-center gap-3 mx-auto md:mx-0 bg-[#00236F] text-white font-bold text-sm md:text-base px-8 py-4 rounded-full hover:bg-[#001a52] transition-[background-color,border-color,color,box-shadow,opacity,transform] active:scale-95 shadow-lg"
             >
               <FaIdCard size={18} />
               Quero ser Sócio
@@ -351,23 +254,14 @@ export default function HomeClient() {
             </button>
           </div>
 
-          <div className="mt-10 md:mt-0 md:absolute md:right-[-20px] md:bottom-[-20px] opacity-10 md:opacity-20 pointer-events-none">
-            <GiJeep size={280} className="text-[#00236F]" />
+          <div className="pointer-events-none absolute bottom-4 right-20 hidden text-[#00236F]/20 md:block" aria-hidden="true">
+            <GiJeep size={280} />
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="px-6 py-12 bg-[#0a0a0a] border-t border-white/5">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-4">
-            <GiJeep size={24} className="text-yellow-400" />
-            <p className="text-lg text-white font-bold tracking-tight">Jeep Club Tamoios</p>
-          </div>
-          <p className="text-xs text-white/30 mb-8">© 2026 Todos os direitos reservados.</p>
-          <LegalLinks className="text-white/60 font-medium" />
-        </div>
-      </footer>
+      {footer}
     </main>
   );
 }

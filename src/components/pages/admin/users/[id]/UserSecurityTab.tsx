@@ -218,7 +218,7 @@ export function UserSecurityTab({ userId }: { userId: number }) {
                         <p id="security-confirm-description" className="mt-2 text-sm leading-relaxed text-j-gray-600">Deseja realmente {confirmTarget.description}? Esta ação pode impedir que o usuário continue usando o recurso.</p>
                         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                             <Button type="button" disabled={actionMutation.isPending} onClick={() => setConfirmTarget(null)} className="border border-j-gray-200 bg-j-white text-j-gray-700 hover:bg-j-gray-100">Voltar</Button>
-                            <Button type="button" disabled={actionMutation.isPending} onClick={() => actionMutation.mutate(confirmTarget)} className="bg-j-red-500 text-j-white hover:bg-j-red-600 hover:text-j-white">
+                            <Button type="button" isLoading={actionMutation.isPending} onClick={() => actionMutation.mutate(confirmTarget)} className="bg-j-red-500 text-j-white hover:bg-j-red-600 hover:text-j-white">
                                 {actionMutation.isPending ? "Processando..." : "Confirmar"}
                             </Button>
                         </div>

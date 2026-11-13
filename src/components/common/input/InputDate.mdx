@@ -18,7 +18,7 @@ import { InputDate } from '@/components/common/input/input-date';
 
 Este componente exige FormProvider, como o fornecido por Form. Não possui modo `register=false`. Inicialize o valor como string em `formOptions.defaultValues` e use o mesmo `name` no schema. O erro exibido vem do React Hook Form. `required` sinaliza a obrigatoriedade; Form usa `noValidate`, por isso declare a regra no schema.
 
-O nome legado padrão é `birthData`. O valor HTML é `YYYY-MM-DD`, enquanto a apresentação depende do navegador/idioma. O botão chama `showPicker()` e depende do suporte do navegador e de uma ação do usuário; não representa um calendário Radix. `min`/`max` são atributos nativos; valide também no schema.
+O nome legado padrão é `birthData`. O valor HTML é `YYYY-MM-DD`, enquanto a apresentação depende do navegador/idioma. O botão chama `showPicker()` e depende do suporte do navegador e de uma ação do usuário. Para o calendário segmentado do HeroUI, consulte [DatePicker](?path=/docs/componentes-datepicker-data-única--docs). `min`/`max` são atributos nativos; valide também no schema.
 
 ## Aparência e controles
 

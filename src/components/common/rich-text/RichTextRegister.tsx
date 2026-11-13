@@ -3,23 +3,41 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { useController, useFormContext } from "react-hook-form";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
+import * as Popover from "@radix-ui/react-popover";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Quote, Code, Minus, Undo2, Redo2, RemoveFormatting, Link2, Unlink, Check, X } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, Quote, Code, Minus, Undo2, Redo2, RemoveFormatting, Link2, Unlink, Check, X, Plus, Ellipsis } from "lucide-react";
 import { publicationEditorHtml } from "@/utils/publications/content";
 import { isolateListSelection } from "@/utils/publications/listSelection";
 import styles from "./rich-text.module.css";
 
-function Tool({ label, children, active = false, disabled = false, onClick }: {
-    label: string; children: ReactNode; active?: boolean; disabled?: boolean; onClick: () => void;
+function Tool({ label, children, active = false, disabled = false, menu = false, onClick }: {
+    label: string; children: ReactNode; active?: boolean; disabled?: boolean; menu?: boolean; onClick: () => void;
 }) {
     return <button type="button" title={label} aria-label={label} aria-pressed={active} disabled={disabled} onMouseDown={(event) => event.preventDefault()} onClick={onClick}
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-40 ${active ? "bg-j-blue-800 text-j-white" : "text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800"}`}>
-        {children}
+        className={`flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-j-blue-800 disabled:cursor-not-allowed disabled:opacity-40 ${menu ? "w-full justify-start px-3 text-sm" : "w-9"} ${active ? "bg-button-primary-bg text-button-primary-text" : "text-secondary hover:bg-background-tertiary hover:text-primary"}`}>
+        {children}{menu && <span>{label}</span>}
     </button>;
+}
+
+function ToolbarMenu({ label, icon, disabled, open, onOpenChange, children }: {
+    label: string; icon: ReactNode; disabled: boolean; open: boolean; onOpenChange: (open: boolean) => void; children: ReactNode;
+}) {
+    return <Popover.Root open={open} onOpenChange={onOpenChange}>
+        <Popover.Trigger asChild><button type="button" title={label} aria-label={label} disabled={disabled}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-j-gray-600 hover:bg-j-gray-200 hover:text-j-blue-800 focus-visible:outline-2 focus-visible:outline-input-border-focus disabled:cursor-not-allowed disabled:opacity-40 data-[state=open]:bg-j-gray-200">
+            {icon}
+        </button></Popover.Trigger>
+        <Popover.Portal><Popover.Content sideOffset={6} collisionPadding={8} onEscapeKeyDown={(event) => event.stopPropagation()}
+            className="z-50 flex w-56 flex-col gap-1 rounded-xl border border-input-border bg-input-bg p-1.5 text-input-text shadow-xl">
+            <p className="px-3 py-1 text-xs font-bold text-j-gray-500">{label}</p>
+            {children}
+        </Popover.Content></Popover.Portal>
+    </Popover.Root>;
 }
 
 function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
     const [linkOpen, setLinkOpen] = useState(false);
+    const [openMenu, setOpenMenu] = useState<"lists" | "insert" | "more" | null>(null);
     const [url, setUrl] = useState("");
     const [linkError, setLinkError] = useState("");
     const id = useId();
@@ -51,10 +69,10 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
         else chain.toggleOrderedList().run();
     }
 
-    return <div className="border-b border-j-gray-200 bg-j-gray-100/70 p-2">
-        <div role="group" aria-label="Formatação do conteúdo" className="flex flex-wrap items-center gap-1">
+    return <div className="border-b border-input-border bg-background-secondary p-2">
+        <div role="group" aria-label="Formatação do conteúdo" className="flex min-w-0 items-center gap-1 overflow-x-auto">
             <select aria-label="Estilo do parágrafo" value={state.heading} disabled={disabled}
-                className="!w-auto !rounded-lg !border-j-gray-200 !bg-j-white !px-2 !py-2 !pr-6 !text-xs !text-j-gray-700"
+                className="!w-auto !rounded-lg !border-input-border !bg-input-bg !px-2 !py-2 !pr-6 !text-xs !text-input-text"
                 onChange={(event) => {
                     const level = Number(event.target.value);
                     if (level === 0) editor.chain().focus().setParagraph().run();
@@ -66,25 +84,29 @@ function Toolbar({ editor, disabled }: { editor: Editor; disabled: boolean }) {
             <Tool label="Negrito (Ctrl+B)" active={state.bold} disabled={disabled} onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={17} /></Tool>
             <Tool label="Itálico (Ctrl+I)" active={state.italic} disabled={disabled} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={17} /></Tool>
             <Tool label="Sublinhado (Ctrl+U)" active={state.underline} disabled={disabled} onClick={() => editor.chain().focus().toggleUnderline().run()}><Underline size={17} /></Tool>
-            <Tool label="Tachado" active={state.strike} disabled={disabled} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough size={17} /></Tool>
-            <span className="mx-1 h-6 w-px bg-j-gray-200" aria-hidden="true" />
-            <Tool label="Lista com marcadores" active={state.bulletList} disabled={disabled} onClick={() => toggleList('bulletList')}><List size={17} /></Tool>
-            <Tool label="Lista numerada" active={state.orderedList} disabled={disabled} onClick={() => toggleList('orderedList')}><ListOrdered size={17} /></Tool>
-            <Tool label="Citação" active={state.blockquote} disabled={disabled} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote size={17} /></Tool>
-            <Tool label="Bloco de código" active={state.codeBlock} disabled={disabled} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code size={17} /></Tool>
-            <Tool label="Linha divisória" disabled={disabled} onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus size={17} /></Tool>
-            <Tool label="Inserir ou editar link" active={state.link} disabled={disabled} onClick={() => { setUrl(editor.getAttributes("link").href ?? ""); setLinkError(""); setLinkOpen(!linkOpen); }}><Link2 size={17} /></Tool>
-            <Tool label="Remover link" disabled={disabled || !state.link} onClick={() => editor.chain().focus().extendMarkRange("link").unsetLink().run()}><Unlink size={17} /></Tool>
-            <span className="mx-1 h-6 w-px bg-j-gray-200" aria-hidden="true" />
             <Tool label="Desfazer (Ctrl+Z)" disabled={disabled || !state.undo} onClick={() => editor.chain().focus().undo().run()}><Undo2 size={17} /></Tool>
-            <Tool label="Refazer (Ctrl+Shift+Z)" disabled={disabled || !state.redo} onClick={() => editor.chain().focus().redo().run()}><Redo2 size={17} /></Tool>
-            <Tool label="Limpar formatação" disabled={disabled} onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}><RemoveFormatting size={17} /></Tool>
+            <ToolbarMenu label="Listas" icon={<List size={17} />} disabled={disabled} open={openMenu === "lists"} onOpenChange={(open) => setOpenMenu(open ? "lists" : null)}>
+                <Tool menu label="Lista com marcadores" active={state.bulletList} disabled={disabled} onClick={() => { toggleList('bulletList'); setOpenMenu(null); }}><List size={17} /></Tool>
+                <Tool menu label="Lista numerada" active={state.orderedList} disabled={disabled} onClick={() => { toggleList('orderedList'); setOpenMenu(null); }}><ListOrdered size={17} /></Tool>
+            </ToolbarMenu>
+            <ToolbarMenu label="Inserir" icon={<Plus size={17} />} disabled={disabled} open={openMenu === "insert"} onOpenChange={(open) => setOpenMenu(open ? "insert" : null)}>
+                <Tool menu label="Citação" active={state.blockquote} disabled={disabled} onClick={() => { editor.chain().focus().toggleBlockquote().run(); setOpenMenu(null); }}><Quote size={17} /></Tool>
+                <Tool menu label="Bloco de código" active={state.codeBlock} disabled={disabled} onClick={() => { editor.chain().focus().toggleCodeBlock().run(); setOpenMenu(null); }}><Code size={17} /></Tool>
+                <Tool menu label="Linha divisória" disabled={disabled} onClick={() => { editor.chain().focus().setHorizontalRule().run(); setOpenMenu(null); }}><Minus size={17} /></Tool>
+                <Tool menu label="Inserir ou editar link" active={state.link} disabled={disabled} onClick={() => { setUrl(editor.getAttributes("link").href ?? ""); setLinkError(""); setLinkOpen(true); setOpenMenu(null); }}><Link2 size={17} /></Tool>
+                <Tool menu label="Remover link" disabled={disabled || !state.link} onClick={() => { editor.chain().focus().extendMarkRange("link").unsetLink().run(); setOpenMenu(null); }}><Unlink size={17} /></Tool>
+            </ToolbarMenu>
+            <ToolbarMenu label="Mais ações" icon={<Ellipsis size={17} />} disabled={disabled} open={openMenu === "more"} onOpenChange={(open) => setOpenMenu(open ? "more" : null)}>
+                <Tool menu label="Tachado" active={state.strike} disabled={disabled} onClick={() => { editor.chain().focus().toggleStrike().run(); setOpenMenu(null); }}><Strikethrough size={17} /></Tool>
+                <Tool menu label="Refazer (Ctrl+Shift+Z)" disabled={disabled || !state.redo} onClick={() => { editor.chain().focus().redo().run(); setOpenMenu(null); }}><Redo2 size={17} /></Tool>
+                <Tool menu label="Limpar formatação" disabled={disabled} onClick={() => { editor.chain().focus().clearNodes().unsetAllMarks().run(); setOpenMenu(null); }}><RemoveFormatting size={17} /></Tool>
+            </ToolbarMenu>
         </div>
         {linkOpen && <div className="mt-2 border-t border-j-gray-200 pt-2">
             <label htmlFor={id} className="text-xs font-semibold text-j-gray-700">Endereço do link</label>
             <div className="mt-1 flex items-center gap-1">
                 <input id={id} type="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://exemplo.com" disabled={disabled} aria-invalid={!!linkError} aria-describedby={linkError ? `${id}-error` : undefined}
-                    className="min-w-0 flex-1 rounded-lg border border-j-gray-200 bg-j-white px-3 py-2 text-sm text-j-gray-700" onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); applyLink(); } }} />
+                    className="min-w-0 flex-1 rounded-lg border border-input-border bg-input-bg px-3 py-2 text-sm text-input-text" onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); applyLink(); } }} />
                 <Tool label="Aplicar link" disabled={disabled} onClick={applyLink}><Check size={17} /></Tool>
                 <Tool label="Cancelar link" disabled={disabled} onClick={() => setLinkOpen(false)}><X size={17} /></Tool>
             </div>
@@ -123,13 +145,13 @@ export function RichTextRegister({ name, label, required = false }: { name: stri
     }, [editor, error, id, required]);
 
     return <div className="flex w-full min-w-0 flex-col gap-2">
-        <label id={`${id}-label`} htmlFor={id} className="text-sm font-bold text-j-gray-700" onClick={() => editor?.commands.focus()}>{label}{required && <span className="text-j-red-500"> *</span>}</label>
-        <div className={`overflow-hidden rounded-xl border-2 bg-j-white transition-colors ${error ? "border-j-red-300 focus-within:border-j-red-500" : "border-j-gray-200 focus-within:border-j-blue-700"}`}>
+        <label id={`${id}-label`} htmlFor={id} className="text-sm font-bold text-primary" onClick={() => editor?.commands.focus()}>{label}{required && <span className="text-j-red-500"> *</span>}</label>
+        <div className={`overflow-hidden rounded-xl border-2 bg-input-bg transition-colors ${error ? "border-input-border-error focus-within:border-input-border-error" : "border-input-border focus-within:border-input-border-focus"}`}>
             {editor && <Toolbar editor={editor} disabled={isSubmitting} />}
             <EditorContent editor={editor} />
             {!editor && <p className="p-4 text-sm text-j-gray-500" role="status">Carregando editor...</p>}
         </div>
-        <p id={`${id}-help`} className="text-xs text-j-gray-500">Selecione o texto para formatar. Use o menu Parágrafo para escolher títulos H1 a H5.</p>
-        {error && <p id={`${id}-error`} role="alert" className="text-sm text-j-red-500">{error.message}</p>}
+        <p id={`${id}-help`} className="text-xs text-secondary">Selecione o texto para formatar. Use o menu Parágrafo para escolher títulos H1 a H5.</p>
+        {error && <p id={`${id}-error`} role="alert" className="text-sm text-input-error-text">{error.message}</p>}
     </div>;
 }

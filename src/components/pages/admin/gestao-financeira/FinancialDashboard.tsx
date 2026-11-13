@@ -1,39 +1,107 @@
 "use client";
 
-import type { BillingResource } from "@/schemas/billing/management";
+import { useState } from "react";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
 import { listBillingAction } from "@/server/actions/billing/management";
 import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
-import { useQueries } from "@tanstack/react-query";
-import { ArrowRight,ClipboardCheck,Coins,FileText,Undo2 } from "lucide-react";
+import { billingLabels } from "./billingDisplay";
+import { MembershipBilling } from "./MembershipBilling";
+import { FinancialDashboardView } from "./FinancialDashboardView";
+import type { DashboardDestination, DashboardMetric, DashboardQueueGroup, DashboardQueueItem, DashboardSegment } from "./financialDashboardModel";
 
-export type FinancialTab = "dashboard" | "definitions" | BillingResource;
+export type FinancialTab = "dashboard" | "definitions" | "cycles" | "movements";
 
-export function FinancialDashboard({ onNavigate }: { onNavigate: (tab: FinancialTab) => void }) {
-    const permissions = useUserStore((state) => state.permissions);
+const chargeStatuses = ["PENDING", "PAID", "CANCELED"] as const;
+const queueGroups = [
+    { id: "payments" as const, label: "Pagamentos", resource: "payments" as const, status: "PENDING_VALIDATION", permission: "PAYMENT_READ", destination: { tab: "movements", movement: "analysis", status: "PENDING_VALIDATION" } as const },
+    { id: "refunds" as const, label: "Reembolsos", resource: "refunds" as const, status: "REQUESTED", permission: "REFUND_READ", destination: { tab: "movements", movement: "refunds", status: "REQUESTED" } as const },
+    { id: "returns" as const, label: "Devoluções", resource: "refunds" as const, status: "APPROVED", permission: "REFUND_READ", destination: { tab: "movements", movement: "refunds", status: "APPROVED" } as const },
+];
+
+export function FinancialDashboard({ onNavigate }: { onNavigate: (destination: DashboardDestination) => void }) {
+    const permissions = useUserStore(state => state.permissions);
     const can = (action: string) => hasPermission(permissions, "BILLING", action);
-    const cards = [
-        { title: "Definições cadastradas", description: "Regras de cobrança do clube", permission: "CHARGE_DEFINITION_READ", tab: "definitions" as const, icon: FileText, load: async () => (await listChargeDefinitionsAction({ page: "0", size: "1" })).totalElements },
-        { title: "Cobranças em aberto", description: "Inclui cobranças em atraso e expiradas", permission: "MEMBER_CHARGE_READ", tab: "member-charges" as const, icon: Coins, load: async () => (await listBillingAction("member-charges", { page: 0, size: 1, status: "PENDING" })).totalElements },
-        { title: "Cobranças pagas", description: "Quitadas por pagamentos confirmados", permission: "MEMBER_CHARGE_READ", tab: "member-charges" as const, icon: ClipboardCheck, load: async () => (await listBillingAction("member-charges", { page: 0, size: 1, status: "PAID" })).totalElements },
-        { title: "Pagamentos para validar", description: "Comprovantes aguardando análise", permission: "PAYMENT_READ", tab: "payments" as const, icon: ClipboardCheck, load: async () => (await listBillingAction("payments", { page: 0, size: 1, status: "PENDING_VALIDATION" })).totalElements },
-        { title: "Reembolsos solicitados", description: "Solicitações aguardando decisão", permission: "REFUND_READ", tab: "refunds" as const, icon: Undo2, load: async () => (await listBillingAction("refunds", { page: 0, size: 1, status: "REQUESTED" })).totalElements },
-        { title: "Devoluções a realizar", description: "Reembolsos aprovados ainda não devolvidos", permission: "REFUND_READ", tab: "refunds" as const, icon: Undo2, load: async () => (await listBillingAction("refunds", { page: 0, size: 1, status: "APPROVED" })).totalElements },
-    ].filter((card) => can(card.permission));
-    const counts = useQueries({ queries: cards.map((card) => ({ queryKey: ["billing", "dashboard", card.title], queryFn: card.load, staleTime: 30_000 })) });
+    const canReadCharges = can("MEMBER_CHARGE_READ");
+    const canReadDefinitions = can("CHARGE_DEFINITION_READ");
+    const canReadMembership = hasPermission(permissions, "MEMBERSHIP", "BILLING_CONFIGURATION_READ");
+    const queryClient = useQueryClient();
+    const [selectedQueue, setSelectedQueue] = useState<DashboardQueueGroup>("payments");
+    const [manualRefresh, setManualRefresh] = useState(false);
 
-    return <section className="flex flex-col gap-5" aria-label="Dashboard financeiro">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{cards.map((card, index) => {
-            const query = counts[index];
-            const Icon = card.icon;
-            return <article key={card.title} className="flex min-w-0 flex-col rounded-2xl border border-j-gray-200 bg-j-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-3"><h3 className="text-sm font-bold text-j-blue-800">{card.title}</h3><Icon size={22} className="shrink-0 text-j-blue-800" /></div>
-                <p className="my-3 text-3xl font-black text-j-blue-800" aria-live="polite">{query.isPending ? "…" : query.isError ? "—" : query.data?.toLocaleString("pt-BR")}</p>
-                <p className="text-xs text-j-gray-600">{card.description}</p>
-                {query.error && <p role="alert" className="mt-2 text-xs text-red-600">{query.error.message}</p>}
-                <button type="button" className="mt-4 flex items-center gap-2 text-sm font-bold text-j-blue-800" onClick={() => onNavigate(card.tab)}>Consultar <ArrowRight size={15} /></button>
-            </article>;
-        })}</div>
-    </section>;
+    // Count-only reads use totalElements; pending lists reuse their first page's
+    // total instead of loading every payment or treating a partial sum as cash flow.
+    const charges = useQueries({ queries: chargeStatuses.map(status => ({
+        queryKey: ["billing", "dashboard", "charges", status],
+        queryFn: () => listBillingAction("member-charges", { page: 0, size: 1, status }),
+        enabled: canReadCharges,
+        staleTime: 30_000,
+        retry: false,
+    })) });
+    const queues = useQueries({ queries: queueGroups.map(group => ({
+        queryKey: ["billing", "dashboard", group.resource, group.status],
+        queryFn: () => listBillingAction(group.resource, { page: 0, size: 5, status: group.status }),
+        enabled: can(group.permission),
+        staleTime: 30_000,
+        retry: false,
+    })) });
+    const definitions = useQuery({
+        queryKey: ["billing", "dashboard", "definitions"],
+        queryFn: () => listChargeDefinitionsAction({ page: "0", size: "1" }),
+        enabled: canReadDefinitions,
+        staleTime: 30_000,
+        retry: false,
+    });
+
+    const metricSpecs = [
+        { id: "pending", title: "Cobranças em aberto", description: "Inclui débitos em atraso e expirados", tone: "amber" as const, enabled: canReadCharges, query: charges[0], destination: { tab: "movements", movement: "member-charges", status: "PENDING" } as const },
+        { id: "paid", title: "Cobranças quitadas", description: "Pagamentos confirmados no histórico", tone: "green" as const, enabled: canReadCharges, query: charges[1], destination: { tab: "movements", movement: "member-charges", status: "PAID" } as const },
+        { id: "validation", title: "Pagamentos para validar", description: "Comprovantes aguardando sua análise", tone: "blue" as const, enabled: can("PAYMENT_READ"), query: queues[0], destination: queueGroups[0].destination },
+        { id: "refunds", title: "Reembolsos solicitados", description: "Solicitações aguardando uma decisão", tone: "violet" as const, enabled: can("REFUND_READ"), query: queues[1], destination: queueGroups[1].destination },
+    ];
+    const metrics: DashboardMetric[] = metricSpecs.filter(metric => metric.enabled).map(({ query, ...metric }) => ({
+        ...metric, value: query.data?.totalElements, loading: query.isPending, error: query.error?.message,
+    }));
+    const distributionError = canReadCharges ? charges.find(query => query.isError)?.error?.message : undefined;
+    const segments: DashboardSegment[] = canReadCharges && charges.every(query => query.isSuccess) ? [
+        { id: "PAID", label: "Quitadas", count: charges[1].data!.totalElements, tone: "green", destination: { tab: "movements", movement: "member-charges", status: "PAID" } },
+        { id: "PENDING", label: "Em aberto", count: charges[0].data!.totalElements, tone: "amber", destination: { tab: "movements", movement: "member-charges", status: "PENDING" } },
+        { id: "CANCELED", label: "Canceladas", count: charges[2].data!.totalElements, tone: "blue", destination: { tab: "movements", movement: "member-charges", status: "CANCELED" } },
+    ] : [];
+    const availableGroups = queueGroups.map((group, index) => ({ ...group, query: queues[index] })).filter(group => can(group.permission));
+    const activeQueue = availableGroups.find(group => group.id === selectedQueue) ?? availableGroups[0];
+    const queueItems: DashboardQueueItem[] = activeQueue?.query.data?.content.flatMap(record => {
+        if ("paymentMethod" in record) return [{
+            id: record.id, title: `Pagamento #${record.id}`, description: `Cobrança #${record.memberChargeId} · ${billingLabels[record.paymentMethod] ?? record.paymentMethod}`,
+            amount: record.amount, date: record.createdAt ?? record.paidAt, destination: activeQueue.destination,
+        }];
+        if ("memberPaymentId" in record) return [{
+            id: record.id, title: `${activeQueue.id === "returns" ? "Devolução" : "Reembolso"} #${record.id}`,
+            description: `Associado #${record.userId} · Cobrança #${record.memberChargeId}`, amount: record.amount,
+            date: activeQueue.id === "returns" ? record.approvedAt : record.requestedAt, destination: activeQueue.destination,
+        }];
+        return [];
+    }) ?? [];
+    const activeQueries = [...(canReadCharges ? charges : []), ...availableGroups.map(group => group.query), ...(canReadDefinitions ? [definitions] : [])];
+    const updatedAt = Math.max(0, ...activeQueries.map(query => query.dataUpdatedAt));
+
+    return <FinancialDashboardView
+        metrics={metrics}
+        distribution={{ segments, available: canReadCharges, loading: canReadCharges && charges.some(query => query.isPending), error: distributionError }}
+        queue={{ groups: availableGroups.map(group => ({ id: group.id, label: group.label, total: group.query.data?.totalElements, loading: group.query.isPending })), selected: activeQueue?.id, items: queueItems, total: activeQueue?.query.data?.totalElements, loading: activeQueue?.query.isPending ?? false, error: activeQueue?.query.error?.message, destination: activeQueue?.destination }}
+        updatedAt={updatedAt || undefined}
+        refreshing={manualRefresh || activeQueries.some(query => query.isFetching)}
+        onRefresh={() => {
+            setManualRefresh(true);
+            void Promise.allSettled([
+                queryClient.invalidateQueries({ queryKey: ["billing", "dashboard"] }),
+                ...(canReadMembership ? [queryClient.invalidateQueries({ queryKey: ["membership", "billing-configuration"] })] : []),
+            ]).finally(() => setManualRefresh(false));
+        }}
+        onQueueChange={setSelectedQueue}
+        onRetryQueue={() => { void activeQueue?.query.refetch(); }}
+        onNavigate={onNavigate}
+        configuration={canReadMembership ? <MembershipBilling /> : undefined}
+    />;
 }

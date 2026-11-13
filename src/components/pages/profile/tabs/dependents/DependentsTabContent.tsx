@@ -6,12 +6,14 @@ import { useModal } from '@/providers/ModalProvider';
 import { listDependentsAction } from '@/server/actions/dependents';
 import { maskCPF,maskPhoneNumber } from '@/utils/masks';
 import { useQuery } from '@tanstack/react-query';
-import { Eye,Pencil,Plus,RefreshCw,Trash2 } from 'lucide-react';
+import { Eye,Pencil,Plus,RefreshCw,Trash2,Users } from 'lucide-react';
 import { useState } from 'react';
 import { CreateDependentModal } from './CreateDependentModal';
 import { DeleteDependentModal } from './DeleteDependentModal';
 import { DependentPhoto } from './DependentPhoto';
 import { ViewDependentModal } from './ViewDependentModal';
+import { ProfileTabLoading } from '../ProfileTabLoading';
+import { ProfileTabEmptyState } from '../ProfileTabEmptyState';
 
 const RELATIONSHIP_LABELS:Record<MemberDependentRelationshipType,string>={
     CHILD:'Filho(a)',GUEST:'Convidado(a)',OTHER:'Outro',PARENT:'Pai/Mãe',SIBLING:'Irmão/Irmã',SPOUSE:'Cônjuge',
@@ -26,14 +28,24 @@ export function DependentsTabContent(){
     const visibleDependents=data.slice(pageIndex*pagination.pageSize,(pageIndex+1)*pagination.pageSize);
     const open=(content:React.ReactNode)=>{setContent(content);setOpen()};
 
+    if(!isLoading&&!isError&&!data.length){
+        return <ProfileTabEmptyState
+            icon={Users}
+            title="Meus dependentes"
+            description="Gerencie as pessoas vinculadas ao seu perfil."
+            emptyTitle="Você ainda não tem dependentes cadastrados"
+            emptyDescription="Inclua seus dependentes e mantenha vínculos disponíveis no seu perfil."
+            action={<Button onClick={()=>open(<CreateDependentModal/>)} className="h-11 w-full shrink-0 justify-center whitespace-nowrap rounded-xl px-5"><Plus size={16}/><span>Incluir dependente</span></Button>}
+        />;
+    }
+
     return <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
             <h3 className="text-base font-bold text-j-gray-700">Meus dependentes</h3>
             <Button onClick={()=>open(<CreateDependentModal/>)} className="h-11 w-24 shrink-0 justify-center whitespace-nowrap sm:w-52"><Plus size={16}/><span className="hidden sm:inline">Incluir dependente</span><span className="sm:hidden">Incluir</span></Button>
         </div>
-        {isLoading&&<p className="text-sm text-j-gray-400">Carregando dependentes...</p>}
+        {isLoading&&<ProfileTabLoading label="Carregando dependentes..." layout="rows" />}
         {isError&&<div className="flex flex-col items-start gap-3"><p className="text-sm text-j-red-400">Não foi possível carregar seus dependentes.</p><Button onClick={()=>refetch()} disabled={isFetching}><RefreshCw size={16} className={isFetching?'animate-spin':''}/>Tentar novamente</Button></div>}
-        {!isLoading&&!isError&&!data.length&&<p className="text-sm text-j-gray-400">Você ainda não tem dependentes cadastrados.</p>}
         {!isLoading&&!isError&&data.length>0&&<div className="overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
             <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(110px,0.7fr)_280px] gap-3 border-b border-j-gray-200 bg-j-gray-100/70 px-4 py-3 text-[10px] font-extrabold uppercase tracking-wide text-j-gray-400 xl:grid">
                 <span>Dependente</span><span className="text-center">CPF</span><span className="text-center">Telefone</span><span className="text-center">Parentesco</span><span className="text-center">Ações</span>

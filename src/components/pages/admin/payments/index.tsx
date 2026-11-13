@@ -10,7 +10,6 @@ import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
 import { getPaymentsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { ListPagination } from "@/components/common/table/ListPagination";
 import { paymentPermissions } from "@/config/paymentPermissions";
 import type { PaymentFilters, PaymentStatus } from "@/schemas/payments";
@@ -18,7 +17,15 @@ import { useUserStore } from "@/stores/userStore";
 import { hasPermission } from "@/utils/permission/hasPermission";
 import { formatAmount, formatDate, methodLabels, paymentKeys, PaymentStatusBadge, statusLabels } from "./presentation";
 
-export default function PaymentsPage({ filters }: { filters: PaymentFilters }) {
+export default function PaymentsPage({
+    filters,
+    embedded = false,
+    onFiltersChange,
+}: {
+    filters: PaymentFilters;
+    embedded?: boolean;
+    onFiltersChange?: (filters: PaymentFilters) => void;
+}) {
     const router = useRouter();
     const [isNavigating, startTransition] = useTransition();
     const permissions = useUserStore(state => state.permissions);
@@ -27,7 +34,7 @@ export default function PaymentsPage({ filters }: { filters: PaymentFilters }) {
         storageKey: "tour_completed_admin_payments",
         steps: getPaymentsTourSteps,
         autoStartOnFirstVisit: false,
-        enabled: canRead,
+        enabled: canRead && !embedded,
     });
     const { data, error, isPending, isFetching, refetch } = useQuery({
         queryKey: [...paymentKeys.lists, filters],
@@ -36,19 +43,23 @@ export default function PaymentsPage({ filters }: { filters: PaymentFilters }) {
     });
 
     function navigate(next: PaymentFilters) {
+        if (embedded) {
+            onFiltersChange?.(next);
+            return;
+        }
         const params = new URLSearchParams({ page: String(next.page), size: String(next.size) });
         if (next.status) params.set("status", next.status);
         startTransition(() => router.push(`/admin/pagamentos?${params}`));
     }
 
     return (
-        <div className="min-h-full w-full p-3 md:p-4">
-            <div className="flex w-full flex-col gap-4 pb-6">
-                <PageHeader id="tour-payments-header" title="Análise de pagamentos" breadcrumbs={[
+        <div className={embedded ? "w-full" : "min-h-full w-full p-3 md:p-4"}>
+            <div className="flex w-full flex-col gap-4 pb-2">
+                {!embedded && <PageHeader id="tour-payments-header" title="Análise de pagamentos" breadcrumbs={[
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
                     { label: "Análise de pagamentos" },
-                ]} />
+                ]} />}
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />
@@ -57,10 +68,9 @@ export default function PaymentsPage({ filters }: { filters: PaymentFilters }) {
                     </section>
                 ) : (
                     <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <ManagementBackButton />
-                            <h3 className="text-base font-bold text-j-gray-700">Pagamentos enviados</h3>
-                        </div>
+                        <h2 className="text-base font-bold text-primary">
+                            {embedded ? "Análise de pagamentos" : "Pagamentos enviados"}
+                        </h2>
                         <p className="text-sm text-j-gray-600">Consulte os comprovantes enviados e decida sobre os pagamentos.</p>
                         <section id="tour-payments-filters" aria-label="Filtros de pagamentos" className="flex flex-wrap items-end gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4">
                             <label className="flex min-w-52 flex-col gap-1 text-sm font-bold text-j-blue-800">

@@ -28,7 +28,7 @@ export function PublicationCommentPreview({ publicationId, count, onOpen }: { pu
     }, [canRead, count, visible]);
     const query = useQuery({
         queryKey: ['publications', 'comments', publicationId, 'preview', permissions],
-        queryFn: () => listPublicationCommentsAction({ id: publicationId, page: 0, size: 3 }),
+        queryFn: () => listPublicationCommentsAction({ id: publicationId, page: 0, size: 2 }),
         enabled: canRead && count > 0 && visible && expanded,
         staleTime: 30_000,
     });
@@ -59,7 +59,7 @@ export function PublicationCommentPreview({ publicationId, count, onOpen }: { pu
                     </div>}
                 </div>)}
             </div>
-            {count > 3 && onOpen && <button type="button" onClick={onOpen} className="mt-2 min-h-11 text-sm font-bold text-j-blue-700 hover:underline">Ver todos os comentários</button>}
+            {count > 2 && onOpen && <button type="button" onClick={onOpen} className="mt-2 min-h-11 text-sm font-bold text-j-blue-700 hover:underline">Ver todos os comentários</button>}
         </>}
 
 

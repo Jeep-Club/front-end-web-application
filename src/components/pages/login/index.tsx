@@ -11,7 +11,6 @@ import { getLoginTourSteps } from "@/config/tourSteps";
 
 export default function Login() {
     const router = useRouter();
-
     // Tour sob demanda para a tela de login (não auto-inicia, adaptado para mobile e desktop)
     const { startTour } = usePageTour({
         steps: getLoginTourSteps,
@@ -49,7 +48,7 @@ export default function Login() {
                         type="button"
                         onClick={startTour}
                         title="Precisa de ajuda para acessar?"
-                        className="flex items-center gap-1.5 mb-3 rounded-full bg-j-yellow-300/10 border border-j-yellow-300/40 px-3 py-1.5 text-[11px] font-semibold text-j-yellow-300 hover:bg-j-yellow-300/20 hover:border-j-yellow-300 active:scale-95 transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-1.5 mb-3 rounded-full bg-j-yellow-300/10 border border-j-yellow-300/40 px-3 py-1.5 text-[11px] font-semibold text-j-yellow-300 hover:bg-j-yellow-300/20 hover:border-j-yellow-300 active:scale-95 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer"
                     >
                         <HelpCircle size={13} className="shrink-0" />
                         Como acessar pela primeira vez?
@@ -59,15 +58,13 @@ export default function Login() {
                     <div className="w-full flex flex-col items-center">
                         <FormLogin />
                         <p id="tour-login-join" className="px-5 pt-3 pb-2 text-center text-[10px] text-j-transparent-white md:text-xs">
-                            Não é sócio?{" "}
-                            <Link
-                                href="/membership/apply"
-                                className="text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400"
-                            >
-                                Quero ser sócio
+                            J&aacute; &eacute; s&oacute;cio? Precisa se associar?{" "}
+                            <Link href="/membership/apply" className="text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400">
+                                Quero ser s&oacute;cio
                             </Link>
                         </p>
                         <LegalLinks className="px-5 pt-2 text-j-gray-200" />
+                        <p className="pt-3 pb-4 text-center text-[8px] text-j-white md:text-xs">&copy; 2026 JEEP CLUBE TAMOIOS &bull; OFF-ROAD</p>
                     </div>
                 </div>
             </div>

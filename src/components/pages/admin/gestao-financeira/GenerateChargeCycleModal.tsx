@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation,useQueryClient } from "@tanstack/react-query";
-import { CalendarPlus,X } from "lucide-react";
+import { CalendarPlus,HelpCircle,X } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -23,6 +23,7 @@ export function GenerateChargeCycleModal({
     const queryClient = useQueryClient();
     const [code, setCode] = useState("");
     const [dueDate, setDueDate] = useState("");
+    const [showHelp, setShowHelp] = useState(false);
 
     const mutation = useMutation({
         mutationFn: () => generateChargeCycleAction(chargeDefinitionId, {
@@ -56,17 +57,13 @@ export function GenerateChargeCycleModal({
             </ButtonIcon>
 
             <header className="border-b border-j-gray-200 px-5 pb-5 pr-16 pt-6 md:px-8 md:pb-6 md:pr-20 md:pt-8">
-                <div className="flex items-center gap-3">
-                    <span className="rounded-xl bg-j-blue-50 p-2.5 text-j-blue-800">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="shrink-0 rounded-xl bg-j-blue-50 p-2.5 text-j-blue-800">
                         <CalendarPlus size={21} />
                     </span>
-                    <div>
-                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">
-                            Gerar cobrança
-                        </h2>
-                        <p className="mt-1 text-xs leading-relaxed text-j-gray-500 md:text-sm">
-                            {chargeDefinitionName}
-                        </p>
+                    <div className="min-w-0">
+                        <h2 className="text-xl font-extrabold text-j-blue-800 md:text-2xl">Gerar cobrança</h2>
+                        <p className="mt-1 text-xs leading-relaxed text-j-gray-500 md:text-sm">{chargeDefinitionName}</p>
                     </div>
                 </div>
             </header>
@@ -79,7 +76,7 @@ export function GenerateChargeCycleModal({
                 }}
             >
                 <p className="text-sm leading-relaxed text-j-gray-600">
-                    O ciclo criará uma cobrança no histórico de cada usuário incluído nas atribuições ativas.
+                    Esta etapa cria uma nova rodada de cobrança e registra o valor no histórico de cada associado vinculado a esta cobrança.
                 </p>
 
                 <Input
@@ -87,12 +84,19 @@ export function GenerateChargeCycleModal({
                     maxLength={80}
                     label="Código do ciclo"
                     name="code"
+                    labelAction={<button type="button" aria-expanded={showHelp} aria-controls="generate-charge-help" onClick={() => setShowHelp((visible) => !visible)} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-j-blue-200 bg-j-blue-50 px-2.5 py-1.5 text-xs font-bold text-j-blue-800 transition-colors hover:bg-j-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800"><HelpCircle size={15} />Dúvidas?</button>}
                     placeholder="Ex.: SET-2026"
                     value={code}
                     onChange={(event) => setCode(event.target.value)}
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                 />
+
+                {showHelp && <aside id="generate-charge-help" className="-mt-2 rounded-xl border border-j-blue-100 bg-j-blue-50 p-4 text-sm leading-relaxed text-j-blue-800">
+                    <p className="font-bold">Por que criar um ciclo?</p>
+                    <p className="mt-1">O ciclo é a etapa que gera as cobranças e registra cada uma no histórico dos associados com atribuição ativa. Sem criar o ciclo, a definição ainda não gera cobranças para ninguém.</p>
+                    <p className="mt-2">Escolha um código fácil de reconhecer, como <strong>ANUIDADE-2026</strong>. Ele ajuda a identificar e localizar esta rodada depois, especialmente ao consultar vencimentos e pagamentos.</p>
+                </aside>}
 
                 <Input
                     required
@@ -102,7 +106,7 @@ export function GenerateChargeCycleModal({
                     value={dueDate}
                     onChange={(event) => setDueDate(event.target.value)}
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 px-4 py-3 text-j-gray-700 focus:bg-input-bg-focus"
                 />
 
                 <div className="flex w-full gap-3 border-t border-j-gray-200 pt-5">

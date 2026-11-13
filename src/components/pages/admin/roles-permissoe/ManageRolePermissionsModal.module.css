@@ -1,0 +1,39 @@
+.panel {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    width: 100%;
+    max-width: 52rem;
+    height: min(52rem, calc(100dvh - 2rem));
+    min-height: 0;
+    /* Unlike hidden, clip cannot scroll the shell when a checkbox gains focus. */
+    overflow: clip;
+    border-radius: 1.5rem;
+    background: var(--surface);
+    color: var(--text-primary);
+    box-shadow: 0 24px 60px #0004;
+}
+.header { padding: 1.25rem 4rem 1rem 1.5rem; border-bottom: 1px solid var(--gray-200); }
+.panel button { cursor: pointer; }
+.panel button:disabled { cursor: not-allowed; }
+.panel button:focus-visible { outline: 3px solid var(--input-border-focus); outline-offset: 3px; }
+.list { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 1rem 1.5rem; }
+.permission { position: relative; }
+.checkbox { position: static; flex: none; width: 1.25rem; height: 1.25rem; margin-top: .15rem; accent-color: var(--text-primary); cursor: inherit; }
+.checkbox:focus-visible { outline: 3px solid var(--input-border-focus); outline-offset: 3px; }
+.permission > span { overflow-wrap: anywhere; }
+.footer { padding: .75rem 1.5rem 1rem; border-top: 1px solid var(--gray-200); background: var(--surface); }
+.actions { display: flex; justify-content: space-between; gap: .75rem; }
+.actions button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: .6rem 1rem; border: 1px solid var(--gray-200); border-radius: .75rem; font-size: .875rem; font-weight: 800; cursor: pointer; }
+.actions button:focus-visible { outline: 3px solid var(--input-border-focus); outline-offset: 3px; }
+.actions button:disabled { cursor: not-allowed; opacity: .5; }
+.actions .save { background: var(--button-primary-bg); color: var(--button-primary-text); border-color: var(--button-primary-bg); }
+.actions .save:hover:not(:disabled) { background: var(--button-primary-bg-hover); }
+.error { max-height: 4.5rem; overflow-y: auto; margin-bottom: .5rem; font-size: .8rem; color: var(--input-error-text); }
+@media (max-width: 600px) {
+    .header { padding: 1rem 4rem 1rem 1rem; }
+    .list { padding: .75rem 1rem; }
+    .footer { padding: .75rem 1rem; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+    .actions button { padding: .5rem; font-size: .75rem; }
+}

@@ -43,7 +43,9 @@ export default function ApplyForm() {
         onSuccess: (result) => {
             setSubmitError(null);
             setSubmission(result);
-            toast.success(result.created ? 'Solicita??o enviada para an?lise.' : 'Solicita??o pendente j? existente localizada.');
+            toast.success(result.created
+                ? 'Solicitação enviada para análise.'
+                : 'Já existe uma solicitação pendente para este CPF.');
         },
         onError: (error) => {
             const message = error.message || 'Não foi possível enviar sua solicitação. Tente novamente.';
@@ -74,9 +76,7 @@ export default function ApplyForm() {
                                     ? 'Seu pedido foi encaminhado para análise. Se aprovado, a diretoria enviará as instruções para seu contato.'
                                     : 'Já existe uma solicitação pendente em análise para este CPF. O pedido anterior foi mantido sem alterações nos dados enviados anteriormente.'}
                             </p>
-                            <div className="mx-auto mt-5 inline-flex flex-wrap items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white/90">
-                                <span>Protocolo #{submission.id}</span>
-                                <span aria-hidden="true" className="text-white/40">•</span>
+                            <div className="mx-auto mt-5 inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white/90">
                                 <span>Status: {statusLabels[submission.status] ?? submission.status}</span>
                             </div>
                             <div className="mt-6 flex justify-center">
@@ -99,7 +99,7 @@ export default function ApplyForm() {
                             <InputEmail {...fieldStyle} name="email" label="E-mail (opcional)" placeholder="voce@exemplo.com" maxLength={180} autoComplete="email" />
                             <TextareaRegister name="message" label="Carta de apresentação" placeholder="Fale sobre você, seu interesse pelo clube e o que gostaria de viver com a comunidade..." rows={6} maxLength={2000} labelClassName="text-sm font-semibold text-white" className="min-h-36 rounded-xl border-transparent bg-[#e8efff] text-[#071741] placeholder:text-slate-500 focus:border-j-yellow-400" />
                             <p className="-mt-3 text-xs leading-5 text-white/75">Seus dados serão usados pela diretoria para avaliar e responder à solicitação.</p>
-                            <Button type="submit" disabled={mutation.isPending} aria-busy={mutation.isPending} className="min-h-12 w-full gap-2">{mutation.isPending ? <>Enviando... <LoaderCircle size={18} className="animate-spin" /></> : <>Enviar solicitação <Send size={17} /></>}</Button>
+                            <Button type="submit" isLoading={mutation.isPending} className="min-h-12 w-full gap-2">{mutation.isPending ? <>Enviando... <LoaderCircle size={18} className="animate-spin" /></> : <>Enviar solicitação <Send size={17} /></>}</Button>
                         </Form>
                     )}
                 </section>

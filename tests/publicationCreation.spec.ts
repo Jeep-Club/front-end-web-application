@@ -1,15 +1,25 @@
-import { createPublicationSchema } from "@/schemas/publications/create";
+import { createPublicationSchema, eventLocalDateTime, publicationFormSchema } from "@/schemas/publications/create";
 import { createPublicationAction } from "@/server/actions/publications/create";
 import actionFetchWrapper from "@/services/fetchWrapper/actionFetchWrapper";
 import { haveActionPermission } from "@/utils/permission/actionPermissions";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
 jest.mock("@/utils/permission/actionPermissions", () => ({ haveActionPermission: jest.fn() }));
-const base = { title: "Publicação", content: "Conteúdo", images: [{ storageKey: "images/example.jpg", position: 0, primary: true }] };
+const base = { title: "Publicação", content: "Conteúdo", images: [{ storageKey: "images/2026/10/30/550e8400-e29b-41d4-a716-446655440000.jpg", position: 0, primary: true }] };
 const event = { ...base, type: "EVENT" as const, startsAt: "2099-11-15T11:00:00Z", endsAt: null };
+const eventForm = { type: "EVENT", title: "Evento", content: "Conteúdo", photos: [new File(["image"], "event.png", { type: "image/png" })], primaryIndex: "0", startDate: "2099-11-15", startTime: "11:00", endDate: "", endTime: "", amount: "", chargeName: "Entrada", chargeDescription: "", contactPhone: "" };
 
 describe("Criação de publicações", () => {
     beforeEach(() => { jest.resetAllMocks(); });
+    it('valida DTO completo e estado DRAFT na resposta de criação', async () => {
+        jest.mocked(haveActionPermission).mockResolvedValue(true);
+        jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 201, data: { id: 1 } });
+        await createPublicationAction(event);
+        const schema = jest.mocked(actionFetchWrapper).mock.calls[0][0].schema;
+        const response = { ...event, id: 1, authorUserId: 7, publicationStatus: 'DRAFT', eventStatus: 'OPEN' };
+        expect(schema.safeParse(response).success).toBe(true);
+        expect(schema.safeParse({ ...response, publicationStatus: 'PUBLISHED' }).success).toBe(false);
+    });
 
     it("rejeita galeria sem capa ou com imagens duplicadas", () => {
         expect(createPublicationSchema.safeParse({ ...base, type: "NOTICE", images: [{ ...base.images[0], primary: false }] }).success).toBe(false);
@@ -18,6 +28,16 @@ describe("Criação de publicações", () => {
     it("rejeita evento passado e término anterior ao início", () => {
         expect(createPublicationSchema.safeParse({ ...event, startsAt: "2000-01-01T00:00:00Z" }).success).toBe(false);
         expect(createPublicationSchema.safeParse({ ...event, endsAt: "2099-11-14T11:00:00Z" }).success).toBe(false);
+    });
+    it("exige data e horário de início e aceita término opcional completo", () => {
+        expect(publicationFormSchema.safeParse(eventForm).success).toBe(true);
+        expect(publicationFormSchema.safeParse({ ...eventForm, startTime: "" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["startTime"] })]));
+        expect(publicationFormSchema.safeParse({ ...eventForm, startDate: "" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["startDate"] })]));
+        expect(publicationFormSchema.safeParse({ ...eventForm, endDate: "2099-11-16" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["endTime"] })]));
+        expect(publicationFormSchema.safeParse({ ...eventForm, endTime: "12:00" }).error?.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ["endDate"] })]));
+        expect(publicationFormSchema.safeParse({ ...eventForm, endDate: "2099-11-14", endTime: "12:00" }).success).toBe(false);
+        expect(publicationFormSchema.safeParse({ ...eventForm, endDate: "2099-11-16", endTime: "12:00" }).success).toBe(true);
+        expect(eventLocalDateTime(eventForm.startDate, eventForm.startTime)?.toISOString()).toBe(new Date("2099-11-15T11:00").toISOString());
     });
     it("rejeita serviço sem telefone ou com valor inválido", () => {
         expect(createPublicationSchema.safeParse({ ...base, type: "SERVICE", amount: 0, contactPhone: "" }).success).toBe(false);

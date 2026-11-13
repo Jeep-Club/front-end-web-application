@@ -1,7 +1,7 @@
 "use client";
 
 import { getBirthDateInputBounds } from "@/utils/validate/validateBirthDate";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 
 import { uploadImageAction } from "@/server/actions/media/upload-image";
@@ -45,12 +45,8 @@ const statusLabels: Record<
     string
 > = {
     ACTIVE: "Ativo",
-    DISABLED: "Desativado",
-    LOCKED: "Bloqueado",
-    CHANGE_PASSWORD_REQUIRED:
-        "Alteração de senha obrigatória",
-    PENDING_FIRST_ACCESS:
-        "Primeiro acesso pendente",
+    INACTIVE: "Desativado",
+    ARCHIVED: "Arquivado",
 };
 
 function formatCpf(value: string) {
@@ -72,6 +68,7 @@ export function EditPersonalDataModal({
     onSave,
 }: EditPersonalDataModalProps) {
     const { setClose } = useModal();
+    const queryClient = useQueryClient();
 
     const photoSectionRef = useRef<HTMLElement>(null);
     const openPhotoPicker = () => {
@@ -106,6 +103,7 @@ export function EditPersonalDataModal({
         },
         onSuccess: (profile) => {
             onSave(profile);
+            void queryClient.invalidateQueries({ queryKey: ["identity", "birthdays"] });
             toast.success("Dados atualizados com sucesso!");
             setClose();
         },
@@ -277,7 +275,7 @@ export function EditPersonalDataModal({
                         label="Selecionar nova foto"
                         maxFiles={1}
                         cropShape="circle"
-                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-j-white [&>div]:py-4"
+                        className="[&_label]:font-bold [&_label]:text-j-gray-700 [&_p]:!text-j-gray-500 [&_svg]:text-j-gray-400 [&>div]:bg-input-bg [&>div]:py-4"
                     />
                     {personalData.profilePhotoUrl && (
                         <button
@@ -304,7 +302,7 @@ export function EditPersonalDataModal({
                     placeholder="Nome completo"
                     required
                     labelClassName="text-j-gray-700"
-                    className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                    className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                 />
 
                 <div className="grid grid-cols-2 gap-3">
@@ -314,7 +312,7 @@ export function EditPersonalDataModal({
                         name="birthDate"
                         {...getBirthDateInputBounds()}
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 focus:bg-input-bg-focus"
                     />
 
                     <InputRegister
@@ -322,7 +320,7 @@ export function EditPersonalDataModal({
                         name="rg"
                         placeholder="00.000.000-0"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                     />
                 </div>
 
@@ -334,7 +332,7 @@ export function EditPersonalDataModal({
                         placeholder="nome@email.com"
                         required
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                     />
 
                     <InputRegister
@@ -343,7 +341,7 @@ export function EditPersonalDataModal({
                         name="phoneNumber"
                         placeholder="(12) 99999-9999"
                         labelClassName="text-j-gray-700"
-                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-j-white"
+                        className="border-j-gray-200 bg-j-gray-100 h-11 px-3 py-2 text-base text-j-gray-700 placeholder:text-j-gray-400 focus:bg-input-bg-focus"
                     />
                 </div>
 

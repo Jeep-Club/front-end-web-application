@@ -2,7 +2,7 @@ import Register from "@/components/pages/profile/register"
 
 export default async function Page() {
     return (
-        <div className="flex flex-col items-center justify-center h-screen px-4 text-center">
+        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">Cadastro - Jeep Clube Tamoios</h1>
             <p className="text-lg text-gray-600 mb-8">
                 Crie sua conta para explorar trilhas, compartilhar experiências e celebrar a cultura dos jipes conosco.
@@ -11,7 +11,7 @@ export default async function Page() {
             <Register/>
 
             <p className="mt-6 text-sm text-gray-500">
-                Já tem uma conta? <a href="/auth/login" className="text-blue-600 hover:underline">Entre aqui</a>
+                Já tem uma conta? <a href="/login" className="text-blue-600 hover:underline">Entre aqui</a>
             </p>
         </div>
     )

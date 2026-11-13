@@ -30,7 +30,7 @@ export function TourHelpButton({
                     rounded-full p-2
                     text-j-blue-800/80 hover:text-j-blue-800
                     hover:bg-j-yellow-300/20 active:scale-95
-                    transition-all duration-200 cursor-pointer
+                    transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer
                     ${className}
                 `}
             >
@@ -48,10 +48,10 @@ export function TourHelpButton({
                 className={`
                     inline-flex items-center gap-1.5
                     rounded-full border border-j-gray-300/80
-                    bg-j-white/90 px-2.5 py-1 sm:px-3 text-xs font-semibold
+                    bg-j-white/90 px-2.5 py-1 sm:px-3 text-[11px] sm:text-xs font-semibold
                     text-j-blue-800 shadow-sm
-                    hover:border-j-yellow-300 hover:bg-j-gray-100
-                    active:scale-95 transition-all duration-200 cursor-pointer
+                    hover:border-j-yellow-300 hover:bg-j-yellow-50/50
+                    active:scale-95 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer
                     ${className}
                 `}
             >
@@ -67,15 +67,15 @@ export function TourHelpButton({
             id={id}
             onClick={onClick}
             className={`
-                inline-flex items-center gap-2
-                rounded-xl border border-j-gray-300
-                bg-j-white px-3.5 py-2 text-xs sm:text-sm font-bold text-j-blue-800
-                shadow-xs hover:border-j-yellow-400 hover:bg-j-gray-100
-                active:scale-95 transition-all duration-200 cursor-pointer
+                inline-flex items-center gap-1.5
+                rounded-lg border border-j-gray-300
+                bg-j-white px-2.5 py-1.5 sm:px-3 text-[11px] sm:text-xs font-bold text-j-blue-800
+                shadow-sm hover:border-j-yellow-400 hover:bg-j-yellow-50/40
+                active:scale-95 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 cursor-pointer
                 ${className}
             `}
         >
-            <HelpCircle size={17} className="text-j-blue-700 shrink-0" />
+            <HelpCircle size={15} className="text-j-blue-700 shrink-0" />
             <span>{label}</span>
         </button>
     );

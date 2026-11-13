@@ -12,6 +12,7 @@ export function confirmTourExit(message: string, signal: AbortSignal, labels = {
         dialog.setAttribute("aria-labelledby", "tour-exit-title");
         dialog.setAttribute("aria-describedby", "tour-exit-description");
         dialog.innerHTML = `
+            <button type="button" class="${styles.close}" data-action="close" aria-label="Fechar confirmação">×</button>
             <div class="${styles.icon}" aria-hidden="true">?</div>
             <h2 id="tour-exit-title">Sair do tutorial?</h2>
             <p id="tour-exit-description"></p>
@@ -33,6 +34,7 @@ export function confirmTourExit(message: string, signal: AbortSignal, labels = {
         const abort = () => finish(false);
         signal.addEventListener("abort", abort, { once: true });
         dialog.querySelector('[data-action="continue"]')!.addEventListener("click", () => finish(false));
+        dialog.querySelector('[data-action="close"]')!.addEventListener("click", () => finish(false));
         dialog.querySelector('[data-action="exit"]')!.addEventListener("click", () => finish(true));
         dialog.addEventListener("cancel", (event) => {
             event.preventDefault();

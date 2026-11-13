@@ -65,13 +65,14 @@ export default function Profile() {
                                 key={key}
                                 id={`tour-profile-tab-${key}`}
                                 type="button"
+                                data-active={isActive}
                                 title={label}
                                 onClick={() => setActiveTab(key)}
                                 className={twMerge(
-                                    "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 p-2 text-center transition-colors md:p-4",
+                                    "profile-tab flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 p-2 text-center transition-colors md:p-4",
                                     isActive
                                         ? "border-j-blue-800 bg-j-blue-800 text-j-white shadow-md"
-                                        : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300 hover:text-j-blue-800"
+                                        : "border-j-gray-200 bg-j-white text-j-gray-600 hover:border-j-blue-300"
                                 )}
                             >
                                 <Icon size={22} />
@@ -81,14 +82,7 @@ export default function Profile() {
                     })}
                 </div>
 
-                <div
-                    className={twMerge(
-                        "flex min-h-40 flex-col gap-4",
-                        activeTab === "personal"
-                            ? "w-full"
-                            : "rounded-2xl border border-j-gray-200 bg-j-white p-3 shadow-sm sm:p-4 lg:p-6",
-                    )}
-                >
+                <div className="flex min-h-40 w-full flex-col gap-4">
                     {activeTab === "personal" ? (
                         <PersonalDataTab />
                     ) : activeTab === "medical" ? (

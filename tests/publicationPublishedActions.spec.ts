@@ -63,3 +63,22 @@ describe("Comandos de publicações publicadas", () => {
         expect(actionFetchWrapper).toHaveBeenCalledTimes(1);
     });
 });
+
+it('oferece ações operacionais em DRAFT e exclusão de arquivados', () => {
+    expect(availablePublishedActions({ type: 'EVENT', status: 'DRAFT', eventStatus: 'IN_PROGRESS' }, permission('EVENT_FINISH', 'EVENT_CANCEL'))).toEqual(['cancel', 'finish']);
+    expect(availablePublishedActions({ type: 'NOTICE', status: 'ARCHIVED' }, permission('NOTICE_UPDATE', 'NOTICE_ARCHIVE', 'NOTICE_DELETE'))).toEqual(['delete']);
+});
+it('comando não impõe READ à permission de decisão e aceita DELETE 204 undefined', async () => {
+    jest.resetAllMocks();
+    jest.mocked(haveActionPermission).mockImplementation(async (_, action) => action === 'SERVICE_ADMIN_DELETE');
+    jest.mocked(actionFetchWrapper).mockResolvedValue({ status: 204, data: undefined });
+    await expect(mutatePublishedPublicationAction({ id: 7, type: 'SERVICE', action: 'delete' })).resolves.toEqual({ id: 7, type: 'SERVICE', action: 'delete' });
+    expect(actionFetchWrapper).toHaveBeenCalledTimes(1);
+});
+it('repete cancelamento operacional CANCELLED conforme idempotência do backend', async () => {
+    jest.resetAllMocks();
+    jest.mocked(haveActionPermission).mockResolvedValue(true);
+    jest.mocked(actionFetchWrapper).mockResolvedValueOnce({ status: 200, data: { publicationStatus: 'DRAFT', eventStatus: 'CANCELLED' } }).mockResolvedValueOnce({ status: 200, data: { id: 7 } });
+    await expect(mutatePublishedPublicationAction({ id: 7, type: 'EVENT', action: 'cancel' })).resolves.toEqual({ id: 7, type: 'EVENT', action: 'cancel' });
+    expect(actionFetchWrapper).toHaveBeenLastCalledWith(expect.objectContaining({ url: 'admin/events/7/cancel', method: 'POST' }));
+});

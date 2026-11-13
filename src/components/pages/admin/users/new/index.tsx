@@ -59,8 +59,13 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
                     </div>
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                         <Button type="button" onClick={async () => {
-                            await navigator.clipboard.writeText(createdUser.temporaryPassword);
-                            setCopied(true);
+                            try {
+                                await navigator.clipboard.writeText(createdUser.temporaryPassword);
+                                setCopied(true);
+                                toast.success("Senha copiada para a área de transferência.");
+                            } catch {
+                                toast.error("Não foi possível copiar automaticamente. Selecione e copie a senha.");
+                            }
                         }} className="min-h-11 flex-1 gap-2">
                             {copied ? <Check size={16} /> : <Copy size={16} />}
                             {copied ? "Senha copiada" : "Copiar senha provisória"}
@@ -132,20 +137,20 @@ export function NewAdminUserPage({ onClose, onCreated }: { onClose?: () => void;
                     }}
                     className="items-stretch gap-0"
                 >
-                    <fieldset disabled={isLoading} className="flex min-w-0 flex-col gap-4 p-4 sm:p-6 [&_input+svg]:text-j-gray-400 [&_input~button]:text-j-gray-400">
+                    <fieldset disabled={isLoading} className={`flex min-w-0 flex-col gap-4 ${onClose ? "p-0" : "p-4 sm:p-6"} [&_input+svg]:text-j-gray-400 [&_input~button]:text-j-gray-400`}>
                         <p className="text-sm text-j-gray-500"><span className="font-bold text-j-red-500">*</span> Campos obrigatórios</p>
 
                         <CreateUserFields />
                     </fieldset>
 
-                    <footer className="flex items-center gap-3 border-t border-j-gray-200 px-4 py-4 sm:justify-end sm:px-6">
+                    <footer className={`flex items-center gap-3 border-t border-j-gray-200 py-4 sm:justify-end ${onClose ? "px-0" : "px-4 sm:px-6"}`}>
                         <Button
                             type="button"
                             disabled={isLoading}
                             onClick={backToUsers}
                             className="min-h-12 rounded-xl bg-transparent px-3 text-j-gray-500 hover:bg-j-gray-100 hover:text-j-gray-700"
                         >Cancelar</Button>
-                        <Button type="submit" disabled={isLoading} aria-busy={isLoading} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">
+                        <Button type="submit" isLoading={isLoading} className="min-h-12 flex-1 gap-2 rounded-xl px-4 sm:flex-none sm:px-6">
                             {isLoading ? <>Criando… <LoaderCircle size={18} className="animate-spin" aria-hidden="true" /></> : <>Criar usuário <ArrowRight size={18} aria-hidden="true" /></>}
                         </Button>
                     </footer>
@@ -170,7 +175,7 @@ function CreateUserFields() {
                     <InputCPF {...fieldStyle} name="cpf" label="CPF" autoComplete="off" required />
                     <InputDate {...fieldStyle} name="birthDate" label="Data de nascimento" autoComplete="bday" />
                     <InputRegister {...fieldStyle} name="rg" label="RG" placeholder="Opcional" autoComplete="off" />
-                    <InputPhoneNumber {...fieldStyle} name="phoneNumber" label="Telefone" placeholder="(00) 00000-0000 · opcional" autoComplete="tel-national" />
+                    <InputPhoneNumber {...fieldStyle} name="phoneNumber" label="Telefone" placeholder="(00) 00000-0000" autoComplete="tel-national" />
                     <div className="sm:col-span-2">
                 <label htmlFor="activationMethod" className="mb-2 block text-sm font-bold text-j-gray-700">
                     Como o usuário vai ativar a conta <span className="text-j-red-500">*</span>
@@ -182,7 +187,7 @@ function CreateUserFields() {
                     aria-invalid={Boolean(errors.activationMethod)}
                     aria-describedby={errors.activationMethod ? "activation-method-error" : undefined}
                 >
-                    <option value="">Selecione uma forma de ativação</option>
+                    <option value="">Selecione uma opção</option>
                     <option value="TEMPORARY_PASSWORD">Senha provisória</option>
                     <option value="EMAIL_INVITATION">Convite por e-mail</option>
                 </select>

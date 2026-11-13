@@ -8,6 +8,23 @@ function storyUrl(id: string) {
 }
 
 test.describe("Select", () => {
+    test('preserva label JSX, portais no dialog e valores do formulário', async ({ page }) => {
+        await page.goto(storyUrl('componentes-select--dentro-de-dialog'));
+        await page.getByRole('button', { name: 'Abrir formulário' }).click();
+        const dialog = page.getByRole('dialog', { name: 'Formulário de categorias', exact: true });
+        const category = dialog.getByRole('combobox', { name: 'Categoria' });
+        await category.click();
+        await dialog.getByRole('option', { name: 'Trilhas', exact: true }).click();
+        await expect(category.locator('strong')).toHaveText('Trilhas');
+        await dialog.getByRole('combobox', { name: 'Interesses' }).click();
+        await dialog.getByRole('searchbox', { name: 'Pesquisar Interesses' }).fill('eventos');
+        await dialog.getByRole('option', { name: 'Eventos', exact: true }).click();
+        await page.keyboard.press('Escape');
+        await dialog.getByRole('button', { name: 'Enviar exemplo' }).click();
+        await expect(dialog.getByRole('status', { name: 'Valores enviados' })).toHaveText('trilhas / eventos');
+        await dialog.getByRole('button', { name: 'Fechar formulário' }).click();
+        await expect(dialog).not.toBeVisible();
+    });
     test("busca navega por teclado pulando opções desabilitadas", async ({ page }) => {
         await page.goto(storyUrl("componentes-select--com-opcoes-desabilitadas"));
         const trigger = page.getByRole("combobox").first();

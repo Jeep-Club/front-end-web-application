@@ -429,7 +429,7 @@ export function getAdminPanelTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-admin-help-btn",
             popover: {
                 title: createStepHeader("Ajuda Contextual", ICONS.helpCircle),
-                description: "Este guia pode ser reaberto a qualquer momento por este botão ou clicando em <strong>'Precisa de ajuda?'</strong> no topo da página.",
+                description: "Este guia pode ser reaberto a qualquer momento por este botão.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },
@@ -487,15 +487,6 @@ export function getPublicationsTourSteps(isMobile: boolean = false): DriveStep[]
                 align: "center",
             },
         },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Sempre que quiser rever como gerenciar as publicações do clube, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
-                align: "center",
-            },
-        },
     ];
 }
 
@@ -507,8 +498,8 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
         {
             element: "#tour-roles-header",
             popover: {
-                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield, "RBAC"),
-                description: "Administração central de papéis e níveis de autorização do sistema.",
+                title: createStepHeader("Controle de Cargos e Acessos", ICONS.shield),
+                description: "Administração central dos cargos e níveis de acesso ao sistema.",
                 side: "bottom",
                 align: isMobile ? "center" : "start",
             },
@@ -517,7 +508,7 @@ export function getRolesTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-roles-tabs",
             popover: {
                 title: createStepHeader("Áreas de Governança", ICONS.layers),
-                description: "Alterne entre <strong>Cargos do sistema</strong>, o catálogo de <strong>Permissões</strong> por módulo e as <strong>Atribuições de usuários</strong>.",
+                description: "Alterne entre <strong>Cargos do sistema</strong>, a lista de <strong>Permissões</strong> por módulo e as <strong>Atribuições de pessoas</strong>.",
                 side: "bottom",
                 align: "center",
             },
@@ -620,15 +611,6 @@ export function getUsersTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
-                align: "center",
-            },
-        },
     ];
 }
 
@@ -682,15 +664,6 @@ export function getMembershipApplicationsTourSteps(isMobile: boolean = false): D
                 align: "center",
             },
         },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Sempre que quiser revisar o fluxo de aprovação de novos sócios, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
-                align: "center",
-            },
-        },
     ];
 }
 
@@ -735,15 +708,6 @@ export function getPaymentsTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
-                align: "center",
-            },
-        },
     ];
 }
 
@@ -762,29 +726,11 @@ export function getFinancialTourSteps(isMobile: boolean = false): DriveStep[] {
             },
         },
         {
-            element: "#tour-financial-tabs",
-            popover: {
-                title: createStepHeader("Áreas Financeiras", ICONS.layers),
-                description: "Navegue entre o <strong>Dashboard</strong> resumido, <strong>Definições e atribuições</strong>, <strong>Ciclos</strong>, <strong>Cobranças</strong>, <strong>Pagamentos</strong> e <strong>Reembolsos</strong>.",
-                side: "bottom",
-                align: "center",
-            },
-        },
-        {
             element: "#tour-financial-content",
             popover: {
                 title: createStepHeader("Painel e Operações da Área", ICONS.sliders),
                 description: "No <strong>Dashboard</strong> você acompanha os indicadores com atalhos diretos; nas demais abas você cria regras de cobrança, gera ciclos, exporta relatórios CSV/PDF e gerencia faturas ou reembolsos.",
                 side: isMobile ? "bottom" : "top",
-                align: "center",
-            },
-        },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Sempre que quiser revisar como operar as áreas financeiras, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
                 align: "center",
             },
         },
@@ -832,15 +778,6 @@ export function getMedicalProfilesTourSteps(isMobile: boolean = false): DriveSte
                 align: "center",
             },
         },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
-                align: "center",
-            },
-        },
     ];
 }
 
@@ -882,15 +819,6 @@ export function getVehiclesTourSteps(isMobile: boolean = false): DriveStep[] {
                 title: createStepHeader("Ações sobre o Veículo", ICONS.sliders),
                 description: "Utilize os botões <strong>Visualizar</strong>, <strong>Editar</strong> ou <strong>Excluir</strong> para consultar todos os detalhes técnicos ou atualizar o registro.",
                 side: isMobile ? "top" : "left",
-                align: "center",
-            },
-        },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Sempre que quiser revisar como administrar a frota do clube, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
-                side: "bottom",
                 align: "center",
             },
         },
@@ -947,19 +875,63 @@ export function getToolsTourSteps(isMobile: boolean = false): DriveStep[] {
                 align: "center",
             },
         },
+    ];
+}
+
+export const toolsTourSteps = getToolsTourSteps(false);
+
+// Tour da tela de Gestão de Dependentes (/admin/dependentes)
+export function getDependentsTourSteps(isMobile: boolean = false): DriveStep[] {
+    return [
         {
-            element: "#tour-header-help-btn",
+            element: "#tour-dependents-header",
             popover: {
-                title: createStepHeader("Precisa de Ajuda?", ICONS.helpCircle),
-                description: "Reabra este guia a qualquer momento clicando em <strong>'Precisa de ajuda?'</strong> no cabeçalho.",
+                title: createStepHeader("Gestão de Dependentes", ICONS.users, "Associados"),
+                description: "Consulte, audite fotos privadas 3x4, exporte relatórios e gerencie o ciclo de vida dos dependentes vinculados aos associados.",
                 side: "bottom",
+                align: isMobile ? "center" : "start",
+            },
+        },
+        {
+            element: "#tour-dependents-export",
+            popover: {
+                title: createStepHeader("Exportação e Histórico", ICONS.layers),
+                description: "Exporte a listagem em <strong>CSV</strong> ou <strong>PDF</strong> institucional, incluindo opcionalmente o histórico de exclusões.",
+                side: "bottom",
+                align: isMobile ? "center" : "end",
+            },
+        },
+        {
+            element: "#tour-dependents-filters",
+            popover: {
+                title: createStepHeader("Busca e Filtros Combinados", ICONS.compass),
+                description: "Pesquise por nome do dependente, nome do titular, CPF ou telefone, e refine por grau de parentesco ou status operacional.",
+                side: "bottom",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-dependents-list",
+            popover: {
+                title: createStepHeader("Cadastro de Dependentes", ICONS.users),
+                description: "Confira a foto privada 3x4, CPF, data de nascimento, parentesco, titular vinculado e situação atual.",
+                side: isMobile ? "bottom" : "top",
+                align: "center",
+            },
+        },
+        {
+            element: "#tour-dependents-actions",
+            popover: {
+                title: createStepHeader("Ações Administrativas", ICONS.sliders),
+                description: "Visualize a ficha completa (incluindo foto e perfil médico), ative/inative, arquive/desarquive ou exclua o dependente conforme suas permissões.",
+                side: isMobile ? "top" : "left",
                 align: "center",
             },
         },
     ];
 }
 
-export const toolsTourSteps = getToolsTourSteps(false);
+export const dependentsTourSteps = getDependentsTourSteps(false);
 
 // Tour da Central de Tutoriais (/tutoriais)
 export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[] {
@@ -997,15 +969,6 @@ export function getTutorialsPageTourSteps(isMobile: boolean = false): DriveStep[
                 title: createStepHeader("Abrir Tutorial Passo a Passo", ICONS.sliders),
                 description: "Clique em <strong>'Ver tutorial'</strong> (ou <strong>'Iniciar tutorial'</strong>) em qualquer card para visualizar o passo a passo ilustrado com imagens ou iniciar o tour na tela.",
                 side: isMobile ? "bottom" : "left",
-                align: "center",
-            },
-        },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Botão de Ajuda no Cabeçalho", ICONS.helpCircle),
-                description: "Lembre-se: quando já estiver em qualquer página do sistema, basta clicar no botão vermelho de <strong>ajuda</strong> no cabeçalho (ele muda conforme a tela atual) para iniciar o tutorial na hora!",
-                side: "bottom",
                 align: "center",
             },
         },
@@ -1069,15 +1032,6 @@ export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
                 description: "Clique no seu avatar para abrir a conta e gerenciar seus dados pessoais, ficha médica, veículos 4x4, ferramentas e histórico financeiro.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
-            },
-        },
-        {
-            element: "#tour-header-help-btn",
-            popover: {
-                title: createStepHeader("Ajuda Contextual Dinâmica", ICONS.helpCircle),
-                description: "Sempre que estiver em qualquer página e precisar de orientação, clique em <strong>'Precisa de ajuda?'</strong> no cabeçalho para iniciar o tutorial específico da tela atual.",
-                side: "bottom",
-                align: "center",
             },
         },
     ];
@@ -1145,6 +1099,9 @@ export function resolveRouteTourSteps(
     }
     if (normalizedPath.startsWith("/admin/ferramentas")) {
         return getToolsTourSteps(isMobile);
+    }
+    if (normalizedPath.startsWith("/admin/dependentes") || normalizedPath.startsWith("/admin/dependents")) {
+        return getDependentsTourSteps(isMobile);
     }
 
     return getTourSteps(canAccessAdmin, isMobile, setMobileMenuOpen);

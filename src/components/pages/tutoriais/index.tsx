@@ -37,6 +37,7 @@ import {
 } from "@/config/tutorialVisualGuides";
 import {
     getAdminPanelTourSteps,
+    getDependentsTourSteps,
     getFeedTourSteps,
     getFinancialTourSteps,
     getHomeTourSteps,
@@ -955,7 +956,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
     },
     {
         id: "admin-roles-permissions",
-        title: "Roles e Permissões",
+        title: "Cargos e permissões",
         description:
             "Configure cargos personalizados, níveis de acesso e permissões granulares por módulo para os administradores.",
         category: "admin",
@@ -981,16 +982,16 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
     },
     {
         id: "admin-payments",
-        title: "Análise de Pagamentos",
+        title: "Pagamentos e comprovantes",
         description:
             "Consulte comprovantes enviados pelos associados e aprove ou rejeite pagamentos de mensalidades e eventos.",
         category: "admin",
         categoryLabel: "Administração",
-        href: "/admin/pagamentos",
+        href: "/admin/gestao-financeira/movimentacoes?movement=analysis",
         storageKey: "tour_completed_admin_payments",
         stepCount: getPaymentsTourSteps(false).length,
         icon: WalletCards,
-        adminModuleKey: "payments",
+        adminModuleKey: "financial-movements",
         topics: [
             "Pagamentos pendentes",
             "Conferir comprovante",
@@ -1016,7 +1017,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         storageKey: "tour_completed_admin_financial",
         stepCount: getFinancialTourSteps(false).length,
         icon: WalletCards,
-        adminModuleKey: "financial-management",
+        adminModuleKey: "financial-overview",
         topics: [
             "Dashboard financeiro",
             "Definições e ciclos",
@@ -1105,6 +1106,32 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "resgate",
             "guincho",
             "cinta",
+        ],
+    },
+    {
+        id: "admin-dependents",
+        title: "Gestão de Dependentes",
+        description:
+            "Consulte dependentes de todos os associados, gerencie fotos privadas 3x4, status operacional e exporte relatórios.",
+        category: "admin",
+        categoryLabel: "Administração",
+        href: "/admin/dependentes",
+        storageKey: "tour_completed_admin_dependents",
+        stepCount: getDependentsTourSteps(false).length,
+        icon: Users,
+        adminModuleKey: "dependents",
+        topics: [
+            "Busca por titular, nome e CPF",
+            "Fotos 3x4 e ciclo de vida",
+            "Exportação CSV/PDF e histórico",
+        ],
+        keywords: [
+            "dependentes",
+            "familiares",
+            "filhos",
+            "conjuge",
+            "convidados",
+            "titular",
         ],
     },
 ];

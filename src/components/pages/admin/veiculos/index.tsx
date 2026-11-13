@@ -3,17 +3,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { Car,Eye,Pencil,Plus,ShieldX,Trash2 } from "lucide-react";
+import { Car,Eye,Filter,Pencil,Plus,ShieldX,Trash2 } from "lucide-react";
 
 import { Button } from "@/components/common/button";
+import { AdminExport } from "@/components/common/admin-export/AdminExport";
 import { PageHeader } from "@/components/common/page-header";
 import { getVehiclesTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { ListPagination } from "@/components/common/table/ListPagination";
-import { ManagementBackButton } from "@/components/pages/admin/ManagementBackButton";
 import { VehiclePhotoCarousel } from "@/components/pages/profile/tabs/vehicles/VehiclePhotoCarousel";
 import { useModal } from "@/providers/ModalProvider";
 import { listVehiclesAdminAction } from "@/server/actions/admin/vehicles/list";
+import { exportAdminVehiclesAction } from "@/server/actions/admin/vehicles/export";
 import { useUserStore } from "@/stores/userStore";
 import { maskPlate } from "@/utils/masks/maskPlate";
 import { hasPermission } from "@/utils/permission/hasPermission";
@@ -23,6 +24,8 @@ import { EditVehicleModal } from "./EditVehicleModal";
 import { VehicleDetailModal } from "./VehicleDetailModal";
 
 const PAGE_SIZE = 10;
+type VehicleExportFilters = { vehicleId: string; ownerId: string; model: string; plate: string; towing: "ALL" | "YES" | "NO"; status: VehicleStatus | "ALL" };
+const EMPTY_EXPORT_FILTERS: VehicleExportFilters = { vehicleId: "", ownerId: "", model: "", plate: "", towing: "ALL", status: "ALL" };
 
 export default function VehicleManagement() {
     const { setContent, setOpen } = useModal();
@@ -41,6 +44,8 @@ export default function VehicleManagement() {
 
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
+    const [exportFilters, setExportFilters] = useState<VehicleExportFilters>(EMPTY_EXPORT_FILTERS);
+    const [showExportFilters, setShowExportFilters] = useState(false);
 
     const query = useQuery({
         queryKey: ["admin", "vehicles", { page, size: pageSize }],
@@ -96,13 +101,26 @@ export default function VehicleManagement() {
                     </section>
                 ) : (
                     <section className="flex flex-col gap-4 rounded-2xl border border-j-gray-200 bg-j-white p-4 shadow-sm sm:p-5">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-3">
-                                <ManagementBackButton />
                                 <h3 className="text-base font-bold text-j-gray-700">Veículos cadastrados</h3>
                             </div>
-                            {canCreate && <Button id="tour-vehicles-create-btn" onClick={handleOpenCreate} className="h-11 shrink-0 gap-2"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
+                            <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+                                <AdminExport label="Exportar veículos" formats={["CSV", "PDF"]} className="w-full sm:w-auto" onExport={(format) => exportAdminVehiclesAction(format, exportFilters)} />
+                                <Button type="button" aria-expanded={showExportFilters} aria-controls="vehicle-export-filters" onClick={() => setShowExportFilters((shown) => !shown)} className="h-10 w-full gap-2 border border-j-gray-300 bg-j-white px-3 text-xs text-j-blue-800 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700 sm:w-auto sm:text-sm"><Filter size={15} aria-hidden="true" />Filtros da exportação</Button>
+                                {canCreate && <Button id="tour-vehicles-create-btn" onClick={handleOpenCreate} className="h-10 w-full gap-2 sm:w-auto"><Plus size={16} /><span className="hidden sm:inline">Cadastrar veículo</span><span className="sm:hidden">Cadastrar</span></Button>}
+                            </div>
                         </div>
+                        {showExportFilters && <fieldset id="vehicle-export-filters" className="grid grid-cols-1 gap-3 rounded-xl border border-j-gray-200 bg-j-gray-100/50 p-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <legend className="px-1 text-sm font-bold text-j-blue-800">Filtrar o arquivo exportado</legend>
+                            <label className="min-w-0 text-xs font-semibold text-j-gray-600">ID do veículo<input type="number" min="1" value={exportFilters.vehicleId} onChange={(event) => setExportFilters((filters) => ({ ...filters, vehicleId: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
+                            <label className="min-w-0 text-xs font-semibold text-j-gray-600">ID do usuário proprietário<input type="number" min="1" value={exportFilters.ownerId} onChange={(event) => setExportFilters((filters) => ({ ...filters, ownerId: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
+                            <label className="min-w-0 text-xs font-semibold text-j-gray-600">Marca, modelo ou apelido<input value={exportFilters.model} onChange={(event) => setExportFilters((filters) => ({ ...filters, model: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
+                            <label className="min-w-0 text-xs font-semibold text-j-gray-600">Placa<input value={exportFilters.plate} onChange={(event) => setExportFilters((filters) => ({ ...filters, plate: event.target.value }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800" /></label>
+                            <label className="min-w-0 text-xs font-semibold text-j-gray-600">Guincho/reboque<select value={exportFilters.towing} onChange={(event) => setExportFilters((filters) => ({ ...filters, towing: event.target.value as VehicleExportFilters["towing"] }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800"><option value="ALL">Todos</option><option value="YES">Possui</option><option value="NO">Não possui</option></select></label>
+                            <label className="min-w-0 text-xs font-semibold text-j-gray-600">Situação<select value={exportFilters.status} onChange={(event) => setExportFilters((filters) => ({ ...filters, status: event.target.value as VehicleExportFilters["status"] }))} className="mt-1 min-h-10 w-full rounded-lg border border-j-gray-300 bg-j-white px-3 text-sm font-normal text-j-gray-800 focus-visible:outline-2 focus-visible:outline-j-blue-800"><option value="ALL">Todas</option><option value="ACTIVE">Ativo</option><option value="INACTIVE">Inativo</option><option value="ARCHIVED">Arquivado</option></select></label>
+                            <button type="button" onClick={() => setExportFilters(EMPTY_EXPORT_FILTERS)} className="min-h-9 cursor-pointer justify-self-start rounded-lg px-3 text-xs font-bold text-j-blue-800 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-j-blue-800 sm:col-span-2 lg:col-span-3">Limpar filtros da exportação</button>
+                        </fieldset>}
                         <div id="tour-vehicles-list">
                         {isLoading && <p className="text-sm text-j-gray-400">Carregando veículos...</p>}
                         {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"><p>{error.message}</p><Button onClick={() => query.refetch()} disabled={isFetching}>Tentar novamente</Button></div>}

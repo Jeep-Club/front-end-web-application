@@ -1,12 +1,12 @@
 "use client";
 
-import { useContext } from "react";
-import { TourContext } from "@/components/common/tour/TourContext";
 import { Avatar } from "@/components/common/avatar";
 import { getUserProfileAction } from "@/server/actions/profile/get";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Menu,PanelLeftClose,PanelLeftOpen } from "lucide-react";
+import { Menu, Moon, Sun, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useTheme } from "@/providers/ThemeProvider";
+import { THEME_STORAGE_KEY } from "@/utils/theme";
 import NotificationBell from "@/components/common/layout-admin/NotificationBell";
 
 interface TopbarProps {
@@ -18,7 +18,7 @@ interface TopbarProps {
 }
 
 export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobileMenu, fullName, initialProfilePhotoUrl }: TopbarProps) {
-    const tourContext = useContext(TourContext);
+    const { theme, setTheme } = useTheme();
     const { data: profile } = useQuery({
         queryKey: ["profile", "me"],
         queryFn: getUserProfileAction,
@@ -45,8 +45,10 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
             <button
                 type="button"
                 onClick={onToggleSidebar}
+                aria-expanded={!isSidebarCollapsed}
+                aria-controls="tour-sidebar"
                 title={isSidebarCollapsed ? "Expandir menu" : "Ocultar menu"}
-                className="hidden cursor-pointer items-center gap-2 text-j-white transition-colors hover:text-j-yellow-300 md:flex"
+                className="hidden cursor-pointer items-center gap-2 rounded-md text-j-white transition-[background-color,color,transform] duration-200 hover:text-j-yellow-300 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300 md:flex motion-reduce:transform-none"
             >
                 {isSidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
                 <span className="text-xs font-semibold uppercase tracking-wider">
@@ -55,16 +57,15 @@ export default function Topbar({ isSidebarCollapsed, onToggleSidebar, onOpenMobi
             </button>
 
             <div id="tour-avatar-menu" className="flex items-center gap-3">
-                <button
-                    type="button"
-                    id="tour-header-help-btn"
-                    onClick={() => tourContext?.startCurrentPageTour()}
-                    className="inline-flex shrink-0 cursor-pointer items-center whitespace-nowrap rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300"
-                >
-                    Precisa de ajuda?
-                </button>
                 <NotificationBell />
-                <span className="hidden h-8 w-px bg-j-transparent-white md:block" />
+                <button type="button" aria-label="Alternar tema" title="Alternar tema" onClick={() => {
+                    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+                    setTheme(next);
+                    localStorage.setItem(THEME_STORAGE_KEY, next);
+                }} className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-j-white transition-colors hover:bg-j-blue-700 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-yellow-300">
+                    {theme === "dark" ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+                </button>
+                <span aria-hidden="true" className="h-8 w-px shrink-0 bg-j-transparent-white" />
                 <span className="hidden text-sm font-bold text-j-white md:inline">{displayName}</span>
                 <Link
                     href="/profile"

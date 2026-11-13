@@ -2,6 +2,43 @@
 
 Os comandos disponíveis ficam no [README](../README.md). Este guia descreve o alcance das verificações, isolamento e critérios para avaliar alterações.
 
+## Feed e detalhe de publicações (WEB-224)
+
+`tests/browser/feed/fixtures.ts` inicia uma API HTTP sintética na origem local de
+`PLAYWRIGHT_API_URL` e fornece cookies assinados exclusivos do ambiente Playwright.
+Configure essa variável com uma porta livre >= 1024 para estes cenários; o valor
+de isolamento sem servidor (`http://127.0.0.1:1`) do piloto não atende ao feed.
+Nunca aponte os cenários para API de produção. O servidor é encerrado ao final
+de cada teste e o runner usa `.next-playwright`, separado do dev normal. Seus
+tipos gerados são incluídos no TypeScript e seus artefatos são ignorados pelo
+Git/ESLint. O servidor dev já aberto não precisa ser encerrado.
+
+```powershell
+# Exemplo: escolha uma porta livre e mantenha a mesma origem no runner e fixture.
+$env:PLAYWRIGHT_API_URL='http://127.0.0.1:32124'
+npm run test:browser -- tests/browser/feed/feed.spec.ts --project=chromium-mobile --project=chromium-desktop
+npm run test:browser -- tests/browser/feed/feed-stories.spec.ts --project=chromium-mobile --project=chromium-desktop
+npm run test:a11y -- tests/browser/feed/feed.a11y.spec.ts
+```
+
+O teste da aplicação percorre Server Functions, validação e cache reais do frontend
+contra DTOs sintéticos. Não comprova autorização/persistência da API real. A fixture
+GET-only original permanece intacta e é reutilizada nas stories. Elas documentam
+FeedPeriodFilters, FeedMetadata e PublicationPhotoCarousel, incluindo ambos os temas,
+precisão de filtros, status de eventos e falha de mídia. Artefatos seguem o relatório
+Playwright existente; não há baselines visuais aprovadas.
+
+Na validação da WEB-224, o axe identificou `button-name` no botão de NotificationBell
+do shell, já sem nome acessível no código anterior à task. O spec mantém a assertion
+sem exclusões: feed e validação continuam sinalizando essa pendência global; o detalhe
+é analisado separadamente. Essa limitação não deve ser descrita como aprovação geral
+de acessibilidade nem resolvida enfraquecendo o scanner.
+
+`tests/publicationSessionCache.spec.ts` usa QueryClient real para verificar a limpeza
+do prefixo Publications ao desmontar UserProvider. O logout do menu navega sem reload;
+portanto permissions iguais não são uma chave de identidade suficiente. O teste Node
+exercita o cleanup e o cache, sem se apresentar como um fluxo completo entre duas contas.
+
 ## Ferramentas disponíveis
 
 | Ferramenta/configuração | Alcance e limite |
@@ -82,6 +119,8 @@ Os testes de [Table](../tests/browser/table/table-interactions.spec.ts) e [login
 
 - Table: a story existente `componentes-table--composicao-completa`, busca, limpeza por teclado, filtro, paginação e apresentação em tabela desktop ou acordeão nas larguras menores. Usa `embed=true`, que desativa autoplay no Storybook instalado, para que só o Playwright conduza essas interações. Isso não executa nem aprova o `play` da story.
 - Login: campos, máscara de CPF, sequência de foco, indicador de foco do campo senha, alternância da senha e validação real de CPF inválido. Não envia credenciais válidas nem testa autenticação. Requisições não locais, APIs e métodos diferentes de GET são bloqueados e fazem o teste falhar; erros JavaScript não tratados também falham o piloto.
+- Home pública: logo à esquerda, ações de ajuda/login à direita e ausência da seção de créditos em viewport mobile.
+- Loading: mensagem acessível de status e duração da animação reduzida quando `prefers-reduced-motion` está ativo.
 - Reflow: elementos principais visíveis, comportamento próprio de cada largura e ausência de overflow horizontal da página. Rolagem interna intencional da tabela não é proibida. Essas verificações não aprovam todos os conteúdos ou requisitos de acessibilidade.
 
 Selecione a execução pelo impacto: ajustes locais pedem specs/cenários diretamente relacionados no projeto adequado; mudanças compartilhadas incluem consumidores afetados e outros motores/larguras conforme o risco; alterações estruturais, de fixture ou configuração pedem a suíte completa. Avalie sempre a cobertura existente; acrescente testes somente para comportamentos ou riscos relevantes ainda não demonstrados.
@@ -133,3 +172,15 @@ O preview importa o CSS global e preserva a resolução atual de `font-sans`, in
 Para validação de interface, conferir interação, DOM, teclado, foco, zoom, conteúdo longo e diferentes viewports. Screenshots complementam essas verificações; não certificam acessibilidade nem substituem avaliação humana. Uma integração real precisa de API isolada, dados sintéticos, credenciais próprias e limpeza controlada.
 
 Ao entregar uma alteração, informe arquivos/escopo, comandos realmente executados, resultados/exit codes, falhas comparadas, artefatos e limitações. Separe inspeção estática, teste automatizado e avaliação manual. Não apresente resultados anteriores ou checks não executados como aprovação atual.
+
+### Administração de publicações
+
+`tests/browser/publications/fixtures.ts` fornece sessão e API sintéticas isoladas para as Server Functions reais. Usa as origens do Playwright e exige `PLAYWRIGHT_API_URL` em porta local livre >=1024; não aponta para backend real. A fixture registra métodos/payloads, permite conflitos/negações controlados e encerra seu próprio servidor ao final. O piloto GET-only permanece intacto.
+
+`administration.spec.ts` cobre as rotas `/admin/publications/{notice,event,service}`, criação com tipo fixado pela rota, permissões por área, paginação/navegação por ID, PATCH sem agenda intocada, galeria retida, coleção financeira completa, 409 com dados preservados, lifecycle, exclusão, bloqueio por inscrição cancelada, permissões independentes e cadastro com upload. `stories.spec.ts` verifica galeria e catálogo nos dois temas; `administration.a11y.spec.ts` analisa edição, validação e confirmação com axe. A integração não comprova comportamento do backend implantado, homologação financeira ou conformidade integral de acessibilidade.
+
+`overview.spec.ts` verifica publicações por categoria, eventos em rascunho, ajuda e aviso dos filtros, falhas independentes e ausência de chamada ao feed sem permissão. `categories.spec.ts` cobre listagem de avisos e serviços publicados, consulta por ID e contraste das abas. `overview.a11y.spec.ts` audita a visão geral nos dois temas, incluindo o shell administrativo.
+
+`list-management.spec.ts` cobre consulta por ID fora do feed, validação, ausência de suporte a título global, filtros desabilitados, ordenação de eventos, período publicado, limpeza e alternância Lista/Grade sem refetch. `list-stories.spec.ts` e `list-stories.a11y.spec.ts` exercitam as composições isoladas nos dois temas; o axe do catálogo não inclui o shell administrativo nem valida autorização no backend. A fixture aplica os limites temporais do feed aos dados sintéticos e registra os parâmetros da ordenação, sem comprovar a consulta JPA implantada.
+
+As stories de cobranças têm QueryClient próprio e dados sintéticos. O mock de `publications/events.ts` no preview impede avaliar autenticação e transporte exclusivos de servidor no navegador do Storybook; não é usado na aplicação Next nem nas fixtures autenticadas.
