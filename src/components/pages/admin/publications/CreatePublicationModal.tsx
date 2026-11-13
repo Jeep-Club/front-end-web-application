@@ -24,7 +24,7 @@ import { Newspaper, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { DatePicker } from "@/components/common/date-picker";
-import { parseDateTime } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 
 import toast from "react-hot-toast";
 import { EventChargeFields } from "./EventChargeFields";
@@ -32,7 +32,7 @@ import { invalidatePublicationAdministration } from "@/utils/publications/admini
 
 function Fields({ initialType, publishEventImmediately, serverError, step, setStep }: { initialType?: PublicationFormData["type"]; publishEventImmediately: boolean; serverError?: unknown; step: "details" | "charges"; setStep: (step: "details" | "charges") => void }) {
     const { setClose } = useModal();
-    const { watch, setValue, setError, trigger, control, formState: { isSubmitting, errors } } = useFormContext<PublicationFormData>();
+    const { watch, setValue, setError, clearErrors, trigger, control, formState: { isSubmitting, errors } } = useFormContext<PublicationFormData>();
     const type = watch("type");
     useEffect(() => {
         for (const issue of getActionFailure(serverError)?.errors ?? []) {
@@ -60,8 +60,43 @@ function Fields({ initialType, publishEventImmediately, serverError, step, setSt
                 <InputRegister name="title" label="Título" maxLength={200} required />
                 <RichTextRegister name="content" label="Conteúdo" required />
                 {type === "EVENT" && <>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        {(['startsAt', 'endsAt'] as const).map(name => <Controller key={name} name={name} control={control} render={({ field, fieldState }) => <DatePicker label={name === 'startsAt' ? 'Início' : 'Término (opcional)'} granularity="minute" isRequired={name === 'startsAt'} isDisabled={isSubmitting} value={field.value ? parseDateTime(field.value) : null} onChange={value => field.onChange(value?.toString() ?? '')} onBlur={field.onBlur} isInvalid={!!fieldState.error} errorMessage={fieldState.error?.message} />} />)}
+                    <div className="grid gap-5">
+                        {(["startsAt", "endsAt"] as const).map(name => (
+                            <Controller key={name} name={name} control={control} render={({ field, fieldState }) => {
+                                const [date = "", time = ""] = field.value.split("T");
+                                const required = name === "startsAt";
+                                const errorId = `event-${name}-error`;
+                                const update = (nextDate: string, nextTime: string) => {
+                                    clearErrors(name);
+                                    field.onChange(nextDate || nextTime ? `${nextDate}T${nextTime}` : "");
+                                };
+                                const inputClass = "min-h-11 w-full min-w-0 rounded-lg border border-input-border px-3 text-base [color-scheme:inherit] aria-invalid:border-red-500";
+
+                                return (
+                                    <fieldset className="min-w-0 space-y-2" disabled={isSubmitting}>
+                                        <legend className="font-bold">{required ? "Início *" : "Término (opcional)"}</legend>
+                                        <div className="grid gap-3 min-[420px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                                            <DatePicker
+                                                label="Data"
+                                                granularity="day"
+                                                value={date ? parseDate(date) : null}
+                                                onChange={value => update(value?.toString() ?? "", time)}
+                                                onBlur={field.onBlur}
+                                                isRequired={required}
+                                                isDisabled={isSubmitting}
+                                                isInvalid={!!fieldState.error}
+                                                aria-describedby={fieldState.error ? errorId : undefined}
+                                            />
+                                            <label className="grid min-w-0 gap-1 text-sm">
+                                                Hora
+                                                <input type="time" value={time} onChange={event => update(date, event.target.value)} onBlur={field.onBlur} aria-required={required} aria-invalid={!!fieldState.error} aria-describedby={fieldState.error ? errorId : undefined} className={inputClass} />
+                                            </label>
+                                        </div>
+                                        {fieldState.error && <p id={errorId} className="text-sm text-input-error-text">{fieldState.error.message}</p>}
+                                    </fieldset>
+                                );
+                            }} />
+                        ))}
                     </div>
                     <p className="text-xs text-j-gray-500">Use o horário local. O fuso usado é o do navegador.</p>
                 </>}
@@ -82,7 +117,7 @@ function Fields({ initialType, publishEventImmediately, serverError, step, setSt
             <div className="flex w-full shrink-0 flex-col-reverse gap-3 border-t border-input-border bg-background px-4 py-4 sm:flex-row md:px-6">
                 {type === "EVENT" && step === "charges" ? <Button disabled={isSubmitting} onClick={() => setStep('details')} className="flex-1 border border-input-border bg-button-secondary-bg text-button-secondary-text-hover hover:bg-button-secondary-bg-hover hover:text-button-secondary-text-hover focus-visible:text-button-secondary-text-hover">Voltar</Button> : <Button disabled={isSubmitting} onClick={setClose} className="flex-1 border border-input-border bg-button-secondary-bg text-button-secondary-text-hover hover:bg-button-secondary-bg-hover hover:text-button-secondary-text-hover focus-visible:text-button-secondary-text-hover">Cancelar</Button>}
             {type === "EVENT" && step === "details" ? <Button key="continue" disabled={isSubmitting} onClick={async () => { if (await trigger(['title', 'content', 'startsAt', 'endsAt', 'photos', 'primaryIndex'])) setStep('charges'); }} className="flex-1">Continuar para cobranças</Button> : <Button key="submit" type="submit" disabled={isSubmitting || !types.some((entry) => entry.type === type)} className="flex-1 bg-button-primary-bg text-button-primary-text hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover focus-visible:text-button-primary-text-hover">
-                {isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Criar e publicar evento" : type === "EVENT" ? "Criar evento" : "Criar rascunho"}
+                {isSubmitting ? "Salvando..." : type === "SERVICE" ? "Enviar para aprovação" : type === "EVENT" && publishEventImmediately && canPublishEvent ? "Divulgar evento" : "Salvar rascunho"}
             </Button>}
             </div>
         </>
@@ -104,6 +139,16 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
         const element = dialog.current;
         const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         element?.showModal();
+        if (element && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            const isMobile = window.matchMedia("(width < 40rem)").matches;
+            element.animate(
+                [
+                    { opacity: 0, transform: isMobile ? "translateY(24px)" : "translateY(12px) scale(0.97)" },
+                    { opacity: 1, transform: "none" },
+                ],
+                { duration: 250, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+            );
+        }
         const escape = (event: KeyboardEvent) => {
             if (event.key !== 'Escape') return;
             // WebKit may dispatch Escape outside the focused control after it becomes disabled.
@@ -117,7 +162,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
     const mutation = useMutation({
         mutationFn: async (data: PublicationFormData) => {
             const config = publicationCreationTypes.find((entry) => entry.type === data.type)!;
-            if (!hasPermission(useUserStore.getState().permissions, "PUBLICATIONS", config.action)) throw new Error("Você não tem permissão para criar este tipo de publicação.");
+            if (!hasPermission(useUserStore.getState().permissions, "PUBLICATIONS", config.action)) throw new Error("Você não tem permissão para divulgar este tipo de publicação.");
             const images = [];
             for (const [position, file] of data.photos.entries()) {
                 let storageKey = uploads.current.get(file);
@@ -162,7 +207,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
     });
     useEffect(() => { pending.current = mutation.isPending; }, [mutation.isPending]);
     if (!types.length) return null;
-    const title = initialType === "EVENT" ? "Criar evento" : initialType === "NOTICE" ? "Criar aviso" : initialType === "SERVICE" ? "Criar serviço" : "Criar publicação";
+    const title = initialType === "EVENT" ? "Divulgar evento" : initialType === "NOTICE" ? "Divulgar aviso" : initialType === "SERVICE" ? "Divulgar serviço" : "Divulgar publicação";
     const description = initialType === "EVENT"
         ? "Organize o próximo encontro do clube direto pelo mural."
         : initialType === "NOTICE"
@@ -182,7 +227,7 @@ export function CreatePublicationModal({ initialType, publishEventImmediately = 
             const first = controls[0]; const last = controls.at(-1);
             if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
             else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-        }} onCancel={event => { event.preventDefault(); if (!pending.current) setClose(); }} aria-modal="true" aria-labelledby="create-publication-title" className="m-auto border-0 p-0 text-primary backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-[800px] flex-col overflow-hidden rounded-3xl bg-background max-sm:m-0 max-sm:mt-auto max-sm:h-[96dvh] max-sm:max-h-[96dvh] max-sm:rounded-b-none shadow-2xl">
+        }} onCancel={event => { event.preventDefault(); if (!pending.current) setClose(); }} aria-modal="true" aria-labelledby="create-publication-title" className="m-auto border-0 p-0 text-primary backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-[800px] flex-col overflow-hidden rounded-3xl bg-background max-sm:fixed max-sm:inset-0 max-sm:m-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:max-w-none max-sm:rounded-none shadow-2xl">
             <ButtonIcon aria-label="Fechar" disabled={mutation.isPending} onClick={setClose} className="absolute right-4 top-4 z-10 rounded-full bg-background-secondary p-2 text-secondary hover:bg-background-tertiary hover:text-primary md:right-6 md:top-6"><X size={20} /></ButtonIcon>
             <header className="shrink-0 border-b border-input-border px-4 py-4 pr-16 md:px-6 md:py-6 md:pr-20">
 

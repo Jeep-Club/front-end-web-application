@@ -75,8 +75,26 @@ export const publicationFormSchema = z.object({
     if (data.type === "EVENT") {
         try { parseEventChargeRows(data.charges ?? [], data.startsAt); } catch (error) { ctx.addIssue({ code: 'custom', path: ['charges'], message: error instanceof z.ZodError ? 'Confira os campos e as definições das cobranças.' : error instanceof Error ? error.message : 'Confira as cobranças.' }); }
         const start = Date.parse(data.startsAt);
-        if (!Number.isFinite(start) || start <= Date.now()) ctx.addIssue({ code: "custom", path: ["startsAt"], message: "Informe um início no futuro." });
-        if (data.endsAt && (!Number.isFinite(Date.parse(data.endsAt)) || Date.parse(data.endsAt) <= start)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "O término deve ser posterior ao início." });
+        const end = Date.parse(data.endsAt);
+        const localDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/;
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        if (/^\d{5,}-/.test(data.startsAt)) {
+            ctx.addIssue({ code: "custom", path: ["startsAt"], message: "Informe o ano de início com até quatro dígitos." });
+        } else if (!localDateTime.test(data.startsAt) || !Number.isFinite(start)) {
+            ctx.addIssue({ code: "custom", path: ["startsAt"], message: "Preencha a data e a hora de início do evento." });
+        } else if (start <= Date.now()) {
+            ctx.addIssue({ code: "custom", path: ["startsAt"], message: "Escolha uma data e hora de início posteriores ao horário atual." });
+        }
+        if (/^\d{5,}-/.test(data.endsAt)) {
+            ctx.addIssue({ code: "custom", path: ["endsAt"], message: "Informe o ano de término com até quatro dígitos." });
+        } else if (data.endsAt && (!localDateTime.test(data.endsAt) || !Number.isFinite(end))) {
+            ctx.addIssue({ code: "custom", path: ["endsAt"], message: "Preencha a data e a hora de término ou deixe os dois campos em branco." });
+        } else if (data.endsAt && end < today) {
+            ctx.addIssue({ code: "custom", path: ["endsAt"], message: "A data de término deve ser hoje ou depois." });
+        } else if (data.endsAt && end <= start) {
+            ctx.addIssue({ code: "custom", path: ["endsAt"], message: "Escolha uma data e hora de término posteriores ao início do evento." });
+        }
     }
     if (data.type === "SERVICE") {
         if (!/^\d{1,13}([.,]\d{1,2})?$/.test(data.amount) || !Number.isFinite(parseServiceAmount(data.amount)) || parseServiceAmount(data.amount) < 0.01) ctx.addIssue({ code: "custom", path: ["amount"], message: "Informe um valor positivo com até duas casas decimais." });
