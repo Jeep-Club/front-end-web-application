@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { Cake, CalendarDays, ChevronRight, Megaphone, Plus, X } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Cake, CalendarDays, ChevronRight, Plus, X } from "lucide-react";
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -16,7 +16,6 @@ import { Avatar } from "@/components/common/avatar";
 
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
-import { publicationPlainText } from "@/utils/publications/content";
 import type { PublicationFeedItem } from "@/schemas/publications/feed";
 import { mergeFeedPages, nextFeedPage } from "@/utils/publications/infiniteFeed";
 import { getUpcomingBirthdaysForMonth } from "@/utils/birthdays";
@@ -62,12 +61,6 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
         staleTime: 60_000,
         retry: publicationReadRetry,
     });
-    const noticesQuery = useQuery({
-        queryKey: ["publications", "feed-sidebar", { type: "NOTICE", page: 0, size: 3 }, permissions],
-        queryFn: () => listPublicationFeedAction({ type: "NOTICE", page: 0, size: 3 }),
-        staleTime: 60_000,
-        retry: publicationReadRetry,
-    });
     const { hasNextPage, isFetchingNextPage, isError, fetchNextPage } = eventsQuery;
     const pageCount = eventsQuery.data?.pages.length ?? 0;
     useEffect(() => {
@@ -77,8 +70,7 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
     const events = allEvents
         .filter((item): item is Extract<PublicationFeedItem, { type: "EVENT" }> => item.type === "EVENT" && item.details.status === "OPEN")
         .sort((a, b) => Date.parse(a.details.startsAt) - Date.parse(b.details.startsAt))
-        .slice(0, 3);
-    const notices = (publicationReadError(noticesQuery.error).restricted ? [] : noticesQuery.data?.content ?? []).filter((item): item is Extract<PublicationFeedItem, { type: "NOTICE" }> => item.type === "NOTICE");
+        .slice(0, 1);
     const birthdays = getUpcomingBirthdaysForMonth(
         birthdaysQuery.data ?? [],
         new Date(),
@@ -101,7 +93,7 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
             className={`flex flex-col gap-3 max-lg:fixed max-lg:right-0 max-lg:top-14 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-lg:z-[93] max-lg:w-[min(88vw,20rem)] max-lg:gap-0 max-lg:overflow-hidden max-lg:bg-background max-lg:text-primary max-lg:shadow-2xl max-lg:transition-[translate,visibility] max-lg:duration-300 max-lg:ease-in-out motion-reduce:transition-none lg:sticky lg:top-6 lg:self-start ${mobileOpen ? "max-lg:visible max-lg:translate-x-0" : "max-lg:invisible max-lg:pointer-events-none max-lg:translate-x-full"}`}
         >
             <header className="flex min-h-16 shrink-0 items-center justify-between gap-2 border-b border-j-gray-200 bg-background px-4 py-3 lg:hidden">
-                <div className="min-w-0"><h2 className="font-extrabold text-j-blue-900">Painel do clube</h2><p className="text-xs text-j-gray-500">Eventos, aniversariantes e avisos</p></div>
+                <div className="min-w-0"><h2 className="font-extrabold text-j-blue-900">Painel do clube</h2><p className="text-xs text-j-gray-500">Eventos e aniversariantes</p></div>
                 <button type="button" aria-label="Fechar painel lateral" onClick={onCloseMobile} className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-j-gray-100 text-j-gray-600 shadow-sm transition-colors hover:bg-j-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800"><X size={20} aria-hidden="true" /></button>
             </header>
             <div className="flex min-h-0 flex-col gap-3 max-lg:flex-1 max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:p-4">
@@ -150,7 +142,7 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
                     </div>
                 ) : birthdays.length ? (
                     <ul className="space-y-2">
-                        {birthdays.slice(0, 4).map((birthday) => {
+                        {birthdays.slice(0, 2).map((birthday) => {
                             const month = birthday.birthMonth ?? birthdayMonth;
                             const day = birthday.birthDay ?? 1;
                             const birthdayDate = birthday.date;
@@ -158,27 +150,22 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
 
                             return (
                                 <li key={birthday.id} className="flex min-w-0 items-center justify-between gap-3 text-sm">
-                                    <span className="truncate font-semibold text-j-gray-700">{birthday.name}</span>
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span aria-hidden="true" className="size-8 shrink-0 rounded-full bg-j-gray-100" />
+                                        <span className="truncate font-semibold text-j-gray-700">{birthday.name.trim().split(/\s+/).filter((_, index, parts) => index === 0 || index === parts.length - 1).join(" ")}</span>
+                                    </div>
                                     <time dateTime={`2000-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`} className="shrink-0 rounded-lg bg-j-blue-50 px-2 py-1 text-xs font-bold text-j-blue-800">
                                         {dateLabel}
                                     </time>
                                 </li>
                             );
                         })}
-                        {birthdays.length > 4 && <li className="pt-1 text-xs font-semibold text-j-gray-500">e mais {birthdays.length - 4} neste mês</li>}
                     </ul>
                 ) : (
                     <p className="text-sm text-j-gray-500">Nenhum aniversário neste mês.</p>
                 )}
             </SideCard>
 
-            <SideCard title="Avisos" icon={Megaphone} href="/avisos" onNavigate={onCloseMobile}>
-                {noticesQuery.isError ? <div role="alert" className="text-sm text-j-gray-600"><p>{publicationReadError(noticesQuery.error).message}</p><Button onClick={() => void noticesQuery.refetch()}>Tentar avisos novamente</Button></div> : noticesQuery.isPending ? <SidebarSkeleton label="Carregando avisos..." variant="notice" /> : notices.length ? (
-                    <ul className="space-y-3">
-                {notices.map((notice) => <li key={notice.id} className="border-b border-j-gray-100 pb-3 last:border-0 last:pb-0"><p className="text-sm font-bold text-j-blue-900"><Link onClick={event => { event.currentTarget.focus({ preventScroll: true }); onCloseMobile(); }} href={detailHref(notice.id)} className="cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">{notice.title}</Link></p><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-j-gray-600">{publicationPlainText(notice.content)}</p></li>)}
-                    </ul>
-                ) : <p className="text-sm text-j-gray-500">Nenhum aviso publicado.</p>}
-            </SideCard>
 
             {mobileOpen && (
                 <section className="shrink-0 lg:hidden" aria-labelledby="feed-mobile-period-title">
@@ -192,9 +179,9 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
                     type="button"
                     aria-haspopup="dialog"
                     onClick={onCreate}
-                    className="hidden min-h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"
+                    className="hidden min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-j-yellow-300 px-6 text-base font-extrabold text-j-blue-900 shadow-sm transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-j-yellow-400 hover:shadow-md active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 lg:flex"
                 >
-                    <Plus size={21} aria-hidden="true" />
+                    <Plus size={18} aria-hidden="true" />
                     Postar
                 </button>
             )}

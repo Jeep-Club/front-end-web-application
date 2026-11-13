@@ -6,10 +6,11 @@ import { useModal } from "@/providers/ModalProvider";
 import { getPublicationFeedDetailAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useQuery } from "@tanstack/react-query";
-import { X, Share2 } from "lucide-react";
+import { X } from "lucide-react";
 import { isValidElement, useEffect, useRef } from "react";
 import { feedTypes, publicationReadError, publicationReadRetry } from "./feedDisplay";
 import { PublicationPhotoCarousel } from "./PublicationPhotoCarousel";
+import { PublicationShare } from "./PublicationShare";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
 import { PublicationComments } from "./PublicationComments";
@@ -60,16 +61,10 @@ export function PublicationDetailModal({ publicationId, onClose }: { publication
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     }} onCancel={event => { event.preventDefault(); (onClose ?? setClose)(); }} aria-modal="true" aria-labelledby="feed-detail-title" className="m-auto border-0 p-0 text-j-gray-700 backdrop:bg-black/60 relative hidden open:flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-y-auto rounded-3xl bg-j-white shadow-2xl">
         <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
-            {publication?.type === "EVENT" && <a
-                href={typeof window === "undefined" ? "https://wa.me/" : `https://wa.me/?text=${encodeURIComponent(`Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${new URL("/feed?publication=" + publication.id, window.location.origin).toString()}`)}`}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
-                className="inline-flex h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-3 text-sm font-bold text-j-blue-800 hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
-            ><Share2 size={16} aria-hidden="true" /><span className="hidden sm:inline">Compartilhar</span></a>}
+            {publication && <PublicationShare id={publication.id} title={publication.title} compact />}
             <ButtonIcon aria-label="Fechar publicação" onClick={onClose ?? setClose} className="rounded-full bg-j-gray-100 p-2 text-j-gray-600 hover:bg-j-gray-200"><X size={20} /></ButtonIcon>
         </div>
-        <header className={`border-b border-j-gray-200 py-6 pl-5 md:pl-8 ${publication?.type === 'EVENT' ? 'pr-28 md:pr-56' : 'pr-16'}`}><h2 id="feed-detail-title" className="break-words text-xl font-extrabold text-j-blue-800">{publication?.title ?? "Publicação"}</h2>
+        <header className={`border-b border-j-gray-200 py-6 pl-5 md:pl-8 ${publication ? 'pr-28 md:pr-56' : 'pr-16'}`}><h2 id="feed-detail-title" className="break-words text-xl font-extrabold text-j-blue-800">{publication?.title ?? "Publicação"}</h2>
             {publication && <p className="mt-2 text-xs text-j-gray-500">{feedTypes[publication.type].label} · <RelativeTime value={publication.publishedAt} /></p>}
             {publication && <Button className="mt-3" disabled={query.isFetching} aria-busy={query.isFetching} onClick={() => void query.refetch()}>Atualizar publicação</Button>}
         </header>

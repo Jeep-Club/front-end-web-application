@@ -18,6 +18,23 @@
   to { opacity: 0; transform: translateY(-2px) scale(0.99); }
 }
 
+.feed-period-popover[data-entering] {
+  animation: popover-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.feed-period-popover[data-exiting] {
+  animation: popover-exit 150ms ease-in both;
+}
+
+@keyframes feed-share-enter-up {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.feed-period-popover[data-placement="top"][data-entering] {
+  animation-name: feed-share-enter-up;
+}
+
 .app-route-enter {
   animation: app-route-enter 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button as AriaButton, Dialog, DialogTrigger, Popover } from "react-aria-components";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Menu, Megaphone, Newspaper, Plus, RefreshCw, Share2, Store, X } from "lucide-react";
+import { CalendarDays, Menu, Megaphone, Newspaper, Plus, RefreshCw, Store, X } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { useModal } from "@/providers/ModalProvider";
 import type { PublicationFeedFilters } from "@/schemas/publications/feed";
@@ -22,11 +22,13 @@ import { CreatePublicationModal } from "@/components/pages/admin/publications/Cr
 import { PublicationDetailModal } from "./PublicationDetailModal";
 import { FeedInteractions } from "./FeedInteractions";
 import { FeedMetadata } from "./FeedMetadata";
+import { PublicationComments } from "./PublicationComments";
 import { PublicationCommentPreview } from "./PublicationCommentPreview";
 import { RelativeTime } from "./RelativeTime";
 import { EventParticipants } from "./EventParticipants";
 import { EventParticipation } from "./EventParticipation";
 import { PublicationSkeletons } from "./FeedLoading";
+import { PublicationShare } from "./PublicationShare";
 import { FeedSidebar } from "./FeedSidebar";
 import { usePageTour } from "@/hooks/useTour";
 import { getFeedTourSteps } from "@/config/tourSteps";
@@ -44,12 +46,6 @@ function preview(value: string, max: number) {
     return text.length > max ? `${text.slice(0, max - 1).join("")}…` : value;
 }
 
-function getEventShareLink(publicationId: number) {
-    const url = new URL("/feed", window.location.origin);
-    url.searchParams.set("publication", String(publicationId));
-    return url.toString();
-}
-
 export default function Feed() {
     const permissions = useUserStore((state) => state.permissions);
     const canCreate = {
@@ -65,6 +61,7 @@ export default function Feed() {
     const publicationPickerRef = useRef<HTMLDialogElement>(null);
     const detailValue = params.get('publication');
     const detailId = detailValue && /^\d+$/.test(detailValue) && Number.isSafeInteger(Number(detailValue)) && Number(detailValue) > 0 ? Number(detailValue) : null;
+    const [commentPostId, setCommentPostId] = useState<number | null>(null);
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
     const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -298,7 +295,7 @@ export default function Feed() {
 
                                 <DialogTrigger isOpen={periodOpen} onOpenChange={setPeriodOpen}>
                                     <AriaButton aria-label="Filtrar por período" className={`hidden size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus lg:flex ${publishedFrom || publishedTo ? 'bg-button-primary-bg text-button-primary-text' : 'bg-background text-primary hover:bg-background-tertiary'}`}><CalendarDays size={21} aria-hidden="true" /></AriaButton>
-                                    <Popover placement="bottom end" className="z-[100] w-[min(38rem,calc(100vw-2rem))] outline-none"><Dialog aria-label="Filtrar publicações por período" className="outline-none"><FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => { applyFilters({ type, ...period }); setPeriodOpen(false); }} /></Dialog></Popover>
+                                    <Popover placement="bottom end" className="feed-period-popover origin-top-right z-[100] w-[min(38rem,calc(100vw-2rem))] outline-none"><Dialog aria-label="Filtrar publicações por período" className="outline-none"><FeedPeriodFilters publishedFrom={params.get('publishedFrom') ?? undefined} publishedTo={params.get('publishedTo') ?? undefined} onApply={period => { applyFilters({ type, ...period }); setPeriodOpen(false); }} /></Dialog></Popover>
                                 </DialogTrigger>
                             </div>
 
@@ -373,6 +370,10 @@ export default function Feed() {
                                     {publications.map((publication) => {
                                         const Icon = publicationFilterIcons[publication.type];
                                         const isEvent = publication.type === "EVENT";
+                                        const authorPhoto = getMediaImageUrl(
+                                            publication.authorProfilePhotoStorageKey ?? publication.authorPhotoStorageKey ??
+                                            publication.authorProfilePhotoUrl ?? publication.authorPhotoUrl,
+                                        );
 
                                         return (
                                             <article
@@ -384,6 +385,23 @@ export default function Feed() {
                                                 }}
                                                 className="flex w-full min-w-0 flex-col overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm"
                                             >
+                                                <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
+                                                    <div className="flex min-w-0 items-center gap-3">
+                                                        <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-j-gray-100">
+                                                            {authorPhoto && !failedImages.has(authorPhoto) && (
+                                                                <Image src={authorPhoto} alt="" fill unoptimized sizes="40px" className="object-cover" onError={() => setFailedImages(previous => new Set(previous).add(authorPhoto))} />
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="min-h-5 text-sm leading-snug font-bold break-words text-primary">{publication.authorName?.trim() || "Nome do associado"}</p>
+                                                            <RelativeTime value={publication.publishedAt} className="text-xs text-secondary" />
+                                                        </div>
+                                                    </div>
+                                                    <span className={`shrink-0 items-center gap-1.5 rounded-full bg-j-gray-100 px-2.5 py-1 text-xs font-bold text-j-blue-800 ${isEvent ? "hidden sm:inline-flex" : "inline-flex"}`}>
+                                                        <Icon size={14} aria-hidden="true" />
+                                                        {feedTypes[publication.type].label}
+                                                    </span>
+                                                </header>
                                                 {publication.primaryImage && !failedImages.has(publication.primaryImage.storageKey) && (
                                                     <div className="relative aspect-[16/9] bg-j-gray-100">
                                                         <Image
@@ -414,38 +432,10 @@ export default function Feed() {
 
                                                 {publication.primaryImage && failedImages.has(publication.primaryImage.storageKey) && <div role="status" className="bg-j-gray-100 p-4 text-sm text-j-gray-600">Imagem indisponível.<Button onClick={() => setFailedImages(previous => { const next = new Set(previous); next.delete(publication.primaryImage!.storageKey); return next; })}>Tentar imagem novamente</Button></div>}
                                                 <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
-                                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                                        <span
-                                                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold ${isEvent
-                                                                    ? "bg-j-yellow-300/30 text-j-blue-900"
-                                                                    : "bg-j-gray-100 text-j-blue-800"
-                                                                }`}
-                                                        >
-                                                            <Icon
-                                                                size={15}
-                                                                aria-hidden="true"
-                                                            />
-                                                            {
-                                                                feedTypes[
-                                                                    publication.type
-                                                                ].label
-                                                            }
-                                                        </span>
-
-                                                        <RelativeTime
-                                                            value={
-                                                                publication.publishedAt
-                                                            }
-                                                            className="text-xs text-j-gray-500"
-                                                        />
-                                                    </div>
 
                                                     <div>
-                                                        <h2 className="line-clamp-2 break-words text-xl font-extrabold text-j-blue-800">
-                                                            {preview(
-                                                                publication.title,
-                                                                100
-                                                            )}
+                                                        <h2 className="text-lg leading-snug font-extrabold break-words text-j-blue-800 sm:text-xl">
+                                                            {publication.title}
                                                         </h2>
 
                                                         <p className="mt-2 line-clamp-3 break-words text-sm leading-relaxed text-j-gray-600">
@@ -458,6 +448,12 @@ export default function Feed() {
                                                         </p>
                                                     </div>
 
+                                                    {isEvent && (
+                                                        <span className="inline-flex self-start items-center gap-1.5 rounded-full bg-j-gray-100 px-2.5 py-1 text-xs font-bold text-j-blue-800 sm:hidden">
+                                                            <CalendarDays size={14} aria-hidden="true" />
+                                                            Evento
+                                                        </span>
+                                                    )}
                                                     <FeedMetadata
                                                         publication={publication}
                                                     />
@@ -484,7 +480,7 @@ export default function Feed() {
                                                         <a aria-label={`Ver publicação completa: ${publication.title}`} href={publicationHref(publication.id)} onClick={event => {
                                                             if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
                                                             event.preventDefault(); openPublication(publication.id);
-                                                        }} className="cursor-pointer self-start rounded text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
+                                                        }} className="cursor-pointer self-center rounded text-center text-sm font-bold text-j-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-j-blue-800">Ver publicação completa<span className="sr-only">: {publication.title}</span></a>
 
                                                     <div className="mt-auto border-t border-j-gray-200 pt-3">
                                                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -492,47 +488,22 @@ export default function Feed() {
                                                                 publication={
                                                                     publication
                                                                 }
-                                                                onComments={() => openPublication(publication.id)}
+                                                                onComments={() => setCommentPostId(current => current === publication.id ? null : publication.id)}
                                                             />
 
-                                                            {isEvent && (
-                                                                    <a
-                                                                        href={`https://wa.me/?text=${encodeURIComponent(
-                                                                            `Vamos nesse evento do Jeep Clube Tamoios? ${publication.title}\n${getEventShareLink(
-                                                                                publication.id
-                                                                            )}`
-                                                                        )}`}
-                                                                        target="_blank"
-                                                                        rel="noreferrer noopener"
-                                                                        aria-label={`Compartilhar evento ${publication.title} no WhatsApp`}
-                                                                        onClick={(
-                                                                            event
-                                                                        ) =>
-                                                                            event.stopPropagation()
-                                                                        }
-                                                                        className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#25D366]/10 px-4 text-sm font-bold text-j-blue-800 transition-colors hover:bg-[#25D366]/20 focus-visible:outline-2 focus-visible:outline-j-blue-800"
-                                                                    >
-                                                                        <Share2
-                                                                            size={
-                                                                                16
-                                                                            }
-                                                                            aria-hidden="true"
-                                                                        />
-                                                                        Compartilhar
-                                                                    </a>
-                                                                )}
+                                                            <PublicationShare id={publication.id} title={publication.title} />
                                                         </div>
                                                     </div>
 
-                                                    <PublicationCommentPreview
+                                                    {commentPostId === publication.id ? <PublicationComments publicationId={publication.id} focusComposer /> : <PublicationCommentPreview
                                                         publicationId={
                                                             publication.id
                                                         }
                                                         count={
                                                             publication.commentCount
                                                         }
-                                                        onOpen={() => openPublication(publication.id)}
-                                                    />
+                                                        onOpen={() => setCommentPostId(publication.id)}
+                                                    />}
                                                 </div>
                                             </article>
                                         );
