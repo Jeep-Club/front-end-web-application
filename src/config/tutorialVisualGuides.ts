@@ -29,26 +29,26 @@ function createGuideSteps(
 export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     "member-vehicles": createGuideSteps("member-vehicles", [
         {
-            caption: "1. Toque no seu avatar no canto superior direito e selecione 'Gerenciar conta'.",
-            alt: "Menu da conta aberto destacando a opção Gerenciar conta.",
+            caption: "1. No menu lateral esquerdo (ou na barra inferior / avatar no celular), toque em 'Conta'.",
+            alt: "Menu principal destacando a opção Conta e o atalho no avatar.",
         },
         {
-            caption: "2. Escolha a aba 'Veículos' e clique em 'Incluir veículo'.",
-            alt: "Tela de perfil com a aba Veículos selecionada e botão Incluir veículo destacado.",
+            caption: "2. Escolha a aba 'Veículos' e clique em 'Incluir Veículo'.",
+            alt: "Tela de Conta com a aba Veículos selecionada e o botão Incluir Veículo destacado.",
         },
         {
             caption: "3. Preencha modelo, placa, ano, adicione as fotos do 4x4 e salve.",
-            alt: "Modal de cadastro de veículo com os campos obrigatórios e botão salvar destacados.",
+            alt: "Modal de cadastro de veículo com os campos obrigatórios e o botão Salvar destacados.",
         },
     ]),
     "member-medical": createGuideSteps("member-medical", [
         {
-            caption: "1. Abra o menu do seu avatar no topo e clique em 'Gerenciar conta'.",
-            alt: "Menu do avatar destacando o item Gerenciar conta.",
+            caption: "1. No menu principal ou no seu avatar no topo, acesse 'Conta'.",
+            alt: "Menu principal destacando a opção Conta.",
         },
         {
             caption: "2. Selecione a aba 'Dados médicos' e toque em 'Editar informações'.",
-            alt: "Tela de perfil na aba Dados médicos destacando o botão Editar informações.",
+            alt: "Tela de Conta na aba Dados médicos destacando o botão Editar informações.",
         },
         {
             caption: "3. Informe tipo sanguíneo, alergias, medicações e contato de emergência.",
@@ -57,8 +57,8 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     ]),
     "profile-account": createGuideSteps("profile-account", [
         {
-            caption: "1. No menu do avatar no topo, clique em 'Gerenciar conta'.",
-            alt: "Menu da conta destacando a opção Gerenciar conta.",
+            caption: "1. No menu principal ou no seu avatar no topo, clique em 'Conta'.",
+            alt: "Menu principal destacando a opção Conta.",
         },
         {
             caption: "2. Confira seus dados na aba 'Dados pessoais' ou toque em 'Editar' para atualizar.",
@@ -71,12 +71,12 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     ]),
     "member-dependents": createGuideSteps("member-dependents", [
         {
-            caption: "1. Abra o menu do seu avatar e selecione 'Gerenciar conta'.",
-            alt: "Menu do avatar destacando Gerenciar conta.",
+            caption: "1. No menu principal ou no seu avatar no topo, acesse 'Conta'.",
+            alt: "Menu principal destacando a opção Conta.",
         },
         {
             caption: "2. Toque na aba 'Dependentes' e clique em 'Incluir dependente'.",
-            alt: "Aba Dependentes do perfil com o botão Incluir dependente em destaque.",
+            alt: "Aba Dependentes da Conta com o botão Incluir dependente em destaque.",
         },
         {
             caption: "3. Preencha nome, parentesco, foto opcional e confirme o cadastro.",
@@ -85,15 +85,15 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     ]),
     "member-tools": createGuideSteps("member-tools", [
         {
-            caption: "1. No menu do avatar no topo, acesse 'Gerenciar conta'.",
-            alt: "Menu do avatar destacando Gerenciar conta.",
+            caption: "1. No menu principal ou no seu avatar no topo, abra 'Conta'.",
+            alt: "Menu principal destacando a opção Conta.",
         },
         {
-            caption: "2. Escolha a aba 'Ferramentas' e clique em 'Incluir ferramenta'.",
-            alt: "Aba Ferramentas com o botão Incluir ferramenta destacado.",
+            caption: "2. Escolha a aba 'Ferramentas' e clique em 'Incluir Ferramenta'.",
+            alt: "Aba Ferramentas com o botão Incluir Ferramenta destacado.",
         },
         {
-            caption: "3. Informe o nome e descrição do equipamento de resgate e salve.",
+            caption: "3. Informe o nome e a foto opcional do equipamento de resgate e salve.",
             alt: "Modal de inclusão de ferramenta destacando os campos e botão de confirmação.",
         },
     ]),
@@ -113,8 +113,8 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     ]),
     "member-agenda": createGuideSteps("member-agenda", [
         {
-            caption: "1. No menu principal, toque em 'Agenda' para abrir o calendário do clube.",
-            alt: "Menu lateral destacando o link Agenda.",
+            caption: "1. No menu principal (ou na barra inferior do celular), toque em 'Agenda'.",
+            alt: "Menu lateral e barra de navegação destacando o link Agenda.",
         },
         {
             caption: "2. Navegue pelos meses e toque em um dia com evento marcado para ver os detalhes.",
@@ -123,12 +123,46 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
     ]),
     "member-financial": createGuideSteps("member-financial", [
         {
-            caption: "1. Abra o menu do avatar no topo e clique em 'Histórico financeiro'.",
-            alt: "Menu da conta destacando o item Histórico financeiro.",
+            caption: "1. No menu lateral esquerdo (ou menu ☰ no celular), clique em 'Histórico financeiro'.",
+            alt: "Menu principal destacando o item Histórico financeiro.",
         },
         {
             caption: "2. Use os filtros de status e ordenação para conferir vencimentos e valores.",
             alt: "Tela Histórico financeiro destacando os filtros de status e a lista de cobranças.",
+        },
+    ]),
+    "member-services": createGuideSteps("member-services", [
+        {
+            caption: "1. No menu lateral esquerdo (ou menu ☰ no celular), clique em 'Serviços'.",
+            alt: "Menu principal destacando a opção Serviços.",
+        },
+        {
+            caption: "2. Explore os serviços da comunidade e toque em 'Ver detalhes' ou 'Contato'.",
+            alt: "Tela de Serviços destacando os cartões publicados e os botões Ver detalhes e Contato.",
+        },
+    ]),
+    "member-settings": createGuideSteps("member-settings", [
+        {
+            caption: "1. No rodapé do menu lateral (ou menu ☰ no celular), toque em 'Configurações'.",
+            alt: "Menu lateral destacando a opção Configurações.",
+        },
+        {
+            caption: "2. Escolha uma categoria para ajustar notificações, privacidade, tema ou refazer tutoriais.",
+            alt: "Tela de Configurações destacando as categorias laterais e as preferências do usuário.",
+        },
+    ]),
+    "member-change-password": createGuideSteps("member-change-password", [
+        {
+            caption: "1. Em Configurações, selecione a categoria 'Conta e segurança'.",
+            alt: "Tela de Configurações destacando a categoria Conta e segurança.",
+        },
+        {
+            caption: "2. Na lista de opções, clique em 'Senha' e depois em 'Alterar minha senha'.",
+            alt: "Tela de Configurações destacando a opção Senha e o botão Alterar minha senha.",
+        },
+        {
+            caption: "3. Informe sua senha atual, digite a nova senha (mínimo 8 caracteres) e confirme.",
+            alt: "Formulário de alteração de senha com campos Senha atual, Nova senha e Confirmar nova senha.",
         },
     ]),
     "member-password-recovery": createGuideSteps("member-password-recovery", [
@@ -137,7 +171,7 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
             alt: "Tela de login destacando o atalho Esqueceu a senha.",
         },
         {
-            caption: "2. Informe seu CPF e clique em 'Enviar' para receber as instruções por e-mail.",
+            caption: "2. Informe seu CPF e clique em 'Enviar' para receber as instruções.",
             alt: "Tela Recuperar Senha destacando o campo de CPF e o botão Enviar.",
         },
     ]),
@@ -151,14 +185,28 @@ export const MEMBER_VISUAL_GUIDES: Record<string, TutorialImageStep[]> = {
             alt: "Seções da página inicial destacando experiências off-road e atalho de associação.",
         },
     ]),
+    "member-membership-apply": createGuideSteps("member-membership-apply", [
+        {
+            caption: "1. Na página inicial ou na tela de login, toque em 'Quero ser sócio' para abrir o formulário.",
+            alt: "Tela de solicitação de associação exibindo o cabeçalho e o botão de ajuda.",
+        },
+        {
+            caption: "2. Preencha seus dados pessoais (Nome, CPF, Celular e E-mail) e escreva sua carta de apresentação.",
+            alt: "Formulário Quero ser sócio destacando os campos de identificação e apresentação.",
+        },
+        {
+            caption: "3. Confira as informações e clique em 'Enviar solicitação' para análise da diretoria.",
+            alt: "Botão Enviar solicitação destacado no final do formulário de associação.",
+        },
+    ]),
     "tutorials-hub": createGuideSteps("tutorials-hub", [
         {
             caption: "1. Digite sua dúvida na barra de busca e toque em 'Ver tutorial' para abrir as imagens.",
             alt: "Central de Tutoriais destacando a barra de busca e o botão Ver tutorial no card.",
         },
         {
-            caption: "2. Em qualquer tela do sistema, clique no botão vermelho de ajuda no cabeçalho.",
-            alt: "Cabeçalho do sistema destacando o botão vermelho contextual de ajuda.",
+            caption: "2. No cabeçalho das telas do sistema, clique no botão de ajuda para iniciar o tour interativo.",
+            alt: "Cabeçalho da tela destacando o botão branco de ajuda contextual.",
         },
     ]),
 };

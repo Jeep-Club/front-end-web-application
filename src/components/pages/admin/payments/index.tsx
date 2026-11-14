@@ -8,6 +8,7 @@ import { Eye, ShieldX } from "lucide-react";
 import { listPaymentsAction } from "@/server/actions/payments";
 import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getPaymentsTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { ListPagination } from "@/components/common/table/ListPagination";
@@ -30,7 +31,7 @@ export default function PaymentsPage({
     const [isNavigating, startTransition] = useTransition();
     const permissions = useUserStore(state => state.permissions);
     const canRead = hasPermission(permissions, paymentPermissions.module, paymentPermissions.read);
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_payments",
         steps: getPaymentsTourSteps,
         autoStartOnFirstVisit: false,
@@ -59,7 +60,16 @@ export default function PaymentsPage({
                     { label: "Home", href: "/feed" },
                     { label: "Gestão Administrativa", href: "/admin" },
                     { label: "Análise de pagamentos" },
-                ]} />}
+                ]} actions={
+                    canRead ? (
+                        <TourHelpButton
+                            id="tour-header-help-btn"
+                            onClick={restartTour}
+                            label="Como analisar pagamentos?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    ) : undefined
+                } />}
                 {!canRead ? (
                     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center">
                         <ShieldX size={42} className="mb-3 text-j-gray-400" />

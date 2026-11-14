@@ -87,6 +87,7 @@ export function FeedSidebar({ canCreate, onCreate, mobileOpen, onCloseMobile, mo
             className={`fixed inset-x-0 top-14 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-[92] cursor-pointer bg-black/60 transition-[opacity,visibility] duration-300 ease-in-out motion-reduce:transition-none lg:hidden ${mobileOpen ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}
         />
         <aside
+            id="tour-feed-sidebar"
             role={mobileOpen ? "dialog" : undefined}
             aria-modal={mobileOpen || undefined}
             aria-label="Informações do clube"

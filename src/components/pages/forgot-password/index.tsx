@@ -1,13 +1,20 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, HelpCircle } from "lucide-react";
 import FormForgotPassword from "./form";
 import { Logo } from "@/components/common/logo";
+import { getForgotPasswordTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 
 
 export default function ForgotPassword() {
     const router = useRouter();
+    const { startTour } = usePageTour({
+        storageKey: "tour_completed_member_password_recovery",
+        steps: getForgotPasswordTourSteps,
+        autoStartOnFirstVisit: false,
+    });
 
     return (
         <div className={
@@ -25,6 +32,7 @@ export default function ForgotPassword() {
                 Voltar
             </button>
             <div
+                id="tour-forgot-card"
                 className={
                     `
                     flex flex-col
@@ -41,11 +49,20 @@ export default function ForgotPassword() {
                     <p className="text-xs md:text-sm text-j-transparent-white text-center px-5 pb-2">
                         Digite seu CPF para receber as instruções de recuperação.
                     </p>
+                    <button
+                        type="button"
+                        onClick={startTour}
+                        title="Precisa de ajuda para recuperar sua senha?"
+                        className="mb-3 flex cursor-pointer items-center gap-1.5 rounded-full border border-j-yellow-300/40 bg-j-yellow-300/10 px-3 py-1.5 text-[11px] font-semibold text-j-yellow-300 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 hover:border-j-yellow-300 hover:bg-j-yellow-300/20 active:scale-95"
+                    >
+                        <HelpCircle size={13} className="shrink-0" />
+                        Como recuperar minha senha?
+                    </button>
                 </div>
                 <div className="w-full flex flex-col items-center justify-between">
                     <div className="w-full flex flex-col items-center">
                         <FormForgotPassword />
-                        <p className="text-[10px] md:text-xs text-j-transparent-white text-center">
+                        <p id="tour-forgot-back" className="text-[10px] md:text-xs text-j-transparent-white text-center">
                             Lembrou a senha? <button type="button" onClick={() => router.push('/login')} className="text-j-gray-200 pt-2 pb-4 underline hover:text-j-yellow-300 transition-colors duration-300 hover:cursor-pointer">Voltar para o login</button>
                         </p>
                         <p className="text-j-white pt-3 pb-4 text-[8px] md:text-xs text-center">&copy; 2026 JEEP CLUBE TAMOIOS • OFF-ROAD</p>

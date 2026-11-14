@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, HeartPulse, Pencil, Plus, ShieldX, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getMedicalProfilesTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { Button } from "@/components/common/button";
@@ -72,7 +73,7 @@ export default function MedicalManagement() {
     const permissions = useUserStore(state => state.permissions);
     const can = (action: string) => hasPermission(permissions, permissionsConfig.module, action);
     const canRead = can(permissionsConfig.read);
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: "tour_completed_admin_medical",
         steps: getMedicalProfilesTourSteps,
         autoStartOnFirstVisit: false,
@@ -95,7 +96,7 @@ export default function MedicalManagement() {
         </div> },
     ];
     return <div className="min-h-full w-full p-3 md:p-4"><div className="flex w-full flex-col gap-4 pb-6">
-        <PageHeader id="tour-medical-header" title="Gestão de dados médicos" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Dados médicos" }]} />
+        <PageHeader id="tour-medical-header" title="Gestão de dados médicos" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Gestão Administrativa", href: "/admin" }, { label: "Dados médicos" }]} actions={canRead ? <TourHelpButton id="tour-header-help-btn" onClick={restartTour} label="Como gerenciar dados médicos?" className="w-full justify-center sm:w-auto" /> : undefined} />
         {!canRead ? <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-j-gray-300 bg-j-white p-6 text-center"><ShieldX size={42} className="mb-3 text-j-gray-400" /><h3 className="text-lg font-black text-j-blue-800">Acesso não permitido</h3><p className="mt-1 text-sm text-j-gray-600">Seu usuário não possui permissão para consultar dados médicos.</p></section> : <>
             <div className="flex items-center gap-3"><p className="text-sm text-j-gray-600">Gerencie os perfis médicos de usuários e dependentes ativos.</p></div>
             <Table.Root data={query.data?.content ?? []} columns={columns} getRowId={profile => String(profile.id)} isLoading={query.isPending} isFetching={query.isFetching} error={query.error ? <div className="flex flex-col gap-3"><p>{query.error.message}</p><Button onClick={() => void query.refetch()}>Tentar novamente</Button></div> : undefined} emptyState="Nenhum perfil médico cadastrado." pagination={{ ...pagination, pageCount: query.data?.totalPages ?? 0, rowCount: query.data?.totalElements, pageSizeOptions: [10, 20, 50], onChange: next => setPagination({ ...next, pageIndex: next.pageSize !== pagination.pageSize ? 0 : next.pageIndex }) }} footer={<Table.Pagination itemLabel="perfil médico" />}>

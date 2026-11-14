@@ -6,6 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Cake, CalendarDays, ChevronLeft, ChevronRight, Clock3, MessageCircle, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/common/button";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { getAgendaTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { listPublicationFeedAction } from "@/server/actions/publications/feed";
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/providers/ModalProvider";
@@ -94,6 +97,11 @@ function EventSummary({ event }: { event: EventItem }) {
 export default function AgendaPage() {
     const permissions = useUserStore((state) => state.permissions);
     const { setContent, setOpen } = useModal();
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_member_agenda",
+        steps: getAgendaTourSteps,
+        autoStartOnFirstVisit: false,
+    });
     const [month, setMonth] = useState(() => {
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -156,21 +164,29 @@ export default function AgendaPage() {
                 <span className="font-semibold text-j-blue-800">Agenda</span>
             </nav>
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div className="min-w-0">
+                <div id="tour-agenda-header" className="min-w-0">
                     <h1 className="mt-1 text-2xl font-extrabold text-j-gray-700 md:text-3xl">Agenda de eventos</h1>
                     <p className="mt-1 max-w-xl text-sm text-j-gray-500">Veja o que vem por aí e abra um evento para conferir os detalhes.</p>
                 </div>
-                <div className="flex w-full items-center justify-between gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:w-auto sm:gap-2">
-                    <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
-                    <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-sm font-extrabold capitalize text-j-blue-800 sm:min-w-36">{monthLabel(month)}</h2>
-                    <button type="button" aria-label="Próximo mês" onClick={() => moveMonth(1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronRight size={20} /></button>
-                    <button type="button" onClick={goToToday} className="ml-1 min-h-10 shrink-0 cursor-pointer rounded-xl bg-j-gray-100 px-3 text-xs font-bold text-j-gray-600 transition-colors hover:bg-j-gray-200 focus-visible:outline-2 focus-visible:outline-j-blue-800">Hoje</button>
+                <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                    <TourHelpButton
+                        id="tour-header-help-btn"
+                        onClick={restartTour}
+                        label="Como usar a agenda?"
+                        className="w-full justify-center sm:w-auto"
+                    />
+                    <div id="tour-agenda-controls" className="flex w-full items-center justify-between gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:w-auto sm:gap-2">
+                        <button type="button" aria-label="Mês anterior" onClick={() => moveMonth(-1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronLeft size={20} /></button>
+                        <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-sm font-extrabold capitalize text-j-blue-800 sm:min-w-36">{monthLabel(month)}</h2>
+                        <button type="button" aria-label="Próximo mês" onClick={() => moveMonth(1)} className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl text-j-gray-600 transition-colors hover:bg-j-gray-100 focus-visible:outline-2 focus-visible:outline-j-blue-800"><ChevronRight size={20} /></button>
+                        <button type="button" onClick={goToToday} className="ml-1 min-h-10 shrink-0 cursor-pointer rounded-xl bg-j-gray-100 px-3 text-xs font-bold text-j-gray-600 transition-colors hover:bg-j-gray-200 focus-visible:outline-2 focus-visible:outline-j-blue-800">Hoje</button>
+                    </div>
                 </div>
             </header>
             {birthdaysQuery.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-j-gray-200 bg-j-white px-4 py-3 text-sm text-j-gray-600"><span>Não foi possível carregar os aniversariantes deste mês.</span><Button onClick={() => void birthdaysQuery.refetch()}>Tentar novamente</Button></div>}
 
-            {query.isLoading ? <div role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
-                        : <section aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
+            {query.isLoading ? <div id="tour-agenda-calendar" role="status" aria-label="Carregando agenda" className="h-[32rem] animate-pulse rounded-3xl bg-j-gray-200" />
+                        : <section id="tour-agenda-calendar" aria-label="Calendário mensal" className="overflow-hidden rounded-3xl border border-j-gray-200 bg-j-white shadow-sm">
                             <div className="grid grid-cols-7 border-b border-j-gray-200 bg-j-gray-100/70">
                                 {WEEKDAYS.map((day) => <div key={day} className="py-3 text-center text-[11px] font-extrabold uppercase tracking-wide text-j-gray-500 sm:text-xs">{day}</div>)}
                             </div>

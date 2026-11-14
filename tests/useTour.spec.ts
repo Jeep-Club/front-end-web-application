@@ -14,6 +14,13 @@ import {
     getRolesTourSteps,
     getVehiclesTourSteps,
     getToolsTourSteps,
+    getDependentsTourSteps,
+    getAgendaTourSteps,
+    getMemberFinancialTourSteps,
+    getServicesPageTourSteps,
+    getSettingsTourSteps,
+    getMembershipApplyTourSteps,
+    getForgotPasswordTourSteps,
     getTutorialsPageTourSteps,
     getContextualHelpLabel,
     resolveRouteTourSteps,
@@ -220,18 +227,76 @@ describe("Tour Configuration & Logic", () => {
             "#tour-tools-actions",
             "#tour-header-help-btn",
         ]);
+
+        expect(getDependentsTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-dependents-header",
+            "#tour-dependents-export",
+            "#tour-dependents-filters",
+            "#tour-dependents-list",
+            "#tour-dependents-actions",
+            "#tour-header-help-btn",
+        ]);
+    });
+
+    it("deve retornar os passos dos novos tutoriais de Agenda (/agenda), Financeiro (/financeiro), Serviços (/servicos), Configurações (/configuracoes), Solicitação (/membership/apply) e Recuperação de Senha (/forgot-password)", () => {
+        expect(getAgendaTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-agenda-header",
+            "#tour-agenda-controls",
+            "#tour-agenda-calendar",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getMemberFinancialTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-member-financial-header",
+            "#tour-member-financial-filters",
+            "#tour-member-financial-list",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getServicesPageTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-services-header",
+            "#tour-services-list",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getSettingsTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-settings-header",
+            "#tour-settings-sections",
+            "#tour-settings-panel",
+            "#tour-header-help-btn",
+        ]);
+
+        expect(getMembershipApplyTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-apply-card",
+            "#tour-apply-personal",
+            "#tour-apply-message",
+            "#tour-apply-submit",
+        ]);
+
+        expect(getForgotPasswordTourSteps(false).map((step) => step.element)).toEqual([
+            "#tour-forgot-card",
+            "#tour-forgot-cpf",
+            "#tour-forgot-back",
+        ]);
     });
 
     it("deve resolver dinamicamente os passos do tutorial conforme a rota atual", () => {
         expect(resolveRouteTourSteps("/", { canAccessAdmin: false })).toEqual(getHomeTourSteps());
         expect(resolveRouteTourSteps("/login", { canAccessAdmin: false, isMobile: true })).toEqual(getLoginTourSteps(true));
+        expect(resolveRouteTourSteps("/membership/apply", { canAccessAdmin: false })).toEqual(getMembershipApplyTourSteps(false));
+        expect(resolveRouteTourSteps("/forgot-password", { canAccessAdmin: false })).toEqual(getForgotPasswordTourSteps(false));
         expect(resolveRouteTourSteps("/profile", { canAccessAdmin: false })).toEqual(getProfileTourSteps(false));
+        expect(resolveRouteTourSteps("/agenda", { canAccessAdmin: false })).toEqual(getAgendaTourSteps(false));
+        expect(resolveRouteTourSteps("/financeiro", { canAccessAdmin: false })).toEqual(getMemberFinancialTourSteps(false));
+        expect(resolveRouteTourSteps("/servicos", { canAccessAdmin: false })).toEqual(getServicesPageTourSteps(false));
+        expect(resolveRouteTourSteps("/configuracoes", { canAccessAdmin: false })).toEqual(getSettingsTourSteps(false));
         expect(resolveRouteTourSteps("/tutoriais", { canAccessAdmin: false })).toEqual(getTutorialsPageTourSteps(false));
         expect(resolveRouteTourSteps("/admin", { canAccessAdmin: true })).toEqual(getAdminPanelTourSteps(false));
         expect(resolveRouteTourSteps("/admin/dados-medicos", { canAccessAdmin: true })).toEqual(getMedicalProfilesTourSteps(false));
         expect(resolveRouteTourSteps("/admin/pagamentos", { canAccessAdmin: true })).toEqual(getPaymentsTourSteps(false));
         expect(resolveRouteTourSteps("/admin/gestao-financeira", { canAccessAdmin: true })).toEqual(getFinancialTourSteps(false));
         expect(resolveRouteTourSteps("/admin/gestao-publicacoes", { canAccessAdmin: true })).toEqual(getPublicationsTourSteps(false));
+        expect(resolveRouteTourSteps("/admin/publications", { canAccessAdmin: true })).toEqual(getPublicationsTourSteps(false));
         expect(resolveRouteTourSteps("/admin/users", { canAccessAdmin: true })).toEqual(getUsersTourSteps(false));
         expect(resolveRouteTourSteps("/admin/users", { canAccessAdmin: true, tab: "applications" })).toEqual(getMembershipApplicationsTourSteps(false));
         expect(resolveRouteTourSteps("/admin/roles-permissoes", { canAccessAdmin: true })).toEqual(getRolesTourSteps(false));
@@ -257,8 +322,12 @@ describe("Tour Configuration & Logic", () => {
             "member-tools",
             "member-agenda",
             "member-financial",
+            "member-services",
+            "member-settings",
+            "member-change-password",
             "member-password-recovery",
             "public-landing-home",
+            "member-membership-apply",
             "tutorials-hub",
         ]);
 

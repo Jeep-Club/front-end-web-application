@@ -214,8 +214,10 @@ export default function DependentManagement() {
                     actions={
                         canRead ? (
                             <TourHelpButton
+                                id="tour-header-help-btn"
                                 onClick={restartTour}
-                                label="Como usar?"
+                                label="Como gerenciar dependentes?"
+                                className="w-full justify-center sm:w-auto"
                             />
                         ) : undefined
                     }

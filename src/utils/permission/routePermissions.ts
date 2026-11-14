@@ -42,6 +42,7 @@ export const routePermissions: Record<string, RoutePermissionsConfig> = {
     "/servicos": [],
     "/agenda": [],
     "/financeiro": [],
+    "/configuracoes": [],
 
 
     "/admin/roles-permissoes": {

@@ -1,9 +1,12 @@
 "use client";
 import { Button } from '@/components/common/button';
 import { PageHeader } from '@/components/common/page-header';
+import { TourHelpButton } from '@/components/common/tour/TourHelpButton';
 import { publicationReadError, publicationReadRetry } from '@/components/pages/feed/feedDisplay';
 import { publicationCreationTypes } from '@/config/publicationCreation';
 import { publicationManagementSections } from '@/config/publicationManagement';
+import { getPublicationsTourSteps } from '@/config/tourSteps';
+import { usePageTour } from '@/hooks/useTour';
 import { useModal } from '@/providers/ModalProvider';
 import { listAdminPublicationsAction } from '@/server/actions/publications/list';
 import { listPublicationFeedAction } from '@/server/actions/publications/feed';
@@ -39,6 +42,12 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
     const can = (action: string) => hasPermission(permissions, 'PUBLICATIONS', action);
     const sections = publicationManagementSections.filter(section => section.readActions.some(can) || publicationCreationTypes.some(entry => entry.type === section.type && can(entry.action)));
     const canCreate = publicationCreationTypes.some(entry => (!type || entry.type === type) && can(entry.action));
+    const { restartTour } = usePageTour({
+        storageKey: 'tour_completed_admin_publications',
+        steps: getPublicationsTourSteps,
+        autoStartOnFirstVisit: false,
+        enabled: sections.length > 0 || canCreate,
+    });
     const events = useQuery({
         queryKey: ['publications', 'admin', 'events', 'list', pagination, sort, permissions],
         queryFn: () => listAdminPublicationsAction({ page: pagination.pageIndex, size: pagination.pageSize, sort }),
@@ -56,13 +65,13 @@ export default function PublicationManagement({ type = '' }: { type?: 'EVENT' | 
         router.push(section ? `/admin/publications/${section.route}` : '/admin/publications');
     }
     return <div className="flex min-w-0 flex-col gap-5 p-3 md:p-4">
-        <PageHeader title="Gestão de publicações" breadcrumbs={[{ label: 'Home', href: '/feed' }, { label: 'Gestão Administrativa', href: '/admin' }, ...(type ? [{ label: 'Publicações', href: '/admin/publications' }, { label: publicationManagementSections.find(section => section.type === type)!.title }] : [{ label: 'Publicações' }])]} />
-        <nav aria-label="Áreas de publicações" className="flex flex-wrap gap-2">
+        <PageHeader id="tour-publications-header" title="Gestão de publicações" breadcrumbs={[{ label: 'Home', href: '/feed' }, { label: 'Gestão Administrativa', href: '/admin' }, ...(type ? [{ label: 'Publicações', href: '/admin/publications' }, { label: publicationManagementSections.find(section => section.type === type)!.title }] : [{ label: 'Publicações' }])]} actions={<TourHelpButton id="tour-header-help-btn" onClick={restartTour} label="Como gerenciar publicações?" className="w-full justify-center sm:w-auto" />} />
+        <nav id="tour-publications-types" aria-label="Áreas de publicações" className="flex flex-wrap gap-2">
             {[{ type: '', title: 'Visão geral' }, ...sections].map(section => <Button key={section.type} aria-pressed={type === section.type} onClick={() => selectType(section.type)} className={type === section.type ? 'bg-button-primary-bg text-button-primary-text hover:bg-button-primary-bg-hover hover:text-button-primary-text focus-visible:text-button-primary-text' : 'border border-j-gray-300 bg-j-white text-j-gray-700 hover:bg-j-gray-100 hover:text-j-gray-700 focus-visible:bg-j-gray-100 focus-visible:text-j-gray-700'}>{section.title}</Button>)}
         </nav>
-        <section className="min-w-0 rounded-xl border border-j-gray-200 bg-j-white p-4 md:p-6">
+        <section id="publication-status-results" className="min-w-0 rounded-xl border border-j-gray-200 bg-j-white p-4 md:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-bold text-j-blue-800">{sections.find(section => section.type === type)?.title ?? 'Visão geral'}</h2>
-                {canCreate && <Button onClick={() => { setContent(<CreatePublicationModal initialType={publicationCreationTypes.some(entry => entry.type === type && can(entry.action)) ? type as 'EVENT' | 'NOTICE' | 'SERVICE' : undefined} />); setOpen(); }}>Criar publicação</Button>}
+                {canCreate && <Button id="tour-publications-create-btn" onClick={() => { setContent(<CreatePublicationModal initialType={publicationCreationTypes.some(entry => entry.type === type && can(entry.action)) ? type as 'EVENT' | 'NOTICE' | 'SERVICE' : undefined} />); setOpen(); }}>Criar publicação</Button>}
             </div>
             {!type && <PublicationOverview />}
             {type && <PublicationSearchFilters key={type} type={type} canReadId={canLookup} canReadList={type === 'EVENT' ? canLookup : !publicationReadError(published.error).restricted} publishedFrom={publishedFrom} publishedTo={publishedTo} onOpenId={id => router.push(publicationAdministrationHref(type, searchParams, id))} onPeriod={next => {

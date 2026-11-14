@@ -23,7 +23,7 @@ import {
     WalletCards,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import styles from "./SettingsPage.module.css";
@@ -33,7 +33,9 @@ import { twMerge } from "tailwind-merge";
 
 import { Button } from "@/components/common/button";
 import { PageHeader } from "@/components/common/page-header";
-import { resetAllTours } from "@/hooks/useTour";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { getChangePasswordTourSteps, getSettingsTourSteps } from "@/config/tourSteps";
+import { resetAllTours, usePageTour } from "@/hooks/useTour";
 
 type SectionKey = "account" | "activity" | "notifications" | "privacy" | "preferences" | "help";
 type OptionKey =
@@ -174,14 +176,22 @@ function Toggle({
 
 export default function SettingsPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const initialOption = searchParams.get("option");
+    const isPasswordDeepLink = initialOption === "password";
     const isDesktop = useMediaQuery("(min-width: 1024px)");
     const panelRef = useRef<HTMLDivElement>(null);
     const hasNavigated = useRef(false);
     const [direction, setDirection] = useState<"forward" | "back">("forward");
     const [sectionKey, setSectionKey] = useState<SectionKey>("account");
-    const [optionKey, setOptionKey] = useState<OptionKey>("personal-data");
-    const [mobileLevel, setMobileLevel] = useState<MobileLevel>("sections");
+    const [optionKey, setOptionKey] = useState<OptionKey>(isPasswordDeepLink ? "password" : "personal-data");
+    const [mobileLevel, setMobileLevel] = useState<MobileLevel>(isPasswordDeepLink ? "editor" : "sections");
     const { theme, setTheme, saveTheme } = useTheme();
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_settings",
+        steps: isPasswordDeepLink ? getChangePasswordTourSteps : getSettingsTourSteps,
+        autoStartOnFirstVisit: false,
+    });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [preferences, setPreferences] = useState({
         events: true,
@@ -306,7 +316,7 @@ export default function SettingsPage() {
                                 </ul>
                             </div>
 
-                            <Button type="button" onClick={() => setIsChangingPassword(true)} className="mt-6 gap-2">
+                            <Button id="tour-settings-change-password-btn" type="button" onClick={() => setIsChangingPassword(true)} className="mt-6 gap-2">
                                 <LockKeyhole size={16} />
                                 Alterar minha senha
                             </Button>
@@ -440,9 +450,21 @@ export default function SettingsPage() {
     return (
         <div className="min-h-full w-full p-3 pb-8 md:p-4">
             <div className="flex w-full flex-col gap-6">
-                <PageHeader title="Configurações" breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Configurações" }]} />
+                <PageHeader
+                    id="tour-settings-header"
+                    title="Configurações"
+                    breadcrumbs={[{ label: "Home", href: "/feed" }, { label: "Configurações" }]}
+                    actions={
+                        <TourHelpButton
+                            id="tour-header-help-btn"
+                            onClick={restartTour}
+                            label="Como configurar minha conta?"
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    }
+                />
 
-                <div ref={panelRef} className="scroll-mt-3 rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
+                <div id="tour-settings-panel" ref={panelRef} className="scroll-mt-3 rounded-2xl border border-j-gray-200 bg-j-white shadow-sm">
                     <div className="sticky top-0 z-10 flex min-h-16 items-center gap-2 rounded-t-2xl border-b border-j-gray-200 bg-j-white/95 px-3 py-2 backdrop-blur-sm lg:hidden">
                         {mobileLevel !== "sections" && <button
                             type="button"
@@ -460,7 +482,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="overflow-clip rounded-b-2xl lg:rounded-2xl">
                         <div key={`${mobileLevel}:${sectionKey}:${optionKey}`} data-direction={direction} className={twMerge(styles.pageTransition, "grid min-h-[min(65dvh,32rem)] w-full items-stretch lg:min-h-[calc(100dvh-10.5rem)] lg:grid-cols-[240px_290px_minmax(0,1fr)]")}>
-                            <aside data-settings-panel="sections" className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>
+                            <aside id="tour-settings-sections" data-settings-panel="sections" className={twMerge("border-j-gray-200 bg-j-blue-800 p-3 lg:block lg:border-r", mobileLevel !== "sections" && "hidden")}>
                                 <div className="px-3 pb-4 pt-2 text-j-white">
                                     <h2 tabIndex={-1} className="text-base font-black outline-none">Configurações</h2>
                                     <p className="mt-1 text-xs text-j-white/60">Escolha uma categoria</p>
@@ -470,7 +492,7 @@ export default function SettingsPage() {
                                         const Icon = item.icon;
                                         const active = item.key === sectionKey;
                                         return (
-                                            <button key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseSection(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left", active ? "bg-j-yellow-300 text-j-blue-800" : "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>
+                                            <button id={item.key === "account" ? "tour-settings-section-account" : undefined} key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseSection(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left", active ? "bg-j-yellow-300 text-j-blue-800" : "text-j-white/75 hover:bg-j-blue-700 hover:text-j-white")}>
                                                 <Icon size={18} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className={twMerge("block truncate text-[11px]", active ? "text-j-blue-700" : "text-j-white/65")}>{item.description}</span></span><ChevronRight size={15} className="shrink-0" />
                                             </button>
                                         );
@@ -488,7 +510,7 @@ export default function SettingsPage() {
                                         const Icon = item.icon;
                                         const active = item.key === option.key;
                                         return (
-                                            <button key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseOption(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors", active ? "border-j-blue-800 bg-j-white text-j-blue-800 shadow-sm" : "border-transparent text-j-gray-600 hover:border-j-gray-200 hover:bg-j-white")}>
+                                            <button id={item.key === "password" ? "tour-settings-option-password" : undefined} key={item.key} data-settings-key={item.key} aria-current={active ? "true" : undefined} type="button" onClick={() => chooseOption(item)} className={twMerge(styles.navigationButton, "flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition-colors", active ? "border-j-blue-800 bg-j-white text-j-blue-800 shadow-sm" : "border-transparent text-j-gray-600 hover:border-j-gray-200 hover:bg-j-white")}>
                                                 <Icon size={18} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{item.label}</span><span className="block text-xs text-j-gray-500">{item.description}</span></span><ChevronRight size={15} className="shrink-0" />
                                             </button>
                                         );

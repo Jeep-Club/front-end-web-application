@@ -3,6 +3,26 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { LoaderCircle } from "lucide-react";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
+import { getMemberFinancialTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
+
+export function FinanceiroTourHelpButton() {
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_member_financial",
+        steps: getMemberFinancialTourSteps,
+        autoStartOnFirstVisit: false,
+    });
+
+    return (
+        <TourHelpButton
+            id="tour-header-help-btn"
+            onClick={restartTour}
+            label="Como consultar minhas cobranças?"
+            className="w-full justify-center sm:w-auto"
+        />
+    );
+}
 
 interface FinanceiroFiltersProps {
     initialStatus?: MemberChargeStatus;
@@ -38,7 +58,7 @@ export function FinanceiroFilters({ initialStatus, initialSort }: FinanceiroFilt
     }
 
     return (
-        <div className="mb-5 grid w-full min-w-0 max-w-full gap-4 rounded-xl bg-j-gray-50 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+        <div id="tour-member-financial-filters" className="mb-5 grid w-full min-w-0 max-w-full gap-4 rounded-xl bg-j-gray-50 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
             <label className="flex w-full min-w-0 max-w-full flex-col gap-2 text-xs font-bold text-j-gray-600">
                 Status da cobrança
                 <select

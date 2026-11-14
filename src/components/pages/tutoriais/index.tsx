@@ -10,13 +10,17 @@ import {
     HeartPulse,
     HelpCircle,
     KeyRound,
+    LockKeyhole,
     Newspaper,
     Play,
     ReceiptText,
     RotateCcw,
+    Settings,
     ShieldCheck,
     Sparkles,
+    Store,
     User,
+    UserPlus,
     UserRoundCheck,
     Users,
     WalletCards,
@@ -728,7 +732,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         stepCount: MEMBER_VISUAL_GUIDES["member-agenda"].length,
         icon: CalendarDays,
         imageSteps: MEMBER_VISUAL_GUIDES["member-agenda"],
-        supportsLiveTour: false,
+        supportsLiveTour: true,
         topics: [
             "Calendário mensal",
             "Navegação entre meses",
@@ -754,7 +758,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         stepCount: MEMBER_VISUAL_GUIDES["member-financial"].length,
         icon: ReceiptText,
         imageSteps: MEMBER_VISUAL_GUIDES["member-financial"],
-        supportsLiveTour: false,
+        supportsLiveTour: true,
         topics: [
             "Menu Histórico financeiro",
             "Filtro por status",
@@ -773,6 +777,94 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         ],
     },
     {
+        id: "member-services",
+        title: "Serviços da Comunidade",
+        description:
+            "Encontre serviços oferecidos por associados do clube, veja valores, descrição completa e contato direto.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/servicos",
+        storageKey: "tour_completed_member_services",
+        stepCount: MEMBER_VISUAL_GUIDES["member-services"].length,
+        icon: Store,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-services"],
+        supportsLiveTour: true,
+        topics: [
+            "Menu Serviços",
+            "Cartões e valores",
+            "Detalhes e contato",
+        ],
+        keywords: [
+            "servicos",
+            "servico",
+            "oficina",
+            "guincho",
+            "mecanica",
+            "comunidade",
+            "anuncio",
+            "whatsapp",
+        ],
+    },
+    {
+        id: "member-settings",
+        title: "Configurações da Conta e Preferências",
+        description:
+            "Ajuste tema claro ou escuro, notificações, privacidade, alteração de senha e reinício dos tutoriais.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/configuracoes",
+        storageKey: "tour_completed_settings",
+        stepCount: MEMBER_VISUAL_GUIDES["member-settings"].length,
+        icon: Settings,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-settings"],
+        supportsLiveTour: true,
+        topics: [
+            "Tema claro e escuro",
+            "Notificações e privacidade",
+            "Alterar senha e refazer tutoriais",
+        ],
+        keywords: [
+            "configuracoes",
+            "configurar",
+            "preferencias",
+            "tema",
+            "modo escuro",
+            "modo claro",
+            "privacidade",
+            "notificacoes",
+            "refazer tutorial",
+        ],
+    },
+    {
+        id: "member-change-password",
+        title: "Alterar Senha da Conta",
+        description:
+            "Aprenda a trocar sua senha de acesso logado em Configurações → Conta e segurança → Senha.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/configuracoes?option=password",
+        storageKey: "tour_completed_settings",
+        stepCount: MEMBER_VISUAL_GUIDES["member-change-password"].length,
+        icon: LockKeyhole,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-change-password"],
+        supportsLiveTour: true,
+        topics: [
+            "Conta e segurança",
+            "Validação da senha atual",
+            "Definição de nova senha",
+        ],
+        keywords: [
+            "alterar senha",
+            "trocar senha",
+            "mudar senha",
+            "nova senha",
+            "senha atual",
+            "seguranca",
+            "configuracoes",
+            "senha",
+        ],
+    },
+    {
         id: "member-password-recovery",
         title: "Recuperar Senha de Acesso",
         description:
@@ -784,7 +876,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
         stepCount: MEMBER_VISUAL_GUIDES["member-password-recovery"].length,
         icon: KeyRound,
         imageSteps: MEMBER_VISUAL_GUIDES["member-password-recovery"],
-        supportsLiveTour: false,
+        supportsLiveTour: true,
         topics: [
             "Atalho Esqueceu a senha?",
             "Envio do código por CPF",
@@ -826,6 +918,35 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "quero ser socio",
             "historia",
             "trilhas",
+        ],
+    },
+    {
+        id: "member-membership-apply",
+        title: "Solicitar Associação (Quero ser Sócio)",
+        description:
+            "Veja como preencher o formulário público de entrada e enviar sua solicitação para análise da diretoria.",
+        category: "member",
+        categoryLabel: "Membro",
+        href: "/membership/apply",
+        storageKey: "tour_completed_membership_apply",
+        stepCount: MEMBER_VISUAL_GUIDES["member-membership-apply"].length,
+        icon: UserPlus,
+        imageSteps: MEMBER_VISUAL_GUIDES["member-membership-apply"],
+        supportsLiveTour: true,
+        topics: [
+            "Acesso ao formulário Quero ser sócio",
+            "Dados pessoais e WhatsApp",
+            "Carta de apresentação e envio",
+        ],
+        keywords: [
+            "quero ser socio",
+            "associacao",
+            "associar",
+            "cadastro",
+            "novo socio",
+            "solicitacao",
+            "membership",
+            "entrar no clube",
         ],
     },
     {
@@ -884,7 +1005,7 @@ export const TUTORIAL_CATALOG: TutorialCatalogItem[] = [
             "Crie, revise, publique, arquive e gerencie avisos, eventos oficiais e divulgação de serviços.",
         category: "admin",
         categoryLabel: "Administração",
-        href: "/admin/gestao-publicacoes",
+        href: "/admin/publications",
         storageKey: "tour_completed_admin_publications",
         stepCount: getPublicationsTourSteps(false).length,
         icon: Newspaper,
@@ -1333,7 +1454,7 @@ function TutorialRowItem({
     return (
         <article
             className={twMerge(
-                "flex flex-col gap-4 rounded-2xl border bg-j-white p-4 shadow-xs transition-all sm:p-5 md:flex-row md:items-center md:justify-between md:gap-6",
+                "flex flex-col gap-4 rounded-2xl border bg-j-white p-4 shadow-xs transition-all sm:p-5 md:flex-row md:items-center md:justify-between md:gap-6 lg:flex-col lg:items-stretch lg:justify-between lg:gap-4 lg:p-5",
                 isBestMatch
                     ? "border-2 border-j-yellow-400 shadow-sm"
                     : isCompleted
@@ -1342,18 +1463,35 @@ function TutorialRowItem({
             )}
         >
             {/* Bloco Esquerdo/Superior: Ícone + Textos */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 md:flex-1">
-                <div className="flex items-center gap-3 sm:block">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 md:flex-1 lg:flex-col lg:gap-3.5">
+                <div className="flex items-center gap-3 sm:block lg:flex lg:w-full lg:items-center lg:justify-between">
                     <span
                         className={twMerge(
-                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border sm:h-14 sm:w-14",
+                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border sm:h-14 sm:w-14 lg:h-11 lg:w-11 lg:border-0",
                             isCompleted
-                                ? "border-j-gray-200 bg-j-gray-100 text-j-gray-600"
-                                : "border-j-gray-200 bg-j-blue-50 text-j-blue-800",
+                                ? "border-j-gray-200 bg-j-gray-100 text-j-gray-600 lg:bg-j-gray-200 lg:text-j-gray-700"
+                                : "border-j-gray-200 bg-j-blue-50 text-j-blue-800 lg:bg-j-blue-800 lg:text-j-yellow-300",
                         )}
                     >
-                        <Icon size={26} strokeWidth={2} aria-hidden="true" />
+                        <Icon size={24} strokeWidth={2} aria-hidden="true" />
                     </span>
+
+                    {/* Selos de categoria e passos no topo direito do card (Desktop) */}
+                    <div className="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-end lg:gap-1.5">
+                        <span
+                            className={twMerge(
+                                "rounded-md px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide",
+                                tutorial.category === "admin"
+                                    ? "bg-j-yellow-100 text-j-blue-900"
+                                    : "bg-j-blue-50 text-j-blue-800",
+                            )}
+                        >
+                            {tutorial.categoryLabel}
+                        </span>
+                        <span className="rounded-md border border-j-gray-200 bg-j-gray-100 px-2 py-0.5 text-[11px] font-semibold text-j-gray-600">
+                            {stepLabel}
+                        </span>
+                    </div>
 
                     {/* No celular, o título fica ao lado do ícone para aproveitar melhor a largura */}
                     <div className="flex flex-col gap-1 sm:hidden">
@@ -1399,7 +1537,7 @@ function TutorialRowItem({
                                 Melhor resultado
                             </span>
                         )}
-                        <span className="rounded-lg border border-j-gray-200 bg-j-gray-100 px-2.5 py-0.5 text-xs font-semibold text-j-gray-600">
+                        <span className="rounded-lg border border-j-gray-200 bg-j-gray-100 px-2.5 py-0.5 text-xs font-semibold text-j-gray-600 lg:hidden">
                             {stepLabel}
                         </span>
                         {isCompleted && (
@@ -1423,8 +1561,8 @@ function TutorialRowItem({
                 </div>
             </div>
 
-            {/* Bloco Direito/Inferior: Botão de Ação (100% no mobile, largura fixa confortável no desktop) */}
-            <div className="border-t border-j-gray-100 pt-3 md:w-52 md:shrink-0 md:border-t-0 md:pt-0">
+            {/* Bloco Direito/Inferior: Botão de Ação */}
+            <div className="border-t border-j-gray-100 pt-3 md:w-52 md:shrink-0 md:border-t-0 md:pt-0 lg:w-full lg:pt-1">
                 <button
                     id={isFirst ? "tour-tutorials-start-btn" : undefined}
                     type="button"
@@ -1543,7 +1681,7 @@ export default function TutorialsPageContent() {
 
     return (
         <div className="min-h-full w-full p-4 pb-14 md:p-6">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:max-w-6xl">
                 <PageHeader
                     id="tour-tutorials-header"
                     title="Central de Tutoriais"
@@ -1553,7 +1691,7 @@ export default function TutorialsPageContent() {
                     ]}
                     actions={
                         <TourHelpButton
-                            id="tour-tutorials-help-btn"
+                            id="tour-header-help-btn"
                             onClick={restartTour}
                             label="Como usar esta página?"
                             className="h-11 w-full justify-center px-4 text-sm sm:w-auto"
@@ -1628,7 +1766,7 @@ export default function TutorialsPageContent() {
                                     </button>
                                 )}
                             </div>
-                            <div className="flex flex-col gap-3.5">
+                            <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 lg:gap-4">
                                 {results.map((tutorial, index) => (
                                     <TutorialRowItem
                                         key={tutorial.id}

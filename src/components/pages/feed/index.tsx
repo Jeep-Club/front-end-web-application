@@ -32,6 +32,7 @@ import { PublicationShare } from "./PublicationShare";
 import { FeedSidebar } from "./FeedSidebar";
 import { usePageTour } from "@/hooks/useTour";
 import { getFeedTourSteps } from "@/config/tourSteps";
+import TourHelpButton from "@/components/common/tour/TourHelpButton";
 
 import Image from "next/image";
 
@@ -70,6 +71,12 @@ export default function Feed() {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const [mobileCreateOpen, setMobileCreateOpen] = useState(false);
     const [periodOpen, setPeriodOpen] = useState(false);
+
+    const { restartTour } = usePageTour({
+        storageKey: "tour_completed_feed",
+        steps: getFeedTourSteps,
+        autoStartOnFirstVisit: false,
+    });
 
     useEffect(() => {
         const nav = filterNavRef.current;
@@ -240,9 +247,18 @@ export default function Feed() {
             <div className="mx-auto grid w-full min-w-0 max-w-7xl grid-cols-1 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_clamp(14rem,27%,20rem)] lg:items-start">
                 <div className="flex w-full min-w-0 flex-col gap-5 md:gap-6">
                         <>
-                            <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h1 tabIndex={-1} className="sr-only">Mural do clube</h1>
+                                <div className="ml-auto">
+                                    <TourHelpButton
+                                        id="tour-header-help-btn"
+                                        onClick={restartTour}
+                                        label="Como usar o mural?"
+                                    />
+                                </div>
+                            </div>
 
-                            <div className="flex min-w-0 items-center gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:gap-2 sm:p-2">
+                            <div id="tour-feed-filters" className="flex min-w-0 items-center gap-1 rounded-2xl border border-j-gray-200 bg-j-white p-1.5 shadow-sm sm:gap-2 sm:p-2">
                                 <div className="relative min-w-0 flex-1">
                                     <nav
                                         ref={filterNavRef}
@@ -308,7 +324,7 @@ export default function Feed() {
                                 <RefreshCw size={17} aria-hidden="true" className={isRefreshing ? "motion-safe:animate-spin" : undefined} />
                                 <span className="ml-1">{isRefreshing ? "Atualizando publicações…" : "Atualizar publicações"}</span>
                             </Button>
-                            <div key={type ?? "all"} className={query.isLoading ? "min-w-0" : "app-route-enter min-w-0 motion-reduce:animate-none"}>
+                            <div id="tour-feed-list" key={type ?? "all"} className={query.isLoading ? "min-w-0" : "app-route-enter min-w-0 motion-reduce:animate-none"}>
                             {!filtersResult.success ? <div role="alert" className="rounded-xl bg-j-white p-4 text-j-gray-700"><p>Revise os filtros da URL. Use um tipo válido e instantes UTC com início anterior ou igual ao fim.</p><Button onClick={() => applyFilters({})}>Limpar filtros</Button></div> : query.isLoading ? (
                                 <PublicationSkeletons label="Carregando publicações..." featured />
                             ) : query.isError && !publications.length ? (
@@ -584,7 +600,7 @@ export default function Feed() {
                 <div role="menu" aria-label="Escolher tipo de publicação" aria-hidden={!mobileCreateOpen} inert={!mobileCreateOpen} className={`absolute right-0 bottom-full z-10 mb-3 flex w-56 max-w-[calc(100vw-2rem)] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-j-gray-200 bg-j-white shadow-xl transition-[opacity,translate,scale,visibility] duration-250 ease-out motion-reduce:transition-none ${mobileCreateOpen ? "visible translate-y-0 scale-100 opacity-100" : "invisible pointer-events-none translate-y-2 scale-95 opacity-0"}`}>
                     {publicationOptions.map(({ type: optionType, label, icon: Icon }) => <button key={optionType} type="button" role="menuitem" onClick={() => openCreatePublication(optionType)} className="flex min-h-12 cursor-pointer items-center gap-3 border-b border-j-gray-100 px-4 text-left text-sm font-bold text-j-blue-900 transition-colors last:border-b-0 hover:bg-j-blue-50 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-j-blue-700"><Icon size={18} className="shrink-0 text-j-blue-800" aria-hidden="true" />{label}</button>)}
                 </div>
-                <button type="button" aria-label={mobileCreateOpen ? "Fechar opções de publicação" : "Criar publicação"} aria-haspopup="menu" aria-expanded={mobileCreateOpen} onClick={() => setMobileCreateOpen((open) => !open)} className="relative z-10 flex size-14 cursor-pointer items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-lg transition-transform hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transform-none">
+                <button id="tour-feed-create-mobile-btn" type="button" aria-label={mobileCreateOpen ? "Fechar opções de publicação" : "Criar publicação"} aria-haspopup="menu" aria-expanded={mobileCreateOpen} onClick={() => setMobileCreateOpen((open) => !open)} className="relative z-10 flex size-14 cursor-pointer items-center justify-center rounded-full bg-j-yellow-300 text-j-blue-900 shadow-lg transition-transform hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 motion-reduce:transform-none">
                     <Plus
                         size={27}
                         aria-hidden="true"

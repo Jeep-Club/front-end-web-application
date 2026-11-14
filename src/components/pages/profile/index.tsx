@@ -9,7 +9,7 @@ import { ToolsTabContent } from "@/components/pages/profile/tabs/tools/ToolsTabC
 import { PersonalDataTab } from "@/components/pages/profile/tabs/personal/PersonalDataTab";
 import { MedicalProfileTab } from "@/components/pages/profile/tabs/medical/MedicalProfileTab";
 import { DependentsTabContent } from "@/components/pages/profile/tabs/dependents/DependentsTabContent";
-import { usePageTour } from "@/hooks/useTour";
+import { FORCE_START_TOUR_KEY, usePageTour } from "@/hooks/useTour";
 import { getProfileTourSteps } from "@/config/tourSteps";
 import TourHelpButton from "@/components/common/tour/TourHelpButton";
 
@@ -23,8 +23,27 @@ const TABS = [
 
 type TabKey = typeof TABS[number]["key"];
 
+const PROFILE_TOUR_TAB_MAP: Record<string, TabKey> = {
+    tour_completed_member_vehicles: "vehicles",
+    tour_completed_member_medical: "medical",
+    tour_completed_member_dependents: "dependents",
+    tour_completed_member_tools: "tools",
+};
+
 export default function Profile() {
-    const [activeTab, setActiveTab] = useState<TabKey>("personal");
+    const [activeTab, setActiveTab] = useState<TabKey>(() => {
+        if (typeof window === "undefined") return "personal";
+        try {
+            const forcedTarget = sessionStorage.getItem(FORCE_START_TOUR_KEY);
+            if (forcedTarget && forcedTarget in PROFILE_TOUR_TAB_MAP) {
+                sessionStorage.setItem(FORCE_START_TOUR_KEY, "tour_completed_profile");
+                return PROFILE_TOUR_TAB_MAP[forcedTarget];
+            }
+        } catch {
+            // Ignora indisponibilidade de sessionStorage
+        }
+        return "personal";
+    });
 
     const activeTabLabel = TABS.find((tab) => tab.key === activeTab)?.label;
     const activeContent = TABS.find((tab) => tab.key === activeTab)?.content;

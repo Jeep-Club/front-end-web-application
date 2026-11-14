@@ -8,6 +8,7 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 
 import { PageHeader } from "@/components/common/page-header";
+import { TourHelpButton } from "@/components/common/tour/TourHelpButton";
 import { getMembershipApplicationsTourSteps, getUsersTourSteps } from "@/config/tourSteps";
 import { usePageTour } from "@/hooks/useTour";
 import { useModal } from "@/providers/ModalProvider";
@@ -86,7 +87,7 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
     const currentSearchParams = useSearchParams();
     const canReadApplications = hasPermission(permissionsFromStore, "MEMBERSHIP", "MEMBERSHIP_REQUEST_READ");
     const activeTab = currentSearchParams.get("tab") === "applications" && canReadApplications ? "applications" : "users";
-    usePageTour({
+    const { restartTour } = usePageTour({
         storageKey: activeTab === "applications" ? "tour_completed_admin_applications" : "tour_completed_admin_users",
         steps: activeTab === "applications" ? getMembershipApplicationsTourSteps : getUsersTourSteps,
         autoStartOnFirstVisit: false,
@@ -296,6 +297,14 @@ export default function AdminUsersPage({ users, searchParams: query }: Props) {
                         { label: "Gestão Administrativa", href: "/admin" },
                         { label: "Usuários" },
                     ]}
+                    actions={
+                        <TourHelpButton
+                            id="tour-header-help-btn"
+                            onClick={restartTour}
+                            label={activeTab === "applications" ? "Como analisar solicitações?" : "Como gerenciar usuários?"}
+                            className="w-full justify-center sm:w-auto"
+                        />
+                    }
                 />
 
                 {(permissions.canReadUsers || canReadApplications) && (

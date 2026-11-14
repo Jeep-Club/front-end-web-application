@@ -248,14 +248,12 @@ export default function RolesPermissions() {
                         { label: activeTabLabel ?? "" },
                     ]}
                     actions={
-                        activeTab === "roles" ? (
-                            <TourHelpButton
-                                id="tour-roles-help-btn"
-                                onClick={handleRestartTour}
-                                label="Como gerenciar cargos?"
-                                className="w-full justify-center sm:w-auto"
-                            />
-                        ) : undefined
+                        <TourHelpButton
+                            id="tour-roles-help-btn"
+                            onClick={handleRestartTour}
+                            label="Como gerenciar cargos?"
+                            className="w-full justify-center sm:w-auto"
+                        />
                     }
                 />
 

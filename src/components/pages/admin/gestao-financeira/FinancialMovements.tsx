@@ -30,7 +30,7 @@ export default function FinancialMovements({ initialMovement, initialStatus }: {
 
     return (
         <FinancialPage title="Movimentações financeiras">
-            <div role="tablist" aria-label="Tipos de movimentação" className="grid w-full grid-cols-4 gap-1 rounded-xl border border-input-border bg-j-white p-1">
+            <div id="tour-financial-tabs" role="tablist" aria-label="Tipos de movimentação" className="grid w-full grid-cols-4 gap-1 rounded-xl border border-input-border bg-j-white p-1">
                 {sections.map(({ key, label }, index) => (
                     <button
                         key={key}

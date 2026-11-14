@@ -8,7 +8,7 @@ export function FinancialSectionNav({ label, active, links }: {
     if (!links.length) return null;
 
     return (
-        <nav aria-label={label} className="flex w-full gap-1 rounded-xl border border-input-border bg-j-white p-1">
+        <nav id="tour-financial-tabs" aria-label={label} className="flex w-full gap-1 rounded-xl border border-input-border bg-j-white p-1">
             {links.map((link) => (
                 <Link
                     key={link.key}

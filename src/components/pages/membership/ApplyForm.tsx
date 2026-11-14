@@ -2,10 +2,12 @@
 
 import { Button } from "@/components/common/button";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, ArrowLeft, CheckCircle2, Clock, LoaderCircle, Send } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, HelpCircle, LoaderCircle, Send } from "lucide-react";
 import { Form } from "@/components/common/form";
 import { InputRegister } from "@/components/common/input/input-register";
 import { TextareaRegister } from "@/components/common/textarea/textarea-register";
+import { getMembershipApplyTourSteps } from "@/config/tourSteps";
+import { usePageTour } from "@/hooks/useTour";
 import { membershipApplicationFormSchema } from "@/schemas/membership/application";
 import { submitMembershipApplicationAction } from "@/server/actions/membership/submit-application";
 import { useRouter } from "next/navigation";
@@ -32,6 +34,10 @@ const statusLabels: Record<MembershipApplicationStatus, string> = {
 
 export default function ApplyForm() {
     const router = useRouter();
+    const { startTour } = usePageTour({
+        steps: getMembershipApplyTourSteps,
+        autoStartOnFirstVisit: false,
+    });
     const [submission, setSubmission] = useState<MembershipApplicationSubmission | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -59,8 +65,21 @@ export default function ApplyForm() {
             <ClubBackground />
             <div className="relative mx-auto w-full max-w-2xl">
                 <button type="button" onClick={() => router.push('/')} className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3 py-2 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400"><ArrowLeft size={17} aria-hidden="true" /> Voltar para a página inicial</button>
-                <section className="overflow-hidden rounded-2xl bg-j-blue-800 text-white shadow-2xl shadow-black/40">
+                <section id="tour-apply-card" className="overflow-hidden rounded-2xl bg-j-blue-800 text-white shadow-2xl shadow-black/40">
                     <ClubFormHeader title="Seja sócio do Jeep Clube Tamoios" description="Conte um pouco sobre você e deixe seus contatos. A diretoria vai analisar sua solicitação e entrar em contato." />
+                    {submission === null && (
+                        <div className="flex justify-center pt-1">
+                            <button
+                                type="button"
+                                onClick={startTour}
+                                title="Precisa de ajuda para preencher?"
+                                className="flex cursor-pointer items-center gap-1.5 rounded-full border border-j-yellow-300/40 bg-j-yellow-300/10 px-3 py-1.5 text-[11px] font-semibold text-j-yellow-300 transition-[background-color,border-color,color,box-shadow,opacity,transform] duration-200 hover:border-j-yellow-300 hover:bg-j-yellow-300/20 active:scale-95"
+                            >
+                                <HelpCircle size={13} className="shrink-0" />
+                                Como preencher minha solicitação?
+                            </button>
+                        </div>
+                    )}
                     {submission !== null ? (
                         <div className="px-5 py-12 text-center sm:px-8">
                             {submission.created ? (
@@ -91,15 +110,19 @@ export default function ApplyForm() {
                                     <span>{submitError}</span>
                                 </div>
                             )}
-                            <InputRegister {...fieldStyle} name="name" label="Nome completo" placeholder="Seu nome e sobrenome" maxLength={150} autoComplete="name" required />
-                            <div className="grid gap-5 sm:grid-cols-2">
-                                <InputCPF {...fieldStyle} name="cpf" label="CPF" autoComplete="off" required />
-                                <InputPhoneNumber {...fieldStyle} name="phoneNumber" label="Celular com DDD" placeholder="(12) 99999-9999" autoComplete="tel-national" required />
+                            <div id="tour-apply-personal" className="flex flex-col gap-5">
+                                <InputRegister {...fieldStyle} name="name" label="Nome completo" placeholder="Seu nome e sobrenome" maxLength={150} autoComplete="name" required />
+                                <div className="grid gap-5 sm:grid-cols-2">
+                                    <InputCPF {...fieldStyle} name="cpf" label="CPF" autoComplete="off" required />
+                                    <InputPhoneNumber {...fieldStyle} name="phoneNumber" label="Celular com DDD" placeholder="(12) 99999-9999" autoComplete="tel-national" required />
+                                </div>
+                                <InputEmail {...fieldStyle} name="email" label="E-mail (opcional)" placeholder="voce@exemplo.com" maxLength={180} autoComplete="email" />
                             </div>
-                            <InputEmail {...fieldStyle} name="email" label="E-mail (opcional)" placeholder="voce@exemplo.com" maxLength={180} autoComplete="email" />
-                            <TextareaRegister name="message" label="Carta de apresentação" placeholder="Fale sobre você, seu interesse pelo clube e o que gostaria de viver com a comunidade..." rows={6} maxLength={2000} labelClassName="text-sm font-semibold text-white" className="min-h-36 rounded-xl border-transparent bg-[#e8efff] text-[#071741] placeholder:text-slate-500 focus:border-j-yellow-400" />
-                            <p className="-mt-3 text-xs leading-5 text-white/75">Seus dados serão usados pela diretoria para avaliar e responder à solicitação.</p>
-                            <Button type="submit" isLoading={mutation.isPending} className="min-h-12 w-full gap-2">{mutation.isPending ? <>Enviando... <LoaderCircle size={18} className="animate-spin" /></> : <>Enviar solicitação <Send size={17} /></>}</Button>
+                            <div id="tour-apply-message" className="flex flex-col gap-2">
+                                <TextareaRegister name="message" label="Carta de apresentação" placeholder="Fale sobre você, seu interesse pelo clube e o que gostaria de viver com a comunidade..." rows={6} maxLength={2000} labelClassName="text-sm font-semibold text-white" className="min-h-36 rounded-xl border-transparent bg-[#e8efff] text-[#071741] placeholder:text-slate-500 focus:border-j-yellow-400" />
+                                <p className="text-xs leading-5 text-white/75">Seus dados serão usados pela diretoria para avaliar e responder à solicitação.</p>
+                            </div>
+                            <Button id="tour-apply-submit" type="submit" isLoading={mutation.isPending} className="min-h-12 w-full gap-2">{mutation.isPending ? <>Enviando... <LoaderCircle size={18} className="animate-spin" /></> : <>Enviar solicitação <Send size={17} /></>}</Button>
                         </Form>
                     )}
                 </section>
