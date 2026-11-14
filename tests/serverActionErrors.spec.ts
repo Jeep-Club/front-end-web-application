@@ -59,6 +59,22 @@ it('session expiration survives native error redaction', () => {
     expect(getActionFailure(failure)).toMatchObject({ code: 'SESSION_EXPIRED', status: 401, message: SESSION_EXPIRED_MESSAGE });
 });
 
+it.each(['/feed', '/financeiro'])('keeps a membership payment failure in the history flow from %s', pathname => {
+    const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+    const assign = jest.fn();
+    Object.defineProperty(globalThis, 'window', { configurable: true, value: { location: { pathname, origin: 'http://localhost', assign } } });
+    try {
+        const failure = redacted(new ActionError('Pagamento necessário', { status: 402, code: 'MEMBERSHIP_PAYMENT_REQUIRED' }));
+        queryErrorHandler(failure);
+        if (pathname === '/financeiro') expect(assign).not.toHaveBeenCalled();
+        else expect(assign).toHaveBeenCalledWith(new URL('/financeiro', 'http://localhost'));
+        expect(toast.error).not.toHaveBeenCalled();
+    } finally {
+        if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow);
+        else Reflect.deleteProperty(globalThis, 'window');
+    }
+});
+
 it('partial-save context preserves API metadata and cannot hide an expired session', () => {
     const permission = redacted(toActionError({ rawData: { ...problem, status: 403, code: 'ACCESS_DENIED' }, status: 403 }));
     expect(getActionFailure(new ActionError('Dados salvos, mas a foto não.', { cause: permission }))).toMatchObject({ status: 403, code: 'ACCESS_DENIED', message: `Dados salvos, mas a foto não. ${problem.detail}` });

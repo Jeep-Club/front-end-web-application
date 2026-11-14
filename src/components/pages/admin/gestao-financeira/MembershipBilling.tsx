@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input/input";
 import { Select } from "@/components/common/select";
-import { getMembershipBillingConfigurationAction, updateMembershipBillingConfigurationAction } from "@/server/actions/admin/membership/billingConfiguration";
+import { getMembershipBillingConfigurationAction, updateMembershipBillingConfigurationAction, updateMembershipBillingEnforcementAction } from "@/server/actions/admin/membership/billingConfiguration";
 import { getChargeDefinitionAction } from "@/server/actions/billing/chargeDefinitions/get";
 import { listChargeDefinitionsAction } from "@/server/actions/billing/chargeDefinitions/list";
 import { useUserStore } from "@/stores/userStore";
@@ -68,9 +68,11 @@ function MembershipBillingForm() {
     const canReadDefinitions = hasPermission(permissions, "BILLING", "CHARGE_DEFINITION_READ");
     const queryClient = useQueryClient();
     const [draftId, setDraftId] = useState<string | null>(null);
+    const [draftEnforcement, setDraftEnforcement] = useState<boolean | null>(null);
     const configuration = useQuery({ queryKey: configurationKey, queryFn: getMembershipBillingConfigurationAction, enabled: canRead, retry: false });
     const configuredId = configuration.data?.chargeDefinitionId;
     const selectedId = draftId ?? (configuredId ? String(configuredId) : "");
+    const enforcementEnabled = draftEnforcement ?? configuration.data?.enforcementEnabled ?? false;
     const definitions = useInfiniteQuery({
         queryKey: ["billing", "charge-definitions", "membership-options"],
         queryFn: ({ pageParam }) => listChargeDefinitionsAction({ page: String(pageParam), size: "50", sort: "name,asc" }),
@@ -88,16 +90,22 @@ function MembershipBillingForm() {
     const activeDefinitions = definitions.data?.pages.flatMap(page => page.content).filter(item => item.status === "ACTIVE") ?? [];
     const selectedDefinition = activeDefinitions.find(item => String(item.id) === selectedId);
     const mutation = useMutation({
-        mutationFn: () => updateMembershipBillingConfigurationAction({ chargeDefinitionId: Number(selectedId) }),
+        mutationFn: () => Number(selectedId) === configuredId
+            ? updateMembershipBillingEnforcementAction(enforcementEnabled)
+            : updateMembershipBillingConfigurationAction({ chargeDefinitionId: Number(selectedId), enforcementEnabled }),
         onSuccess: async saved => {
             queryClient.setQueryData(configurationKey, saved);
             setDraftId(null);
-            toast.success("Cobrança de referência da associação salva.");
-            await queryClient.invalidateQueries({ queryKey: configurationKey });
+            setDraftEnforcement(null);
+            toast.success("Configuração da associação salva.");
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: configurationKey }),
+                queryClient.invalidateQueries({ queryKey: ["membership", "access"] }),
+            ]);
         },
     });
-    const validSelection = Number.isSafeInteger(Number(selectedId)) && Number(selectedId) > 0 && (!canReadDefinitions || Boolean(selectedDefinition));
-    const changed = Number(selectedId) !== configuredId;
+    const validSelection = Number.isSafeInteger(Number(selectedId)) && Number(selectedId) > 0 && (Number(selectedId) === configuredId || !canReadDefinitions || Boolean(selectedDefinition));
+    const changed = Number(selectedId) !== configuredId || enforcementEnabled !== (configuration.data?.enforcementEnabled ?? false);
 
     if (!canRead) return <p role="status">Você não tem permissão para consultar esta configuração.</p>;
     if (configuration.isPending) return <section aria-busy="true" aria-label="Carregando configuração de regularidade" className="rounded-2xl border border-j-gray-200 bg-j-white p-5"><span className="sr-only" role="status">Carregando configuração de regularidade.</span><div aria-hidden="true" className="flex animate-pulse flex-col gap-4"><div className="h-6 w-2/3 rounded bg-j-gray-100" /><div className="h-12 rounded bg-j-gray-100" /><div className="h-24 rounded bg-j-gray-100" /></div></section>;
@@ -111,15 +119,13 @@ function MembershipBillingForm() {
                 <p className="mt-1 text-sm leading-relaxed text-j-gray-600">Escolha a cobrança que será usada como referência para acompanhar a regularidade financeira dos associados.</p>
             </header>
 
-            <div className="mb-5 rounded-xl border border-j-blue-200 bg-j-blue-50/70 p-4" role="status">
-                {configuration.data ? <>
+            {configuration.data && <div className="mb-5 text-sm" role="status">
                     <p className="flex items-center gap-2 font-bold text-j-blue-800"><CheckCircle2 size={18} aria-hidden="true" />{configuredDefinition.data?.name ?? `Cobrança #${configuredId}`}</p>
                     {configuredDefinition.data && <p className="mt-1 text-sm text-j-gray-700">{CHARGE_RECURRENCE_LABEL[configuredDefinition.data.recurrenceType]} · {formatCurrencyBRL(configuredDefinition.data.defaultAmount)} · {billingLabels[configuredDefinition.data.status]}</p>}
                     {configuredDefinition.isError && <p className="mt-2 text-sm text-j-red-500">Não foi possível carregar os detalhes da cobrança. <button type="button" className="cursor-pointer underline focus-visible:outline-2" onClick={() => void configuredDefinition.refetch()}>Tentar novamente</button></p>}
                     {configuredDefinition.data && configuredDefinition.data.status !== "ACTIVE" && <p className="mt-2 text-sm text-j-red-500">A cobrança configurada não está ativa. Escolha uma cobrança ativa antes de gerar novos ciclos.</p>}
-                    <p className="mt-2 text-sm text-j-gray-600">{configuration.data.enforcementEnabled ? "O controle de acesso por pagamento já está ativo. Alterar a cobrança preserva essa configuração." : "O controle de acesso por pagamento está desativado. Salvar esta referência não ativa bloqueios de acesso."}</p>
-                </> : <><p className="font-bold text-j-blue-800">Nenhuma cobrança de referência configurada</p><p className="mt-1 text-sm text-j-gray-600">Selecione uma cobrança ativa para organizar o acompanhamento financeiro dos associados.</p></>}
-            </div>
+                    <p className="mt-2 text-sm font-semibold text-j-gray-600">{configuration.data.enforcementEnabled ? "Bloqueio por falta de pagamento ativado." : "Bloqueio por falta de pagamento desativado."}</p>
+            </div>}
 
             {canUpdate ? <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (validSelection && changed && !mutation.isPending && !configuration.isFetching) mutation.mutate(); }}>
                 {canReadDefinitions ? <>
@@ -137,9 +143,16 @@ function MembershipBillingForm() {
                     <p id="membership-definition-permission" className="text-sm text-j-gray-600">Informe o código de uma definição ativa. Para escolher pelo nome, solicite a permissão de consultar definições de cobrança.</p>
                 </>}
                 {selectedDefinition && <p className="text-sm text-j-gray-600">Valor padrão: {formatCurrencyBRL(selectedDefinition.defaultAmount)}. A recorrência e os prazos permanecem definidos na própria cobrança.</p>}
-                {changed && configuredId && <p className="text-sm text-j-gray-600">Ao salvar, esta cobrança substituirá a referência atual para todos os associados. Os débitos anteriores serão preservados.</p>}
+                {Number(selectedId) !== configuredId && configuredId && <p className="text-sm text-j-gray-600">Ao salvar, esta cobrança substituirá a referência atual para todos os associados. Os débitos anteriores serão preservados.</p>}
+                <div className="rounded-xl border border-input-border bg-background-secondary p-4">
+                    <label className="flex cursor-pointer items-start gap-3 text-sm font-bold text-primary">
+                        <input type="checkbox" name="enforcementEnabled" checked={enforcementEnabled} disabled={mutation.isPending} onChange={event => { setDraftEnforcement(event.target.checked); mutation.reset(); }} aria-describedby="membership-enforcement-help" className="mt-0.5 size-4 shrink-0 accent-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-input-border-focus" />
+                        Ativar bloqueio por falta de pagamento
+                    </label>
+                    <p id="membership-enforcement-help" className="mt-2 text-xs leading-relaxed text-secondary">Ao ativar e salvar, quem estiver com a cobrança de referência em atraso terá acesso apenas à Gestão de débitos. A regra também se aplica a administradores.</p>
+                </div>
                 {mutation.isError && <p role="alert" className="text-sm text-j-red-500">{mutation.error.message}</p>}
-                <Button type="submit" className="mt-1 w-full sm:w-auto sm:self-start" isLoading={mutation.isPending} disabled={!validSelection || !changed || configuration.isFetching}><Save size={16} aria-hidden="true" />{mutation.isPending ? "Salvando…" : "Salvar cobrança de referência"}</Button>
+                <Button type="submit" className="mt-1 w-full sm:w-auto sm:self-start" isLoading={mutation.isPending} disabled={!validSelection || !changed || configuration.isFetching}><Save size={16} aria-hidden="true" />{mutation.isPending ? "Salvando…" : "Salvar configuração"}</Button>
             </form> : <p className="text-sm text-j-gray-600">Você pode consultar esta configuração. Para alterá-la, solicite a permissão de configurar a cobrança da associação.</p>}
         </section>
     );

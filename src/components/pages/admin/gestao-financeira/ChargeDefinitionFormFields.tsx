@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useController, useFormContext, useWatch } from "react-hook-form";
 
 import { Input } from "@/components/common/input/input";
@@ -111,54 +110,35 @@ function formatCurrencyInput(value: number): string {
 }
 
 function parseCurrencyInput(value: string): number | undefined {
-    const trimmed = value.trim().replace(/\s/g, "");
-    const normalized = trimmed.includes(",") ? trimmed.replace(/\./g, "").replace(",", ".") : trimmed;
-    if (!normalized) return undefined;
-    const parsed = Number(normalized);
+    // Digits represent cents, including when editing an already formatted amount.
+    const digits = value.replace(/\D/g, "");
+    if (!digits) return undefined;
+    const parsed = Number(digits) / 100;
     return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function CurrencyInputRegister() {
     const { control } = useFormContext<ChargeDefinitionFormData>();
     const { field, fieldState } = useController({ name: "defaultAmount", control });
-    const initialValue = typeof field.value === "number" && Number.isFinite(field.value) ? formatCurrencyInput(field.value) : "";
-    const [draft, setDraft] = useState(initialValue);
-    const focused = useRef(false);
-
-    useEffect(() => {
-        if (!focused.current) setDraft(initialValue);
-    }, [initialValue]);
+    const { ref, name, onBlur, onChange, value: amount } = field;
+    const value = typeof amount === "number" && Number.isFinite(amount) ? formatCurrencyInput(amount) : "";
 
     return (
         <Input
-            ref={field.ref}
+            ref={ref}
             label="Valor padrão (R$)"
-            name={field.name}
+            name={name}
             type="text"
-            inputMode="decimal"
+            inputMode="numeric"
             autoComplete="off"
             placeholder="250,00"
             required
-            value={draft}
-            onFocus={() => { focused.current = true; }}
+            value={value}
             onChange={event => {
-                const next = event.target.value.replace(/[^\d,.\-]/g, "");
-                setDraft(next);
-                const parsed = parseCurrencyInput(next);
-                field.onChange(parsed ?? next);
+                const parsed = parseCurrencyInput(event.target.value);
+                onChange(parsed);
             }}
-            onBlur={() => {
-                focused.current = false;
-                field.onBlur();
-                const parsed = parseCurrencyInput(draft);
-                if (parsed === undefined) {
-                    setDraft("");
-                    field.onChange(undefined);
-                    return;
-                }
-                field.onChange(parsed);
-                setDraft(formatCurrencyInput(parsed));
-            }}
+            onBlur={onBlur}
             error={fieldState.error?.message}
             labelClassName="text-j-gray-700"
             className={LIGHT_FIELD_CLASS}

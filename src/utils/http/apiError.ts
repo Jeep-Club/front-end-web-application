@@ -39,6 +39,7 @@ export function extractApiErrorMessage(error: unknown, fallback = FALLBACK): str
             const message = problem.errors.find(item => typeof item?.message === 'string' && item.message.trim())?.message;
             if (message) return message;
         }
+        if (problem.code === 'MEMBER_PAYMENT_ALREADY_EXISTS') return 'Esta cobrança já possui um comprovante enviado. Procure a gestão para acompanhar a análise ou corrigir o envio.';
         const detail = resolveToolErrorMessage(problem.detail, problem.code);
         if (detail.trim()) return detail;
     }

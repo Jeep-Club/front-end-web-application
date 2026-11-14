@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { AdminExport } from "./AdminExport";
 
 const meta = {
@@ -17,10 +17,22 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Padrao: Story = {
-    play: async ({ canvas, userEvent, args }) => {
-        await userEvent.click(canvas.getByRole("button", { name: "Exportar CSV" }));
+    play: async ({ canvas, canvasElement, userEvent, args }) => {
+        await userEvent.click(canvas.getByRole("button", { name: /^Exportar$/ }));
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole("menuitem", { name: "Planilha CSV" }));
         await expect(args.onExport).toHaveBeenCalledWith("CSV");
         await expect(await canvas.findByRole("status")).toHaveTextContent("download iniciado");
+    },
+};
+
+export const PDF: Story = {
+    play: async ({ canvas, canvasElement, userEvent, args }) => {
+        await userEvent.click(canvas.getByRole("button", { name: /^Exportar$/ }));
+        const page = within(canvasElement.ownerDocument.body);
+        await userEvent.click(await page.findByRole("menuitem", { name: /^PDF$/ }));
+        await expect(args.onExport).toHaveBeenCalledWith("PDF");
+        await expect(await canvas.findByRole("status")).toHaveTextContent("Arquivo PDF gerado");
     },
 };
 

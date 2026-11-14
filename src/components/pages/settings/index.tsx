@@ -89,7 +89,7 @@ const SECTIONS: SettingSection[] = [
         options: [
             { key: "event-history", label: "Histórico de eventos", description: "Inscrições e participações", icon: CalendarCheck },
             { key: "account-activity", label: "Atividade da conta", description: "Alterações feitas no cadastro", icon: ListChecks },
-            { key: "financial-history", label: "Histórico financeiro", description: "Pagamentos e cobranças", icon: WalletCards },
+            { key: "financial-history", label: "Gestão de débitos", description: "Pagamentos e cobranças", icon: WalletCards },
         ],
     },
     {
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                         <p className="text-sm leading-relaxed text-j-gray-500">
                             Consulte as cobranças, mensalidades, pagamentos e comprovantes vinculados à sua conta.
                         </p>
-                        <Button type="button" onClick={() => router.push("/financeiro")} className="mt-5 gap-2">Abrir histórico financeiro<ChevronRight size={16} /></Button>
+                        <Button type="button" onClick={() => router.push("/financeiro")} className="mt-5 gap-2">Abrir gestão de débitos<ChevronRight size={16} /></Button>
                     </div>
                 );
             case "notification-types":

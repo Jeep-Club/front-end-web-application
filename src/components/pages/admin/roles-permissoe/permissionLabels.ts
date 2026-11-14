@@ -3,7 +3,7 @@ const MODULE_LABELS: Record<string, string> = {
     AUTHORIZATION: "Autorização",
     IDENTITY: "Usuários",
     HEALTH: "Saúde",
-    MEMBERSHIP: "Associação",
+    MEMBERSHIP: "Membritude",
     BILLING: "Cobranças",
     DEPENDENTS: "Dependentes",
     PUBLICATIONS: "Publicações",
@@ -16,6 +16,69 @@ export function getModuleLabel(module: string): string {
 }
 
 const PERMISSION_NAME_LABELS: Record<string, string> = {
+    IDENTITY_USER_ARCHIVE: "Arquivar usuários",
+    IDENTITY_USER_UNARCHIVE: "Desarquivar usuários como inativos",
+    IDENTITY_USER_DELETE: "Excluir usuários sem dependências impeditivas",
+    IDENTITY_USER_HISTORY_READ: "Consultar histórico de usuários",
+    AUTHORIZATION_ROLE_ARCHIVE: "Arquivar cargos",
+    AUTHORIZATION_ROLE_UNARCHIVE: "Desarquivar cargos como inativos",
+    AUTHORIZATION_ROLE_HISTORY_READ: "Consultar histórico de cargos",
+    VEHICLES_VEHICLE_ACTIVATE: "Ativar veículos",
+    VEHICLES_VEHICLE_DEACTIVATE: "Inativar veículos",
+    VEHICLES_VEHICLE_ARCHIVE: "Arquivar veículos",
+    VEHICLES_VEHICLE_UNARCHIVE: "Desarquivar veículos como inativos",
+    BILLING_CHARGE_DEFINITION_DELETE: "Excluir definições de cobrança sem dependências impeditivas",
+    BILLING_CHARGE_DEFINITION_HISTORY_READ: "Consultar histórico de definições de cobrança",
+    MEMBERSHIP_MEMBER_AUDIT_READ: "Consultar auditoria de matrículas",
+    MEMBERSHIP_MEMBER_NUMBER_RESERVE: "Reservar números de matrícula permanentemente",
+    MEMBERSHIP_MEMBER_NUMBER_ISSUE: "Emitir matrículas administrativamente",
+    MEMBERSHIP_MEMBER_IMPORT: "Simular e aplicar conciliação histórica autorizada",
+    IDENTITY_USER_EXPORT: "Exportar usuários",
+    AUTHENTICATION_EXPORT: "Exportar autenticação",
+    AUTHORIZATION_EXPORT: "Exportar cargos e permissões",
+    MEMBERSHIP_EXPORT: "Exportar associados",
+    VEHICLES_VEHICLE_EXPORT: "Exportar veículos",
+    HEALTH_MEDICAL_PROFILE_EXPORT: "Exportar perfis médicos",
+    BILLING_EXPORT: "Exportar cobranças",
+    PUBLICATIONS_EXPORT: "Exportar publicações",
+    BILLING_CHARGE_ASSIGNMENT_READ: "Consultar atribuições de cobrança",
+    BILLING_CHARGE_ASSIGNMENT_UPDATE: "Atualizar atribuições de cobrança",
+    BILLING_CHARGE_CYCLE_GENERATE: "Gerar ciclos de cobrança",
+    BILLING_CHARGE_CYCLE_READ: "Consultar ciclos de cobrança",
+    BILLING_CHARGE_CYCLE_CANCEL: "Cancelar ciclos de cobrança",
+    BILLING_CHARGE_CYCLE_FINISH: "Finalizar ciclos de cobrança",
+    BILLING_CHARGE_CYCLE_ARCHIVE: "Arquivar ciclos de cobrança",
+    BILLING_CHARGE_DEFINITION_CREATE: "Criar definições de cobrança",
+    BILLING_CHARGE_DEFINITION_READ: "Consultar definições de cobrança",
+    BILLING_CHARGE_DEFINITION_UPDATE: "Atualizar definições de cobrança",
+    BILLING_MEMBER_CHARGE_READ: "Consultar cobranças de membros",
+    BILLING_MEMBER_CHARGE_UPDATE: "Atualizar cobranças de membros",
+    BILLING_MEMBER_CHARGE_CANCEL: "Cancelar cobranças de membros",
+    BILLING_REFUND_READ: "Consultar reembolsos",
+    BILLING_REFUND_APPROVE: "Aprovar reembolsos",
+    BILLING_REFUND_REJECT: "Rejeitar reembolsos",
+    BILLING_REFUND_MARK_AS_REFUNDED: "Marcar reembolsos como realizados",
+    BILLING_REFUND_EXPIRE: "Expirar reembolsos",
+    BILLING_REFUND_CANCEL: "Cancelar reembolsos",
+    HEALTH_MEDICAL_PROFILE_DELETE: "Excluir o perfil médico",
+    MEMBERSHIP_MEMBERSHIP_APPLICANT_UNBLOCK: "Desbloquear solicitantes",
+    VEHICLES_VEHICLE_CREATE: "Cadastrar veículos",
+    VEHICLES_VEHICLE_READ: "Consultar veículos",
+    VEHICLES_VEHICLE_UPDATE: "Atualizar veículos",
+    VEHICLES_VEHICLE_DELETE: "Remover veículos",
+    PUBLICATIONS_SERVICE_REQUEST_CREATE: "Solicitar publicação de serviço",
+    PUBLICATIONS_SERVICE_REQUEST_READ: "Consultar solicitações próprias de serviço",
+    PUBLICATIONS_SERVICE_REQUEST_ADMIN_READ: "Consultar solicitações de serviço administrativamente",
+    PUBLICATIONS_SERVICE_REQUEST_APPROVE: "Aprovar solicitação inicial de serviço",
+    PUBLICATIONS_SERVICE_CHANGE_REQUEST_CREATE: "Solicitar alteração de serviço próprio",
+    PUBLICATIONS_SERVICE_CHANGE_REQUEST_READ: "Consultar alteração própria de serviço",
+    PUBLICATIONS_SERVICE_CHANGE_REQUEST_ADMIN_READ: "Consultar alterações de serviço administrativamente",
+    PUBLICATIONS_SERVICE_CHANGE_REQUEST_APPROVE: "Aprovar alteração de serviço",
+    PUBLICATIONS_SERVICE_CHANGE_REQUEST_REJECT: "Rejeitar alteração de serviço",
+    PUBLICATIONS_SERVICE_READ: "Consultar serviço publicado",
+    PUBLICATIONS_SERVICE_DELETE: "Excluir serviço próprio",
+    PUBLICATIONS_SERVICE_ADMIN_READ: "Consultar serviços administrativamente",
+    PUBLICATIONS_SERVICE_ADMIN_DELETE: "Excluir qualquer serviço com histórico",
     BILLING_PAYMENT_READ: "Consultar pagamentos e comprovantes",
     BILLING_PAYMENT_CONFIRM: "Confirmar pagamentos",
     BILLING_PAYMENT_REJECT: "Rejeitar pagamentos",
@@ -293,23 +356,20 @@ export function isMemberPermission(code: string): boolean {
     return MEMBER_PERMISSION_CODES.has(code.trim().toLocaleUpperCase("pt-BR"));
 }
 
-function getPermissionScopeLabel(code: string): string {
-    return isMemberPermission(code)
-        ? "Acesso de associado"
-        : "Acesso administrativo";
+/** Baseline member access is automatic; role controls manage only administrative grants. */
+export function getAdministrativePermissions(permissions: PermissionResponse[]): PermissionResponse[] {
+    return permissions.filter((permission) => !isMemberPermission(permission.code));
 }
 
 export function getPermissionNameByCode(code: string): string | undefined {
     const normalizedCode = code.trim().toLocaleUpperCase("pt-BR");
-    const name = PERMISSION_NAME_LABELS[normalizedCode];
-    return name ? `${getPermissionScopeLabel(normalizedCode)}: ${name}` : undefined;
+    return PERMISSION_NAME_LABELS[normalizedCode];
 }
 
 export function getPermissionName(permission: PermissionResponse): string {
-    const scopeLabel = getPermissionScopeLabel(permission.code);
     const normalizedPermissionCode = permission.code.trim().toLocaleUpperCase("pt-BR");
     const knownName = PERMISSION_NAME_LABELS[normalizedPermissionCode];
-    if (knownName) return `${scopeLabel}: ${knownName}`;
+    if (knownName) return knownName;
 
     const normalizedCode = permission.code.trim().toLocaleUpperCase("pt-BR");
     const modulePrefix = `${permission.module.trim().toLocaleUpperCase("pt-BR")}_`;
@@ -328,7 +388,7 @@ export function getPermissionName(permission: PermissionResponse): string {
     const name = action
         ? `${PERMISSION_ACTION_LABELS[action]} ${resource}`
         : `Permissão de ${resource}`;
-    return `${scopeLabel}: ${name}`;
+    return name;
 }
 
 export function getPermissionDescription(

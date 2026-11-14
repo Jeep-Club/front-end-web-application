@@ -17,7 +17,7 @@ export function AdminExport({
     formats = ["CSV", "PDF"],
     disabled = false,
     className = "",
-    dropdown = false,
+    dropdown = true,
     onExport,
 }: {
     label?: string;
@@ -64,7 +64,7 @@ export function AdminExport({
     return <div className={twMerge("flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center", className)}>
         {dropdown ? (
             <MenuTrigger>
-                <Button isDisabled={disabled || pending || !formats.length} aria-busy={pending} className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-j-blue-800 px-3 text-sm font-bold text-j-white hover:bg-j-blue-900 focus-visible:outline-2 disabled:opacity-60 sm:w-auto">
+                <Button isDisabled={disabled || pending || !formats.length} aria-busy={pending} className="inline-flex min-h-10 w-full shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-j-blue-800 px-3 text-sm font-bold text-j-white hover:bg-j-blue-900 focus-visible:outline-2 disabled:opacity-60 sm:w-auto">
                     {pending ? <><LoaderCircle size={16} className="motion-safe:animate-spin" aria-hidden="true" />Gerando...</> : <><Download size={16} aria-hidden="true" />{label}</>}
                 </Button>
                 <Popover placement="bottom end" className="z-[100] min-w-32 rounded-xl border border-input-border bg-background p-1 text-primary shadow-lg">

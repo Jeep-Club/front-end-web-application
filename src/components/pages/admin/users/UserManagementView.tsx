@@ -283,8 +283,8 @@ export function UserManagementView({
             }
         >
             <Table.Header className="items-stretch border-b-0">
-                <div className="flex w-full flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-                    <div id="tour-users-search" className="flex w-full items-end lg:min-w-64 lg:flex-1">
+                <div className="grid w-full min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(16rem,1fr)_auto] lg:items-start">
+                    <div id="tour-users-search" className="flex w-full min-w-0 items-end">
                         <Table.Search
                             value={
                                 searchType === "cpf"
@@ -309,7 +309,7 @@ export function UserManagementView({
                                     ? "numeric"
                                     : "search"
                             }
-                            formClassName="w-full lg:flex-1"
+                            formClassName="min-w-0 flex-1 sm:min-w-0"
                             className="rounded-r-none"
                         />
                         <div className="w-fit shrink-0">
@@ -332,7 +332,8 @@ export function UserManagementView({
                         </div>
                     </div>
 
-                    <div id="tour-users-status-filter" className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-end">
+                    <div id="tour-users-status-filter" className="flex w-full min-w-0 flex-col gap-3 lg:w-auto lg:flex-row lg:flex-nowrap lg:items-center lg:justify-end">
+                        <div className="w-full lg:w-auto lg:shrink-0">
                         <Select.Unregister
                             label="Status"
                             labelClassName="sr-only"
@@ -348,9 +349,10 @@ export function UserManagementView({
                             <option value="INACTIVE">{USER_STATUS_LABEL.INACTIVE}</option>
                             <option value="ARCHIVED">{USER_STATUS_LABEL.ARCHIVED}</option>
                         </Select.Unregister>
+                        </div>
 
                         {permissions.canExportUsers && onExportUsers && (
-                            <AdminExport formats={["CSV", "PDF"]} className="w-full lg:w-auto" onExport={async (format) => { if (!onExportUsers) return; return onExportUsers(format); }} />
+                            <AdminExport formats={["CSV", "PDF"]} className="w-full lg:w-auto lg:shrink-0" onExport={async (format) => { if (!onExportUsers) return; return onExportUsers(format); }} />
                         )}
 
                         {permissions.canCreateUsers && (

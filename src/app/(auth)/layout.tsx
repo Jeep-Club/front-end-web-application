@@ -3,6 +3,8 @@ import { verifyPermissions } from "@/services/token/permissions";
 import { getAuthCookies } from "@/utils/auth/get";
 import { haveRoutePermissions } from "@/utils/permission/routePermissions";
 import { hasAnyAdminAccess } from "@/config/adminModules";
+import { getMembershipAccess } from "@/server/membershipAccess";
+import { canAccessMembershipPage, PAYMENT_HISTORY_PATH } from "@/utils/membership/access";
 
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -39,6 +41,8 @@ export default async function AuthLayout({
     });
 
   const isAdminHome = pathname === "/admin";
+  const membershipAccess = await getMembershipAccess();
+  if (!canAccessMembershipPage(membershipAccess, pathname)) redirect(PAYMENT_HISTORY_PATH);
 
   const userHasPermission = isAdminHome
     ? hasAnyAdminAccess(permissions)

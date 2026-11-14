@@ -1,8 +1,10 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import DashboardShell from "@/components/common/layout-admin/DashboardShell";
 import { meCookieSchema } from "@/schemas/auth/me/me";
 import { verifyWithSchema } from "@/services/token/verify";
 import { getMediaImageUrl } from "@/utils/media/imageUrl";
+import { getMembershipAccess } from "@/server/membershipAccess";
+import { MembershipAccessGate } from "@/components/common/layout-admin/MembershipAccessGate";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const cookieStore = await cookies();
@@ -13,9 +15,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     const onboardingRequired = Boolean(currentUser && onboardingUserId === String(currentUser.userId));
     const fullName = currentUser?.userName ?? "Usuário";
     const initialProfilePhotoUrl = getMediaImageUrl(currentUser?.profilePhotoStorageKey) || null;
+    const membershipAccess = await getMembershipAccess();
+    const pathname = (await headers()).get("x-route-pathname") ?? "";
     return (
-        <DashboardShell fullName={fullName} userId={currentUser?.userId ?? "unknown"} initialProfilePhotoUrl={initialProfilePhotoUrl} onboardingRequired={onboardingRequired}>
-            {children}
-        </DashboardShell>
+        <MembershipAccessGate initialAccess={membershipAccess} initialPath={pathname} paymentHistory={children}>
+            <DashboardShell fullName={fullName} userId={currentUser?.userId ?? "unknown"} initialProfilePhotoUrl={initialProfilePhotoUrl} onboardingRequired={onboardingRequired}>
+                {children}
+            </DashboardShell>
+        </MembershipAccessGate>
     );
 }

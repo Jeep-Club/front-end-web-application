@@ -1038,7 +1038,7 @@ export function getFeedTourSteps(isMobile: boolean = false): DriveStep[] {
             element: "#tour-avatar-container",
             popover: {
                 title: createStepHeader("Perfil e Conta", ICONS.user),
-                description: "Clique no seu avatar para abrir a conta e gerenciar seus dados pessoais, ficha médica, veículos 4x4, ferramentas e histórico financeiro.",
+                description: "Clique no seu avatar para abrir a conta e gerenciar seus dados pessoais, ficha médica, veículos 4x4, ferramentas e débitos.",
                 side: "bottom",
                 align: isMobile ? "center" : "end",
             },

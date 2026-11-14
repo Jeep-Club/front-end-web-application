@@ -14,7 +14,7 @@ import { CheckCheck, ListChecks, LoaderCircle, Save, Search, X, XCircle } from '
 import { useId, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { twMerge } from 'tailwind-merge';
-import { getModuleLabel, getPermissionDescription, getPermissionName, isMemberPermission } from './permissionLabels';
+import { getAdministrativePermissions, getModuleLabel, getPermissionDescription, getPermissionName } from './permissionLabels';
 import styles from './ManageRolePermissionsModal.module.css';
 
 interface Props { roleId: number; roleName: string; roleKind: RoleKind }
@@ -50,28 +50,26 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
 
     const { data: catalog, isLoading: isLoadingCatalog, isError: isCatalogError, refetch: reloadCatalog } = useQuery({ queryKey: ['authorization', 'permissions'], queryFn: listPermissionsAction });
     const { data: rolePermissions, isLoading: isLoadingRolePermissions, isError: isRolePermissionsError, refetch: reloadRolePermissions } = useQuery({ queryKey: rolePermissionsQueryKey, queryFn: () => listRolePermissionsAction(roleId) });
-    const assignedIds = useMemo(() => new Set((rolePermissions ?? []).map((permission) => permission.id)), [rolePermissions]);
+    const administrativeCatalog = useMemo(() => getAdministrativePermissions(catalog ?? []), [catalog]);
+    const assignedIds = useMemo(() => new Set(getAdministrativePermissions(rolePermissions ?? []).map((permission) => permission.id)), [rolePermissions]);
     const selectedIds = draftIds ?? assignedIds;
     const modules = useMemo(
-        () => [...new Set((catalog ?? []).map((permission) => permission.module))]
+        () => [...new Set(administrativeCatalog.map((permission) => permission.module))]
             .sort((left, right) => getModuleLabel(left).localeCompare(getModuleLabel(right), "pt-BR")),
-        [catalog],
+        [administrativeCatalog],
     );
     const filtered = useMemo(() => {
         const query = search.trim().toLocaleLowerCase();
-        return (catalog ?? []).filter((permission) => (!moduleFilter.length || moduleFilter.includes(permission.module))
+        return administrativeCatalog.filter((permission) => (!moduleFilter.length || moduleFilter.includes(permission.module))
             && (!query || `${getPermissionName(permission)} ${getPermissionDescription(permission)} ${getModuleLabel(permission.module)}`.toLocaleLowerCase().includes(query)));
-    }, [catalog, moduleFilter, search]);
+    }, [administrativeCatalog, moduleFilter, search]);
     const grouped = useMemo(() => filtered.reduce<Record<string, PermissionResponse[]>>((groups, permission) => {
         (groups[permission.module] ??= []).push(permission);
         return groups;
     }, {}), [filtered]);
-    const changes = (catalog ?? []).filter((permission) => assignedIds.has(permission.id) !== selectedIds.has(permission.id));
+    const changes = administrativeCatalog.filter((permission) => assignedIds.has(permission.id) !== selectedIds.has(permission.id));
     const isLoading = isLoadingCatalog || isLoadingRolePermissions;
     const isError = isCatalogError || isRolePermissionsError;
-    const unselectedMemberPermissions = (catalog ?? []).filter(
-        (permission) => isMemberPermission(permission.code) && !selectedIds.has(permission.id),
-    );
 
     const togglePermission = (permissionId: number, checked: boolean) => {
         if (savingRef.current || isProtected || isLoading || isError) return;
@@ -125,7 +123,7 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
             }
         }));
 
-        const actualIds = new Set(assignedIds);
+        const actualIds = new Set((rolePermissions ?? []).map((permission) => permission.id));
         succeeded.forEach((permission) => desired.has(permission.id) ? actualIds.add(permission.id) : actualIds.delete(permission.id));
         if (catalog) queryClient.setQueryData(rolePermissionsQueryKey, catalog.filter((permission) => actualIds.has(permission.id)));
         void queryClient.invalidateQueries({ queryKey: rolePermissionsQueryKey });
@@ -177,8 +175,6 @@ export function ManageRolePermissionsModal({ roleId, roleName, roleKind }: Props
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-j-gray-500">{selectedIds.size} {selectedIds.size === 1 ? 'permissão selecionada' : 'permissões selecionadas'}</p>
                 <div className="flex flex-wrap gap-1">
-                    <button type="button" title="Seleciona permissões de associado em todos os módulos" disabled={!canAssign || isProtected || isSaving || isLoading || isError || !unselectedMemberPermissions.length} onClick={() => setPermissionSelection(unselectedMemberPermissions, true)} className="inline-flex min-h-8 items-center gap-1 rounded-md bg-j-blue-50 px-2 text-xs font-semibold text-j-blue-800 enabled:hover:bg-input-bg-focus disabled:opacity-40">
-                        <CheckCheck size={14} aria-hidden="true" />Selecionar acessos de associado</button>
                     <button type="button" aria-label="Selecionar permissões filtradas" disabled={!canAssign || isProtected || isSaving || !filtered.length} onClick={() => setPermissionSelection(filtered, true)} className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary enabled:hover:bg-background-secondary disabled:opacity-40">
                         <CheckCheck size={14} aria-hidden="true" />Selecionar</button>
                     <button type="button" aria-label="Limpar permissões filtradas" disabled={!canRevoke || isProtected || isSaving || !filtered.length} onClick={() => setPermissionSelection(filtered, false)} className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-xs font-semibold text-primary enabled:hover:bg-background-secondary disabled:opacity-40">

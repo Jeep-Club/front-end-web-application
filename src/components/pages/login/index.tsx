@@ -57,13 +57,13 @@ export default function Login() {
                 <div className="w-full flex flex-col items-center justify-between">
                     <div className="w-full flex flex-col items-center">
                         <FormLogin />
-                        <p id="tour-login-join" className="px-5 pt-3 pb-2 text-center text-[10px] text-j-transparent-white md:text-xs">
+                        <p id="tour-login-join" className="px-5 pt-3 pb-2 text-center text-[10px] text-white md:text-xs">
                             J&aacute; &eacute; s&oacute;cio? Precisa se associar?{" "}
-                            <Link href="/membership/apply" className="text-j-gray-200 underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400">
+                            <Link href="/membership/apply" className="text-white underline transition-colors duration-300 hover:text-j-yellow-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400">
                                 Quero ser s&oacute;cio
                             </Link>
                         </p>
-                        <LegalLinks className="px-5 pt-2 text-j-gray-200" />
+                        <LegalLinks className="px-5 pt-2 text-white [&_a:hover]:text-white! [&_a:hover]:decoration-white!" />
                         <p className="pt-3 pb-4 text-center text-[8px] text-j-white md:text-xs">&copy; 2026 JEEP CLUBE TAMOIOS &bull; OFF-ROAD</p>
                     </div>
                 </div>

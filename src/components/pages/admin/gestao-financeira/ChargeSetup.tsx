@@ -114,7 +114,8 @@ function ChargeDefinitions() {
 
     const renderDefinitionActions = (definition: ChargeDefinitionSummary) => {
         const isArchived = definition.status === "ARCHIVED";
-        const iconActionClass = "flex h-10 w-10 items-center justify-center rounded-xl border border-j-gray-200 bg-j-white text-j-blue-800 transition-colors hover:border-j-blue-200 hover:bg-j-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800";
+        const iconActionClass = "flex h-10 w-10 items-center justify-center rounded-xl border border-solid border-j-gray-200 bg-j-white text-j-blue-800 transition-colors hover:border-j-blue-200 hover:bg-j-blue-50 hover:text-j-blue-800 focus-visible:text-j-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-j-blue-800 [:root[data-theme=dark]_&]:hover:bg-j-gray-100";
+        const destructiveIconClass = "text-j-red-500 hover:border-j-red-200 hover:bg-j-red-100 hover:text-j-red-600 focus-visible:text-j-red-600 [:root[data-theme=dark]_&]:text-j-red-200 [:root[data-theme=dark]_&]:hover:text-j-red-100 [:root[data-theme=dark]_&]:focus-visible:text-j-red-100";
 
         return <div className="flex w-full flex-col gap-3">
             {(canReadAssignments || canGenerate && definition.status === "ACTIVE") && <div className="grid w-full grid-cols-1 gap-2">
@@ -124,8 +125,8 @@ function ChargeDefinitions() {
             <div className="flex w-full items-center justify-end gap-2 border-t border-j-gray-200 pt-3">
                 <ButtonIcon type="button" title="Visualizar" aria-label={`Visualizar ${definition.name}`} onClick={() => { setContent(<ChargeDefinitionDetailsModal id={definition.id} />); setOpen(); }} className={iconActionClass}><Eye size={18} /></ButtonIcon>
                 {canUpdate && !isArchived && <ButtonIcon type="button" title="Editar" aria-label={`Editar ${definition.name}`} onClick={() => handleOpenEdit(definition.id)} className={iconActionClass}><Pencil size={18} /></ButtonIcon>}
-                {canUpdate && !isArchived && <ButtonIcon type="button" title={definition.status === "ACTIVE" ? "Desativar" : "Ativar"} aria-label={`${definition.status === "ACTIVE" ? "Desativar" : "Ativar"} ${definition.name}`} onClick={() => handleOpenToggleStatus(definition)} className={twMerge(iconActionClass, definition.status === "ACTIVE" ? "text-j-red-500 hover:border-j-red-200 hover:bg-j-red-100 hover:text-j-red-600" : "text-j-green-700 hover:border-j-green-200 hover:bg-j-green-100 hover:text-j-green-700")}>{definition.status === "ACTIVE" ? <PowerOff size={18} /> : <Power size={18} />}</ButtonIcon>}
-                {canUpdate && !isArchived && <ButtonIcon type="button" title="Arquivar" aria-label={`Arquivar ${definition.name}`} onClick={() => handleOpenArchive(definition)} className={twMerge(iconActionClass, "text-j-red-500 hover:border-j-red-200 hover:bg-j-red-100 hover:text-j-red-600")}><Archive size={18} /></ButtonIcon>}
+                {canUpdate && !isArchived && <ButtonIcon type="button" title={definition.status === "ACTIVE" ? "Desativar" : "Ativar"} aria-label={`${definition.status === "ACTIVE" ? "Desativar" : "Ativar"} ${definition.name}`} onClick={() => handleOpenToggleStatus(definition)} className={twMerge(iconActionClass, definition.status === "ACTIVE" ? destructiveIconClass : "text-j-green-700 hover:border-j-green-200 hover:bg-j-green-100 hover:text-j-green-700 focus-visible:text-j-green-700 [:root[data-theme=dark]_&]:text-j-green-200 [:root[data-theme=dark]_&]:hover:text-j-green-100 [:root[data-theme=dark]_&]:focus-visible:text-j-green-100")}>{definition.status === "ACTIVE" ? <PowerOff size={18} /> : <Power size={18} />}</ButtonIcon>}
+                {canUpdate && !isArchived && <ButtonIcon type="button" title="Arquivar" aria-label={`Arquivar ${definition.name}`} onClick={() => handleOpenArchive(definition)} className={twMerge(iconActionClass, destructiveIconClass)}><Archive size={18} /></ButtonIcon>}
             </div>
         </div>;
     };

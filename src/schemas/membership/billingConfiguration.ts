@@ -9,9 +9,10 @@ export const membershipBillingConfigurationSchema = z.object({
     updatedAt: z.string().nullable(),
 });
 
-// The client can change the reference, but cannot enable access enforcement.
+// Enforcement changes are explicit; omitting the flag preserves existing callers' behavior.
 export const updateMembershipBillingConfigurationSchema = z.object({
     chargeDefinitionId: z.number().int().positive("Selecione uma cobrança válida."),
+    enforcementEnabled: z.boolean().optional(),
 }).strict();
 
 export type MembershipBillingConfiguration = z.infer<typeof membershipBillingConfigurationSchema>;

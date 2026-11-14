@@ -22,7 +22,7 @@ import { CreateRoleModal } from "./CreateRoleModal";
 import { DeleteRoleModal } from "./DeleteRoleModal";
 import { EditRoleModal } from "./EditRoleModal";
 import { ManageRolePermissionsModal } from "./ManageRolePermissionsModal";
-import { getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
+import { getAdministrativePermissions,getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
 import { RolePermissionsModal } from "./RolePermissionsModal";
 import { RoleManagementLoading } from "./RoleManagementLoading";
 import { ToggleRoleStatusModal } from "./ToggleRoleStatusModal";
@@ -165,6 +165,7 @@ export default function RolesPermissions() {
     } = useQuery({
         queryKey: ["authorization", "permissions"],
         queryFn: listPermissionsAction,
+        select: getAdministrativePermissions,
         enabled: activeTab === "permissions" && isTabVisible("permissions"),
     });
 
@@ -177,7 +178,7 @@ export default function RolesPermissions() {
         const query = permissionSearch.trim().toLocaleLowerCase("pt-BR");
         return (permissionsList ?? []).filter((permission) => {
             const matchesResponsibility = responsibilityFilter === "all" || permission.module === responsibilityFilter;
-            const searchableText = `${getPermissionName(permission)} ${getPermissionDescription(permission)}`
+            const searchableText = `${getPermissionName(permission)} ${getPermissionDescription(permission)} ${getModuleLabel(permission.module)} ${permission.module} ${permission.code}`
                 .toLocaleLowerCase("pt-BR");
             return matchesResponsibility && (!query || searchableText.includes(query));
         });

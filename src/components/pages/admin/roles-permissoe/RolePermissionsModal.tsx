@@ -5,7 +5,7 @@ import { useModal } from "@/providers/ModalProvider";
 import { listRolePermissionsAction } from "@/server/actions/authorization/list-role-permissions";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle,ShieldCheck,X } from "lucide-react";
-import { getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
+import { getAdministrativePermissions,getModuleLabel,getPermissionDescription,getPermissionName } from "./permissionLabels";
 
 interface RolePermissionsModalProps {
     roleId: number;
@@ -18,6 +18,7 @@ export function RolePermissionsModal({ roleId, roleName }: RolePermissionsModalP
     const { data: permissions, isLoading, isError } = useQuery({
         queryKey: ["authorization", "roles", roleId, "permissions"],
         queryFn: () => listRolePermissionsAction(roleId),
+        select: getAdministrativePermissions,
     });
 
     const permissionsByModule = (permissions ?? []).reduce<Record<string, PermissionResponse[]>>((acc, permission) => {

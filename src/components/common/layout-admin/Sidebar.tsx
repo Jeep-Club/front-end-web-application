@@ -17,7 +17,7 @@ import styles from "./Sidebar.module.css";
 const navItems = [
     { href: "/feed", label: "Feed", icon: Newspaper, desktopOnly: true },
     { href: "/profile", label: "Conta", icon: UserRound },
-    { href: "/financeiro", label: "Histórico financeiro", icon: WalletCards },
+    { href: "/financeiro", label: "Gestão de débitos", icon: WalletCards },
     { href: "/agenda", label: "Agenda", icon: CalendarRange },
     { href: "/servicos", label: "Serviços", icon: Store },
     { href: "/notificacoes", label: "Avisos", icon: Megaphone },

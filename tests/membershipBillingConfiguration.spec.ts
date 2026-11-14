@@ -3,6 +3,7 @@ import { haveActionPermission } from "@/utils/permission/actionPermissions";
 import {
     getMembershipBillingConfigurationAction,
     updateMembershipBillingConfigurationAction,
+    updateMembershipBillingEnforcementAction,
 } from "@/server/actions/admin/membership/billingConfiguration";
 
 jest.mock("@/services/fetchWrapper/actionFetchWrapper", () => ({ __esModule: true, default: jest.fn() }));
@@ -43,6 +44,7 @@ it("retorna configuração encontrada", async () => {
 it.each([
     ["BILLING_CONFIGURATION_READ", () => getMembershipBillingConfigurationAction()],
     ["BILLING_CONFIGURATION_UPDATE", () => updateMembershipBillingConfigurationAction({ chargeDefinitionId: 12 })],
+    ["BILLING_CONFIGURATION_UPDATE", () => updateMembershipBillingEnforcementAction(true)],
 ] as const)("bloqueia sem permissão %s antes de chamar a API", async (action, execute) => {
     permission.mockResolvedValue(false);
 
@@ -58,9 +60,39 @@ it.each([
     expect(request).not.toHaveBeenCalled();
 });
 
-it("rejeita enforcementEnabled fornecido pelo cliente", async () => {
-    await expect(updateMembershipBillingConfigurationAction({ chargeDefinitionId: 12, enforcementEnabled: true } as never)).rejects.toThrow();
+it("rejeita enforcementEnabled que não seja booleano", async () => {
+    await expect(updateMembershipBillingConfigurationAction({ chargeDefinitionId: 12, enforcementEnabled: "true" } as never)).rejects.toThrow();
     expect(request).not.toHaveBeenCalled();
+});
+
+it.each([true, false])("envia a escolha explícita enforcementEnabled=%s ao trocar a referência", async enforcementEnabled => {
+    const saved = configuration(enforcementEnabled);
+    request.mockResolvedValueOnce({ status: 200, data: configuration(!enforcementEnabled) }).mockResolvedValueOnce({ status: 200, data: saved });
+    await expect(updateMembershipBillingConfigurationAction({ chargeDefinitionId: 23, enforcementEnabled })).resolves.toEqual(saved);
+    expect(request).toHaveBeenLastCalledWith(expect.objectContaining({
+        method: "PUT", body: JSON.stringify({ chargeDefinitionId: 23, enforcementEnabled }),
+    }));
+});
+
+it.each([true, false])("altera apenas enforcementEnabled=%s sem substituir a referência", async enforcementEnabled => {
+    const saved = configuration(enforcementEnabled);
+    request.mockResolvedValue({ status: 200, data: saved });
+    await expect(updateMembershipBillingEnforcementAction(enforcementEnabled)).resolves.toEqual(saved);
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({
+        url: "admin/membership-billing-configuration/enforcement", method: "PATCH",
+        body: JSON.stringify({ enforcementEnabled }),
+    }));
+});
+
+it.each(["true", 1, null, undefined])("rejeita estado de bloqueio inválido (%s)", async value => {
+    await expect(updateMembershipBillingEnforcementAction(value as never)).rejects.toThrow();
+    expect(request).not.toHaveBeenCalled();
+});
+
+it("propaga falha de ativação sem simular uma configuração salva", async () => {
+    request.mockRejectedValue(new Error("falha no PATCH"));
+    await expect(updateMembershipBillingEnforcementAction(true)).rejects.toThrow("falha no PATCH");
 });
 
 it.each([true, false])("preserva enforcementEnabled=%s ao atualizar configuração existente", async enforcementEnabled => {

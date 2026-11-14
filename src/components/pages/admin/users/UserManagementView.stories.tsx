@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { fn } from "storybook/test";
+import { expect, fn } from "storybook/test";
 
 import { UserManagementView } from "./UserManagementView";
 
@@ -84,7 +84,28 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ComPermissaoParaGerenciarMatricula: Story = {};
+export const ComPermissaoParaGerenciarMatricula: Story = {
+    play: async ({ canvas }) => {
+        const exportButton = canvas.getByRole("button", { name: /^Exportar$/ });
+        const createButton = canvas.getByRole("button", { name: /Novo usuário/ });
+        const search = canvas.getByRole("searchbox", { name: "Buscar usuários" });
+        const exportBounds = exportButton.getBoundingClientRect();
+        const createBounds = createButton.getBoundingClientRect();
+        const searchBounds = search.getBoundingClientRect();
+        // Actions may wrap below search, but their hit areas must never overlap.
+        for (const bounds of [createBounds, searchBounds]) {
+            await expect(
+                exportBounds.right <= bounds.left || bounds.right <= exportBounds.left
+                || exportBounds.bottom <= bounds.top || bounds.bottom <= exportBounds.top,
+            ).toBe(true);
+        }
+        if (exportButton.ownerDocument.defaultView!.innerWidth >= 1024) {
+            for (const bounds of [createBounds, searchBounds]) {
+                await expect(exportBounds.top < bounds.bottom && bounds.top < exportBounds.bottom).toBe(true);
+            }
+        }
+    },
+};
 
 export const SemPermissaoParaGerenciarMatricula: Story = {
     args: {
